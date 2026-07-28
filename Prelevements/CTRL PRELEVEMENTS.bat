@@ -1,0 +1,1 @@
+PowerShell.exe -NoProfile -ExecutionPolicy Bypass -File "%~dp0Prelevements_Rapprochement_Oracle_EDF.ps1"
