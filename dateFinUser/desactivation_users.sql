@@ -21,12 +21,18 @@
 -- marqueur prevu et definit les variables ci-dessous.
 --
 -- Variables attendues (DEFINE, posees par le lanceur) :
---   P_DATE_FIN  date de fin a appliquer, au format AAAA-MM-JJ
---   P_MODE      SIMULATION (rollback systematique) ou EXECUTION (commit)
---   P_USER_EBS  compte EBS realisant l'operation (colonnes WHO)
+--   P_DATE_FIN          date de fin a appliquer, au format AAAA-MM-JJ
+--   P_MODE              SIMULATION (rollback) ou EXECUTION (commit)
+--   P_USER_EBS          compte EBS realisant l'operation
+--   P_FND_USER_ID       USER_ID pour APPS_INITIALIZE   (-1 = a resoudre ici)
+--   P_FND_RESP_ID       RESPONSIBILITY_ID              (-1 = a resoudre ici)
+--   P_FND_RESP_APPL_ID  APPLICATION_ID                 (-1 = a resoudre ici)
 --
 -- Privileges requis :
 --   APPLSYS.FND_USER           SELECT et UPDATE          (obligatoire)
+--   APPS.FND_GLOBAL            EXECUTE                   (obligatoire)
+--   APPLSYS.FND_RESPONSIBILITY SELECT   (utile seulement si la responsabilite
+--       n'est pas fournie par le config.ps1)
 --   PER_ALL_PEOPLE_F           SELECT                    (facultatif :
 --       sans lui, seule la resolution par USER_NAME reste disponible)
 --
@@ -45,15 +51,24 @@ DECLARE
     c_mode       CONSTANT VARCHAR2(20)  := UPPER('&&P_MODE');
     c_user_ebs   CONSTANT VARCHAR2(100) := UPPER('&&P_USER_EBS');
 
+    -- Contexte applicatif, issu du config.ps1 (-1 = non renseigne, a resoudre)
+    c_cfg_user_id   CONSTANT NUMBER := &&P_FND_USER_ID;
+    c_cfg_resp_id   CONSTANT NUMBER := &&P_FND_RESP_ID;
+    c_cfg_resp_appl CONSTANT NUMBER := &&P_FND_RESP_APPL_ID;
+
     TYPE t_liste IS TABLE OF VARCHAR2(100) INDEX BY PLS_INTEGER;
     l_proteges   t_liste;   -- comptes techniques : jamais desactives
     l_mat        t_liste;   -- matricules injectes par le lanceur
     l_cand_hr    t_liste;   -- schemas candidats pour PER_ALL_PEOPLE_F
 
     -- ---------- Contexte ----------
-    l_ctx_user_id NUMBER;
-    l_table_hr    VARCHAR2(100);   -- NULL si la resolution RH est indisponible
-    l_dummy       NUMBER;
+    l_ctx_user_id   NUMBER;
+    l_ctx_resp_id   NUMBER;
+    l_ctx_resp_appl NUMBER;
+    l_who_user      NUMBER;
+    l_who_login     NUMBER;
+    l_table_hr      VARCHAR2(100);  -- NULL si la resolution RH est indisponible
+    l_dummy         NUMBER;
 
     -- ---------- Variables de boucle ----------
     l_matricule   VARCHAR2(100);
@@ -133,18 +148,52 @@ BEGIN
     END IF;
 
     -- =================================================================
-    -- 2. Contexte : compte EBS trace dans les colonnes WHO
+    -- 2. Contexte applicatif EBS (FND_GLOBAL.APPS_INITIALIZE)
     -- =================================================================
-    BEGIN
-        SELECT user_id INTO l_ctx_user_id
-          FROM applsys.fnd_user
-         WHERE UPPER(user_name) = c_user_ebs;
-        log_info('Colonnes WHO tracees au nom de ' || c_user_ebs || ' (user_id=' || l_ctx_user_id || ').');
-    EXCEPTION
-        WHEN NO_DATA_FOUND THEN
-            l_ctx_user_id := -1;
-            log_info('Compte ' || c_user_ebs || ' absent de FND_USER : LAST_UPDATED_BY force a -1.');
-    END;
+    -- Les identifiants viennent du config.ps1 ; s'ils n'y sont pas
+    -- renseignes (-1), on les resout ici a partir du nom de compte.
+    l_ctx_user_id   := c_cfg_user_id;
+    l_ctx_resp_id   := c_cfg_resp_id;
+    l_ctx_resp_appl := c_cfg_resp_appl;
+
+    IF NVL(l_ctx_user_id, -1) <= 0 THEN
+        BEGIN
+            SELECT user_id INTO l_ctx_user_id
+              FROM applsys.fnd_user
+             WHERE UPPER(user_name) = c_user_ebs;
+            log_info('USER_ID resolu depuis FND_USER pour ' || c_user_ebs || ' : ' || l_ctx_user_id);
+        EXCEPTION
+            WHEN NO_DATA_FOUND THEN
+                l_ctx_user_id := -1;
+                log_info('Compte ' || c_user_ebs || ' absent de FND_USER : contexte applicatif incomplet.');
+        END;
+    END IF;
+
+    IF NVL(l_ctx_resp_id, -1) <= 0 THEN
+        BEGIN
+            SELECT responsibility_id, application_id
+              INTO l_ctx_resp_id, l_ctx_resp_appl
+              FROM applsys.fnd_responsibility
+             WHERE responsibility_key = 'SYSTEM_ADMINISTRATOR'
+               AND ROWNUM = 1;
+            log_info('Responsabilite resolue : System Administrator (' || l_ctx_resp_id || '/' || l_ctx_resp_appl || ').');
+        EXCEPTION
+            WHEN OTHERS THEN
+                l_ctx_resp_id := 0; l_ctx_resp_appl := 0;
+                log_info('Responsabilite non resolue : APPS_INITIALIZE appele avec 0/0.');
+        END;
+    END IF;
+
+    apps.fnd_global.apps_initialize(l_ctx_user_id, l_ctx_resp_id, l_ctx_resp_appl);
+
+    l_who_user  := NVL(apps.fnd_global.user_id,  l_ctx_user_id);
+    l_who_login := NVL(apps.fnd_global.login_id, -1);
+
+    log_info('APPS_INITIALIZE OK - USER=' || c_user_ebs
+             || ' user_id=' || l_ctx_user_id
+             || ' resp_id=' || l_ctx_resp_id
+             || ' appl_id=' || l_ctx_resp_appl);
+    log_info('Colonnes WHO : LAST_UPDATED_BY=' || l_who_user || ' LAST_UPDATE_LOGIN=' || l_who_login);
 
     -- =================================================================
     -- 3. Disponibilite de la resolution par EMPLOYEE_NUMBER
@@ -264,8 +313,8 @@ BEGIN
                 UPDATE applsys.fnd_user
                    SET end_date          = c_date_fin,
                        last_update_date  = SYSDATE,
-                       last_updated_by   = l_ctx_user_id,
-                       last_update_login = l_ctx_user_id
+                       last_updated_by   = l_who_user,
+                       last_update_login = l_who_login
                  WHERE user_id = l_user_id;
 
                 IF SQL%ROWCOUNT = 1 THEN

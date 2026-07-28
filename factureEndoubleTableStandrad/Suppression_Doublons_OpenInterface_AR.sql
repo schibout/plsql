@@ -1,246 +1,318 @@
 -- =====================================================================
 -- Suppression des factures en doublon dans les tables Open Interface AR
 -- =====================================================================
--- Date de création : 10/03/2026
--- Auteur           : GitHub Copilot
--- Base de données  : Oracle EBS 12.2.13
+-- Base de donnees : Oracle EBS 12.2.13
+-- Outil           : SQL*Plus / SQLcl
 --
--- PROBLÈME RÉSOLU :
---   Suppression des enregistrements bloqués en Open Interface AR
---   avec l'erreur "Numéro de facture en double" dans RA_INTERFACE_ERRORS_ALL.
+-- OBJET :
+--   Purger les enregistrements bloques en Open Interface AR portant
+--   l'erreur "numero de facture en double" dans RA_INTERFACE_ERRORS_ALL.
 --
--- TABLES IMPACTÉES (ordre de suppression à respecter) :
---   1. RA_INTERFACE_SALESCREDITS_ALL  (enfant des lignes)
---   2. RA_INTERFACE_DISTRIBUTIONS_ALL (enfant des lignes)
---   3. RA_INTERFACE_LINES_ALL         (table principale)
---   4. RA_INTERFACE_ERRORS_ALL        (erreurs associées)
+-- TABLES IMPACTEES, dans l'ordre de suppression reellement applique :
+--   1. RA_INTERFACE_SALESCREDITS_ALL   (enfant des lignes)
+--   2. RA_INTERFACE_DISTRIBUTIONS_ALL  (enfant des lignes)
+--   3. RA_INTERFACE_ERRORS_ALL         (erreurs des lignes visees)
+--   4. RA_INTERFACE_LINES_ALL          (table principale)
 --
--- LIEN CLÉ :
+-- LIEN CLE :
 --   RA_INTERFACE_ERRORS_ALL.INTERFACE_LINE_ID
 --     -> RA_INTERFACE_LINES_ALL.INTERFACE_LINE_ID
 --
--- UTILISATION :
---   1. Exécuter d'abord le bloc de DIAGNOSTIC (SELECT COUNT(*))
---   2. Vérifier les résultats avant toute suppression
---   3. Exécuter le bloc DELETE dans une transaction (ROLLBACK possible)
---   4. COMMIT uniquement après validation des counts
+-- ---------------------------------------------------------------------
+-- SIMULATION PAR DEFAUT
+-- ---------------------------------------------------------------------
+--   Tel quel, ce script execute les DELETE puis fait un ROLLBACK : il
+--   affiche exactement ce qui serait supprime, valide les droits et le
+--   ciblage des lignes, et ne conserve rien.
+--   Pour appliquer reellement, passer P_MODE a EXECUTION ci-dessous.
+--
+-- PARAMETRES :
+--   P_MODE        SIMULATION (rollback) ou EXECUTION (commit)
+--   P_MOTIF       motif de recherche du message d'erreur, insensible a la
+--                 casse. Le message est traduit par EBS : en session
+--                 anglaise, utiliser '%duplicate invoice%'.
+--   P_ORG_ID      0 = toutes les organisations, sinon l'ORG_ID a traiter.
+--                 Les tables sont des _ALL : sans filtre, la purge porte
+--                 sur toutes les entites juridiques a la fois.
+--   P_MAX_LIGNES  garde-fou. Au-dela de ce nombre de lignes visees, le
+--                 script refuse d'agir : un motif trop large ne doit pas
+--                 pouvoir vider l'interface silencieusement.
 -- =====================================================================
 
+SET SERVEROUTPUT ON SIZE UNLIMITED
+SET FEEDBACK OFF
+SET VERIFY OFF
+SET LINESIZE 200
+SET PAGESIZE 100
+
+DEFINE P_MODE       = "SIMULATION"
+DEFINE P_MOTIF      = "%facture en double%"
+DEFINE P_ORG_ID     = "0"
+DEFINE P_MAX_LIGNES = "5000"
+
 
 -- =====================================================================
--- ÉTAPE 1 : DIAGNOSTIC - Vérification avant suppression
+-- ETAPE 1 : DIAGNOSTIC - a lire avant toute suppression
 -- =====================================================================
 
--- Nombre total d'erreurs "Numéro de facture en double"
-SELECT COUNT(*) AS nb_erreurs_doublon
-FROM AR.RA_INTERFACE_ERRORS_ALL
-WHERE MESSAGE_TEXT = 'Numéro de facture en double';
+PROMPT
+PROMPT === Parametres retenus ===
 
--- Détail des lignes en doublon (pour vérification)
-SELECT
-    RIL.INTERFACE_LINE_ID,
-    RIL.BATCH_SOURCE_NAME,
-    RIL.ORIG_SYSTEM_BILL_CUSTOMER_REF,
-    RIL.TRX_NUMBER,
-    RIL.TRX_DATE,
-    RIL.AMOUNT,
-    RIL.ORG_ID,
-    RIE.MESSAGE_TEXT,
-    RIE.INVALID_VALUE
-FROM AR.RA_INTERFACE_LINES_ALL    RIL
-JOIN AR.RA_INTERFACE_ERRORS_ALL   RIE
-    ON RIE.INTERFACE_LINE_ID = RIL.INTERFACE_LINE_ID
-WHERE RIE.MESSAGE_TEXT = 'Numéro de facture en double'
-ORDER BY RIL.BATCH_SOURCE_NAME, RIL.TRX_NUMBER;
+COLUMN MODE_EXEC FORMAT A12  HEADING "MODE"
+COLUMN MOTIF     FORMAT A32  HEADING "MOTIF RECHERCHE"
+COLUMN ORG       FORMAT A14  HEADING "ORG_ID"
+COLUMN PLAFOND   FORMAT A10  HEADING "PLAFOND"
 
--- Nombre de lignes à supprimer dans chaque table
-SELECT
-    'RA_INTERFACE_LINES_ALL'         AS table_name,
-    COUNT(DISTINCT RIL.INTERFACE_LINE_ID) AS nb_lignes_a_supprimer
-FROM AR.RA_INTERFACE_LINES_ALL  RIL
-JOIN AR.RA_INTERFACE_ERRORS_ALL RIE
-    ON RIE.INTERFACE_LINE_ID = RIL.INTERFACE_LINE_ID
-WHERE RIE.MESSAGE_TEXT = 'Numéro de facture en double'
-UNION ALL
-SELECT
-    'RA_INTERFACE_DISTRIBUTIONS_ALL' AS table_name,
-    COUNT(*) AS nb_lignes_a_supprimer
-FROM AR.RA_INTERFACE_DISTRIBUTIONS_ALL RID
-WHERE RID.INTERFACE_LINE_ID IN (
-    SELECT RIL.INTERFACE_LINE_ID
-    FROM AR.RA_INTERFACE_LINES_ALL  RIL
-    JOIN AR.RA_INTERFACE_ERRORS_ALL RIE
-        ON RIE.INTERFACE_LINE_ID = RIL.INTERFACE_LINE_ID
-    WHERE RIE.MESSAGE_TEXT = 'Numéro de facture en double'
+SELECT '&&P_MODE'                                                  AS MODE_EXEC,
+       '&&P_MOTIF'                                                 AS MOTIF,
+       CASE WHEN &&P_ORG_ID = 0 THEN 'TOUTES'
+            ELSE TO_CHAR(&&P_ORG_ID) END                           AS ORG,
+       TO_CHAR(&&P_MAX_LIGNES)                                     AS PLAFOND
+FROM   DUAL;
+
+CLEAR COLUMNS
+
+PROMPT
+PROMPT === Volumetrie par organisation et source ===
+
+COLUMN ORG_ID     FORMAT 999999      HEADING "ORG_ID"
+COLUMN SOURCE     FORMAT A30         HEADING "BATCH SOURCE"
+COLUMN NB_LIGNES  FORMAT 999G999     HEADING "NB LIGNES"
+COLUMN MONTANT    FORMAT 999G999G999 HEADING "MONTANT"
+
+SELECT ril.org_id                          AS ORG_ID,
+       ril.batch_source_name               AS SOURCE,
+       COUNT(DISTINCT ril.interface_line_id) AS NB_LIGNES,
+       ROUND(SUM(ril.amount))              AS MONTANT
+FROM   ar.ra_interface_lines_all  ril
+JOIN   ar.ra_interface_errors_all rie
+       ON rie.interface_line_id = ril.interface_line_id
+WHERE  UPPER(rie.message_text) LIKE UPPER('&&P_MOTIF')
+AND    (&&P_ORG_ID = 0 OR ril.org_id = &&P_ORG_ID)
+GROUP BY ril.org_id, ril.batch_source_name
+ORDER BY ril.org_id, ril.batch_source_name;
+
+CLEAR COLUMNS
+
+PROMPT
+PROMPT === Detail des lignes visees ===
+
+COLUMN INTERFACE_LINE_ID FORMAT 9999999999 HEADING "LINE ID"
+COLUMN SOURCE            FORMAT A22        HEADING "SOURCE"
+COLUMN CLIENT            FORMAT A20        HEADING "REF CLIENT"
+COLUMN TRX_NUMBER        FORMAT A20        HEADING "N FACTURE"
+COLUMN TRX_DATE          FORMAT A10        HEADING "DATE"
+COLUMN AMOUNT            FORMAT 999G999G999 HEADING "MONTANT"
+COLUMN ORG_ID            FORMAT 999999     HEADING "ORG"
+COLUMN MESSAGE_TEXT      FORMAT A40        HEADING "MESSAGE"
+
+SELECT DISTINCT
+       ril.interface_line_id                    AS INTERFACE_LINE_ID,
+       ril.batch_source_name                    AS SOURCE,
+       ril.orig_system_bill_customer_ref        AS CLIENT,
+       ril.trx_number                           AS TRX_NUMBER,
+       TO_CHAR(ril.trx_date, 'DD/MM/YY')        AS TRX_DATE,
+       ril.amount                               AS AMOUNT,
+       ril.org_id                               AS ORG_ID,
+       SUBSTR(rie.message_text, 1, 40)          AS MESSAGE_TEXT
+FROM   ar.ra_interface_lines_all  ril
+JOIN   ar.ra_interface_errors_all rie
+       ON rie.interface_line_id = ril.interface_line_id
+WHERE  UPPER(rie.message_text) LIKE UPPER('&&P_MOTIF')
+AND    (&&P_ORG_ID = 0 OR ril.org_id = &&P_ORG_ID)
+ORDER BY ril.batch_source_name, ril.trx_number;
+
+CLEAR COLUMNS
+
+PROMPT
+PROMPT === Lignes a supprimer, par table ===
+
+COLUMN TABLE_NAME FORMAT A34     HEADING "TABLE"
+COLUMN NB         FORMAT 999G999 HEADING "NB LIGNES"
+
+WITH cibles AS (
+    SELECT DISTINCT ril.interface_line_id
+    FROM   ar.ra_interface_lines_all  ril
+    JOIN   ar.ra_interface_errors_all rie
+           ON rie.interface_line_id = ril.interface_line_id
+    WHERE  UPPER(rie.message_text) LIKE UPPER('&&P_MOTIF')
+    AND    (&&P_ORG_ID = 0 OR ril.org_id = &&P_ORG_ID)
 )
+SELECT 'RA_INTERFACE_SALESCREDITS_ALL' AS TABLE_NAME, COUNT(*) AS NB
+FROM   ar.ra_interface_salescredits_all
+WHERE  interface_line_id IN (SELECT interface_line_id FROM cibles)
 UNION ALL
-SELECT
-    'RA_INTERFACE_SALESCREDITS_ALL'  AS table_name,
-    COUNT(*) AS nb_lignes_a_supprimer
-FROM AR.RA_INTERFACE_SALESCREDITS_ALL RIS
-WHERE RIS.INTERFACE_LINE_ID IN (
-    SELECT RIL.INTERFACE_LINE_ID
-    FROM AR.RA_INTERFACE_LINES_ALL  RIL
-    JOIN AR.RA_INTERFACE_ERRORS_ALL RIE
-        ON RIE.INTERFACE_LINE_ID = RIL.INTERFACE_LINE_ID
-    WHERE RIE.MESSAGE_TEXT = 'Numéro de facture en double'
-)
+SELECT 'RA_INTERFACE_DISTRIBUTIONS_ALL', COUNT(*)
+FROM   ar.ra_interface_distributions_all
+WHERE  interface_line_id IN (SELECT interface_line_id FROM cibles)
 UNION ALL
-SELECT
-    'RA_INTERFACE_ERRORS_ALL'        AS table_name,
-    COUNT(*) AS nb_lignes_a_supprimer
-FROM AR.RA_INTERFACE_ERRORS_ALL RIE
-WHERE RIE.INTERFACE_LINE_ID IN (
-    SELECT RIL.INTERFACE_LINE_ID
-    FROM AR.RA_INTERFACE_LINES_ALL  RIL
-    JOIN AR.RA_INTERFACE_ERRORS_ALL RIE2
-        ON RIE2.INTERFACE_LINE_ID = RIL.INTERFACE_LINE_ID
-    WHERE RIE2.MESSAGE_TEXT = 'Numéro de facture en double'
-);
+SELECT 'RA_INTERFACE_ERRORS_ALL', COUNT(*)
+FROM   ar.ra_interface_errors_all
+WHERE  interface_line_id IN (SELECT interface_line_id FROM cibles)
+UNION ALL
+SELECT 'RA_INTERFACE_LINES_ALL', COUNT(*)
+FROM   ar.ra_interface_lines_all
+WHERE  interface_line_id IN (SELECT interface_line_id FROM cibles);
+
+CLEAR COLUMNS
 
 
 -- =====================================================================
--- ÉTAPE 2 : SUPPRESSION (exécuter après validation du diagnostic)
+-- ETAPE 2 : SUPPRESSION
 -- =====================================================================
--- /!\ ATTENTION : Exécuter dans une transaction - COMMIT à la fin
---                 après vérification des counts retournés
--- =====================================================================
-
--- Sous-requête partagée : liste des INTERFACE_LINE_ID en doublon
--- (utilisée comme référence pour toutes les suppressions)
-
--- 2.1 - Suppression des crédits de vente associés
-DELETE FROM AR.RA_INTERFACE_SALESCREDITS_ALL
-WHERE INTERFACE_LINE_ID IN (
-    SELECT RIL.INTERFACE_LINE_ID
-    FROM AR.RA_INTERFACE_LINES_ALL  RIL
-    JOIN AR.RA_INTERFACE_ERRORS_ALL RIE
-        ON RIE.INTERFACE_LINE_ID = RIL.INTERFACE_LINE_ID
-    WHERE RIE.MESSAGE_TEXT = 'Numéro de facture en double'
-);
-
--- Affichage du nombre de lignes supprimées
--- (vérifier dans le client SQL : ex. "X ligne(s) supprimée(s)")
-
--- 2.2 - Suppression des distributions associées
-DELETE FROM AR.RA_INTERFACE_DISTRIBUTIONS_ALL
-WHERE INTERFACE_LINE_ID IN (
-    SELECT RIL.INTERFACE_LINE_ID
-    FROM AR.RA_INTERFACE_LINES_ALL  RIL
-    JOIN AR.RA_INTERFACE_ERRORS_ALL RIE
-        ON RIE.INTERFACE_LINE_ID = RIL.INTERFACE_LINE_ID
-    WHERE RIE.MESSAGE_TEXT = 'Numéro de facture en double'
-);
-
--- 2.3 - Suppression des erreurs associées
-DELETE FROM AR.RA_INTERFACE_ERRORS_ALL
-WHERE INTERFACE_LINE_ID IN (
-    SELECT RIL.INTERFACE_LINE_ID
-    FROM AR.RA_INTERFACE_LINES_ALL  RIL
-    JOIN AR.RA_INTERFACE_ERRORS_ALL RIE
-        ON RIE.INTERFACE_LINE_ID = RIL.INTERFACE_LINE_ID
-    WHERE RIE.MESSAGE_TEXT = 'Numéro de facture en double'
-);
-
--- 2.4 - Suppression des lignes principales
-DELETE FROM AR.RA_INTERFACE_LINES_ALL
-WHERE INTERFACE_LINE_ID IN (
-    SELECT RIL.INTERFACE_LINE_ID
-    FROM AR.RA_INTERFACE_LINES_ALL  RIL
-    JOIN AR.RA_INTERFACE_ERRORS_ALL RIE_TEMP
-        ON RIE_TEMP.INTERFACE_LINE_ID = RIL.INTERFACE_LINE_ID
-    WHERE RIE_TEMP.MESSAGE_TEXT = 'Numéro de facture en double'
-);
-
--- ATTENTION : Étant donné que les erreurs ont été supprimées en 2.3,
--- la sous-requête ci-dessus ne trouvera plus de correspondances.
--- Utiliser une table temporaire ou une collection si nécessaire.
--- Voir version avec collecte préalable des IDs ci-dessous (recommandée).
-
--- =====================================================================
--- ÉTAPE 2 (VERSION RECOMMANDÉE) : Avec collecte préalable des IDs
--- Utiliser ce bloc PL/SQL plutôt que les DELETEs standalone ci-dessus
+-- Un seul bloc, et un seul. La version precedente proposait aussi quatre
+-- DELETE autonomes : le troisieme supprimait les erreurs dont le quatrieme
+-- avait besoin pour retrouver les lignes. Lance en entier, le fichier
+-- vidait donc les tables enfants ET les erreurs en laissant les lignes
+-- d'interface orphelines, sans plus aucune trace du motif de blocage.
+-- Ces DELETE autonomes ont ete supprimes.
+--
+-- Les identifiants sont collectes AVANT toute suppression : c'est ce qui
+-- permet de supprimer les erreurs puis les lignes sans perdre la cible.
 -- =====================================================================
 
 DECLARE
-    -- Collection des INTERFACE_LINE_ID à supprimer
-    TYPE t_id_list IS TABLE OF AR.RA_INTERFACE_LINES_ALL.INTERFACE_LINE_ID%TYPE;
+    c_mode   CONSTANT VARCHAR2(20) := UPPER('&&P_MODE');
+    c_motif  CONSTANT VARCHAR2(200) := UPPER('&&P_MOTIF');
+    c_org    CONSTANT NUMBER := &&P_ORG_ID;
+    c_max    CONSTANT NUMBER := &&P_MAX_LIGNES;
+
+    TYPE t_id_list IS TABLE OF ar.ra_interface_lines_all.interface_line_id%TYPE;
     l_ids t_id_list;
 
-    l_count_salescredits    NUMBER := 0;
-    l_count_distributions   NUMBER := 0;
-    l_count_errors          NUMBER := 0;
-    l_count_lines           NUMBER := 0;
-
+    l_nb_salescredits  NUMBER := 0;
+    l_nb_distributions NUMBER := 0;
+    l_nb_errors        NUMBER := 0;
+    l_nb_lines         NUMBER := 0;
 BEGIN
-    -- Collecte des IDs des lignes en doublon
-    SELECT DISTINCT RIL.INTERFACE_LINE_ID
-    BULK COLLECT INTO l_ids
-    FROM AR.RA_INTERFACE_LINES_ALL  RIL
-    JOIN AR.RA_INTERFACE_ERRORS_ALL RIE
-        ON RIE.INTERFACE_LINE_ID = RIL.INTERFACE_LINE_ID
-    WHERE RIE.MESSAGE_TEXT = 'Numéro de facture en double';
+    DBMS_OUTPUT.PUT_LINE('=====================================================');
+    DBMS_OUTPUT.PUT_LINE('SUPPRESSION DOUBLONS OPEN INTERFACE AR - MODE ' || c_mode);
+    DBMS_OUTPUT.PUT_LINE('Motif   : ' || c_motif);
+    DBMS_OUTPUT.PUT_LINE('Org     : ' || CASE WHEN c_org = 0 THEN 'TOUTES' ELSE TO_CHAR(c_org) END);
+    DBMS_OUTPUT.PUT_LINE('=====================================================');
 
-    DBMS_OUTPUT.PUT_LINE('Nombre de lignes identifiées : ' || l_ids.COUNT);
+    IF c_mode NOT IN ('SIMULATION', 'EXECUTION') THEN
+        RAISE_APPLICATION_ERROR(-20001,
+            'P_MODE doit valoir SIMULATION ou EXECUTION, recu : ' || c_mode);
+    END IF;
+
+    -- Collecte prealable des identifiants vises.
+    SELECT DISTINCT ril.interface_line_id
+    BULK COLLECT INTO l_ids
+    FROM   ar.ra_interface_lines_all  ril
+    JOIN   ar.ra_interface_errors_all rie
+           ON rie.interface_line_id = ril.interface_line_id
+    WHERE  UPPER(rie.message_text) LIKE c_motif
+    AND    (c_org = 0 OR ril.org_id = c_org);
+
+    DBMS_OUTPUT.PUT_LINE('Lignes d''interface identifiees : ' || l_ids.COUNT);
 
     IF l_ids.COUNT = 0 THEN
-        DBMS_OUTPUT.PUT_LINE('Aucun enregistrement à supprimer.');
+        DBMS_OUTPUT.PUT_LINE('Aucun enregistrement a supprimer : rien a faire.');
+        DBMS_OUTPUT.PUT_LINE('Si des doublons sont pourtant attendus, verifier P_MOTIF :');
+        DBMS_OUTPUT.PUT_LINE('le message d''erreur EBS est traduit selon NLS_LANGUAGE.');
         RETURN;
     END IF;
 
-    -- 1. Suppression dans RA_INTERFACE_SALESCREDITS_ALL
-    FORALL i IN 1..l_ids.COUNT
-        DELETE FROM AR.RA_INTERFACE_SALESCREDITS_ALL
-        WHERE INTERFACE_LINE_ID = l_ids(i);
-    l_count_salescredits := SQL%ROWCOUNT;
+    -- Garde-fou : un motif trop large ne doit pas pouvoir vider l'interface.
+    IF l_ids.COUNT > c_max THEN
+        RAISE_APPLICATION_ERROR(-20002,
+            l_ids.COUNT || ' lignes visees, au-dela du plafond de ' || c_max || '. '
+            || 'Verifier P_MOTIF et P_ORG_ID, ou relever P_MAX_LIGNES en connaissance de cause.');
+    END IF;
 
-    -- 2. Suppression dans RA_INTERFACE_DISTRIBUTIONS_ALL
-    FORALL i IN 1..l_ids.COUNT
-        DELETE FROM AR.RA_INTERFACE_DISTRIBUTIONS_ALL
-        WHERE INTERFACE_LINE_ID = l_ids(i);
-    l_count_distributions := SQL%ROWCOUNT;
+    -- Ordre impose par les dependances : enfants, puis erreurs, puis lignes.
+    FORALL i IN 1 .. l_ids.COUNT
+        DELETE FROM ar.ra_interface_salescredits_all
+        WHERE interface_line_id = l_ids(i);
+    l_nb_salescredits := SQL%ROWCOUNT;
 
-    -- 3. Suppression dans RA_INTERFACE_ERRORS_ALL (toutes erreurs de ces lignes)
-    FORALL i IN 1..l_ids.COUNT
-        DELETE FROM AR.RA_INTERFACE_ERRORS_ALL
-        WHERE INTERFACE_LINE_ID = l_ids(i);
-    l_count_errors := SQL%ROWCOUNT;
+    FORALL i IN 1 .. l_ids.COUNT
+        DELETE FROM ar.ra_interface_distributions_all
+        WHERE interface_line_id = l_ids(i);
+    l_nb_distributions := SQL%ROWCOUNT;
 
-    -- 4. Suppression dans RA_INTERFACE_LINES_ALL
-    FORALL i IN 1..l_ids.COUNT
-        DELETE FROM AR.RA_INTERFACE_LINES_ALL
-        WHERE INTERFACE_LINE_ID = l_ids(i);
-    l_count_lines := SQL%ROWCOUNT;
+    -- Toutes les erreurs de ces lignes, pas seulement celles du motif :
+    -- la ligne disparait, ses erreurs n'ont plus lieu d'exister.
+    FORALL i IN 1 .. l_ids.COUNT
+        DELETE FROM ar.ra_interface_errors_all
+        WHERE interface_line_id = l_ids(i);
+    l_nb_errors := SQL%ROWCOUNT;
 
-    -- Bilan des suppressions
-    DBMS_OUTPUT.PUT_LINE('===== BILAN DES SUPPRESSIONS =====');
-    DBMS_OUTPUT.PUT_LINE('RA_INTERFACE_SALESCREDITS_ALL  : ' || l_count_salescredits  || ' ligne(s) supprimée(s)');
-    DBMS_OUTPUT.PUT_LINE('RA_INTERFACE_DISTRIBUTIONS_ALL : ' || l_count_distributions || ' ligne(s) supprimée(s)');
-    DBMS_OUTPUT.PUT_LINE('RA_INTERFACE_ERRORS_ALL        : ' || l_count_errors        || ' ligne(s) supprimée(s)');
-    DBMS_OUTPUT.PUT_LINE('RA_INTERFACE_LINES_ALL         : ' || l_count_lines         || ' ligne(s) supprimée(s)');
-    DBMS_OUTPUT.PUT_LINE('==================================');
+    FORALL i IN 1 .. l_ids.COUNT
+        DELETE FROM ar.ra_interface_lines_all
+        WHERE interface_line_id = l_ids(i);
+    l_nb_lines := SQL%ROWCOUNT;
 
-    -- COMMIT : décommenter après validation
-    -- COMMIT;
-    -- DBMS_OUTPUT.PUT_LINE('COMMIT effectué avec succès.');
+    DBMS_OUTPUT.PUT_LINE('');
+    DBMS_OUTPUT.PUT_LINE('----------- BILAN -----------------------------------');
+    DBMS_OUTPUT.PUT_LINE('RA_INTERFACE_SALESCREDITS_ALL  : ' || LPAD(l_nb_salescredits, 8));
+    DBMS_OUTPUT.PUT_LINE('RA_INTERFACE_DISTRIBUTIONS_ALL : ' || LPAD(l_nb_distributions, 8));
+    DBMS_OUTPUT.PUT_LINE('RA_INTERFACE_ERRORS_ALL        : ' || LPAD(l_nb_errors, 8));
+    DBMS_OUTPUT.PUT_LINE('RA_INTERFACE_LINES_ALL         : ' || LPAD(l_nb_lines, 8));
+    DBMS_OUTPUT.PUT_LINE('-----------------------------------------------------');
 
-    -- Pour annuler : décommenter la ligne suivante
-    -- ROLLBACK;
+    -- Controle de coherence : autant de lignes supprimees que d'identifiants
+    -- collectes, sinon quelque chose a bouge entre-temps.
+    IF l_nb_lines <> l_ids.COUNT THEN
+        ROLLBACK;
+        RAISE_APPLICATION_ERROR(-20003,
+            l_nb_lines || ' ligne(s) supprimee(s) pour ' || l_ids.COUNT
+            || ' attendue(s) : ROLLBACK complet, aucune modification conservee.');
+    END IF;
+
+    IF c_mode = 'EXECUTION' THEN
+        COMMIT;
+        DBMS_OUTPUT.PUT_LINE('COMMIT effectue.');
+    ELSE
+        ROLLBACK;
+        DBMS_OUTPUT.PUT_LINE('SIMULATION : ROLLBACK effectue, aucune modification en base.');
+        DBMS_OUTPUT.PUT_LINE('Pour appliquer : DEFINE P_MODE = "EXECUTION" en tete de script.');
+    END IF;
 
 EXCEPTION
     WHEN OTHERS THEN
         ROLLBACK;
-        DBMS_OUTPUT.PUT_LINE('ERREUR - Rollback effectué : ' || SQLERRM);
+        DBMS_OUTPUT.PUT_LINE('ERREUR - ROLLBACK effectue : ' || SQLERRM);
         RAISE;
 END;
 /
 
 
 -- =====================================================================
--- ÉTAPE 3 : VÉRIFICATION POST-SUPPRESSION
+-- ETAPE 3 : VERIFICATION POST-SUPPRESSION
+-- =====================================================================
+-- Recompter les erreurs du motif ne prouve rien : elles viennent d'etre
+-- supprimees. Ce qui compte, c'est qu'aucun enfant ne soit reste orphelin.
 -- =====================================================================
 
--- Contrôle : ne doit plus retourner de lignes après suppression
-SELECT COUNT(*) AS nb_erreurs_restantes
-FROM AR.RA_INTERFACE_ERRORS_ALL
-WHERE MESSAGE_TEXT = 'Numéro de facture en double';
+PROMPT
+PROMPT === Controle des orphelins (doit rendre 0 partout) ===
+
+COLUMN CONTROLE FORMAT A46     HEADING "CONTROLE"
+COLUMN NB       FORMAT 999G999 HEADING "NB"
+
+SELECT 'Erreurs restantes sur le motif' AS CONTROLE, COUNT(*) AS NB
+FROM   ar.ra_interface_errors_all rie
+WHERE  UPPER(rie.message_text) LIKE UPPER('&&P_MOTIF')
+UNION ALL
+SELECT 'Distributions sans ligne parente', COUNT(*)
+FROM   ar.ra_interface_distributions_all d
+WHERE  NOT EXISTS (SELECT 1 FROM ar.ra_interface_lines_all l
+                   WHERE l.interface_line_id = d.interface_line_id)
+UNION ALL
+SELECT 'Credits de vente sans ligne parente', COUNT(*)
+FROM   ar.ra_interface_salescredits_all s
+WHERE  NOT EXISTS (SELECT 1 FROM ar.ra_interface_lines_all l
+                   WHERE l.interface_line_id = s.interface_line_id)
+UNION ALL
+SELECT 'Erreurs sans ligne parente', COUNT(*)
+FROM   ar.ra_interface_errors_all e
+WHERE  e.interface_line_id IS NOT NULL
+AND    NOT EXISTS (SELECT 1 FROM ar.ra_interface_lines_all l
+                   WHERE l.interface_line_id = e.interface_line_id);
+
+CLEAR COLUMNS
+
+PROMPT
+PROMPT === Fin ===

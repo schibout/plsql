@@ -38,11 +38,20 @@ BEGIN
 END;
 /
 
-SELECT TO_CHAR(SYSDATE, 'DD/MM/YYYY')                              AS "Date du controle",
-       TO_CHAR(SYSDATE, 'DAY', 'NLS_DATE_LANGUAGE=FRENCH')        AS "Jour",
-       :v_nb_jours_histo                                           AS "Jours historique",
-       :v_heure_fermeture || 'h - ' || :v_heure_ouverture || 'h'  AS "Plage nuit"
+-- Formats explicites : sans eux, la colonne "Plage nuit" prend la largeur
+-- maximale d'un VARCHAR2 et fait passer l'en-tete sur plusieurs lignes.
+COLUMN DATE_CTRL FORMAT A12 HEADING "DATE"
+COLUMN JOUR      FORMAT A10 HEADING "JOUR"
+COLUMN HISTO     FORMAT 999 HEADING "HISTO(j)"
+COLUMN PLAGE     FORMAT A12 HEADING "PLAGE NUIT"
+
+SELECT TO_CHAR(SYSDATE, 'DD/MM/YYYY')                             AS DATE_CTRL,
+       RTRIM(TO_CHAR(SYSDATE, 'DAY', 'NLS_DATE_LANGUAGE=FRENCH')) AS JOUR,
+       :v_nb_jours_histo                                          AS HISTO,
+       :v_heure_fermeture || 'h - ' || :v_heure_ouverture || 'h'  AS PLAGE
 FROM   DUAL;
+
+CLEAR COLUMNS
 
 SET SERVEROUTPUT ON SIZE UNLIMITED
 
@@ -71,6 +80,12 @@ DECLARE
     v_stat_gl_interface  VARCHAR2(2) := 'W';
     v_stat_gl_lignes     VARCHAR2(2) := 'W';
     v_stat_rb_imports    VARCHAR2(2) := 'W';
+    v_date_rb_max        DATE;
+    -- Drapeaux de controle indisponible : un bloc qui echoue ne doit pas
+    -- rendre un zero rassurant, il doit se signaler comme non controle.
+    v_err_rb             VARCHAR2(1) := 'N';
+    v_err_img            VARCHAR2(1) := 'N';
+    v_err_fac            VARCHAR2(1) := 'N';
 BEGIN
     DBMS_OUTPUT.PUT_LINE('=====================================================');
     DBMS_OUTPUT.PUT_LINE('RAPPORT DE CONTROLE QUOTIDIEN - ' || TO_CHAR(SYSDATE, 'DD/MM/YYYY'));
@@ -101,7 +116,7 @@ BEGIN
         FROM   dka_iapfacxgs_reporting_all
         WHERE  date_creation = TO_CHAR(SYSDATE - 1, 'YYYYMMDD');
     EXCEPTION
-        WHEN OTHERS THEN NULL;
+        WHEN OTHERS THEN v_err_fac := 'Y';
     END;
 
     SELECT COUNT(*) INTO v_nb_gl_interface
@@ -112,25 +127,40 @@ BEGIN
     FROM   gl_je_lines
     WHERE  TRUNC(creation_date) = TRUNC(SYSDATE - 1);
 
+    -- IN et non = : plusieurs comptes peuvent commencer par EXP. Avec '=',
+    -- deux comptes donnent ORA-01427, et zero compte donne NULL donc aucune
+    -- ligne -- le rapport annoncerait alors 0 traitement de nuit.
+    -- NVL sur les SUM : sur un ensemble vide, SUM rend NULL et non 0, ce qui
+    -- desamorce le test IF v_nb_erreurs > 0 et tronque la ligne d'affichage.
     SELECT COUNT(*),
-           SUM(CASE WHEN status_code = 'E' THEN 1 ELSE 0 END),
-           SUM(CASE WHEN status_code = 'G' THEN 1 ELSE 0 END)
+           NVL(SUM(CASE WHEN status_code = 'E' THEN 1 ELSE 0 END), 0),
+           NVL(SUM(CASE WHEN status_code = 'G' THEN 1 ELSE 0 END), 0)
     INTO   v_nb_traitements, v_nb_erreurs, v_nb_warnings
     FROM   fnd_concurrent_requests
     WHERE  actual_start_date >= TRUNC(SYSDATE - 1) + :v_heure_fermeture / 24
     AND    actual_start_date <  TRUNC(SYSDATE)      + :v_heure_ouverture / 24
-    AND    requested_by = (SELECT user_id FROM fnd_user WHERE user_name LIKE 'EXP%');
+    AND    requested_by IN (SELECT user_id FROM fnd_user WHERE user_name LIKE 'EXP%');
 
+    -- Les imports RB tournent de nuit et sont dates tantot de la veille,
+    -- tantot du jour meme. Ne regarder que SYSDATE-1 faisait remonter
+    -- "0 import" a tort sur 3 des 9 dernieres executions. On prend donc la
+    -- fenetre veille+jour, et on conserve la date du dernier import.
     BEGIN
-        SELECT COUNT(*) INTO v_nb_rb_imports
+        SELECT COUNT(*), MAX(TRUNC(import_date))
+        INTO   v_nb_rb_imports, v_date_rb_max
         FROM   rb_batch_import
-        WHERE  TRUNC(import_date) = TRUNC(SYSDATE - 1);
+        WHERE  TRUNC(import_date) IN (TRUNC(SYSDATE - 1), TRUNC(SYSDATE));
     EXCEPTION
-        WHEN OTHERS THEN v_nb_rb_imports := 0;
+        WHEN OTHERS THEN
+            v_nb_rb_imports := 0;
+            v_err_rb        := 'Y';
     END;
 
+    -- COUNT(DISTINCT) : invoice_num n'est pas unique en multi-organisation,
+    -- la jointure sur ap_invoices_all dedouble donc les factures. Constate
+    -- dans le log du 28/07 : F-2026-07-1 compte deux fois.
     BEGIN
-        SELECT COUNT(*) INTO v_nb_images_manq
+        SELECT COUNT(DISTINCT dir.num_fact) INTO v_nb_images_manq
         FROM   dka_iapfacxgs_reporting_all dir
         JOIN   ap_invoices_all aia ON aia.invoice_num = dir.num_fact AND aia.creation_date > SYSDATE - 30
         WHERE  dir.nom_fichier LIKE 'VE1_DAL%'
@@ -140,43 +170,56 @@ BEGIN
                            AND    (SUBSTR(fd.file_name, 1, LENGTH(fd.file_name) - 4) = aia.attribute3
                                    OR fd.file_name = aia.attribute3));
     EXCEPTION
-        WHEN OTHERS THEN v_nb_images_manq := 0;
+        WHEN OTHERS THEN
+            v_nb_images_manq := 0;
+            v_err_img        := 'Y';
     END;
 
-    IF v_nb_flux_dsp = 5       THEN v_stat_flux_dsp     := 'OK'; END IF;
+    -- Seuil DSP : 5 fichiers un jour ouvre, mais une journee plus chargee en
+    -- produit davantage. On accepte donc ">= 5" au lieu d'une egalite stricte.
+    IF v_nb_flux_dsp >= 5      THEN v_stat_flux_dsp      := 'OK'; END IF;
     IF v_nb_ndf > 0            THEN v_stat_ndf           := 'OK'; END IF;
     IF v_nb_fac_xerox > 0      THEN v_stat_xerox         := 'OK'; END IF;
     IF v_nb_fac_tradeshift > 0 THEN v_stat_tradeshift    := 'OK'; END IF;
-    IF v_nb_fac_dsp = 0 AND v_nb_flux_dsp = 5 THEN v_stat_fac_dsp := 'OK'; END IF;
+    -- Aucune facture DSP attendue tant que les flux du jour sont complets.
+    IF v_nb_fac_dsp = 0 AND v_nb_flux_dsp >= 5 THEN v_stat_fac_dsp := 'OK'; END IF;
     IF v_nb_gl_interface > 0   THEN v_stat_gl_interface  := 'OK'; END IF;
     IF v_nb_gl_lignes > 0      THEN v_stat_gl_lignes     := 'OK'; END IF;
     IF v_nb_rb_imports > 0     THEN v_stat_rb_imports    := 'OK'; END IF;
 
-    DBMS_OUTPUT.PUT_LINE('+----------------------------------------------------------+');
-    DBMS_OUTPUT.PUT_LINE('|                   SYNTHESE DU JOUR                      |');
-    DBMS_OUTPUT.PUT_LINE('+----------------------------------------------------------+');
-    DBMS_OUTPUT.PUT_LINE('| Flux DSP (fichiers)         : ' || LPAD(v_nb_flux_dsp, 5)       || '   [' || v_stat_flux_dsp    || '] |');
-    DBMS_OUTPUT.PUT_LINE('| Notes de frais Notilus      : ' || LPAD(v_nb_ndf, 5)            || '   [' || v_stat_ndf         || '] |');
-    DBMS_OUTPUT.PUT_LINE('| Factures Xerox              : ' || LPAD(v_nb_fac_xerox, 5)      || '   [' || v_stat_xerox       || '] |');
-    DBMS_OUTPUT.PUT_LINE('| Factures Tradeshift         : ' || LPAD(v_nb_fac_tradeshift, 5) || '   [' || v_stat_tradeshift  || '] |');
-    DBMS_OUTPUT.PUT_LINE('| Factures DSP                : ' || LPAD(v_nb_fac_dsp, 5)        || '   [' || v_stat_fac_dsp     || '] |');
-    DBMS_OUTPUT.PUT_LINE('| Ecritures GL (interface)    : ' || LPAD(v_nb_gl_interface, 5)   || '   [' || v_stat_gl_interface|| '] |');
-    DBMS_OUTPUT.PUT_LINE('| Lignes GL creees            : ' || LPAD(v_nb_gl_lignes, 5)      || '   [' || v_stat_gl_lignes   || '] |');
-    DBMS_OUTPUT.PUT_LINE('| Imports RB                  : ' || LPAD(v_nb_rb_imports, 5)     || '   [' || v_stat_rb_imports  || '] |');
-    DBMS_OUTPUT.PUT_LINE('+----------------------------------------------------------+');
-    DBMS_OUTPUT.PUT_LINE('| Traitements nuit            : ' || LPAD(v_nb_traitements, 5) || '                        |');
+    -- Un controle qui n'a pas pu s'executer est marque 'KO' et non 'OK' :
+    -- le zero d'un bloc en erreur ne doit jamais passer pour un bon resultat.
+    IF v_err_fac = 'Y' THEN
+        v_stat_xerox := 'KO'; v_stat_tradeshift := 'KO'; v_stat_fac_dsp := 'KO';
+    END IF;
+    IF v_err_rb = 'Y' THEN v_stat_rb_imports := 'KO'; END IF;
+
+    DBMS_OUTPUT.PUT_LINE('+--------------------------------------------+');
+    DBMS_OUTPUT.PUT_LINE('|             SYNTHESE DU JOUR               |');
+    DBMS_OUTPUT.PUT_LINE('+--------------------------------------------+');
+    DBMS_OUTPUT.PUT_LINE('| Flux DSP (fichiers)      : ' || LPAD(v_nb_flux_dsp, 7)       || ' [' || RPAD(v_stat_flux_dsp, 2)    || '] |');
+    DBMS_OUTPUT.PUT_LINE('| Notes de frais Notilus   : ' || LPAD(v_nb_ndf, 7)            || ' [' || RPAD(v_stat_ndf, 2)         || '] |');
+    DBMS_OUTPUT.PUT_LINE('| Factures Xerox           : ' || LPAD(v_nb_fac_xerox, 7)      || ' [' || RPAD(v_stat_xerox, 2)       || '] |');
+    DBMS_OUTPUT.PUT_LINE('| Factures Tradeshift      : ' || LPAD(v_nb_fac_tradeshift, 7) || ' [' || RPAD(v_stat_tradeshift, 2)  || '] |');
+    DBMS_OUTPUT.PUT_LINE('| Factures DSP             : ' || LPAD(v_nb_fac_dsp, 7)        || ' [' || RPAD(v_stat_fac_dsp, 2)     || '] |');
+    DBMS_OUTPUT.PUT_LINE('| Ecritures GL (interface) : ' || LPAD(v_nb_gl_interface, 7)   || ' [' || RPAD(v_stat_gl_interface,2) || '] |');
+    DBMS_OUTPUT.PUT_LINE('| Lignes GL creees         : ' || LPAD(v_nb_gl_lignes, 7)      || ' [' || RPAD(v_stat_gl_lignes, 2)   || '] |');
+    DBMS_OUTPUT.PUT_LINE('| Imports RB               : ' || LPAD(v_nb_rb_imports, 7)     || ' [' || RPAD(v_stat_rb_imports, 2)  || '] |');
+    DBMS_OUTPUT.PUT_LINE('+--------------------------------------------+');
+    DBMS_OUTPUT.PUT_LINE('| Traitements nuit         : ' || LPAD(v_nb_traitements, 7)    || '      |');
     IF v_nb_erreurs > 0 THEN
-        DBMS_OUTPUT.PUT_LINE('| *** ERREURS ***             : ' || LPAD(v_nb_erreurs, 5)  || '                        |');
+        DBMS_OUTPUT.PUT_LINE('| *** ERREURS ***          : ' || LPAD(v_nb_erreurs, 7)    || '      |');
     ELSE
-        DBMS_OUTPUT.PUT_LINE('| Erreurs                     : ' || LPAD(v_nb_erreurs, 5)  || '                        |');
+        DBMS_OUTPUT.PUT_LINE('| Erreurs                  : ' || LPAD(v_nb_erreurs, 7)    || '      |');
     END IF;
-    IF v_nb_warnings > 0 THEN
-        DBMS_OUTPUT.PUT_LINE('| Avertissements              : ' || LPAD(v_nb_warnings, 5) || '                        |');
-    END IF;
+    DBMS_OUTPUT.PUT_LINE('| Avertissements           : ' || LPAD(v_nb_warnings, 7)       || '      |');
     IF v_nb_images_manq > 0 THEN
-        DBMS_OUTPUT.PUT_LINE('| *** IMAGES MANQUANTES ***   : ' || LPAD(v_nb_images_manq, 5) || '                        |');
+        DBMS_OUTPUT.PUT_LINE('| *** IMAGES MANQUANTES *** : ' || LPAD(v_nb_images_manq, 6) || '      |');
     END IF;
-    DBMS_OUTPUT.PUT_LINE('+----------------------------------------------------------+');
+    DBMS_OUTPUT.PUT_LINE('+--------------------------------------------+');
+    IF v_date_rb_max IS NOT NULL THEN
+        DBMS_OUTPUT.PUT_LINE('Dernier import RB : ' || TO_CHAR(v_date_rb_max, 'DD/MM/YYYY'));
+    END IF;
     DBMS_OUTPUT.PUT_LINE('');
 
     IF v_nb_erreurs > 0 THEN
@@ -191,6 +234,36 @@ BEGIN
     IF TO_CHAR(SYSDATE, 'DY', 'NLS_DATE_LANGUAGE=ENGLISH') = 'MON' AND v_nb_rb_imports = 0 THEN
         DBMS_OUTPUT.PUT_LINE('[!] RAPPEL LUNDI : Charger manuellement le fichier SG (rattrapage)');
     END IF;
+    IF v_err_fac = 'Y' THEN
+        DBMS_OUTPUT.PUT_LINE('[!] CONTROLE INDISPONIBLE : comptage des factures impossible (table ou droit).');
+    END IF;
+    IF v_err_rb = 'Y' THEN
+        DBMS_OUTPUT.PUT_LINE('[!] CONTROLE INDISPONIBLE : comptage des imports RB impossible (table ou droit).');
+    END IF;
+    IF v_err_img = 'Y' THEN
+        DBMS_OUTPUT.PUT_LINE('[!] CONTROLE INDISPONIBLE : controle des images Xerox impossible (table ou droit).');
+    END IF;
+
+    -- -----------------------------------------------------------------
+    -- Sortie balisee, consommee par Lancer_Controle_Quotidien.ps1 pour
+    -- construire le rapport HTML. Sans effet sur la lecture humaine du log.
+    -- Format : ##KPI##libelle|valeur|statut
+    -- -----------------------------------------------------------------
+    DBMS_OUTPUT.PUT_LINE('##KPI##Flux DSP|'             || v_nb_flux_dsp       || '|' || v_stat_flux_dsp);
+    DBMS_OUTPUT.PUT_LINE('##KPI##Notes de frais|'       || v_nb_ndf            || '|' || v_stat_ndf);
+    DBMS_OUTPUT.PUT_LINE('##KPI##Factures Xerox|'       || v_nb_fac_xerox      || '|' || v_stat_xerox);
+    DBMS_OUTPUT.PUT_LINE('##KPI##Factures Tradeshift|'  || v_nb_fac_tradeshift || '|' || v_stat_tradeshift);
+    DBMS_OUTPUT.PUT_LINE('##KPI##Factures DSP|'         || v_nb_fac_dsp        || '|' || v_stat_fac_dsp);
+    DBMS_OUTPUT.PUT_LINE('##KPI##GL interface|'         || v_nb_gl_interface   || '|' || v_stat_gl_interface);
+    DBMS_OUTPUT.PUT_LINE('##KPI##Lignes GL creees|'     || v_nb_gl_lignes      || '|' || v_stat_gl_lignes);
+    DBMS_OUTPUT.PUT_LINE('##KPI##Imports RB|'           || v_nb_rb_imports     || '|' || v_stat_rb_imports);
+    DBMS_OUTPUT.PUT_LINE('##KPI##Traitements nuit|'     || v_nb_traitements    || '|OK');
+    DBMS_OUTPUT.PUT_LINE('##KPI##Erreurs nuit|'         || v_nb_erreurs        || '|' || CASE WHEN v_nb_erreurs   > 0 THEN 'KO' ELSE 'OK' END);
+    DBMS_OUTPUT.PUT_LINE('##KPI##Avertissements nuit|'  || v_nb_warnings       || '|' || CASE WHEN v_nb_warnings  > 0 THEN 'W'  ELSE 'OK' END);
+    DBMS_OUTPUT.PUT_LINE('##KPI##Images Xerox manquantes|' || v_nb_images_manq || '|' || CASE WHEN v_nb_images_manq > 0 THEN 'KO' ELSE 'OK' END);
+    DBMS_OUTPUT.PUT_LINE('##META##date_controle|'  || TO_CHAR(SYSDATE, 'DD/MM/YYYY HH24:MI'));
+    DBMS_OUTPUT.PUT_LINE('##META##jour|'           || RTRIM(TO_CHAR(SYSDATE, 'DAY', 'NLS_DATE_LANGUAGE=FRENCH')));
+    DBMS_OUTPUT.PUT_LINE('##META##dernier_imp_rb|' || NVL(TO_CHAR(v_date_rb_max, 'DD/MM/YYYY'), 'aucun'));
 END;
 /
 
@@ -210,10 +283,16 @@ COLUMN FILE_NAME FORMAT A70  HEADING "FICHIER"
 SELECT 'DSP' AS SRC,
        TO_CHAR(date_creation, 'DD/MM/YY') AS DATE_CR,
        RTRIM(jour_creation) AS JOUR,
+       -- Les fichiers de commandes arrivent nommes DSP01_PO_ENTETE_... :
+       -- ni '%CDE%' ni 'ORDER%' ne les attrapaient, et ils tombaient tous
+       -- dans AUTRE. Verifie sur les 9 derniers logs : COMMANDES n'y
+       -- apparait jamais, alors qu'AUTRE est present chaque jour.
        CASE
-           WHEN file_name LIKE '%SUP%'                            THEN 'FOURNISSEURS'
-           WHEN file_name LIKE '%CDE%' OR file_name LIKE 'ORDER%' THEN 'COMMANDES'
-           WHEN file_name LIKE '%REC%'                            THEN 'RECEPTIONS'
+           WHEN file_name LIKE '%SUP%'                              THEN 'FOURNISSEURS'
+           WHEN file_name LIKE '%PO[_]%' ESCAPE '['
+             OR file_name LIKE '%CDE%'
+             OR file_name LIKE 'ORDER%'                             THEN 'COMMANDES'
+           WHEN file_name LIKE '%REC%'                              THEN 'RECEPTIONS'
            WHEN file_name LIKE '%DEB%' OR file_name LIKE '%DEBLOC%' THEN 'DEBLOCAGE'
            ELSE 'AUTRE'
        END AS TYPE_FLUX,
@@ -256,28 +335,45 @@ COLUMN NB_SUP   FORMAT 9999 HEADING "FOURN."
 COLUMN NB_CDE   FORMAT 9999 HEADING "CMDES"
 COLUMN NB_REC   FORMAT 9999 HEADING "RECEP."
 COLUMN NB_DEB   FORMAT 9999 HEADING "DEBLOC."
+COLUMN NB_AUT   FORMAT 9999 HEADING "AUTRE"
 COLUMN TOTAL    FORMAT 9999 HEADING "TOTAL"
 
+-- Cette synthese comptait des libelles constants issus d'un DISTINCT, donc
+-- au plus 1 par table et par jour : elle indiquait "1 fournisseur" un jour ou
+-- 2 fichiers etaient arrives (log du 28/07). On compte desormais les fichiers.
 SELECT TO_CHAR(date_creation, 'DD/MM/YY') AS DATE_CR,
        RTRIM(jour_creation)               AS JOUR,
-       SUM(CASE WHEN TYPE_FLUX = 'FOURNISSEURS' THEN 1 ELSE 0 END) AS NB_SUP,
-       SUM(CASE WHEN TYPE_FLUX = 'COMMANDES'    THEN 1 ELSE 0 END) AS NB_CDE,
-       SUM(CASE WHEN TYPE_FLUX = 'RECEPTIONS'   THEN 1 ELSE 0 END) AS NB_REC,
-       SUM(CASE WHEN TYPE_FLUX = 'DEBLOCAGE'    THEN 1 ELSE 0 END) AS NB_DEB,
-       COUNT(*) AS TOTAL
+       COUNT(DISTINCT CASE WHEN TYPE_FLUX = 'FOURNISSEURS' THEN file_name END) AS NB_SUP,
+       COUNT(DISTINCT CASE WHEN TYPE_FLUX = 'COMMANDES'    THEN file_name END) AS NB_CDE,
+       COUNT(DISTINCT CASE WHEN TYPE_FLUX = 'RECEPTIONS'   THEN file_name END) AS NB_REC,
+       COUNT(DISTINCT CASE WHEN TYPE_FLUX = 'DEBLOCAGE'    THEN file_name END) AS NB_DEB,
+       COUNT(DISTINCT CASE WHEN TYPE_FLUX = 'AUTRE'        THEN file_name END) AS NB_AUT,
+       COUNT(DISTINCT file_name) AS TOTAL
 FROM (
-    SELECT DISTINCT TRUNC(dih.creation_date) AS date_creation,
+    SELECT TRUNC(dih.creation_date) AS date_creation,
            TO_CHAR(dih.creation_date, 'DAY', 'NLS_DATE_LANGUAGE=FRENCH') AS jour_creation,
-           'FOURNISSEURS' AS TYPE_FLUX
+           dih.file_name,
+           CASE
+               WHEN dih.file_name LIKE '%SUP%'                                  THEN 'FOURNISSEURS'
+               WHEN dih.file_name LIKE '%PO[_]%' ESCAPE '['
+                 OR dih.file_name LIKE '%CDE%'
+                 OR dih.file_name LIKE 'ORDER%'                                 THEN 'COMMANDES'
+               WHEN dih.file_name LIKE '%REC%'                                  THEN 'RECEPTIONS'
+               WHEN dih.file_name LIKE '%DEB%' OR dih.file_name LIKE '%DEBLOC%' THEN 'DEBLOCAGE'
+               ELSE 'AUTRE'
+           END AS TYPE_FLUX
     FROM   dka_ipofrs_hist_entetes dih WHERE dih.creation_date > SYSDATE - :v_nb_jours_histo
     UNION ALL
-    SELECT DISTINCT TRUNC(dih.creation_date), TO_CHAR(dih.creation_date, 'DAY', 'NLS_DATE_LANGUAGE=FRENCH'), 'COMMANDES'
+    SELECT TRUNC(dih.creation_date), TO_CHAR(dih.creation_date, 'DAY', 'NLS_DATE_LANGUAGE=FRENCH'), dih.file_name,
+           CASE WHEN dih.file_name LIKE '%PO[_]%' ESCAPE '[' OR dih.file_name LIKE '%CDE%' THEN 'COMMANDES' ELSE 'AUTRE' END
     FROM   dka_ipocde_hist_headers dih WHERE dih.creation_date > SYSDATE - :v_nb_jours_histo
     UNION ALL
-    SELECT DISTINCT TRUNC(dih.creation_date), TO_CHAR(dih.creation_date, 'DAY', 'NLS_DATE_LANGUAGE=FRENCH'), 'RECEPTIONS'
+    SELECT TRUNC(dih.creation_date), TO_CHAR(dih.creation_date, 'DAY', 'NLS_DATE_LANGUAGE=FRENCH'), dih.file_name,
+           'RECEPTIONS'
     FROM   dka_iporec_hist_interface dih WHERE dih.creation_date > SYSDATE - :v_nb_jours_histo
     UNION ALL
-    SELECT DISTINCT TRUNC(dih.creation_date), TO_CHAR(dih.creation_date, 'DAY', 'NLS_DATE_LANGUAGE=FRENCH'), 'DEBLOCAGE'
+    SELECT TRUNC(dih.creation_date), TO_CHAR(dih.creation_date, 'DAY', 'NLS_DATE_LANGUAGE=FRENCH'), dih.file_name,
+           'DEBLOCAGE'
     FROM   dka_iapfac_debloc_hist_interf dih WHERE dih.creation_date > SYSDATE - :v_nb_jours_histo
 )
 GROUP BY date_creation, jour_creation
@@ -342,10 +438,13 @@ PROMPT === XEROX - Factures SANS images (ALERTE) ===
 
 COLUMN info FORMAT A120
 
+-- DISTINCT : invoice_num n'etant pas unique en multi-organisation, la meme
+-- facture ressortait plusieurs fois avec des INV/VDR differents (F-2026-07-1
+-- dans le log du 28/07). Les invoice_id sont donc regroupes sur une ligne.
 SELECT dir.date_creation || ' | ' ||
        RPAD(NVL(dir.num_fact, '?'), 25) || ' | ' ||
-       RPAD(NVL(dir.reference_lad, '?'), 50) || ' | ' ||
-       'INV=' || aia.invoice_id || ' VDR=' || aia.vendor_id AS info
+       RPAD(NVL(MIN(dir.reference_lad), '?'), 50) || ' | ' ||
+       'INV=' || LISTAGG(aia.invoice_id, ',') WITHIN GROUP (ORDER BY aia.invoice_id) AS info
 FROM   dka_iapfacxgs_reporting_all dir
 JOIN   ap_invoices_all aia ON aia.invoice_num = dir.num_fact AND aia.creation_date > SYSDATE - 30
 WHERE  dir.nom_fichier LIKE 'VE1_DAL%'
@@ -354,6 +453,7 @@ AND    NOT EXISTS (SELECT 1 FROM fnd_documents fd
                    WHERE  fd.creation_date > SYSDATE - 30
                    AND    (SUBSTR(fd.file_name, 1, LENGTH(fd.file_name) - 4) = aia.attribute3
                            OR fd.file_name = aia.attribute3))
+GROUP BY dir.date_creation, dir.num_fact
 ORDER BY dir.num_fact;
 
 CLEAR COLUMNS
@@ -363,7 +463,10 @@ PROMPT === XEROX - Factures AVEC images (compteur) ===
 
 COLUMN NB_AVEC_IMG FORMAT 99999 HEADING "NB AVEC IMAGE"
 
-SELECT COUNT(*) AS NB_AVEC_IMG
+-- COUNT(DISTINCT num_fact) : la double jointure (multi-organisation cote
+-- ap_invoices_all, plusieurs documents cote fnd_documents) multipliait les
+-- lignes et surevaluait fortement ce compteur.
+SELECT COUNT(DISTINCT dir.num_fact) AS NB_AVEC_IMG
 FROM   dka_iapfacxgs_reporting_all dir
 JOIN   ap_invoices_all aia ON aia.invoice_num = dir.num_fact AND aia.creation_date > SYSDATE - 30
 JOIN   fnd_documents fd ON fd.creation_date > SYSDATE - 30
@@ -389,16 +492,24 @@ COLUMN NB_LIGNES  FORMAT 999G999 HEADING "NB LIGNES"
 COLUMN TOT_DEBIT  FORMAT 999G999G999 HEADING "TOTAL DEBIT"
 COLUMN TOT_CREDIT FORMAT 999G999G999 HEADING "TOTAL CREDIT"
 
-SELECT 'GL_INTERFACE'             AS CONTROLE,
-       SUBSTR(attribute10, 1, 40) AS SOURCE,
-       SUBSTR(attribute9,  1, 15) AS TYPE_GL,
-       status                     AS STATUS_GL,
-       COUNT(*)                   AS NB_LIGNES,
-       ROUND(SUM(entered_dr))     AS TOT_DEBIT,
-       ROUND(SUM(entered_cr))     AS TOT_CREDIT
+-- GL_INTERFACE est volontairement lue sans borne de date : c'est le stock en
+-- attente qui fait le controle. On ajoute l'anciennete de la plus vieille
+-- ligne, qui est l'information reellement actionnable le matin.
+COLUMN PLUS_ANCIEN FORMAT A10 HEADING "DEPUIS"
+COLUMN AGE_J       FORMAT 9999 HEADING "AGE(j)"
+
+SELECT 'GL_INTERFACE'                                AS CONTROLE,
+       SUBSTR(attribute10, 1, 40)                    AS SOURCE,
+       SUBSTR(attribute9,  1, 15)                    AS TYPE_GL,
+       status                                        AS STATUS_GL,
+       COUNT(*)                                      AS NB_LIGNES,
+       ROUND(SUM(entered_dr))                        AS TOT_DEBIT,
+       ROUND(SUM(entered_cr))                        AS TOT_CREDIT,
+       TO_CHAR(MIN(date_created), 'DD/MM/YY')        AS PLUS_ANCIEN,
+       TRUNC(SYSDATE) - TRUNC(MIN(date_created))     AS AGE_J
 FROM   gl_interface
 GROUP BY attribute10, attribute9, status
-ORDER BY attribute10, attribute9;
+ORDER BY MIN(date_created);
 
 CLEAR COLUMNS
 
@@ -447,7 +558,7 @@ SELECT 'NUIT_SYNTHESE' AS CONTROLE,
 FROM   fnd_concurrent_requests
 WHERE  actual_start_date >= TRUNC(SYSDATE - 1) + :v_heure_fermeture / 24
 AND    actual_start_date <  TRUNC(SYSDATE)      + :v_heure_ouverture / 24
-AND    requested_by = (SELECT user_id FROM fnd_user WHERE user_name LIKE 'EXP%')
+AND    requested_by IN (SELECT user_id FROM fnd_user WHERE user_name LIKE 'EXP%')
 GROUP BY CASE status_code
              WHEN 'C' THEN 'OK'
              WHEN 'E' THEN '*** ERREUR ***'
@@ -460,29 +571,62 @@ ORDER BY 1;
 
 CLEAR COLUMNS
 
+-- Le detail listait une ligne par demande : le 28/07, 113 lignes strictement
+-- identiques ("Programme maitre de l'interface factures"), illisibles et sans
+-- valeur d'analyse. On regroupe d'abord par programme, le detail nominatif
+-- vient ensuite et reste borne.
+
 PROMPT
-PROMPT === NUIT - Detail des ERREURS ===
+PROMPT === NUIT - ERREURS regroupees par programme ===
 
-COLUMN REQ_ID     FORMAT 9999999999 HEADING "REQ ID"
-COLUMN PROGRAMME  FORMAT A45  HEADING "PROGRAMME"
-COLUMN DEBUT      FORMAT A14  HEADING "DEBUT"
-COLUMN FIN        FORMAT A14  HEADING "FIN"
-COLUMN DUREE_MIN  FORMAT 9999.9 HEADING "DUREE(min)"
-COLUMN MSG        FORMAT A55  HEADING "MESSAGE"
+COLUMN PROGRAMME  FORMAT A55   HEADING "PROGRAMME"
+COLUMN NB_ERR     FORMAT 99999 HEADING "NB"
+COLUMN PREMIERE   FORMAT A14   HEADING "PREMIERE"
+COLUMN DERNIERE   FORMAT A14   HEADING "DERNIERE"
+COLUMN MSG        FORMAT A70   HEADING "MESSAGE TYPE"
 
-SELECT fcr.request_id                                                             AS REQ_ID,
-       fcp.user_concurrent_program_name                                            AS PROGRAMME,
-       TO_CHAR(fcr.actual_start_date,      'DD/MM HH24:MI:SS')                    AS DEBUT,
-       TO_CHAR(fcr.actual_completion_date, 'DD/MM HH24:MI:SS')                    AS FIN,
-       ROUND((fcr.actual_completion_date - fcr.actual_start_date) * 24 * 60, 1)   AS DUREE_MIN,
-       SUBSTR(fcr.completion_text, 1, 55)                                          AS MSG
+SELECT fcp.user_concurrent_program_name                       AS PROGRAMME,
+       COUNT(*)                                                AS NB_ERR,
+       TO_CHAR(MIN(fcr.actual_start_date), 'DD/MM HH24:MI:SS') AS PREMIERE,
+       TO_CHAR(MAX(fcr.actual_start_date), 'DD/MM HH24:MI:SS') AS DERNIERE,
+       SUBSTR(MIN(fcr.completion_text), 1, 70)                 AS MSG
 FROM   fnd_concurrent_requests fcr
 JOIN   fnd_concurrent_programs_vl fcp ON fcr.concurrent_program_id = fcp.concurrent_program_id
 WHERE  fcr.actual_start_date >= TRUNC(SYSDATE - 1) + :v_heure_fermeture / 24
 AND    fcr.actual_start_date <  TRUNC(SYSDATE)      + :v_heure_ouverture / 24
-AND    fcr.requested_by = (SELECT user_id FROM fnd_user WHERE user_name LIKE 'EXP%')
+AND    fcr.requested_by IN (SELECT user_id FROM fnd_user WHERE user_name LIKE 'EXP%')
 AND    fcr.status_code = 'E'
-ORDER BY fcr.actual_start_date DESC;
+GROUP BY fcp.user_concurrent_program_name
+ORDER BY COUNT(*) DESC;
+
+CLEAR COLUMNS
+
+PROMPT
+PROMPT === NUIT - Detail des ERREURS (30 plus recentes) ===
+
+COLUMN REQ_ID     FORMAT 9999999999 HEADING "REQ ID"
+COLUMN PROGRAMME  FORMAT A50  HEADING "PROGRAMME"
+COLUMN DEBUT      FORMAT A14  HEADING "DEBUT"
+COLUMN FIN        FORMAT A14  HEADING "FIN"
+COLUMN DUREE_MIN  FORMAT 9999.9 HEADING "DUREE(min)"
+COLUMN MSG        FORMAT A70  HEADING "MESSAGE"
+
+SELECT * FROM (
+    SELECT fcr.request_id                                                            AS REQ_ID,
+           fcp.user_concurrent_program_name                                           AS PROGRAMME,
+           TO_CHAR(fcr.actual_start_date,      'DD/MM HH24:MI:SS')                   AS DEBUT,
+           TO_CHAR(fcr.actual_completion_date, 'DD/MM HH24:MI:SS')                   AS FIN,
+           ROUND((fcr.actual_completion_date - fcr.actual_start_date) * 24 * 60, 1)  AS DUREE_MIN,
+           SUBSTR(fcr.completion_text, 1, 70)                                         AS MSG
+    FROM   fnd_concurrent_requests fcr
+    JOIN   fnd_concurrent_programs_vl fcp ON fcr.concurrent_program_id = fcp.concurrent_program_id
+    WHERE  fcr.actual_start_date >= TRUNC(SYSDATE - 1) + :v_heure_fermeture / 24
+    AND    fcr.actual_start_date <  TRUNC(SYSDATE)      + :v_heure_ouverture / 24
+    AND    fcr.requested_by IN (SELECT user_id FROM fnd_user WHERE user_name LIKE 'EXP%')
+    AND    fcr.status_code = 'E'
+    ORDER BY fcr.actual_start_date DESC
+)
+WHERE ROWNUM <= 30;
 
 CLEAR COLUMNS
 
@@ -490,7 +634,7 @@ PROMPT
 PROMPT === NUIT - Detail des WARNINGS ===
 
 COLUMN REQ_ID     FORMAT 9999999999 HEADING "REQ ID"
-COLUMN PROGRAMME  FORMAT A45  HEADING "PROGRAMME"
+COLUMN PROGRAMME  FORMAT A55  HEADING "PROGRAMME"
 COLUMN DEBUT      FORMAT A14  HEADING "DEBUT"
 COLUMN DUREE_MIN  FORMAT 9999.9 HEADING "DUREE(min)"
 COLUMN MSG        FORMAT A55  HEADING "MESSAGE"
@@ -504,7 +648,7 @@ FROM   fnd_concurrent_requests fcr
 JOIN   fnd_concurrent_programs_vl fcp ON fcr.concurrent_program_id = fcp.concurrent_program_id
 WHERE  fcr.actual_start_date >= TRUNC(SYSDATE - 1) + :v_heure_fermeture / 24
 AND    fcr.actual_start_date <  TRUNC(SYSDATE)      + :v_heure_ouverture / 24
-AND    fcr.requested_by = (SELECT user_id FROM fnd_user WHERE user_name LIKE 'EXP%')
+AND    fcr.requested_by IN (SELECT user_id FROM fnd_user WHERE user_name LIKE 'EXP%')
 AND    fcr.status_code = 'G'
 ORDER BY fcr.actual_start_date DESC;
 
@@ -514,7 +658,7 @@ PROMPT
 PROMPT === NUIT - Traitements longs (> 30 min) ===
 
 COLUMN REQ_ID     FORMAT 9999999999 HEADING "REQ ID"
-COLUMN PROGRAMME  FORMAT A45  HEADING "PROGRAMME"
+COLUMN PROGRAMME  FORMAT A55  HEADING "PROGRAMME"
 COLUMN DEBUT      FORMAT A12  HEADING "DEBUT"
 COLUMN FIN        FORMAT A12  HEADING "FIN"
 COLUMN DUREE_MIN  FORMAT 9999.9 HEADING "DUREE(min)"
@@ -530,7 +674,7 @@ FROM   fnd_concurrent_requests fcr
 JOIN   fnd_concurrent_programs_vl fcp ON fcr.concurrent_program_id = fcp.concurrent_program_id
 WHERE  fcr.actual_start_date >= TRUNC(SYSDATE - 1) + :v_heure_fermeture / 24
 AND    fcr.actual_start_date <  TRUNC(SYSDATE)      + :v_heure_ouverture / 24
-AND    fcr.requested_by = (SELECT user_id FROM fnd_user WHERE user_name LIKE 'EXP%')
+AND    fcr.requested_by IN (SELECT user_id FROM fnd_user WHERE user_name LIKE 'EXP%')
 AND    (fcr.actual_completion_date - fcr.actual_start_date) * 24 * 60 > 30
 ORDER BY (fcr.actual_completion_date - fcr.actual_start_date) DESC;
 
@@ -553,7 +697,7 @@ SELECT fcr.request_id                                                           
 FROM   fnd_concurrent_requests fcr
 JOIN   fnd_concurrent_programs_vl fcp ON fcr.concurrent_program_id = fcp.concurrent_program_id
 WHERE  fcr.actual_start_date >= TRUNC(SYSDATE - 1) + :v_heure_fermeture / 24
-AND    fcr.requested_by = (SELECT user_id FROM fnd_user WHERE user_name LIKE 'EXP%')
+AND    fcr.requested_by IN (SELECT user_id FROM fnd_user WHERE user_name LIKE 'EXP%')
 AND    fcr.status_code = 'R'
 ORDER BY fcr.actual_start_date;
 

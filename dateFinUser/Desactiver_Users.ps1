@@ -158,6 +158,28 @@ $OraDsn     = "${ORA_HOST}:${ORA_PORT}/${ORA_SERVICE}"
 $ConnectStr = "${ORA_USER}/${ORA_PWD}@${OraDsn}"
 Ecrire-Ok "Config          : $ConfigFile"
 Ecrire-Ok "Connexion       : ${ORA_USER}@${OraDsn}"
+
+# Contexte EBS pour FND_GLOBAL.APPS_INITIALIZE, comme dans les autres scripts
+# du projet. Absent du config.ps1, la valeur -1 demande au SQL de resoudre
+# lui-meme l'identifiant a partir du nom de compte.
+function Val-Config {
+    param([string]$Nom, $Defaut)
+    $v = Get-Variable -Name $Nom -ValueOnly -ErrorAction SilentlyContinue
+    if ($null -eq $v -or "$v" -eq '') { return $Defaut }
+    return $v
+}
+$FndUserName   = Val-Config 'FND_USER_NAME'    ''
+$FndUserId     = Val-Config 'FND_USER_ID'      -1
+$FndRespId     = Val-Config 'FND_RESP_ID'      -1
+$FndRespApplId = Val-Config 'FND_RESP_APPL_ID' -1
+if ($FndUserName -ne '') { $UserEbs = $FndUserName }
+
+if ([int]$FndUserId -gt 0) {
+    Ecrire-Ok "Contexte FND    : $UserEbs (user_id=$FndUserId, resp=$FndRespId/$FndRespApplId)"
+} else {
+    Write-Host "   [ATTENTION] FND_USER_ID absent du config.ps1 : le contexte sera resolu" -ForegroundColor Yellow
+    Write-Host "               depuis FND_USER a partir du compte '$UserEbs'." -ForegroundColor Yellow
+}
 Write-Host ''
 
 # =====================================================================
@@ -291,9 +313,12 @@ $entete = @(
     'SET DEFINE ON',
     'WHENEVER SQLERROR EXIT FAILURE',
     '',
-    "DEFINE P_DATE_FIN = `"$DateFinSql`"",
-    "DEFINE P_MODE     = `"$Mode`"",
-    "DEFINE P_USER_EBS = `"$($UserEbs.ToUpper())`"",
+    "DEFINE P_DATE_FIN         = `"$DateFinSql`"",
+    "DEFINE P_MODE             = `"$Mode`"",
+    "DEFINE P_USER_EBS         = `"$($UserEbs.ToUpper())`"",
+    "DEFINE P_FND_USER_ID      = $FndUserId",
+    "DEFINE P_FND_RESP_ID      = $FndRespId",
+    "DEFINE P_FND_RESP_APPL_ID = $FndRespApplId",
     '',
     "SPOOL $($FichierLogBrut.Replace('\','/'))",
     ''
@@ -302,8 +327,10 @@ $entete = @(
 $pied = @('', 'SPOOL OFF', 'EXIT;') -join "`r`n"
 
 $FichierSqlTemp = Join-Path $ScriptDir "temp_desactivation_${Timestamp}.sql"
+# UTF-8 SANS BOM : sqlplus ne supporte pas la marque d'ordre des octets et
+# echoue sur la premiere instruction si elle est presente.
 [System.IO.File]::WriteAllText($FichierSqlTemp, ($entete + $corpsSql + $pied),
-    (New-Object System.Text.UTF8Encoding $true))
+    (New-Object System.Text.UTF8Encoding $false))
 Ecrire-Ok "Fichier temp    : $FichierSqlTemp"
 Ecrire-Ok "Matricules injectes : $($affectations.Count)"
 Write-Host ''
