@@ -2,9 +2,11 @@
 #  Desactivation d'utilisateurs Oracle EBS a une date donnee
 # =====================================================================
 #  Lit un CSV de matricules, resout chaque compte FND_USER puis pose
-#  FND_USER.END_DATE via l'API supportee APPS.FND_USER_PKG.UpdateUser.
+#  FND_USER.END_DATE par UPDATE direct sur APPLSYS.FND_USER.
 #
-#  SIMULATION PAR DEFAUT : sans -Executer, rien n'est modifie en base.
+#  SIMULATION PAR DEFAUT : sans -Executer, les UPDATE sont joues puis
+#  annules par ROLLBACK. Rien n'est conserve, mais les droits d'ecriture
+#  et le ciblage des lignes sont reellement valides.
 #
 #  Usage :
 #    .\Desactiver_Users.ps1 -DateFin "31/12/2026"
@@ -44,6 +46,28 @@ function Ecrire-Titre {
 function Ecrire-Etape { param([string]$Texte) Write-Host "$Texte" -ForegroundColor Yellow }
 function Ecrire-Ok    { param([string]$Texte) Write-Host "   $Texte" -ForegroundColor Green }
 function Ecrire-Ko    { param([string]$Texte) Write-Host "   $Texte" -ForegroundColor Red }
+# Les exports de ce projet arrivent tantot en CP850 (OEM, issu d'outils DOS
+# ou d'Excel en export "MS-DOS"), tantot en Windows-1252. Les deux se
+# distinguent de facon fiable : en CP850 les accents francais tombent dans
+# 0x80-0x9F (e accent aigu = 0x82), alors qu'en Windows-1252 cette plage ne
+# contient que de la ponctuation, et les accents sont au-dessus de 0xC0.
+function Get-EncodageCsv {
+    param([string]$Chemin)
+    $o = [System.IO.File]::ReadAllBytes($Chemin)
+    if ($o.Length -ge 3 -and $o[0] -eq 0xEF -and $o[1] -eq 0xBB -and $o[2] -eq 0xBF) {
+        return @{ Enc = [System.Text.Encoding]::UTF8; Nom = 'UTF-8 (BOM)' }
+    }
+    $nOem = 0; $nAnsi = 0
+    foreach ($b in $o) {
+        if     ($b -ge 0x80 -and $b -le 0x9F) { $nOem++ }
+        elseif ($b -ge 0xC0)                  { $nAnsi++ }
+    }
+    if ($nOem -gt $nAnsi) {
+        return @{ Enc = [System.Text.Encoding]::GetEncoding(850);  Nom = 'CP850 (OEM)' }
+    }
+    return @{ Enc = [System.Text.Encoding]::GetEncoding(1252); Nom = 'Windows-1252' }
+}
+
 function Html-Echap {
     param([string]$T)
     if ([string]::IsNullOrEmpty($T)) { return '' }
@@ -141,8 +165,10 @@ Write-Host ''
 # =====================================================================
 Ecrire-Etape 'Etape 3 : Lecture de la liste des matricules...'
 
-# Les exports bancaires et RH de ce projet sont en ANSI (Windows-1252).
-$lignesCsv = Import-Csv -Path $Csv -Delimiter ';' -Encoding Default
+$infoEnc   = Get-EncodageCsv -Chemin $Csv
+$texteCsv  = [System.IO.File]::ReadAllText($Csv, $infoEnc.Enc)
+$lignesCsv = @($texteCsv | ConvertFrom-Csv -Delimiter ';')
+Ecrire-Ok "Encodage detecte  : $($infoEnc.Nom)"
 
 if ($lignesCsv.Count -eq 0) {
     Ecrire-Ko '[ERREUR] Le fichier CSV ne contient aucune ligne de donnees.'
@@ -215,7 +241,20 @@ if ($Executer -and -not $SansConfirmation) {
     Write-Host "  Date de fin: $DateFinFr" -ForegroundColor Red
     Write-Host ''
     Write-Host '  Saisir OUI (en majuscules) pour confirmer, toute autre saisie annule.' -ForegroundColor Yellow
-    $rep = Read-Host '  Confirmation'
+
+    # En contexte non interactif (tache planifiee, execution redirigee), aucune
+    # saisie n'est possible : on refuse plutot que d'agir sans confirmation.
+    $rep = $null
+    try {
+        $rep = Read-Host '  Confirmation'
+    } catch {
+        Write-Host ''
+        Ecrire-Ko '[ERREUR] Aucune saisie possible : la session n''est pas interactive.'
+        Ecrire-Ko '         Relancer depuis une console, ou ajouter -SansConfirmation'
+        Ecrire-Ko '         si la confirmation a deja ete obtenue par ailleurs.'
+        exit 1
+    }
+
     if ($rep -cne 'OUI') {
         Write-Host ''
         Write-Host '  Operation annulee par l''utilisateur. Aucune modification effectuee.' -ForegroundColor Yellow
@@ -372,11 +411,13 @@ if ($Executer -and $desactives.Count -gt 0) {
         $u = $d.UserName.Replace("'", "''")
         if ([string]::IsNullOrWhiteSpace($d.AncienneFin)) {
             $undo.Add("    -- $($d.Matricule) : aucune date de fin avant l'operation")
-            $undo.Add("    apps.fnd_user_pkg.updateuser(x_user_name => '$u', x_owner => 'CUST', x_end_date => NULL);")
+            $undo.Add("    UPDATE applsys.fnd_user SET end_date = NULL, last_update_date = SYSDATE")
+            $undo.Add("     WHERE UPPER(user_name) = UPPER('$u');")
         } else {
             $dt = [datetime]::ParseExact($d.AncienneFin, 'dd/MM/yyyy', [cultureinfo]::InvariantCulture)
             $undo.Add("    -- $($d.Matricule) : date de fin d'origine $($d.AncienneFin)")
-            $undo.Add("    apps.fnd_user_pkg.updateuser(x_user_name => '$u', x_owner => 'CUST', x_end_date => TO_DATE('$($dt.ToString('yyyy-MM-dd'))','YYYY-MM-DD'));")
+            $undo.Add("    UPDATE applsys.fnd_user SET end_date = TO_DATE('$($dt.ToString('yyyy-MM-dd'))','YYYY-MM-DD'), last_update_date = SYSDATE")
+            $undo.Add("     WHERE UPPER(user_name) = UPPER('$u');")
         }
     }
     $undo.Add('    COMMIT;')
@@ -543,7 +584,7 @@ $html = @"
   <span><strong>Date :</strong> $(Get-Date -Format 'dd/MM/yyyy HH:mm:ss')</span>
   <span><strong>Date de fin appliquee :</strong> $DateFinFr</span>
   <span><strong>Base :</strong> $(Html-Echap "${ORA_USER}@${OraDsn}")</span>
-  <span><strong>Source :</strong> $(Html-Echap (Split-Path $Csv -Leaf))</span>
+  <span><strong>Source :</strong> $(Html-Echap (Split-Path $Csv -Leaf)) ($($infoEnc.Nom))</span>
   <span><strong>Duree :</strong> ${duree}s</span>
 </div>
 $bandeauMode
