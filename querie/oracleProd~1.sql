@@ -1,1 +1,0 @@
-SELECT * from fnd_user where description like '%JAFFEUX%'
