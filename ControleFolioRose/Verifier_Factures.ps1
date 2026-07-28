@@ -16,14 +16,38 @@ param(
     # Affiche les requetes envoyees et la sortie brute d'Oracle
     [switch] $Diagnostic,
     # Conserve le script SQL genere, pour analyse
-    [switch] $GarderTempSQL
+    [switch] $GarderTempSQL,
+    # Ne pas generer le rapport HTML (le CSV reste produit)
+    [switch] $PasDeRapport,
+    # Generer le rapport HTML sans l'ouvrir dans le navigateur
+    [switch] $PasDOuverture
 )
+
+function Html-Echap {
+    param([string]$T)
+    if ([string]::IsNullOrEmpty($T)) { return '' }
+    return $T.Replace('&','&amp;').Replace('<','&lt;').Replace('>','&gt;').Replace('"','&quot;')
+}
+
+function Format-Montant {
+    param($V)
+    return ('{0:N2}' -f [double]$V)
+}
 
 $ErrorActionPreference = 'Stop'
 $ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 
 # 0 = tout concorde, 1 = erreur technique, 2 = des ecarts subsistent
 $EXIT_OK = 0; $EXIT_TECH = 1; $EXIT_ECART = 2
+
+# Le rendu HTML vit dans son propre fichier : Apercu_Rapport.ps1 le charge
+# aussi, ce qui garantit que l'apercu et la production affichent la meme chose.
+$ModuleRapport = Join-Path $ScriptDir 'Rapport_Html.ps1'
+if (-not (Test-Path $ModuleRapport)) {
+    Write-Host "[ERREUR] Rapport_Html.ps1 introuvable : $ModuleRapport" -ForegroundColor Red
+    exit 1
+}
+. $ModuleRapport
 
 # ---------------------------------------------------------------------
 #  Fonctions utilitaires
@@ -495,6 +519,25 @@ foreach ($u in $lignesUtiles) {
 # =====================================================================
 $TableauResultats | Export-Csv -Path $FichierRapportCsv -Delimiter ';' -NoTypeInformation -Encoding UTF8
 
+# =====================================================================
+#  RAPPORT HTML
+# =====================================================================
+$FichierRapportHtml = $FichierRapportCsv -replace '\.csv$', '.html'
+
+if (-not $PasDeRapport) {
+    Write-Host ''
+    Write-Host 'Generation du rapport HTML...' -ForegroundColor Yellow
+    New-RapportHtml -Resultats $TableauResultats `
+                    -CheminHtml $FichierRapportHtml `
+                    -FichierSource (Split-Path $CheminAbsolu.Path -Leaf) `
+                    -Encodage $infoEnc.Nom `
+                    -Base "${ORA_USER}@${ORA_DSN}" `
+                    -NbInterrogations $couples.Count `
+                    -Duree $duree `
+                    -CheminCsv $FichierRapportCsv
+    Write-Host "   Rapport HTML : $FichierRapportHtml" -ForegroundColor Green
+}
+
 Write-Host ''
 Write-Host '=======================================================================' -ForegroundColor Cyan
 Write-Host '  SYNTHESE' -ForegroundColor Cyan
@@ -510,9 +553,16 @@ if ($script:NbMontantsIllisibles -gt 0) {
     Write-Host '     Ces valeurs ont ete comptees comme 0 : relancer avec -Diagnostic pour les voir.' -ForegroundColor Yellow
 }
 Write-Host ("  {0,-26} : {1}" -f 'Duree Oracle', "${duree}s")
-Write-Host ("  {0,-26} : {1}" -f 'Rapport', $FichierRapportCsv)   -ForegroundColor Green
+Write-Host ("  {0,-26} : {1}" -f 'Donnees (CSV)', $FichierRapportCsv)   -ForegroundColor Green
+if (-not $PasDeRapport) {
+    Write-Host ("  {0,-26} : {1}" -f 'Rapport (HTML)', $FichierRapportHtml) -ForegroundColor Green
+}
 Write-Host '=======================================================================' -ForegroundColor Cyan
 Write-Host ''
+
+if ((-not $PasDeRapport) -and (-not $PasDOuverture) -and (Test-Path $FichierRapportHtml)) {
+    Start-Process $FichierRapportHtml
+}
 
 if ($nbKo -gt 0 -or $nbIndet -gt 0) { exit $EXIT_ECART }
 exit $EXIT_OK
