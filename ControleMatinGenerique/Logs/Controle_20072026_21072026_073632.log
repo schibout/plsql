@@ -1,0 +1,211 @@
+
+Date du controle               Jour                     Jours historique
+------------------------------ ------------------------ ----------------
+Plage nuit
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+21/07/2026                     MARDI                                   3
+19h - 7h
+
+=====================================================
+RAPPORT DE CONTROLE QUOTIDIEN - 21/07/2026
+Jour : MARDI
+=====================================================
++----------------------------------------------------------+
+|                   SYNTHESE DU JOUR                      |
++----------------------------------------------------------+
+| Flux DSP (fichiers)         :     5   [OK] |
+| Notes de frais Notilus      :   433   [OK] |
+| Factures Xerox              :  2426   [OK] |
+| Factures Tradeshift         :     6   [OK] |
+| Factures DSP                :     8   [W] |
+| Ecritures GL (interface)    :     0   [W] |
+| Lignes GL creees            : 30943   [OK] |
+| Imports RB                  :   207   [OK] |
++----------------------------------------------------------+
+| Traitements nuit            :  8613                        |
+| Erreurs                     :     0                        |
+| Avertissements              :    36                        |
+| *** IMAGES MANQUANTES ***   :    13                        |
++----------------------------------------------------------+
+[!] ALERTE : 13 factures Xerox sans image - Voir Section 4
+
+=== DSP - Detail des flux (fichiers) ===
+
+SRC   DATE     JOUR       TYPE          FICHIER
+----- -------- ---------- ------------- ----------------------------------------------------------------------
+DSP   20/07/26 LUNDI      AUTRE         DSP01_PO_ENTETE_20260720162321_ST_DSP01-PO_2761738.csv
+DSP   20/07/26 LUNDI      DEBLOCAGE     DSP01_INV_DEBLOCAGE_20260720174316_ST_2761800.csv
+DSP   20/07/26 LUNDI      FOURNISSEURS  DSP01_SUP_ENTETE_20260720092316_ST_DSP01-SUP_2761016.csv
+DSP   20/07/26 LUNDI      FOURNISSEURS  DSP01_SUP_ENTETE_20260720144316_ST_DSP01-SUP_2761604.csv
+DSP   20/07/26 LUNDI      RECEPTIONS    DSP01_REC_RECEPTIONS_20260720163316_ST_DSP01-REC_2761752.csv
+
+=== DSP - Synthese par jour et type ===
+
+DATE     JOUR       FOURN. CMDES RECEP. DEBLOC. TOTAL
+-------- ---------- ------ ----- ------ ------- -----
+20/07/26 LUNDI           1     1      1       1     4
+
+=== NOTILUS - Comptage des notes de frais ===
+
+CONTROLE   DATE     JOUR       NB NDF MONTANT TOTAL
+---------- -------- ---------- ------ -------------
+NOTILUS    20/07/26 LUNDI         433        89 720
+
+=== FACTURES - Synthese par source ===
+
+CONTROLE   DATE     SOURCE       NB FACTURES
+---------- -------- ------------ -----------
+FACTURES   20/07/26 DSP                    8
+FACTURES   20/07/26 TRADESHIFT             6
+FACTURES   20/07/26 XEROX               2426
+FACTURES   19/07/26 TRADESHIFT             1
+
+=== XEROX - Factures SANS images (ALERTE) ===
+
+INFO
+------------------------------------------------------------------------------------------------------------------------
+20260720 | EB_46376                  | VE1-10039-20260715-1741-145-001-FMU-002-ED1Flux.TI | INV=11806956 VDR=3762110
+20260720 | EV-FAC-2026-227           | VE1-40438-20260717-0506-188-001-FMU-001-ED1Flux.TI | INV=11792119 VDR=2519031
+20260720 | FA00001104                | VE1-40438-20260717-0936-328-001-FMU-001-ED1Flux.TI | INV=11750888 VDR=3064058
+20260720 | FA04724                   | VE1-40438-20260717-0830-170-001-FMU-002-ED1Flux.TI | INV=11790466 VDR=8511
+20260720 | FC-2026-0207              | VE1-21336-20260716-1121-879-001-FMU-011-ED1Flux.TI | INV=11792092 VDR=3720115
+20260720 | F01831260700054           | VE1-10435-20260717-0513-424-001-FMU-010-ED1Flux.TI | INV=11796125 VDR=3528
+20260720 | F01831260700055           | VE1-10435-20260717-0521-613-001-FMU-023-ED1Flux.TI | INV=11796123 VDR=3528
+20260720 | 140                       | VE1-10435-20260717-0509-306-001-FMU-001-ED1Flux.TI | INV=11753139 VDR=11142
+20260720 | 2                         | VE1-10039-20260708-0927-099-002-FMU-002-ED1Flux.TI | INV=11729959 VDR=3523
+20260720 | 2                         | VE1-10039-20260708-0927-099-001-FMU-002-ED1Flux.TI | INV=11729959 VDR=3523
+20260720 | 2605020                   | VE1-10435-20260717-0531-965-001-FMU-001-ED1Flux.TI | INV=11776307 VDR=10661
+20260720 | 3                         | VE1-11299-20260708-0931-120-001-FMU-005-ED1Flux.TI | INV=11768325 VDR=3523
+20260720 | 30/06/2026                | VE1-61007-20260708-0507-222-001-FMU-003-ED1Flux.TI | INV=11786812 VDR=10225
+
+=== XEROX - Factures AVEC images (compteur) ===
+
+NB AVEC IMAGE
+-------------
+         1914
+
+=== GL - Interface (en attente) ===
+
+CONTROLE       SOURCE                                   TYPE            STATUS   NB LIGNES  TOTAL DEBIT TOTAL CREDIT
+-------------- ---------------------------------------- --------------- -------- --------- ------------ ------------
+GL_INTERFACE                                                            EP01             2        9 238        9 238
+
+=== GL - Lignes creees ===
+
+CONTROLE   DATE     SOURCE                                           NB LIGNES      TOTAL DEBIT
+---------- -------- --------------------------------------------- ------------ ----------------
+GL_CREES   21/07/26                                                        840        2 676 598
+GL_CREES   20/07/26                                                     29 249      117 389 602
+GL_CREES   20/07/26 FAC02_SRC_ECRITURESGL_180726-011723                    130           16 687
+GL_CREES   20/07/26 CDPG.NC4.EXPORT.2026072014524548593.COMP.E_CO        1 564      119 623 631
+GL_CREES   19/07/26                                                          3            4 277
+GL_CREES   18/07/26                                                      1 758        4 847 935
+
+=== NUIT - Synthese par statut ===
+
+CONTROLE        STATUT              NB
+--------------- ---------------- -----
+NUIT_SYNTHESE   WARNING             36
+NUIT_SYNTHESE   OK                8577
+
+=== NUIT - Detail des ERREURS ===
+
+=== NUIT - Detail des WARNINGS ===
+
+     REQ ID PROGRAMME                                     DEBUT          DUREE(min) MESSAGE
+----------- --------------------------------------------- -------------- ---------- -------------------------------------------------------
+   48538235 DKA : Règlements automatiques des prélèvement 21/07 03:03:14         .6
+            s clients
+
+   48538224 DKA : Lanceur (SHELL)                         21/07 03:03:13         .7 Fin Anormale
+   48534113 Traitement du processeur enfant de validation 20/07 22:02:03       11.4
+             de factures
+
+   48534101 Traitement du processeur enfant de validation 20/07 22:01:47       12.5
+             de factures
+
+   48534099 Traitement du processeur enfant de validation 20/07 22:01:47       12.7
+             de factures
+
+   48534086 Traitement du processeur enfant de validation 20/07 22:01:44       12.5
+             de factures
+
+   48533825 Validation de factures                        20/07 21:59:30       17.3 Fin normale
+   48533668 Validation de factures                        20/07 21:56:53       21.6 Fin normale
+   48533669 Validation de factures                        20/07 21:56:53       21.9 Fin normale
+   48533266 DKA : Import des codes de déblocage Facture d 20/07 21:44:02        2.6
+            epuis IVALUA
+
+   48533265 DKA : Contrôle des flux XEROX                 20/07 21:43:59         .0
+   48533262 DKA : Lanceur (SHELL)                         20/07 21:43:58         .4 Fin Anormale
+   48533263 DKA : Lanceur (SHELL)                         20/07 21:43:58        3.0 Fin Anormale
+   48532865 DKA : Import des données Réceptions depuis iV 20/07 19:49:01        9.1
+            alua
+
+   48532864 DKA : Lanceur (SHELL)                         20/07 19:49:00        9.4 Fin Anormale
+   48531427 Copie en haut volume périodique               20/07 19:39:06         .1 Programme simultané n'a renvoyé aucun motif d'échec.
+   48531319 Copie en haut volume périodique               20/07 19:38:56         .1 Programme simultané n'a renvoyé aucun motif d'échec.
+   48531304 Copie en haut volume périodique               20/07 19:38:55         .0 Programme simultané n'a renvoyé aucun motif d'échec.
+   48531300 Copie en haut volume périodique               20/07 19:38:55         .1 Programme simultané n'a renvoyé aucun motif d'échec.
+   48531293 Copie en haut volume périodique               20/07 19:38:54         .1 Programme simultané n'a renvoyé aucun motif d'échec.
+   48531288 Copie en haut volume périodique               20/07 19:38:54         .0 Programme simultané n'a renvoyé aucun motif d'échec.
+   48531217 Copie en haut volume périodique               20/07 19:38:48         .1 Programme simultané n'a renvoyé aucun motif d'échec.
+   48531195 Copie en haut volume périodique               20/07 19:38:46         .1 Programme simultané n'a renvoyé aucun motif d'échec.
+   48531124 Copie en haut volume périodique               20/07 19:38:38         .0 Programme simultané n'a renvoyé aucun motif d'échec.
+   48531123 DKA : Copie en haut volume périodique         20/07 19:38:35         .7
+   48531122 Phase du jeu de traitements                   20/07 19:38:34         .7
+   48530908 DKA : Import des commandes depuis iValua      20/07 19:24:59       19.6
+   48530907 DKA : Lanceur (SHELL)                         20/07 19:24:56       19.7 Fin Anormale
+   48530365 DKA : Import des données Fournisseurs depuis  20/07 19:14:03        8.4
+            iValua
+
+   48530353 DKA : Lanceur (SHELL)                         20/07 19:13:59        8.7 Fin Anormale
+   48530132 EasyLink                                      20/07 19:02:54         .0 Données introuvables dans la table GL_INTERFACE.
+   48530002 EasyLink                                      20/07 19:02:42         .0 Données introuvables dans la table GL_INTERFACE.
+   48529579 EasyLink                                      20/07 19:02:32         .0 Données introuvables dans la table GL_INTERFACE.
+   48529558 EasyLink                                      20/07 19:02:25         .1 Données introuvables dans la table GL_INTERFACE.
+   48529539 EasyLink                                      20/07 19:02:22         .1 Données introuvables dans la table GL_INTERFACE.
+   48529521 EasyLink                                      20/07 19:02:19         .1 Données introuvables dans la table GL_INTERFACE.
+
+=== NUIT - Traitements longs (> 30 min) ===
+
+     REQ ID PROGRAMME                                     DEBUT        FIN          DUREE(min) STATUT
+----------- --------------------------------------------- ------------ ------------ ---------- --------
+   48538694 DKA : Lanceur (SHELL)                         21/07 04:48  21/07 06:56       128.4 OK
+   48538704 DKA : Situation Oracle du matin               21/07 04:48  21/07 06:56       128.2 OK
+   48536099 DKA : Lanceur (SHELL)                         21/07 01:10  21/07 02:40        90.3 OK
+   48536100 DKA : Règlements automatiques toutes sociétés 21/07 01:10  21/07 02:40        90.0 OK
+             des factures fournisseurs
+
+   48535315 DKA : Lanceur (SHELL)                         20/07 23:36  21/07 01:05        88.7 OK
+   48535316 DKA : Création des règlements pour la campagn 20/07 23:36  21/07 01:05        88.5 OK
+            e de prélèvement AP - RB
+
+   48533044 DKA : Lanceur (SHELL)                         20/07 20:35  20/07 21:43        68.0 OK
+   48533045 DKA : Intégration des factures XEROX          20/07 20:35  20/07 21:42        67.7 OK
+   48538467 DKA : Lanceur (SHELL)                         21/07 03:41  21/07 04:39        58.0 OK
+   48538468 DKA : Règlements automatiques toutes sociétés 21/07 03:41  21/07 04:39        57.8 OK
+             des factures fournisseurs
+
+   48533268 DKA : Lanceur (SHELL)                         20/07 21:47  20/07 22:44        57.0 OK
+   48533269 Jeu d'états                                   20/07 21:47  20/07 22:44        56.9 OK
+   48529035 DKA : Lanceur (SHELL)                         20/07 19:01  20/07 19:48        47.0 OK
+   48529040 Jeu d'états                                   20/07 19:01  20/07 19:48        46.9 OK
+   48529614 Phase du jeu de traitements                   20/07 19:02  20/07 19:38        36.0 OK
+   48529621 DKA : Calculer les plus- et moins-values      20/07 19:02  20/07 19:38        36.0 OK
+   48533646 Phase du jeu de traitements                   20/07 21:48  20/07 22:20        32.1 OK
+   48533647 DKA : Approbation toutes sociétés des facture 20/07 21:48  20/07 22:20        32.1 OK
+            s fournisseurs
+
+
+=== NUIT - Traitements en cours (potentiellement bloques) ===
+
+=== RAPPROCHEMENT BANCAIRE (RB) ===
+
+CONTROLE     DATE     JOUR       NB COMPTES
+------------ -------- ---------- ----------
+RB_IMPORTS   20/07/26 LUNDI             207
+
+=====================================================
+FIN DU CONTROLE QUOTIDIEN
+=====================================================

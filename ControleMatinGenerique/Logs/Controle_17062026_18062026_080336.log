@@ -1,0 +1,306 @@
+
+Date du controle               Jour                     Jours historique
+------------------------------ ------------------------ ----------------
+Plage nuit
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+18/06/2026                     JEUDI                                   3
+19h - 7h
+
+=====================================================
+RAPPORT DE CONTROLE QUOTIDIEN - 18/06/2026
+Jour : JEUDI
+=====================================================
++----------------------------------------------------------+
+|                   SYNTHESE DU JOUR                      |
++----------------------------------------------------------+
+| Flux DSP (fichiers)         :     5   [OK] |
+| Notes de frais Notilus      :   124   [OK] |
+| Factures Xerox              :  1258   [OK] |
+| Factures Tradeshift         :    30   [OK] |
+| Factures DSP                :     1   [W] |
+| Ecritures GL (interface)    :     0   [W] |
+| Lignes GL creees            : 72268   [OK] |
+| Imports RB                  :   339   [OK] |
++----------------------------------------------------------+
+| Traitements nuit            :  7364                        |
+| Erreurs                     :     0                        |
+| Avertissements              :    45                        |
+| *** IMAGES MANQUANTES ***   :     8                        |
++----------------------------------------------------------+
+[!] ALERTE : 8 factures Xerox sans image - Voir Section 4
+
+=== DSP - Detail des flux (fichiers) ===
+
+SRC   DATE     JOUR       TYPE          FICHIER
+----- -------- ---------- ------------- ----------------------------------------------------------------------
+DSP   17/06/26 MERCREDI   AUTRE         DSP01_PO_ENTETE_20260617162322_ST_DSP01-PO_2698449.csv
+DSP   17/06/26 MERCREDI   DEBLOCAGE     DSP01_INV_DEBLOCAGE_20260617174316_ST_2698525.csv
+DSP   17/06/26 MERCREDI   FOURNISSEURS  DSP01_SUP_ENTETE_20260617092316_ST_DSP01-SUP_2697833.csv
+DSP   17/06/26 MERCREDI   FOURNISSEURS  DSP01_SUP_ENTETE_20260617144316_ST_DSP01-SUP_2698334.csv
+DSP   17/06/26 MERCREDI   RECEPTIONS    DSP01_REC_RECEPTIONS_20260617163316_ST_DSP01-REC_2698466.csv
+DSP   16/06/26 MARDI      AUTRE         DSP01_PO_ENTETE_20260616162321_ST_DSP01-PO_2696394.csv
+DSP   16/06/26 MARDI      DEBLOCAGE     DSP01_INV_DEBLOCAGE_20260616174316_ST_2696457.csv
+DSP   16/06/26 MARDI      FOURNISSEURS  DSP01_SUP_ENTETE_20260616092316_ST_DSP01-SUP_2695691.csv
+DSP   16/06/26 MARDI      FOURNISSEURS  DSP01_SUP_ENTETE_20260616144316_ST_DSP01-SUP_2696282.csv
+DSP   16/06/26 MARDI      RECEPTIONS    DSP01_REC_RECEPTIONS_20260616163316_ST_DSP01-REC_2696402.csv
+DSP   15/06/26 LUNDI      AUTRE         DSP01_PO_ENTETE_20260615162322_ST_DSP01-PO_2694402.csv
+DSP   15/06/26 LUNDI      DEBLOCAGE     DSP01_INV_DEBLOCAGE_20260615174316_ST_2694466.csv
+DSP   15/06/26 LUNDI      FOURNISSEURS  DSP01_SUP_ENTETE_20260615092316_ST_DSP01-SUP_2693704.csv
+DSP   15/06/26 LUNDI      FOURNISSEURS  DSP01_SUP_ENTETE_20260615144316_ST_DSP01-SUP_2694292.csv
+DSP   15/06/26 LUNDI      RECEPTIONS    DSP01_REC_RECEPTIONS_20260615163316_ST_DSP01-REC_2694418.csv
+
+=== DSP - Synthese par jour et type ===
+
+DATE     JOUR       FOURN. CMDES RECEP. DEBLOC. TOTAL
+-------- ---------- ------ ----- ------ ------- -----
+17/06/26 MERCREDI        1     1      1       1     4
+16/06/26 MARDI           1     1      1       1     4
+15/06/26 LUNDI           1     1      1       1     4
+
+=== NOTILUS - Comptage des notes de frais ===
+
+CONTROLE   DATE     JOUR       NB NDF MONTANT TOTAL
+---------- -------- ---------- ------ -------------
+NOTILUS    17/06/26 MERCREDI      124         4 504
+NOTILUS    16/06/26 MARDI         135         3 232
+NOTILUS    15/06/26 LUNDI         397        73 604
+
+=== FACTURES - Synthese par source ===
+
+CONTROLE   DATE     SOURCE       NB FACTURES
+---------- -------- ------------ -----------
+FACTURES   17/06/26 DSP                    1
+FACTURES   17/06/26 TRADESHIFT            30
+FACTURES   17/06/26 XEROX               1258
+FACTURES   16/06/26 DSP                    8
+FACTURES   16/06/26 TRADESHIFT          2493
+FACTURES   16/06/26 XEROX               1979
+
+=== XEROX - Factures SANS images (ALERTE) ===
+
+INFO
+------------------------------------------------------------------------------------------------------------------------
+20260617 | FAC00000254               | VE1-10435-20260616-0959-308-001-FMU-001-ED1Flux.TI | INV=11585363 VDR=3410071
+20260617 | F-2026-06-3726            | VE1-71350-20260615-0514-342-001-FMU-001-ED1Flux.TI | INV=11669650 VDR=3670099
+20260617 | F260614JM                 | VE1-91190-20260616-0806-967-001-FMU-001-ED1Flux.TI | INV=11669581 VDR=946051
+20260617 | L251000950                | VE1-10435-20260615-0506-134-001-FMU-005-ED1Flux.TI | INV=11661253 VDR=3197064
+20260617 | VENTE-2026-000068         | VE1-91190-20260616-0954-295-001-FMU-001-ED1Flux.TI | INV=11581423 VDR=3403075
+20260617 | 26-53                     | VE1-60404-20260615-0510-271-001-FMU-009-ED1Flux.TI | INV=11667060 VDR=3498087
+20260617 | 3951853                   | VE1-71350-20260615-0512-319-001-FMU-002-ED1Flux.TI | INV=11669657 VDR=3803139
+20260617 | 673326036837              | VE1-30446-20260616-0842-062-001-FMU-001-ED1Flux.TI | INV=11669552 VDR=1397026
+
+=== XEROX - Factures AVEC images (compteur) ===
+
+NB AVEC IMAGE
+-------------
+          986
+
+=== GL - Interface (en attente) ===
+
+=== GL - Lignes creees ===
+
+CONTROLE   DATE     SOURCE                                           NB LIGNES      TOTAL DEBIT
+---------- -------- --------------------------------------------- ------------ ----------------
+GL_CREES   18/06/26                                                     55 123       38 693 888
+GL_CREES   18/06/26 CDPG.NC4.EXPORT.2026061714315683317.COMP.E_CO           12          320 896
+GL_CREES   17/06/26                                                     42 425      676 390 569
+GL_CREES   17/06/26 FAC02_SRC_ECRITURESGL_270526-171607                 27 819      109 283 198
+GL_CREES   17/06/26 FAC02_SRC_ECRITURESGL_170626-011302                    146           31 881
+GL_CREES   17/06/26 CDPG.NC4.EXPORT.2026061714315683317.COMP.E_CO        1 840      226 028 504
+GL_CREES   17/06/26 CDPG.NC4.EXPORT.2026061114321158794.COMP.E_CO           38        6 203 374
+GL_CREES   16/06/26                                                     53 887      412 480 556
+GL_CREES   16/06/26 FAC02_SRC_ECRITURESGL_270526-171607                240 856      334 256 014
+GL_CREES   16/06/26 FAC02_SRC_ECRITURESGL_160626-012549                    171           39 119
+GL_CREES   16/06/26 CEL01_SRC_ECRITURESGL_270526-170107                 16 090       89 154 033
+GL_CREES   16/06/26 CDPG.NC4.EXPORT.2026061114321158794.COMP.E_CO        4 737      941 193 709
+GL_CREES   15/06/26                                                     30 858      156 142 083
+GL_CREES   15/06/26 FAC02_SRC_ECRITURESGL_130626-013227                     82            8 317
+
+=== NUIT - Synthese par statut ===
+
+CONTROLE        STATUT              NB
+--------------- ---------------- -----
+NUIT_SYNTHESE   WARNING             45
+NUIT_SYNTHESE   OK                7319
+
+=== NUIT - Detail des ERREURS ===
+
+=== NUIT - Detail des WARNINGS ===
+
+     REQ ID PROGRAMME                                     DEBUT          DUREE(min) MESSAGE
+----------- --------------------------------------------- -------------- ---------- -------------------------------------------------------
+   48231496 DKA : Envoi avis de virement par mail         18/06 04:44:07         .0
+   48231485 DKA : Automatisation envoi avis de virement p 18/06 04:43:44         .4
+            ar mail
+
+   48231484 DKA : Lanceur (SHELL)                         18/06 04:43:43         .7 Fin Anormale
+   48231238 DKA : Règlements automatiques des prélèvement 18/06 03:30:09         .7
+            s clients
+
+   48231228 DKA : Lanceur (SHELL)                         18/06 03:30:08         .7 Fin Anormale
+   48228276 Traitement du processeur enfant de validation 17/06 22:20:32       19.6
+             de factures
+
+   48228230 Traitement du processeur enfant de validation 17/06 22:16:49        4.8
+             de factures
+
+   48228229 Traitement du processeur enfant de validation 17/06 22:16:49       12.4
+             de factures
+
+   48227968 Validation de factures                        17/06 22:15:58       17.6 Fin normale
+   48227807 Validation de factures                        17/06 22:13:11       27.4 Fin normale
+   48227402 DKA : Import des codes de déblocage Facture d 17/06 22:01:26        2.7
+            epuis IVALUA
+
+   48227401 DKA : Lanceur (SHELL)                         17/06 22:01:23        3.0 Fin Anormale
+   48227234 DKA : Intégration des factures XEROX          17/06 21:17:52       42.1
+   48227233 DKA : Lanceur (SHELL)                         17/06 21:17:51       42.3 Fin Anormale
+   48226284 DKA : Import des données Réceptions depuis iV 17/06 19:46:27       10.7
+            alua
+
+   48226282 DKA : Lanceur (SHELL)                         17/06 19:46:24       11.0 Fin Anormale
+   48226056 DKA : Import des contrats SSTR depuis iValua  17/06 19:43:33         .6
+   48226037 DKA : Lanceur (SHELL)                         17/06 19:43:32         .7 Fin Anormale
+   48225561 Copie en haut volume périodique               17/06 19:41:31         .1 Programme simultané n'a renvoyé aucun motif d'échec.
+   48225549 Copie en haut volume périodique               17/06 19:41:30         .1 Programme simultané n'a renvoyé aucun motif d'échec.
+   48225552 Copie en haut volume périodique               17/06 19:41:30         .1 Programme simultané n'a renvoyé aucun motif d'échec.
+   48225495 Copie en haut volume périodique               17/06 19:41:26         .1 Programme simultané n'a renvoyé aucun motif d'échec.
+   48225470 Copie en haut volume périodique               17/06 19:41:24         .1 Programme simultané n'a renvoyé aucun motif d'échec.
+   48225452 Copie en haut volume périodique               17/06 19:41:22         .1 Programme simultané n'a renvoyé aucun motif d'échec.
+   48225430 Copie en haut volume périodique               17/06 19:41:21         .1 Programme simultané n'a renvoyé aucun motif d'échec.
+   48225429 Copie en haut volume périodique               17/06 19:41:20         .1 Programme simultané n'a renvoyé aucun motif d'échec.
+   48225388 Copie en haut volume périodique               17/06 19:41:17         .1 Programme simultané n'a renvoyé aucun motif d'échec.
+   48225369 Copie en haut volume périodique               17/06 19:41:16         .1 Programme simultané n'a renvoyé aucun motif d'échec.
+   48225371 Copie en haut volume périodique               17/06 19:41:16         .1 Programme simultané n'a renvoyé aucun motif d'échec.
+   48225370 Copie en haut volume périodique               17/06 19:41:16         .1 Programme simultané n'a renvoyé aucun motif d'échec.
+   48225367 Copie en haut volume périodique               17/06 19:41:15         .1 Programme simultané n'a renvoyé aucun motif d'échec.
+   48225313 Copie en haut volume périodique               17/06 19:41:12         .0 Programme simultané n'a renvoyé aucun motif d'échec.
+   48225298 Copie en haut volume périodique               17/06 19:41:09         .1 Programme simultané n'a renvoyé aucun motif d'échec.
+   48225266 Copie en haut volume périodique               17/06 19:41:08         .1 Programme simultané n'a renvoyé aucun motif d'échec.
+   48225268 Copie en haut volume périodique               17/06 19:41:08         .1 Programme simultané n'a renvoyé aucun motif d'échec.
+   48225264 Phase du jeu de traitements                   17/06 19:41:05         .7
+   48225265 DKA : Copie en haut volume périodique         17/06 19:41:05         .7
+   48225160 DKA : Création des encaissements clients pour 17/06 19:25:58         .1
+             le compte de
+
+   48225158 DKA : Lanceur (SHELL)                         17/06 19:25:57         .4 Fin Anormale
+   48225076 DKA : Import des commandes depuis iValua      17/06 19:21:50       19.8
+   48225075 DKA : Lanceur (SHELL)                         17/06 19:21:46       20.0 Fin Anormale
+   48225001 EasyLink                                      17/06 19:18:58         .0 Données introuvables dans la table GL_INTERFACE.
+   48224370 DKA : Import des données Fournisseurs depuis  17/06 19:12:37        7.7
+            iValua
+
+   48224368 DKA : Lanceur (SHELL)                         17/06 19:12:36        8.0 Fin Anormale
+   48224363 DKA : campagne de lettrage à zéro             17/06 19:04:15        1.4
+
+=== NUIT - Traitements longs (> 30 min) ===
+
+     REQ ID PROGRAMME                                     DEBUT        FIN          DUREE(min) STATUT
+----------- --------------------------------------------- ------------ ------------ ---------- --------
+   48231498 DKA : Lanceur (SHELL)                         18/06 04:45  18/06 07:09       143.7 OK
+   48231509 DKA : Situation Oracle du matin               18/06 04:45  18/06 07:09       143.5 OK
+   48227404 DKA : Lanceur (SHELL)                         17/06 22:06  18/06 00:23       137.0 OK
+   48227405 Jeu d'états                                   17/06 22:06  18/06 00:22       136.7 OK
+   48224367 DKA : Lanceur (SHELL)                         17/06 19:12  17/06 21:06       113.5 OK
+   48224412 DKA : Import des donnees depuis l'open Interf 17/06 19:12  17/06 21:05       112.6 OK
+            ace AP
+
+   48224522 DKA : Import des donnees depuis l'open Interf 17/06 19:13  17/06 21:05       112.2 OK
+            ace AP
+
+   48224520 DKA : Import des donnees depuis l'open Interf 17/06 19:13  17/06 21:05       112.2 OK
+            ace AP
+
+   48224518 DKA : Import des donnees depuis l'open Interf 17/06 19:13  17/06 21:05       112.2 OK
+            ace AP
+
+   48224519 DKA : Import des donnees depuis l'open Interf 17/06 19:13  17/06 21:05       112.2 OK
+            ace AP
+
+   48224521 DKA : Import des donnees depuis l'open Interf 17/06 19:13  17/06 21:05       112.2 OK
+            ace AP
+
+   48224523 DKA : Import des donnees depuis l'open Interf 17/06 19:14  17/06 21:05       111.7 OK
+            ace AP
+
+   48228287 DKA : Comptabilisation AP                     17/06 22:43  18/06 00:17        94.0 OK
+   48228286 Phase du jeu de traitements                   17/06 22:43  18/06 00:17        94.0 OK
+   48228387 Créer une comptabilisation                    17/06 22:45  18/06 00:17        92.1 OK
+   48228735 Programme de comptabilisation                 17/06 22:45  18/06 00:16        91.7 OK
+   48228734 Programme de comptabilisation                 17/06 22:45  18/06 00:16        91.7 OK
+   48228733 Programme de comptabilisation                 17/06 22:45  18/06 00:16        91.5 OK
+   48228737 Programme de comptabilisation                 17/06 22:45  18/06 00:16        91.4 OK
+   48228736 Programme de comptabilisation                 17/06 22:45  18/06 00:16        91.4 OK
+   48230024 DKA : Lanceur (SHELL)                         18/06 01:45  18/06 03:13        88.7 OK
+   48230025 DKA : Règlements automatiques toutes sociétés 18/06 01:45  18/06 03:13        88.7 OK
+             des factures fournisseurs
+
+   48224374 DKA : Import des donnees depuis l'open Interf 17/06 19:12  17/06 20:34        82.0 OK
+            ace AP
+
+   48224508 DKA : Import des donnees depuis l'open Interf 17/06 19:12  17/06 20:17        64.5 OK
+            ace AP
+
+   48231281 DKA : Lanceur (SHELL)                         18/06 03:35  18/06 04:37        61.7 OK
+   48231282 DKA : Règlements automatiques toutes sociétés 18/06 03:36  18/06 04:37        61.5 OK
+             des factures fournisseurs
+
+   48224472 DKA : Import des donnees depuis l'open Interf 17/06 19:12  17/06 20:11        58.5 OK
+            ace AP
+
+   48224480 DKA : Import des donnees depuis l'open Interf 17/06 19:12  17/06 20:02        50.0 OK
+            ace AP
+
+   48224490 DKA : Import des donnees depuis l'open Interf 17/06 19:12  17/06 20:02        50.0 OK
+            ace AP
+
+   48224372 DKA : Import des donnees depuis l'open Interf 17/06 19:12  17/06 20:02        49.6 OK
+            ace AP
+
+   48223089 DKA : Lanceur (SHELL)                         17/06 19:02  17/06 19:51        49.0 OK
+   48223094 Jeu d'états                                   17/06 19:02  17/06 19:51        48.9 OK
+   48227233 DKA : Lanceur (SHELL)                         17/06 21:17  17/06 22:00        42.3 WARNING
+   48227234 DKA : Intégration des factures XEROX          17/06 21:17  17/06 21:59        42.1 WARNING
+   48224476 DKA : Import des donnees depuis l'open Interf 17/06 19:12  17/06 19:52        39.5 OK
+            ace AP
+
+   48224503 DKA : Import des donnees depuis l'open Interf 17/06 19:12  17/06 19:52        39.4 OK
+            ace AP
+
+   48224507 DKA : Import des donnees depuis l'open Interf 17/06 19:12  17/06 19:52        39.4 OK
+            ace AP
+
+   48224474 DKA : Import des donnees depuis l'open Interf 17/06 19:12  17/06 19:51        39.0 OK
+            ace AP
+
+   48224493 DKA : Import des donnees depuis l'open Interf 17/06 19:12  17/06 19:51        38.5 OK
+            ace AP
+
+   48223573 Phase du jeu de traitements                   17/06 19:02  17/06 19:41        38.4 OK
+   48223576 DKA : Calculer les plus- et moins-values      17/06 19:02  17/06 19:41        38.3 OK
+   48227781 Phase du jeu de traitements                   17/06 22:06  17/06 22:43        36.5 OK
+   48227782 DKA : Approbation toutes sociétés des facture 17/06 22:06  17/06 22:43        36.5 OK
+            s fournisseurs
+
+   48229731 DKA : Lanceur (SHELL)                         18/06 01:05  18/06 01:40        35.3 OK
+   48229732 DKA : Création des règlements pour la campagn 18/06 01:05  18/06 01:40        35.3 OK
+            e de prélèvement AP - RB
+
+   48224741 Programme d'importation de l'interface coopér 17/06 20:34  17/06 21:05        30.3 OK
+            ative d'Oracle Payables
+
+   48227849 Validation de factures                        17/06 22:13  17/06 22:43        30.2 OK
+
+=== NUIT - Traitements en cours (potentiellement bloques) ===
+
+=== RAPPROCHEMENT BANCAIRE (RB) ===
+
+CONTROLE     DATE     JOUR       NB COMPTES
+------------ -------- ---------- ----------
+RB_IMPORTS   18/06/26 JEUDI             339
+RB_IMPORTS   17/06/26 MERCREDI          339
+RB_IMPORTS   16/06/26 MARDI             339
+
+=====================================================
+FIN DU CONTROLE QUOTIDIEN
+=====================================================

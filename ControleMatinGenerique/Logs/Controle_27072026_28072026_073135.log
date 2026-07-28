@@ -1,0 +1,327 @@
+
+Date du controle               Jour                     Jours historique
+------------------------------ ------------------------ ----------------
+Plage nuit
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+28/07/2026                     MARDI                                   3
+19h - 7h
+
+=====================================================
+RAPPORT DE CONTROLE QUOTIDIEN - 28/07/2026
+Jour : MARDI
+=====================================================
++----------------------------------------------------------+
+|                   SYNTHESE DU JOUR                      |
++----------------------------------------------------------+
+| Flux DSP (fichiers)         :     5   [OK] |
+| Notes de frais Notilus      :   267   [OK] |
+| Factures Xerox              :  1806   [OK] |
+| Factures Tradeshift         :    11   [OK] |
+| Factures DSP                :     0   [OK] |
+| Ecritures GL (interface)    :     0   [W] |
+| Lignes GL creees            : 33076   [OK] |
+| Imports RB                  :     0   [W] |
++----------------------------------------------------------+
+| Traitements nuit            :  9112                        |
+| *** ERREURS ***             :   113                        |
+| Avertissements              :    29                        |
+| *** IMAGES MANQUANTES ***   :    15                        |
++----------------------------------------------------------+
+[!] ALERTE : 113 traitement(s) en ERREUR - Voir Section 6
+[!] ALERTE : 15 factures Xerox sans image - Voir Section 4
+
+=== DSP - Detail des flux (fichiers) ===
+
+SRC   DATE     JOUR       TYPE          FICHIER
+----- -------- ---------- ------------- ----------------------------------------------------------------------
+DSP   27/07/26 LUNDI      AUTRE         DSP01_PO_ENTETE_20260727162320_ST_DSP01-PO_2774264.csv
+DSP   27/07/26 LUNDI      DEBLOCAGE     DSP01_INV_DEBLOCAGE_20260727174315_ST_2774340.csv
+DSP   27/07/26 LUNDI      FOURNISSEURS  DSP01_SUP_ENTETE_20260727092315_ST_DSP01-SUP_2773618.csv
+DSP   27/07/26 LUNDI      FOURNISSEURS  DSP01_SUP_ENTETE_20260727144315_ST_DSP01-SUP_2774170.csv
+DSP   27/07/26 LUNDI      RECEPTIONS    DSP01_REC_RECEPTIONS_20260727163316_ST_DSP01-REC_2774281.csv
+
+=== DSP - Synthese par jour et type ===
+
+DATE     JOUR       FOURN. CMDES RECEP. DEBLOC. TOTAL
+-------- ---------- ------ ----- ------ ------- -----
+27/07/26 LUNDI           1     1      1       1     4
+
+=== NOTILUS - Comptage des notes de frais ===
+
+CONTROLE   DATE     JOUR       NB NDF MONTANT TOTAL
+---------- -------- ---------- ------ -------------
+NOTILUS    27/07/26 LUNDI         267        55 434
+
+=== FACTURES - Synthese par source ===
+
+CONTROLE   DATE     SOURCE       NB FACTURES
+---------- -------- ------------ -----------
+FACTURES   27/07/26 TRADESHIFT            11
+FACTURES   27/07/26 XEROX               1806
+
+=== XEROX - Factures SANS images (ALERTE) ===
+
+INFO
+------------------------------------------------------------------------------------------------------------------------
+20260727 | AA-26-089                 | VE1-71350-20260722-1101-497-001-FMU-002-ED1Flux.TI | INV=11816825 VDR=3935134
+20260727 | AA-26-105                 | VE1-71350-20260722-1103-507-001-FMU-001-ED1Flux.TI | INV=11816822 VDR=3935134
+20260727 | AD40001791                | VE1-10453-20260724-1216-783-001-FMU-002-ED1Flux.TI | INV=11823402 VDR=7354
+20260727 | COMET-GROUP-2026-07-24-19 | VE1-71350-20260724-1158-723-001-FMU-002-ED1Flux.TI | INV=11820000 VDR=679006
+20260727 | F202601066                | VE1-71350-20260724-1243-828-001-FMU-001-ED1Flux.TI | INV=11820049 VDR=2194045
+20260727 | F-2026-07-1               | VE1-40438-20260723-0509-293-001-FMU-001-ED1Flux.TI | INV=11815010 VDR=3815133
+20260727 | F-2026-07-1               | VE1-40438-20260723-0509-293-001-FMU-001-ED1Flux.TI | INV=11819555 VDR=3410076
+20260727 | F-2026-125                | VE1-30446-20260723-0859-812-001-FMU-001-ED1Flux.TI | INV=11819910 VDR=2330037
+20260727 | 16                        | VE1-30446-20260717-0525-750-003-FMU-002-ED1Flux.TI | INV=11796183 VDR=13000
+20260727 | 20260707                  | VE1-40438-20260724-1133-619-001-FMU-004-ED1Flux.TI | INV=11768302 VDR=3705128
+20260727 | 24542-PFR                 | VE1-71350-20260724-0521-670-001-FMU-001-ED1Flux.TI | INV=11823393 VDR=3464088
+20260727 | 7715                      | VE1-10039-20260723-0512-356-001-FMU-002-ED1Flux.TI | INV=11815013 VDR=4026
+20260727 | 9100798954                | VE1-71350-20260723-0504-142-001-FMU-001-ED1Flux.TI | INV=11812953 VDR=5091
+20260727 | 9100798958                | VE1-71350-20260723-0504-144-001-FMU-001-ED1Flux.TI | INV=11812949 VDR=5091
+20260727 | 9100798962                | VE1-71350-20260723-0504-145-001-FMU-002-ED1Flux.TI | INV=11812955 VDR=5091
+
+=== XEROX - Factures AVEC images (compteur) ===
+
+NB AVEC IMAGE
+-------------
+         1452
+
+=== GL - Interface (en attente) ===
+
+CONTROLE       SOURCE                                   TYPE            STATUS   NB LIGNES  TOTAL DEBIT TOTAL CREDIT
+-------------- ---------------------------------------- --------------- -------- --------- ------------ ------------
+GL_INTERFACE                                                            EP01             2        9 238        9 238
+
+=== GL - Lignes creees ===
+
+CONTROLE   DATE     SOURCE                                           NB LIGNES      TOTAL DEBIT
+---------- -------- --------------------------------------------- ------------ ----------------
+GL_CREES   28/07/26                                                        730       20 708 480
+GL_CREES   27/07/26                                                     31 447      146 982 201
+GL_CREES   27/07/26 FAC02_SRC_ECRITURESGL_250726-011830                     69            8 589
+GL_CREES   27/07/26 CDPG.NC4.EXPORT.2026072714512188996.COMP.E_CO        1 560      238 299 218
+GL_CREES   25/07/26                                                      5 688       17 852 498
+
+=== NUIT - Synthese par statut ===
+
+CONTROLE        STATUT              NB
+--------------- ---------------- -----
+NUIT_SYNTHESE   WARNING             29
+NUIT_SYNTHESE   *** ERREUR ***     113
+NUIT_SYNTHESE   OK                8970
+
+=== NUIT - Detail des ERREURS ===
+
+     REQ ID PROGRAMME                                     DEBUT          FIN            DUREE(min) MESSAGE
+----------- --------------------------------------------- -------------- -------------- ---------- -------------------------------------------------------
+   48596718 Programme maître de l'interface factures      27/07 19:13:38 27/07 19:13:41         .1 Le programme de traitements simultanés pour la demande
+   48596719 Programme maître de l'interface factures      27/07 19:13:38 27/07 19:13:48         .2 Le programme de traitements simultanés pour la demande
+   48596716 Programme maître de l'interface factures      27/07 19:13:38 27/07 19:13:43         .1 Le programme de traitements simultanés pour la demande
+   48596715 Programme maître de l'interface factures      27/07 19:13:38 27/07 19:13:44         .1 Le programme de traitements simultanés pour la demande
+   48596717 Programme maître de l'interface factures      27/07 19:13:38 27/07 19:13:47         .2 Le programme de traitements simultanés pour la demande
+   48596709 Programme maître de l'interface factures      27/07 19:13:35 27/07 19:13:41         .1 Le programme de traitements simultanés pour la demande
+   48596710 Programme maître de l'interface factures      27/07 19:13:35 27/07 19:13:45         .2 Le programme de traitements simultanés pour la demande
+   48596708 Programme maître de l'interface factures      27/07 19:13:34 27/07 19:13:38         .1 Le programme de traitements simultanés pour la demande
+   48596707 Programme maître de l'interface factures      27/07 19:13:34 27/07 19:13:47         .2 Le programme de traitements simultanés pour la demande
+   48596704 Programme maître de l'interface factures      27/07 19:13:34 27/07 19:13:46         .2 Le programme de traitements simultanés pour la demande
+   48596706 Programme maître de l'interface factures      27/07 19:13:34 27/07 19:13:42         .1 Le programme de traitements simultanés pour la demande
+   48596705 Programme maître de l'interface factures      27/07 19:13:34 27/07 19:13:41         .1 Le programme de traitements simultanés pour la demande
+   48596703 Programme maître de l'interface factures      27/07 19:13:34 27/07 19:13:43         .2 Le programme de traitements simultanés pour la demande
+   48596702 Programme maître de l'interface factures      27/07 19:13:34 27/07 19:13:45         .2 Le programme de traitements simultanés pour la demande
+   48596701 Programme maître de l'interface factures      27/07 19:13:34 27/07 19:13:37         .1 Le programme de traitements simultanés pour la demande
+   48596700 Programme maître de l'interface factures      27/07 19:13:34 27/07 19:13:39         .1 Le programme de traitements simultanés pour la demande
+   48596699 Programme maître de l'interface factures      27/07 19:13:34 27/07 19:13:39         .1 Le programme de traitements simultanés pour la demande
+   48596698 Programme maître de l'interface factures      27/07 19:13:34 27/07 19:13:46         .2 Le programme de traitements simultanés pour la demande
+   48596693 Programme maître de l'interface factures      27/07 19:13:33 27/07 19:13:46         .2 Le programme de traitements simultanés pour la demande
+   48596692 Programme maître de l'interface factures      27/07 19:13:33 27/07 19:13:45         .2 Le programme de traitements simultanés pour la demande
+   48596697 Programme maître de l'interface factures      27/07 19:13:33 27/07 19:13:45         .2 Le programme de traitements simultanés pour la demande
+   48596696 Programme maître de l'interface factures      27/07 19:13:33 27/07 19:13:43         .2 Le programme de traitements simultanés pour la demande
+   48596695 Programme maître de l'interface factures      27/07 19:13:33 27/07 19:13:47         .2 Le programme de traitements simultanés pour la demande
+   48596694 Programme maître de l'interface factures      27/07 19:13:33 27/07 19:13:44         .2 Le programme de traitements simultanés pour la demande
+   48596691 Programme maître de l'interface factures      27/07 19:13:32 27/07 19:13:41         .2 Le programme de traitements simultanés pour la demande
+   48596688 Programme maître de l'interface factures      27/07 19:13:31 27/07 19:13:40         .2 Le programme de traitements simultanés pour la demande
+   48596689 Programme maître de l'interface factures      27/07 19:13:31 27/07 19:13:39         .1 Le programme de traitements simultanés pour la demande
+   48596686 Programme maître de l'interface factures      27/07 19:13:30 27/07 19:13:38         .1 Le programme de traitements simultanés pour la demande
+   48596687 Programme maître de l'interface factures      27/07 19:13:30 27/07 19:13:37         .1 Le programme de traitements simultanés pour la demande
+   48596685 Programme maître de l'interface factures      27/07 19:13:30 27/07 19:13:34         .1 Le programme de traitements simultanés pour la demande
+   48596683 Programme maître de l'interface factures      27/07 19:13:28 27/07 19:13:38         .2 Le programme de traitements simultanés pour la demande
+   48596682 Programme maître de l'interface factures      27/07 19:13:26 27/07 19:13:31         .1 Le programme de traitements simultanés pour la demande
+   48596681 Programme maître de l'interface factures      27/07 19:13:25 27/07 19:13:29         .1 Le programme de traitements simultanés pour la demande
+   48596680 Programme maître de l'interface factures      27/07 19:13:25 27/07 19:13:33         .1 Le programme de traitements simultanés pour la demande
+   48596658 Programme maître de l'interface factures      27/07 19:13:21 27/07 19:13:35         .2 Le programme de traitements simultanés pour la demande
+   48596659 Programme maître de l'interface factures      27/07 19:13:21 27/07 19:13:34         .2 Le programme de traitements simultanés pour la demande
+   48596660 Programme maître de l'interface factures      27/07 19:13:21 27/07 19:13:41         .3 Le programme de traitements simultanés pour la demande
+   48596661 Programme maître de l'interface factures      27/07 19:13:21 27/07 19:13:33         .2 Le programme de traitements simultanés pour la demande
+   48596666 Programme maître de l'interface factures      27/07 19:13:21 27/07 19:13:41         .3 Le programme de traitements simultanés pour la demande
+   48596667 Programme maître de l'interface factures      27/07 19:13:21 27/07 19:13:35         .2 Le programme de traitements simultanés pour la demande
+   48596668 Programme maître de l'interface factures      27/07 19:13:21 27/07 19:13:41         .3 Le programme de traitements simultanés pour la demande
+   48596669 Programme maître de l'interface factures      27/07 19:13:21 27/07 19:13:41         .3 Le programme de traitements simultanés pour la demande
+   48596670 Programme maître de l'interface factures      27/07 19:13:21 27/07 19:13:41         .3 Le programme de traitements simultanés pour la demande
+   48596671 Programme maître de l'interface factures      27/07 19:13:21 27/07 19:13:41         .3 Le programme de traitements simultanés pour la demande
+   48596672 Programme maître de l'interface factures      27/07 19:13:21 27/07 19:13:41         .3 Le programme de traitements simultanés pour la demande
+   48596673 Programme maître de l'interface factures      27/07 19:13:21 27/07 19:13:40         .3 Le programme de traitements simultanés pour la demande
+   48596674 Programme maître de l'interface factures      27/07 19:13:21 27/07 19:13:41         .3 Le programme de traitements simultanés pour la demande
+   48596678 Programme maître de l'interface factures      27/07 19:13:21 27/07 19:13:41         .3 Le programme de traitements simultanés pour la demande
+   48596676 Programme maître de l'interface factures      27/07 19:13:21 27/07 19:13:25         .1 Le programme de traitements simultanés pour la demande
+   48596677 Programme maître de l'interface factures      27/07 19:13:21 27/07 19:13:41         .3 Le programme de traitements simultanés pour la demande
+   48596636 Programme maître de l'interface factures      27/07 19:13:20 27/07 19:13:41         .4 Le programme de traitements simultanés pour la demande
+   48596637 Programme maître de l'interface factures      27/07 19:13:20 27/07 19:13:41         .4 Le programme de traitements simultanés pour la demande
+   48596638 Programme maître de l'interface factures      27/07 19:13:20 27/07 19:13:28         .1 Le programme de traitements simultanés pour la demande
+   48596639 Programme maître de l'interface factures      27/07 19:13:20 27/07 19:13:41         .4 Le programme de traitements simultanés pour la demande
+   48596641 Programme maître de l'interface factures      27/07 19:13:20 27/07 19:13:32         .2 Le programme de traitements simultanés pour la demande
+   48596642 Programme maître de l'interface factures      27/07 19:13:20 27/07 19:13:34         .2 Le programme de traitements simultanés pour la demande
+   48596646 Programme maître de l'interface factures      27/07 19:13:20 27/07 19:13:34         .2 Le programme de traitements simultanés pour la demande
+   48596647 Programme maître de l'interface factures      27/07 19:13:20 27/07 19:13:41         .4 Le programme de traitements simultanés pour la demande
+   48596648 Programme maître de l'interface factures      27/07 19:13:20 27/07 19:13:41         .4 Le programme de traitements simultanés pour la demande
+   48596649 Programme maître de l'interface factures      27/07 19:13:20 27/07 19:13:41         .4 Le programme de traitements simultanés pour la demande
+   48596650 Programme maître de l'interface factures      27/07 19:13:20 27/07 19:13:41         .4 Le programme de traitements simultanés pour la demande
+   48596651 Programme maître de l'interface factures      27/07 19:13:20 27/07 19:13:35         .2 Le programme de traitements simultanés pour la demande
+   48596653 Programme maître de l'interface factures      27/07 19:13:20 27/07 19:13:35         .2 Le programme de traitements simultanés pour la demande
+   48596655 Programme maître de l'interface factures      27/07 19:13:20 27/07 19:13:41         .4 Le programme de traitements simultanés pour la demande
+   48596656 Programme maître de l'interface factures      27/07 19:13:20 27/07 19:13:35         .2 Le programme de traitements simultanés pour la demande
+   48596580 Programme maître de l'interface factures      27/07 19:13:20 27/07 19:13:41         .4 Le programme de traitements simultanés pour la demande
+   48596612 Programme maître de l'interface factures      27/07 19:13:20 27/07 19:13:28         .1 Le programme de traitements simultanés pour la demande
+   48596616 Programme maître de l'interface factures      27/07 19:13:20 27/07 19:13:33         .2 Le programme de traitements simultanés pour la demande
+   48596634 Programme maître de l'interface factures      27/07 19:13:19 27/07 19:13:30         .2 Le programme de traitements simultanés pour la demande
+   48596633 Programme maître de l'interface factures      27/07 19:13:19 27/07 19:13:41         .4 Le programme de traitements simultanés pour la demande
+   48596635 Programme maître de l'interface factures      27/07 19:13:19 27/07 19:13:41         .4 Le programme de traitements simultanés pour la demande
+   48596603 Programme maître de l'interface factures      27/07 19:13:18 27/07 19:13:40         .4 Le programme de traitements simultanés pour la demande
+   48596604 Programme maître de l'interface factures      27/07 19:13:18 27/07 19:13:33         .2 Le programme de traitements simultanés pour la demande
+   48596632 Programme maître de l'interface factures      27/07 19:13:18 27/07 19:13:40         .4 Le programme de traitements simultanés pour la demande
+   48596602 Programme maître de l'interface factures      27/07 19:13:18 27/07 19:13:40         .4 Le programme de traitements simultanés pour la demande
+   48596630 Programme maître de l'interface factures      27/07 19:13:18 27/07 19:13:41         .4 Le programme de traitements simultanés pour la demande
+   48596631 Programme maître de l'interface factures      27/07 19:13:18 27/07 19:13:41         .4 Le programme de traitements simultanés pour la demande
+   48596601 Programme maître de l'interface factures      27/07 19:13:18 27/07 19:13:41         .4 Le programme de traitements simultanés pour la demande
+   48596600 Programme maître de l'interface factures      27/07 19:13:18 27/07 19:13:34         .3 Le programme de traitements simultanés pour la demande
+   48596599 Programme maître de l'interface factures      27/07 19:13:18 27/07 19:13:41         .4 Le programme de traitements simultanés pour la demande
+   48596598 Programme maître de l'interface factures      27/07 19:13:18 27/07 19:13:29         .2 Le programme de traitements simultanés pour la demande
+   48596596 Programme maître de l'interface factures      27/07 19:13:18 27/07 19:13:41         .4 Le programme de traitements simultanés pour la demande
+   48596595 Programme maître de l'interface factures      27/07 19:13:18 27/07 19:13:41         .4 Le programme de traitements simultanés pour la demande
+   48596594 Programme maître de l'interface factures      27/07 19:13:18 27/07 19:13:29         .2 Le programme de traitements simultanés pour la demande
+   48596625 Programme maître de l'interface factures      27/07 19:13:18 27/07 19:13:40         .4 Le programme de traitements simultanés pour la demande
+   48596624 Programme maître de l'interface factures      27/07 19:13:18 27/07 19:13:30         .2 Le programme de traitements simultanés pour la demande
+   48596623 Programme maître de l'interface factures      27/07 19:13:18 27/07 19:13:40         .4 Le programme de traitements simultanés pour la demande
+   48596617 Programme maître de l'interface factures      27/07 19:13:18 27/07 19:13:41         .4 Le programme de traitements simultanés pour la demande
+   48596626 Programme maître de l'interface factures      27/07 19:13:18 27/07 19:13:41         .4 Le programme de traitements simultanés pour la demande
+   48596627 Programme maître de l'interface factures      27/07 19:13:18 27/07 19:13:31         .2 Le programme de traitements simultanés pour la demande
+   48596629 Programme maître de l'interface factures      27/07 19:13:18 27/07 19:13:40         .4 Le programme de traitements simultanés pour la demande
+   48596605 Programme maître de l'interface factures      27/07 19:13:18 27/07 19:13:34         .3 Le programme de traitements simultanés pour la demande
+   48596606 Programme maître de l'interface factures      27/07 19:13:18 27/07 19:13:41         .4 Le programme de traitements simultanés pour la demande
+   48596607 Programme maître de l'interface factures      27/07 19:13:18 27/07 19:13:34         .3 Le programme de traitements simultanés pour la demande
+   48596609 Programme maître de l'interface factures      27/07 19:13:18 27/07 19:13:33         .2 Le programme de traitements simultanés pour la demande
+   48596611 Programme maître de l'interface factures      27/07 19:13:18 27/07 19:13:34         .3 Le programme de traitements simultanés pour la demande
+   48596614 Programme maître de l'interface factures      27/07 19:13:18 27/07 19:13:33         .2 Le programme de traitements simultanés pour la demande
+
+     REQ ID PROGRAMME                                     DEBUT          FIN            DUREE(min) MESSAGE
+----------- --------------------------------------------- -------------- -------------- ---------- -------------------------------------------------------
+   48596615 Programme maître de l'interface factures      27/07 19:13:18 27/07 19:13:41         .4 Le programme de traitements simultanés pour la demande
+   48596618 Programme maître de l'interface factures      27/07 19:13:18 27/07 19:13:40         .4 Le programme de traitements simultanés pour la demande
+   48596619 Programme maître de l'interface factures      27/07 19:13:18 27/07 19:13:21         .1 Le programme de traitements simultanés pour la demande
+   48596620 Programme maître de l'interface factures      27/07 19:13:18 27/07 19:13:33         .2 Le programme de traitements simultanés pour la demande
+   48596622 Programme maître de l'interface factures      27/07 19:13:18 27/07 19:13:41         .4 Le programme de traitements simultanés pour la demande
+   48596586 Programme maître de l'interface factures      27/07 19:13:17 27/07 19:13:40         .4 Le programme de traitements simultanés pour la demande
+   48596585 Programme maître de l'interface factures      27/07 19:13:17 27/07 19:13:41         .4 Le programme de traitements simultanés pour la demande
+   48596592 Programme maître de l'interface factures      27/07 19:13:17 27/07 19:13:21         .1 Le programme de traitements simultanés pour la demande
+   48596589 Programme maître de l'interface factures      27/07 19:13:17 27/07 19:13:41         .4 Le programme de traitements simultanés pour la demande
+   48596587 Programme maître de l'interface factures      27/07 19:13:17 27/07 19:13:22         .1 Le programme de traitements simultanés pour la demande
+   48596588 Programme maître de l'interface factures      27/07 19:13:17 27/07 19:13:33         .3 Le programme de traitements simultanés pour la demande
+   48596584 Programme maître de l'interface factures      27/07 19:13:17 27/07 19:13:41         .4 Le programme de traitements simultanés pour la demande
+   48596582 Programme maître de l'interface factures      27/07 19:13:16 27/07 19:13:40         .4 Le programme de traitements simultanés pour la demande
+   48596576 Programme maître de l'interface factures      27/07 19:13:16 27/07 19:13:19         .1 Le programme de traitements simultanés pour la demande
+   48596579 Programme maître de l'interface factures      27/07 19:13:16 27/07 19:13:31         .2 Le programme de traitements simultanés pour la demande
+   48596575 Programme maître de l'interface factures      27/07 19:13:16 27/07 19:13:41         .4 Le programme de traitements simultanés pour la demande
+
+=== NUIT - Detail des WARNINGS ===
+
+     REQ ID PROGRAMME                                     DEBUT          DUREE(min) MESSAGE
+----------- --------------------------------------------- -------------- ---------- -------------------------------------------------------
+   48605362 DKA : Imputation GL                           28/07 02:12:59         .3
+   48605361 Phase du jeu de traitements                   28/07 02:12:59         .3
+   48605360 Jeu d'états                                   28/07 02:12:58        2.4
+   48605359 DKA : Lanceur (SHELL)                         28/07 02:12:57        2.7 Fin Anormale
+   48601249 Imputation                                    27/07 22:33:39        8.4 Les lots sélectionnés n'ont pas tous été imputés avec s
+   48601247 DKA : Imputation GL                           27/07 22:33:31        8.7
+   48601245 Jeu d'états                                   27/07 22:33:30       10.9
+   48601246 Phase du jeu de traitements                   27/07 22:33:30        8.7
+   48601242 DKA : Lanceur (SHELL)                         27/07 22:33:28       11.0 Fin Anormale
+   48600160 Traitement du processeur enfant de validation 27/07 21:47:38        9.2
+             de factures
+
+   48600151 Traitement du processeur enfant de validation 27/07 21:47:25        7.5
+             de factures
+
+   48600150 Traitement du processeur enfant de validation 27/07 21:47:25        7.7
+             de factures
+
+   48599885 Validation de factures                        27/07 21:45:51       11.7 Fin normale
+   48600082 Traitement du processeur enfant de validation 27/07 21:45:47       12.2
+             de factures
+
+   48600076 Traitement du processeur enfant de validation 27/07 21:45:47       12.3
+             de factures
+
+   48599734 Validation de factures                        27/07 21:43:21       16.0 Fin normale
+   48599733 Validation de factures                        27/07 21:43:21       15.8 Fin normale
+   48599327 DKA : Import des codes de déblocage Facture d 27/07 21:34:32        1.7
+            epuis IVALUA
+
+   48599324 DKA : Lanceur (SHELL)                         27/07 21:34:29        2.0 Fin Anormale
+   48599325 DKA : Contrôle des flux XEROX                 27/07 21:34:29         .0
+   48599326 DKA : Contrôle des flux IVALUA                27/07 21:34:29         .0
+   48599323 DKA : Lanceur (SHELL)                         27/07 21:34:28         .4 Fin Anormale
+   48599322 DKA : Lanceur (SHELL)                         27/07 21:34:28         .4 Fin Anormale
+   48598942 DKA : Import des données Réceptions depuis iV 27/07 19:45:29        7.4
+            alua
+
+   48598941 DKA : Lanceur (SHELL)                         27/07 19:45:26        7.7 Fin Anormale
+   48596994 DKA : Import des commandes depuis iValua      27/07 19:22:49       18.7
+   48596993 DKA : Lanceur (SHELL)                         27/07 19:22:47       19.0 Fin Anormale
+   48596515 DKA : Import des données Fournisseurs depuis  27/07 19:12:36        7.8
+            iValua
+
+   48596415 DKA : Lanceur (SHELL)                         27/07 19:12:32        8.0 Fin Anormale
+
+=== NUIT - Traitements longs (> 30 min) ===
+
+     REQ ID PROGRAMME                                     DEBUT        FIN          DUREE(min) STATUT
+----------- --------------------------------------------- ------------ ------------ ---------- --------
+   48605383 DKA : Lanceur (SHELL)                         28/07 02:17  28/07 04:58       161.4 OK
+   48605406 DKA : Situation Oracle du matin               28/07 02:17  28/07 04:58       161.2 OK
+   48601367 DKA : Lanceur (SHELL)                         27/07 23:25  28/07 00:53        88.4 OK
+   48601368 DKA : Règlements automatiques toutes sociétés 27/07 23:25  28/07 00:53        88.0 OK
+             des factures fournisseurs
+
+   48599115 DKA : Lanceur (SHELL)                         27/07 20:35  27/07 21:33        57.4 OK
+   48599116 DKA : Intégration des factures XEROX          27/07 20:35  27/07 21:32        56.9 OK
+   48599329 DKA : Lanceur (SHELL)                         27/07 21:38  27/07 22:32        54.4 OK
+   48599330 Jeu d'états                                   27/07 21:38  27/07 22:32        54.2 OK
+   48595247 DKA : Lanceur (SHELL)                         27/07 19:01  27/07 19:42        41.0 OK
+   48595252 Jeu d'états                                   27/07 19:01  27/07 19:42        40.9 OK
+   48602142 DKA : Lanceur (SHELL)                         28/07 01:00  28/07 01:35        34.7 OK
+   48602143 DKA : Automatisation envoi avis de virement p 28/07 01:00  28/07 01:34        34.4 OK
+            ar mail
+
+   48605368 DKA : Lanceur (SHELL)                         28/07 02:17  28/07 02:50        33.0 OK
+   48605389 DKA : Edition des fichiers de contrôle de pre 28/07 02:17  28/07 02:50        32.9 OK
+            -cloture
+
+   48595727 Phase du jeu de traitements                   27/07 19:01  27/07 19:31        30.0 OK
+   48595728 DKA : Calculer les plus- et moins-values      27/07 19:01  27/07 19:31        30.0 OK
+
+=== NUIT - Traitements en cours (potentiellement bloques) ===
+
+     REQ ID PROGRAMME                                     DEBUT          DUREE(min) PARAMETRES
+----------- --------------------------------------------- -------------- ---------- --------------------------------------------------
+   48605509 DKA : Lanceur (SHELL)                         28/07 07:30:07        2.2 DKA_IPAPROJETHRM_JOB.sh, , , , ,
+   48605518 DKA : Interface de création des codes projets 28/07 07:30:13        2.1
+            , tâches et affaire
+
+
+=== RAPPROCHEMENT BANCAIRE (RB) ===
+
+CONTROLE     DATE     JOUR       NB COMPTES
+------------ -------- ---------- ----------
+RB_IMPORTS   28/07/26 MARDI             207
+
+=====================================================
+FIN DU CONTROLE QUOTIDIEN
+=====================================================

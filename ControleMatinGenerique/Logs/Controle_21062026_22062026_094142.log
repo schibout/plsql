@@ -1,0 +1,140 @@
+
+Date du controle               Jour                     Jours historique
+------------------------------ ------------------------ ----------------
+Plage nuit
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+22/06/2026                     LUNDI                                   3
+19h - 7h
+
+=====================================================
+RAPPORT DE CONTROLE QUOTIDIEN - 22/06/2026
+Jour : LUNDI
+=====================================================
++----------------------------------------------------------+
+|                   SYNTHESE DU JOUR                      |
++----------------------------------------------------------+
+| Flux DSP (fichiers)         :     0   [W] |
+| Notes de frais Notilus      :     0   [W] |
+| Factures Xerox              :     0   [W] |
+| Factures Tradeshift         :     0   [W] |
+| Factures DSP                :     0   [W] |
+| Ecritures GL (interface)    :    94   [OK] |
+| Lignes GL creees            :    12   [OK] |
+| Imports RB                  :     0   [W] |
++----------------------------------------------------------+
+| Traitements nuit            :  1391                        |
+| Erreurs                     :     0                        |
+| Avertissements              :    15                        |
++----------------------------------------------------------+
+[!] RAPPEL LUNDI : Charger manuellement le fichier SG (rattrapage)
+
+=== DSP - Detail des flux (fichiers) ===
+
+SRC   DATE     JOUR       TYPE          FICHIER
+----- -------- ---------- ------------- ----------------------------------------------------------------------
+DSP   19/06/26 VENDREDI   AUTRE         DSP01_PO_ENTETE_20260619162321_ST_DSP01-PO_2702073.csv
+DSP   19/06/26 VENDREDI   DEBLOCAGE     DSP01_INV_DEBLOCAGE_20260619174316_ST_2702122.csv
+DSP   19/06/26 VENDREDI   FOURNISSEURS  DSP01_SUP_ENTETE_20260619092316_ST_DSP01-SUP_2701578.csv
+DSP   19/06/26 VENDREDI   FOURNISSEURS  DSP01_SUP_ENTETE_20260619144316_ST_DSP01-SUP_2701987.csv
+DSP   19/06/26 VENDREDI   RECEPTIONS    DSP01_REC_RECEPTIONS_20260619163316_ST_DSP01-REC_2702081.csv
+
+=== DSP - Synthese par jour et type ===
+
+DATE     JOUR       FOURN. CMDES RECEP. DEBLOC. TOTAL
+-------- ---------- ------ ----- ------ ------- -----
+19/06/26 VENDREDI        1     1      1       1     4
+
+=== NOTILUS - Comptage des notes de frais ===
+
+CONTROLE   DATE     JOUR       NB NDF MONTANT TOTAL
+---------- -------- ---------- ------ -------------
+NOTILUS    19/06/26 VENDREDI      120         9 685
+
+=== FACTURES - Synthese par source ===
+
+CONTROLE   DATE     SOURCE       NB FACTURES
+---------- -------- ------------ -----------
+FACTURES   20/06/26 TRADESHIFT           354
+
+=== XEROX - Factures SANS images (ALERTE) ===
+
+=== XEROX - Factures AVEC images (compteur) ===
+
+NB AVEC IMAGE
+-------------
+            0
+
+=== GL - Interface (en attente) ===
+
+CONTROLE       SOURCE                                   TYPE            STATUS   NB LIGNES  TOTAL DEBIT TOTAL CREDIT
+-------------- ---------------------------------------- --------------- -------- --------- ------------ ------------
+GL_INTERFACE   FAC02_SRC_ECRITURESGL_200626-010846      FGE             NEW             40        2 816        2 816
+GL_INTERFACE   FAC02_SRC_ECRITURESGL_200626-010846      GER             NEW             54        4 182        4 182
+
+=== GL - Lignes creees ===
+
+CONTROLE   DATE     SOURCE                                           NB LIGNES      TOTAL DEBIT
+---------- -------- --------------------------------------------- ------------ ----------------
+GL_CREES   22/06/26                                                         62        2 060 073
+GL_CREES   21/06/26                                                         12           28 936
+GL_CREES   20/06/26                                                      3 295        6 538 413
+GL_CREES   19/06/26                                                     25 712      559 895 000
+GL_CREES   19/06/26 FAC02_SRC_ECRITURESGL_190626-012742                    153           30 925
+GL_CREES   19/06/26 CDPG.NC4.EXPORT.2026061914315530212.COMP.E_CO        2 716      182 576 029
+
+=== NUIT - Synthese par statut ===
+
+CONTROLE        STATUT              NB
+--------------- ---------------- -----
+NUIT_SYNTHESE   WARNING             15
+NUIT_SYNTHESE   OK                1376
+
+=== NUIT - Detail des ERREURS ===
+
+=== NUIT - Detail des WARNINGS ===
+
+     REQ ID PROGRAMME                                     DEBUT          DUREE(min) MESSAGE
+----------- --------------------------------------------- -------------- ---------- -------------------------------------------------------
+   48264992 EasyLink                                      21/06 23:19:31         .0 Données introuvables dans la table GL_INTERFACE.
+   48264966 EasyLink                                      21/06 23:19:13         .1 Données introuvables dans la table GL_INTERFACE.
+   48264959 EasyLink                                      21/06 23:19:08         .1 Données introuvables dans la table GL_INTERFACE.
+   48264955 EasyLink                                      21/06 23:19:08         .1 Données introuvables dans la table GL_INTERFACE.
+   48264961 EasyLink                                      21/06 23:19:08         .1 Données introuvables dans la table GL_INTERFACE.
+   48264963 EasyLink                                      21/06 23:19:08         .1 Données introuvables dans la table GL_INTERFACE.
+   48264962 EasyLink                                      21/06 23:19:08         .1 Données introuvables dans la table GL_INTERFACE.
+   48264952 EasyLink                                      21/06 23:19:06         .1 Données introuvables dans la table GL_INTERFACE.
+   48264812 Traitement du processeur enfant de validation 21/06 23:02:32        3.4
+             de factures
+
+   48264810 Traitement du processeur enfant de validation 21/06 23:02:32        3.5
+             de factures
+
+   48264774 Traitement du processeur enfant de validation 21/06 23:00:43        5.1
+             de factures
+
+   48264541 Validation de factures                        21/06 22:59:29       11.4 Fin normale
+   48264399 Validation de factures                        21/06 22:57:10       13.6 Fin normale
+   48264002 DKA : Contrôle des flux IVALUA                21/06 22:47:42         .0
+   48264000 DKA : Lanceur (SHELL)                         21/06 22:47:41         .4 Fin Anormale
+
+=== NUIT - Traitements longs (> 30 min) ===
+
+     REQ ID PROGRAMME                                     DEBUT        FIN          DUREE(min) STATUT
+----------- --------------------------------------------- ------------ ------------ ---------- --------
+   48265109 DKA : Lanceur (SHELL)                         21/06 23:33  22/06 01:31       118.0 OK
+   48265113 DKA : Situation Oracle du matin               21/06 23:33  22/06 01:31       117.9 OK
+   48264001 DKA : Lanceur (SHELL)                         21/06 22:47  21/06 23:22        34.7 OK
+   48264003 Jeu d'états                                   21/06 22:47  21/06 23:22        34.4 OK
+
+=== NUIT - Traitements en cours (potentiellement bloques) ===
+
+=== RAPPROCHEMENT BANCAIRE (RB) ===
+
+CONTROLE     DATE     JOUR       NB COMPTES
+------------ -------- ---------- ----------
+RB_IMPORTS   22/06/26 LUNDI             206
+RB_IMPORTS   20/06/26 SAMEDI            133
+
+=====================================================
+FIN DU CONTROLE QUOTIDIEN
+=====================================================
