@@ -1,185 +1,43 @@
 # =====================================================================
-# Update AP.AP_INVOICES_ALL depuis invoice.csv
+#  Renvoi de factures vers DacShop - avec les images
 # =====================================================================
-# Date de creation  : 12/05/2026
-# Base de donnees   : Oracle EBS 12.2.13
-# Fichier CSV       : invoiceImage.csv (colonne INVOICE_ID)
+#  Marque les factures listees dans invoiceImage.csv comme modifiees dans
+#  AP.AP_INVOICES_ALL, et remet FND_ATTACHED_DOCUMENTS.ATTRIBUTE1 a NULL
+#  pour que les documents attaches soient renvoyes.
 #
-# UPDATE effectue   :
-#   LAST_UPDATE_DATE  = SYSDATE
-#   LAST_UPDATED_BY   = FND_GLOBAL.USER_ID
-#   LAST_UPDATE_LOGIN = FND_GLOBAL.LOGIN_ID
+#  Toute la logique est dans ..\Update_AP_Invoices_Commun.ps1 : ce script
+#  et celui de envoiFacture etaient auparavant deux copies integrales,
+#  ce qui obligeait a corriger chaque anomalie deux fois.
 #
-# SECURITE          : COMMIT uniquement si 0 erreur, ROLLBACK sinon
-#                     Lots de 999 IDs max (limite Oracle IN clause)
+#  SIMULATION PAR DEFAUT. Pour appliquer reellement :
+#     .\Update_AP_Invoices_Image.ps1 -Executer
+#     ou  Update_AP_Invoices_Image.bat EXEC
 # =====================================================================
 
-$ErrorActionPreference = "Stop"
-$ScriptDir  = Split-Path -Parent $MyInvocation.MyCommand.Path
-$Timestamp  = Get-Date -Format "ddMMyyyy_HHmmss"
+param(
+    [switch] $Executer,
+    [switch] $SansConfirmation,
+    [switch] $AutoriserManquants,
+    [switch] $GarderTempSQL,
+    [int]    $MaxLignes = 50000
+)
 
-Write-Host "Etape 1 : Chargement de la configuration..." -ForegroundColor Yellow
+$ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
+$Moteur    = Join-Path (Split-Path -Parent $ScriptDir) 'Update_AP_Invoices_Commun.ps1'
 
-$ConfigFile = Join-Path $ScriptDir "..\config.ps1"
-if (-not (Test-Path $ConfigFile)) {
-    Write-Host "[ERREUR] config.ps1 introuvable : $ConfigFile" -ForegroundColor Red
-    pause; exit 1
-}
-. (Resolve-Path $ConfigFile)
-
-$ORA_DSN     = "${ORA_HOST}:${ORA_PORT}/${ORA_SERVICE}"
-$CONNECT_STR = "${ORA_USER}/${ORA_PWD}@${ORA_DSN}"
-Write-Host "   Connexion : ${ORA_USER}@${ORA_DSN}" -ForegroundColor Green
-Write-Host "   FND User  : $FND_USER_NAME (USER_ID=$FND_USER_ID / RESP_ID=$FND_RESP_ID / APPL_ID=$FND_RESP_APPL_ID)" -ForegroundColor Green
-
-# --- CLIENT ORACLE ---
-$SQL_CMD = $null
-foreach ($cmd in @('sqlcl', 'sql', 'sqlplus')) {
-    if (Get-Command $cmd -ErrorAction SilentlyContinue) { $SQL_CMD = $cmd; break }
-}
-if ($null -eq $SQL_CMD) {
-    Write-Host "[ERREUR] Aucun client Oracle trouve (sqlcl, sql ou sqlplus)" -ForegroundColor Red
-    pause; exit 1
-}
-Write-Host "   Client    : $SQL_CMD" -ForegroundColor Green
-Write-Host ""
-
-# --- LECTURE CSV ---
-Write-Host "Etape 2 : Lecture du fichier invoice.csv..." -ForegroundColor Yellow
-
-$CsvPath = Join-Path $ScriptDir "invoiceImage.csv"
-if (-not (Test-Path $CsvPath)) {
-    Write-Host "[ERREUR] invoice.csv introuvable : $CsvPath" -ForegroundColor Red
-    pause; exit 1
+if (-not (Test-Path $Moteur)) {
+    Write-Host "[ERREUR] Moteur commun introuvable : $Moteur" -ForegroundColor Red
+    exit 1
 }
 
-$ids = Get-Content $CsvPath -Encoding UTF8 |
-       Where-Object { $_ -match '^\d+$' } |
-       ForEach-Object { $_.Trim() }
+& $Moteur -CsvNom 'invoiceImage.csv' `
+          -DossierBase $ScriptDir `
+          -Libelle 'Renvoi factures et images vers DacShop' `
+          -AvecImages `
+          -Executer:$Executer `
+          -SansConfirmation:$SansConfirmation `
+          -AutoriserManquants:$AutoriserManquants `
+          -GarderTempSQL:$GarderTempSQL `
+          -MaxLignes $MaxLignes
 
-$nbTotal = $ids.Count
-Write-Host "   Factures trouvees : $nbTotal" -ForegroundColor Green
-Write-Host ""
-
-# --- GENERATION SQL ---
-Write-Host "Etape 3 : Generation du script SQL..." -ForegroundColor Yellow
-
-$LogDir = Join-Path $ScriptDir "Logs"
-if (-not (Test-Path $LogDir)) { New-Item -ItemType Directory -Path $LogDir | Out-Null }
-
-$FichierSQLTmp = Join-Path $LogDir "update_ap_${Timestamp}.sql"
-$FichierLog    = Join-Path $LogDir "update_ap_${Timestamp}.log"
-
-# Decouper en lots de 999 (limite Oracle pour IN clause)
-$batchSize = 999
-$batches   = @()
-for ($i = 0; $i -lt $ids.Count; $i += $batchSize) {
-    $fin     = [Math]::Min($i + $batchSize - 1, $ids.Count - 1)
-    $batches += ,($ids[$i..$fin])
-}
-Write-Host "   Lots de $batchSize    : $($batches.Count) lot(s)" -ForegroundColor Gray
-
-# Encodage sans BOM (sqlplus ne supporte pas le BOM UTF-8)
-$utf8NoBom = [System.Text.UTF8Encoding]::new($false)
-
-$sql  = "SET SERVEROUTPUT ON SIZE UNLIMITED`n"
-$sql += "SET FEEDBACK OFF`n"
-$sql += "WHENEVER SQLERROR EXIT ROLLBACK`n`n"
-$sql += "DECLARE`n"
-$sql += "    v_user_id     NUMBER := $FND_USER_ID;`n"
-$sql += "    v_resp_id     NUMBER := $FND_RESP_ID;`n"
-$sql += "    v_resp_app_id NUMBER := $FND_RESP_APPL_ID;`n"
-$sql += "    v_total       NUMBER := 0;`n"
-$sql += "    v_total_fad   NUMBER := 0;`n"
-$sql += "BEGIN`n`n"
-$sql += "    -- Initialiser le contexte Oracle EBS`n"
-$sql += "    FND_GLOBAL.APPS_INITIALIZE(v_user_id, v_resp_id, v_resp_app_id);`n"
-$sql += "    DBMS_OUTPUT.PUT_LINE('APPS_INITIALIZE OK - USER=$FND_USER_NAME USER_ID=$FND_USER_ID RESP_ID=$FND_RESP_ID APPL_ID=$FND_RESP_APPL_ID');`n`n"
-
-$lotNum = 1
-foreach ($batch in $batches) {
-    # Decouper les IDs en sous-lignes de 50 (eviter limite sqlplus 2499 chars/ligne)
-    $lineSize = 50
-    $subLines = @()
-    for ($j = 0; $j -lt $batch.Count; $j += $lineSize) {
-        $fin2      = [Math]::Min($j + $lineSize - 1, $batch.Count - 1)
-        $subLines += $batch[$j..$fin2] -join ", "
-    }
-    $inList = $subLines -join ",`n               "
-
-    # Meme liste en VARCHAR2 pour FND_ATTACHED_DOCUMENTS (PK1_VALUE)
-    $subLinesStr = @()
-    for ($j = 0; $j -lt $batch.Count; $j += $lineSize) {
-        $fin2        = [Math]::Min($j + $lineSize - 1, $batch.Count - 1)
-        $subLinesStr += ($batch[$j..$fin2] | ForEach-Object { "'$_'" }) -join ", "
-    }
-    $inListStr = $subLinesStr -join ",`n               "
-
-    $sql += "    -- Lot $lotNum / $($batches.Count) ($($batch.Count) factures)`n"
-    $sql += "    UPDATE AP.AP_INVOICES_ALL`n"
-    $sql += "    SET    LAST_UPDATE_DATE  = SYSDATE,`n"
-    $sql += "           LAST_UPDATED_BY   = FND_GLOBAL.USER_ID,`n"
-    $sql += "           LAST_UPDATE_LOGIN = FND_GLOBAL.LOGIN_ID`n"
-    $sql += "    WHERE  INVOICE_ID IN ($inList);`n"
-    $sql += "    v_total := v_total + SQL%ROWCOUNT;`n`n"
-
-    $sql += "    UPDATE FND_ATTACHED_DOCUMENTS`n"
-    $sql += "    SET    ATTRIBUTE1       = NULL,`n"
-    $sql += "           LAST_UPDATE_DATE = SYSDATE,`n"
-    $sql += "           LAST_UPDATED_BY  = FND_GLOBAL.USER_ID`n"
-    $sql += "    WHERE  ENTITY_NAME = 'AP_INVOICES'`n"
-    $sql += "      AND  PK1_VALUE IN ($inListStr);`n"
-    $sql += "    v_total_fad := v_total_fad + SQL%ROWCOUNT;`n`n"
-
-    $lotNum++
-}
-
-$sql += "    COMMIT;`n`n"
-$sql += "    DBMS_OUTPUT.PUT_LINE('');`n"
-$sql += "    DBMS_OUTPUT.PUT_LINE('=================================================');`n"
-$sql += "    DBMS_OUTPUT.PUT_LINE('RESULTAT MISE A JOUR');`n"
-$sql += "    DBMS_OUTPUT.PUT_LINE('=================================================');`n"
-$sql += "    DBMS_OUTPUT.PUT_LINE('  AP_INVOICES_ALL       : ' || v_total || ' / $nbTotal');`n"
-$sql += "    DBMS_OUTPUT.PUT_LINE('  FND_ATTACHED_DOCUMENTS: ' || v_total_fad || ' ligne(s)');`n"
-$sql += "    DBMS_OUTPUT.PUT_LINE('=================================================');`n"
-$sql += "    DBMS_OUTPUT.PUT_LINE('COMMIT effectue avec succes.');`n"
-$sql += "    DBMS_OUTPUT.PUT_LINE('=================================================');`n"
-$sql += "`n"
-$sql += "EXCEPTION`n"
-$sql += "    WHEN OTHERS THEN`n"
-$sql += "        ROLLBACK;`n"
-$sql += "        DBMS_OUTPUT.PUT_LINE('ERREUR FATALE : ' || SQLERRM);`n"
-$sql += "        DBMS_OUTPUT.PUT_LINE('ROLLBACK effectue - aucune modification enregistree.');`n"
-$sql += "        RAISE;`n"
-$sql += "END;`n"
-$sql += "/`n`n"
-$sql += "EXIT;`n"
-
-[System.IO.File]::WriteAllText($FichierSQLTmp, $sql, $utf8NoBom)
-Write-Host "   Script SQL : $FichierSQLTmp" -ForegroundColor Gray
-Write-Host ""
-
-# --- EXECUTION ---
-Write-Host "Etape 4 : Execution sur Oracle EBS..." -ForegroundColor Yellow
-Write-Host "   Mise a jour de $nbTotal factures en cours..." -ForegroundColor Gray
-Write-Host ""
-
-$sortie   = & $SQL_CMD -S "$CONNECT_STR" "@$FichierSQLTmp" 2>&1
-$exitCode = $LASTEXITCODE
-
-$sortie | Tee-Object -FilePath $FichierLog
-Write-Host ""
-
-if ($exitCode -eq 0) {
-    Write-Host "Execution Oracle terminee." -ForegroundColor Green
-} else {
-    Write-Host "[ATTENTION] SQLcl a retourne le code : $exitCode" -ForegroundColor Yellow
-}
-
-Write-Host "   Log sauvegarde : $FichierLog" -ForegroundColor Cyan
-Write-Host ""
-Write-Host "=======================================================================" -ForegroundColor Cyan
-Write-Host "  FIN - Update AP_INVOICES_ALL" -ForegroundColor Cyan
-Write-Host "=======================================================================" -ForegroundColor Cyan
-Write-Host ""
-pause
+exit $LASTEXITCODE

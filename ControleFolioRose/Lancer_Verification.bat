@@ -37,7 +37,18 @@ echo.
 :: Appel du script PowerShell avec le bon chemin de fichier
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File "%~dp0Verifier_Factures.ps1" -CheminFichierCsv "%CHEMIN_COMPLET%"
 
-:: Garder la fenêtre ouverte pour voir le résultat OK/KO
+:: Codes retour : 0 = tout concorde, 1 = erreur technique, 2 = ecarts constates
+set RC=%ERRORLEVEL%
+echo.
+if %RC% EQU 1 (
+    echo [ERREUR TECHNIQUE] Le controle n'a pas pu aboutir - aucun rapport fiable produit.
+) else if %RC% EQU 2 (
+    echo [ECARTS] Des lignes sont en ecart ou indeterminees - voir le rapport CSV.
+) else (
+    echo [OK] Toutes les lignes concordent.
+)
+
 echo.
 echo Controle termine.
 pause
+exit /b %RC%

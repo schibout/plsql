@@ -1,84 +1,190 @@
 -- =====================================================================
--- Correction ATTRIBUTE13 GL_JE_LINES - MAIN D'ŒUVRE HORS THO
+-- Correction d'un attribut de GL_JE_LINES sur un lot de lignes
 -- =====================================================================
--- Date de création : 30/04/2026
--- Auteur           : S. Chibout
--- Base de données  : Oracle EBS 12.2.13 - Production
+-- Base de donnees : Oracle EBS 12.2.13 - Production
 --
--- PROBLÈME RÉSOLU :
---   Le champ ATTRIBUTE13 contient "MAIN D'?UVRE HORS THO" à cause
---   d'un problème d'encodage du caractère œ (U+0152).
---   La valeur correcte est "MAIN D'ŒUVRE HORS THO".
+-- OBJET :
+--   Corriger la valeur d'une colonne ATTRIBUTEn de GL.GL_JE_LINES pour
+--   une liste de couples (JE_HEADER_ID, JE_LINE_NUM). Cas d'origine :
+--   ATTRIBUTE13 contenant "MAIN D'?UVRE HORS THO" au lieu de
+--   "MAIN D'OEUVRE HORS THO", suite a un probleme d'encodage du
+--   caractere oe ligature (U+0152).
 --
--- PÉRIMÈTRE : 28 lignes GL_JE_LINES concernées
--- SOURCE    : Export DONNEES A METTRE A JOUR DANS GL_JE_LINES.xlsx (30/04/2026)
+-- ---------------------------------------------------------------------
+-- POURQUOI UNISTR
+-- ---------------------------------------------------------------------
+--   La version precedente ecrivait le caractere U+0152 en clair dans ce
+--   fichier. Lu par SQL*Plus avec un NLS_LANG en WE8MSWIN1252 -- le cas
+--   le plus courant -- ses deux octets UTF-8 sont interpretes comme deux
+--   caracteres distincts : le script cense corriger un probleme
+--   d'encodage le reproduisait a l'identique.
+--   La valeur est desormais transmise en notation UNISTR (\0152), donc
+--   decrite par son point de code et independante de l'encodage du
+--   fichier comme de la configuration du poste.
+--
+-- ---------------------------------------------------------------------
+-- SIMULATION PAR DEFAUT
+-- ---------------------------------------------------------------------
+--   Tel quel, ce script execute l'UPDATE puis fait un ROLLBACK. Il
+--   affiche l'ancienne et la nouvelle valeur de chaque ligne, signale
+--   les couples introuvables, et ne conserve rien.
+--
+-- Ce fichier n'est pas destine a etre lance seul : Update_GL_JE_LINES.ps1
+-- y injecte la liste des lignes issue du CSV et positionne les DEFINE.
+--
+-- Sortie balisee, consommee par le lanceur :
+--   ##OLD##header|ligne|ancienne_valeur_ascii
+--   ##ABSENT##header|ligne
+--   ##SUM##attendu=n;maj=n;absent=n
 -- =====================================================================
 
-SET SERVEROUTPUT ON SIZE UNLIMITED;
-
--- =====================================================================
--- INITIALISATION DU CONTEXTE ORACLE EBS
--- =====================================================================
--- Adapter USER_NAME et RESPONSIBILITY_KEY avant exécution
--- Application ID : 101 = General Ledger (SQLGL)
--- =====================================================================
+SET SERVEROUTPUT ON SIZE UNLIMITED
+SET FEEDBACK OFF
+SET VERIFY OFF
+SET LINESIZE 200
+SET DEFINE ON
 
 DECLARE
-    v_user_id      NUMBER := 36313;   -- USER_ID
-    v_resp_id      NUMBER := 51214;   -- RESPONSIBILITY_ID GL
-    v_resp_appl_id NUMBER := 50001;   -- Application ID : General Ledger (SQLGL)
-    v_org_id       NUMBER := 86;      -- DEW0001 - Adapter si nécessaire
-    v_nb_updated   NUMBER := 0;
+    c_mode      CONSTANT VARCHAR2(20) := UPPER('&&P_MODE');
+    c_user_id   CONSTANT NUMBER := &&P_USER_ID;
+    c_resp_id   CONSTANT NUMBER := &&P_RESP_ID;
+    c_resp_appl CONSTANT NUMBER := &&P_RESP_APPL_ID;
+    c_org_id    CONSTANT NUMBER := &&P_ORG_ID;
+
+    -- Valeur cible, injectee par le lanceur en notation UNISTR.
+    -- @@VALEUR@@
+
+    TYPE t_num IS TABLE OF NUMBER INDEX BY PLS_INTEGER;
+    l_hdr  t_num;
+    l_lin  t_num;
+
+    l_old        VARCHAR2(4000);
+    l_nb_maj     NUMBER := 0;
+    l_nb_absent  NUMBER := 0;
+    l_nb_deja    NUMBER := 0;
 BEGIN
-    -- 1. Définir le contexte de l'organisation
-    MO_GLOBAL.SET_POLICY_CONTEXT('S', v_org_id);
+    -- =================================================================
+    -- 1. Liste des lignes a corriger (injectee depuis le CSV)
+    -- =================================================================
+    -- @@LISTE_LIGNES@@
 
-    -- 2. Initialiser le contexte applicatif
-    FND_GLOBAL.APPS_INITIALIZE(
-        user_id      => v_user_id,
-        resp_id      => v_resp_id,
-        resp_appl_id => v_resp_appl_id
-    );
-
-    -- 3. Mise à jour ATTRIBUTE13 : lignes ciblées par JE_HEADER_ID + JE_LINE_NUM
-    --    Source : Export DONNEES A METTRE A JOUR DANS GL_JE_LINES.xlsx (30/04/2026)
-    UPDATE GL.GL_JE_LINES
-    SET
-        ATTRIBUTE13       = 'MAIN D''ŒUVRE HORS THO',
-        LAST_UPDATE_DATE  = SYSDATE,
-        LAST_UPDATED_BY   = FND_GLOBAL.USER_ID,
-        LAST_UPDATE_LOGIN = FND_GLOBAL.LOGIN_ID
-    WHERE (JE_HEADER_ID, JE_LINE_NUM) IN ((22975525,24),(22975525,25),(22975525,26),(22975525,27),(22975525,28),(22975525,29),
-(22975525,30),(22975525,31),(22975525,32),(22975525,33),(22975525,34),(22975525,35),(22975525,36),(22975525,37),
-(22975525,38),(22975525,39),(22975525,40),(22975525,41),(22975525,42),(22975525,43),(22975525,44),(22975525,45),
-(22975525,46),(22975526,2),(22975527,2),(22975528,2),(22975529,2),(22975530,2),(22975531,2) );
-
-    v_nb_updated := SQL%ROWCOUNT;
-
-    -- 4. Afficher le résultat
     DBMS_OUTPUT.PUT_LINE('=================================================');
-    DBMS_OUTPUT.PUT_LINE('Correction ATTRIBUTE13 GL_JE_LINES');
+    DBMS_OUTPUT.PUT_LINE('Correction &&P_ATTRIBUT de GL_JE_LINES - MODE ' || c_mode);
     DBMS_OUTPUT.PUT_LINE('=================================================');
-    DBMS_OUTPUT.PUT_LINE('Lignes mises à jour : ' || v_nb_updated);
-    DBMS_OUTPUT.PUT_LINE('Valeur corrigée     : MAIN D''ŒUVRE HORS THO');
-    DBMS_OUTPUT.PUT_LINE('USER_ID appliqué    : ' || FND_GLOBAL.USER_ID);
-    DBMS_OUTPUT.PUT_LINE('Date mise à jour    : ' || TO_CHAR(SYSDATE, 'DD/MM/YYYY HH24:MI:SS'));
-    DBMS_OUTPUT.PUT_LINE('=================================================');
+    DBMS_OUTPUT.PUT_LINE('Lignes demandees : ' || l_hdr.COUNT);
 
-    IF v_nb_updated = 28 THEN
-        COMMIT;
-        DBMS_OUTPUT.PUT_LINE('COMMIT effectué - 28 lignes corrigées.');
-    ELSE
-        ROLLBACK;
-        DBMS_OUTPUT.PUT_LINE('ROLLBACK : ' || v_nb_updated || ' ligne(s) affectée(s) au lieu de 28 attendues.');
-        DBMS_OUTPUT.PUT_LINE('Vérifier le périmètre des données avant de relancer.');
+    IF c_mode NOT IN ('SIMULATION', 'EXECUTION') THEN
+        RAISE_APPLICATION_ERROR(-20001,
+            'P_MODE doit valoir SIMULATION ou EXECUTION, recu : ' || c_mode);
     END IF;
 
-    DBMS_OUTPUT.PUT_LINE('=================================================');
+    IF l_hdr.COUNT = 0 THEN
+        DBMS_OUTPUT.PUT_LINE('Aucune ligne a traiter.');
+        RETURN;
+    END IF;
+
+    -- =================================================================
+    -- 2. Contexte applicatif
+    -- =================================================================
+    -- GL_JE_LINES n'est pas une table multi-organisation : le contexte MO
+    -- n'est pose que si un ORG_ID a ete fourni explicitement.
+    IF c_org_id > 0 THEN
+        MO_GLOBAL.SET_POLICY_CONTEXT('S', c_org_id);
+        DBMS_OUTPUT.PUT_LINE('Contexte MO : org_id=' || c_org_id);
+    END IF;
+
+    FND_GLOBAL.APPS_INITIALIZE(
+        user_id      => c_user_id,
+        resp_id      => c_resp_id,
+        resp_appl_id => c_resp_appl);
+    DBMS_OUTPUT.PUT_LINE('APPS_INITIALIZE OK - user_id=' || c_user_id
+                         || ' resp_id=' || c_resp_id || ' appl_id=' || c_resp_appl);
+    DBMS_OUTPUT.PUT_LINE('');
+
+    -- =================================================================
+    -- 3. Releve des valeurs actuelles, avant toute ecriture
+    -- =================================================================
+    -- ASCIISTR echappe les caracteres non-ASCII en \XXXX : la valeur
+    -- d'origine traverse ainsi le log et le fichier d'annulation sans
+    -- dependre d'un quelconque encodage.
+    FOR i IN 1 .. l_hdr.COUNT LOOP
+        BEGIN
+            SELECT &&P_ATTRIBUT INTO l_old
+              FROM gl.gl_je_lines
+             WHERE je_header_id = l_hdr(i)
+               AND je_line_num  = l_lin(i);
+
+            DBMS_OUTPUT.PUT_LINE('##OLD##' || l_hdr(i) || '|' || l_lin(i)
+                                 || '|' || ASCIISTR(l_old));
+
+            IF l_old = c_valeur THEN l_nb_deja := l_nb_deja + 1; END IF;
+        EXCEPTION
+            WHEN NO_DATA_FOUND THEN
+                l_nb_absent := l_nb_absent + 1;
+                DBMS_OUTPUT.PUT_LINE('##ABSENT##' || l_hdr(i) || '|' || l_lin(i));
+            WHEN TOO_MANY_ROWS THEN
+                RAISE_APPLICATION_ERROR(-20002,
+                    'Plusieurs lignes pour (' || l_hdr(i) || ',' || l_lin(i)
+                    || ') : le couple (JE_HEADER_ID, JE_LINE_NUM) devrait etre unique.');
+        END;
+    END LOOP;
+
+    -- =================================================================
+    -- 4. Mise a jour
+    -- =================================================================
+    FORALL i IN 1 .. l_hdr.COUNT
+        UPDATE gl.gl_je_lines
+           SET &&P_ATTRIBUT     = c_valeur,
+               last_update_date  = SYSDATE,
+               last_updated_by   = FND_GLOBAL.USER_ID,
+               last_update_login = FND_GLOBAL.LOGIN_ID
+         WHERE je_header_id = l_hdr(i)
+           AND je_line_num  = l_lin(i);
+
+    l_nb_maj := SQL%ROWCOUNT;
+
+    DBMS_OUTPUT.PUT_LINE('');
+    DBMS_OUTPUT.PUT_LINE('----------- BILAN -------------------------------');
+    DBMS_OUTPUT.PUT_LINE('Lignes demandees      : ' || l_hdr.COUNT);
+    DBMS_OUTPUT.PUT_LINE('Lignes mises a jour   : ' || l_nb_maj);
+    DBMS_OUTPUT.PUT_LINE('Couples introuvables  : ' || l_nb_absent);
+    DBMS_OUTPUT.PUT_LINE('Deja a la bonne valeur: ' || l_nb_deja);
+    DBMS_OUTPUT.PUT_LINE('Nouvelle valeur       : ' || c_valeur);
+    DBMS_OUTPUT.PUT_LINE('Nouvelle valeur (ascii): ' || ASCIISTR(c_valeur));
+    DBMS_OUTPUT.PUT_LINE('-------------------------------------------------');
+
+    -- Le garde-fou compare au nombre de lignes reellement fournies. La
+    -- version precedente le comparait a une constante 28 alors que la
+    -- liste en comptait 29 : le ROLLBACK etait systematique.
+    IF l_nb_absent > 0 THEN
+        ROLLBACK;
+        DBMS_OUTPUT.PUT_LINE('ROLLBACK : ' || l_nb_absent
+            || ' couple(s) introuvable(s). Corriger le fichier CSV avant de relancer.');
+    ELSIF l_nb_maj <> l_hdr.COUNT THEN
+        ROLLBACK;
+        DBMS_OUTPUT.PUT_LINE('ROLLBACK : ' || l_nb_maj || ' ligne(s) mise(s) a jour pour '
+            || l_hdr.COUNT || ' attendue(s).');
+    ELSIF c_mode = 'EXECUTION' THEN
+        COMMIT;
+        DBMS_OUTPUT.PUT_LINE('COMMIT effectue : ' || l_nb_maj || ' ligne(s) corrigee(s).');
+    ELSE
+        ROLLBACK;
+        DBMS_OUTPUT.PUT_LINE('SIMULATION : ROLLBACK effectue, aucune modification en base.');
+        DBMS_OUTPUT.PUT_LINE('Pour appliquer reellement, relancer avec -Executer.');
+    END IF;
+
+    DBMS_OUTPUT.PUT_LINE('##SUM##attendu=' || l_hdr.COUNT
+        || ';maj='    || l_nb_maj
+        || ';absent=' || l_nb_absent
+        || ';deja='   || l_nb_deja);
 
 EXCEPTION
     WHEN OTHERS THEN
-        DBMS_OUTPUT.PUT_LINE('ERREUR : ' || SQLERRM);
         ROLLBACK;
+        DBMS_OUTPUT.PUT_LINE('##ERR##' || SUBSTR(SQLERRM, 1, 400));
+        DBMS_OUTPUT.PUT_LINE('ERREUR - ROLLBACK effectue : ' || SQLERRM);
+        -- RAISE indispensable : sans lui, l'exception etait avalee et
+        -- SQL*Plus sortait en succes malgre l'echec.
+        RAISE;
 END;
 /
