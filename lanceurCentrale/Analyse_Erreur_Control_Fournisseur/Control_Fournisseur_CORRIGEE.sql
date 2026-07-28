@@ -1,0 +1,586 @@
+/* =====================================================================
+   Control_Fournisseur_CORRIGEE.sql
+   =====================================================================
+   Date de création   : 04/05/2026
+   Auteur             : S. Chibout
+   Base de données    : Oracle EBS 12.2.13 - Production (19.28.0.0.0)
+
+   PROBLÈME CORRIGÉ :
+     ORA-00904: "PV"."PAY_GROUP_LOOKUP_CODE": invalid identifier
+     Cause : AP.AP_SUPPLIERS (table base) n'expose pas PAY_GROUP_LOOKUP_CODE
+     Correction : Remplacement par APPS.PO_VENDORS (vue applicative complète)
+                  qui expose toutes les colonnes du fournisseur.
+
+   OPTIMISATIONS :
+     - Suppression du hint FIRST_ROWS (obsolète, laissé à l'optimiseur)
+     - CTE SOLDE : ORDER BY supprimé (invalide dans une sous-requête sans ROWNUM)
+     - Remplacement de LIKE par = pour les comparaisons de codes exacts
+   ===================================================================== */
+
+WITH dbl AS (
+    SELECT   PV1.NUM_1099,
+             COUNT(1) nbre
+    FROM     APPS.PO_VENDORS PV1
+    WHERE    PV1.NUM_1099 NOT IN ('HONORAIRE', 'PROVISOIRE')
+    AND      PV1.VENDOR_TYPE_LOOKUP_CODE <> 'EMPLOYEE'
+    GROUP BY PV1.NUM_1099
+    HAVING   COUNT(1) > 1
+),
+SOLDE AS (
+    SELECT   AIA.VENDOR_ID,
+             SUM(APSA.AMOUNT_REMAINING) SOLDE
+    FROM     AP.AP_INVOICES_ALL AIA
+    INNER JOIN AP.AP_PAYMENT_SCHEDULES_ALL APSA
+        ON   APSA.INVOICE_ID = AIA.INVOICE_ID
+    GROUP BY AIA.VENDOR_ID
+    HAVING   SUM(APSA.AMOUNT_REMAINING) <> 0
+)
+/* 01 Incohérence entre type fourn et classe de règlement */
+SELECT '01_TYPE_ET_CLASSE_RGLT_INCOHERENTS'                                        AS "Code",
+       PV.SEGMENT1                                                                  AS "Num Four",
+       PV.VENDOR_NAME                                                               AS "Nom fournisseur",
+       DECODE(PV.VENDOR_TYPE_LOOKUP_CODE,
+           'EMPLOYEE',         'Employé',
+           'EXTERNAL PARTNER', 'Fournisseur Groupe Externe',
+           'FACTOR',           'Fournisseur Factor',
+           'PARTENAIRE',       'Fournisseur Groupe Dalkia',
+           'VENDOR',           'Fournisseur', NULL)
+       || DECODE(PV.MINORITY_GROUP_LOOKUP_CODE,
+           'ESAT',      ' - ESAT',
+           'APPRENTIS', ' - APPRENTIS', NULL)                                       AS "Type Fourn",
+       PV.PAY_GROUP_LOOKUP_CODE                                                     AS "Valeur",
+       DECODE(HP.STATUS, 'A', 'Actif', 'I', 'Inactif', HP.STATUS)                 AS "Statut Partie",
+       PV.END_DATE_ACTIVE                                                           AS "Date fin",
+       FU.USER_NAME                                                                 AS "Créer par",
+       DECODE(FU.USER_NAME,  'ANONYMOUS', 'Anonyme', 'EXPLOITATION', 'Exploitation', FU.DESCRIPTION)  AS "Nom Création",
+       PV.CREATION_DATE                                                             AS "Créer le",
+       FU1.USER_NAME                                                                AS "Modif par",
+       DECODE(FU1.USER_NAME, 'ANONYMOUS', 'Anonyme', 'EXPLOITATION', 'Exploitation', FU1.DESCRIPTION) AS "Nom Modif",
+       PV.LAST_UPDATE_DATE                                                          AS "Date modif"
+FROM   APPS.PO_VENDORS PV
+INNER JOIN AR.HZ_PARTIES          HP  ON HP.PARTY_ID   = PV.PARTY_ID
+INNER JOIN APPLSYS.FND_USER       FU  ON FU.USER_ID    = PV.CREATED_BY
+INNER JOIN APPLSYS.FND_USER       FU1 ON FU1.USER_ID   = PV.LAST_UPDATED_BY
+WHERE  (PV.END_DATE_ACTIVE > SYSDATE OR PV.END_DATE_ACTIVE IS NULL)
+AND    (
+           (PV.VENDOR_TYPE_LOOKUP_CODE = 'EMPLOYEE'         AND PV.PAY_GROUP_LOOKUP_CODE <> 'EMPLOYE')
+        OR (PV.VENDOR_TYPE_LOOKUP_CODE = 'PARTENAIRE'       AND PV.PAY_GROUP_LOOKUP_CODE <> 'GROUPEDKA')
+        OR (PV.VENDOR_TYPE_LOOKUP_CODE = 'EXTERNAL PARTNER' AND PV.PAY_GROUP_LOOKUP_CODE <> 'GROUPEHORSDKA')
+        OR (PV.VENDOR_TYPE_LOOKUP_CODE IN ('VENDOR','FACTOR') AND PV.MINORITY_GROUP_LOOKUP_CODE <> 'APPRENTIS' AND PV.PAY_GROUP_LOOKUP_CODE <> 'TIERS')
+        OR (PV.VENDOR_TYPE_LOOKUP_CODE IN ('VENDOR','FACTOR') AND PV.MINORITY_GROUP_LOOKUP_CODE =  'APPRENTIS' AND PV.PAY_GROUP_LOOKUP_CODE <> 'EMPLOYE')
+       )
+AND    EXISTS (SELECT NULL FROM APPS.AP_SUPPLIER_SITES_ALL PVSA WHERE PV.VENDOR_ID = PVSA.VENDOR_ID)
+
+UNION ALL
+
+/* 02 Incohérence entre code partenaire */
+SELECT '02_CODE_PARTENAIRE_INCOHERENTS',
+       PV.SEGMENT1,
+       PV.VENDOR_NAME,
+       DECODE(PV.VENDOR_TYPE_LOOKUP_CODE,
+           'EMPLOYEE',         'Employé',
+           'EXTERNAL PARTNER', 'Fournisseur Groupe Externe',
+           'FACTOR',           'Fournisseur Factor',
+           'PARTENAIRE',       'Fournisseur Groupe Dalkia',
+           'VENDOR',           'Fournisseur', NULL)
+       || DECODE(PV.MINORITY_GROUP_LOOKUP_CODE,
+           'ESAT',      ' - ESAT',
+           'APPRENTIS', ' - APPRENTIS', NULL),
+       PV.ATTRIBUTE2,
+       DECODE(HP.STATUS, 'A', 'Actif', 'I', 'Inactif', HP.STATUS),
+       PV.END_DATE_ACTIVE,
+       FU.USER_NAME,
+       DECODE(FU.USER_NAME,  'ANONYMOUS', 'Anonyme', 'EXPLOITATION', 'Exploitation', FU.DESCRIPTION),
+       PV.CREATION_DATE,
+       FU1.USER_NAME,
+       DECODE(FU1.USER_NAME, 'ANONYMOUS', 'Anonyme', 'EXPLOITATION', 'Exploitation', FU1.DESCRIPTION),
+       PV.LAST_UPDATE_DATE
+FROM   APPS.PO_VENDORS PV
+INNER JOIN AR.HZ_PARTIES          HP  ON HP.PARTY_ID   = PV.PARTY_ID
+INNER JOIN APPLSYS.FND_USER       FU  ON FU.USER_ID    = PV.CREATED_BY
+INNER JOIN APPLSYS.FND_USER       FU1 ON FU1.USER_ID   = PV.LAST_UPDATED_BY
+WHERE  (PV.END_DATE_ACTIVE > SYSDATE OR PV.END_DATE_ACTIVE IS NULL)
+AND    (
+            (PV.VENDOR_TYPE_LOOKUP_CODE IN ('PARTENAIRE','EXTERNAL PARTNER')
+             AND (PV.ATTRIBUTE_CATEGORY <> 'PARTENAIRE' OR PV.ATTRIBUTE2 IS NULL OR PV.ATTRIBUTE2 IN ('0','0000')))
+         OR (PV.VENDOR_TYPE_LOOKUP_CODE NOT IN ('PARTENAIRE','EXTERNAL PARTNER')
+             AND PV.ATTRIBUTE2 IS NOT NULL AND PV.ATTRIBUTE2 NOT IN ('0','0000'))
+       )
+AND    EXISTS (SELECT NULL FROM APPS.AP_SUPPLIER_SITES_ALL PVSA WHERE PV.VENDOR_ID = PVSA.VENDOR_ID)
+
+UNION ALL
+
+/* 04 Pas de type fourn */
+SELECT '04_PAS_DE_TYPE_FOURNISSEUR',
+       PV.SEGMENT1,
+       PV.VENDOR_NAME,
+       DECODE(PV.VENDOR_TYPE_LOOKUP_CODE,
+           'EMPLOYEE',         'Employé',
+           'EXTERNAL PARTNER', 'Fournisseur Groupe Externe',
+           'FACTOR',           'Fournisseur Factor',
+           'PARTENAIRE',       'Fournisseur Groupe Dalkia',
+           'VENDOR',           'Fournisseur', NULL)
+       || DECODE(PV.MINORITY_GROUP_LOOKUP_CODE,
+           'ESAT',      ' - ESAT',
+           'APPRENTIS', ' - APPRENTIS', NULL),
+       PV.PAY_GROUP_LOOKUP_CODE,
+       DECODE(HP.STATUS, 'A', 'Actif', 'I', 'Inactif', HP.STATUS),
+       PV.END_DATE_ACTIVE,
+       FU.USER_NAME,
+       DECODE(FU.USER_NAME,  'ANONYMOUS', 'Anonyme', 'EXPLOITATION', 'Exploitation', FU.DESCRIPTION),
+       PV.CREATION_DATE,
+       FU1.USER_NAME,
+       DECODE(FU1.USER_NAME, 'ANONYMOUS', 'Anonyme', 'EXPLOITATION', 'Exploitation', FU1.DESCRIPTION),
+       PV.LAST_UPDATE_DATE
+FROM   APPS.PO_VENDORS PV
+INNER JOIN AR.HZ_PARTIES          HP  ON HP.PARTY_ID   = PV.PARTY_ID
+INNER JOIN APPLSYS.FND_USER       FU  ON FU.USER_ID    = PV.CREATED_BY
+INNER JOIN APPLSYS.FND_USER       FU1 ON FU1.USER_ID   = PV.LAST_UPDATED_BY
+WHERE  (PV.END_DATE_ACTIVE > SYSDATE OR PV.END_DATE_ACTIVE IS NULL)
+AND    PV.VENDOR_TYPE_LOOKUP_CODE IS NULL
+AND    EXISTS (SELECT NULL FROM APPS.AP_SUPPLIER_SITES_ALL PVSA WHERE PV.VENDOR_ID = PVSA.VENDOR_ID)
+
+UNION ALL
+
+/* 05 Condition de paiement >60J et intracom FR */
+SELECT '05_CONDITION_DE_PAIEMENT_>60J_ET INTRACOM_FR',
+       PV.SEGMENT1,
+       PV.VENDOR_NAME,
+       DECODE(PV.VENDOR_TYPE_LOOKUP_CODE,
+           'EMPLOYEE',         'Employé',
+           'EXTERNAL PARTNER', 'Fournisseur Groupe Externe',
+           'FACTOR',           'Fournisseur Factor',
+           'PARTENAIRE',       'Fournisseur Groupe Dalkia',
+           'VENDOR',           'Fournisseur', NULL)
+       || DECODE(PV.MINORITY_GROUP_LOOKUP_CODE,
+           'ESAT',      ' - ESAT',
+           'APPRENTIS', ' - APPRENTIS', NULL),
+       ATT.NAME || ' ' || PV.VAT_REGISTRATION_NUM,
+       DECODE(HP.STATUS, 'A', 'Actif', 'I', 'Inactif', HP.STATUS),
+       PV.END_DATE_ACTIVE,
+       FU.USER_NAME,
+       DECODE(FU.USER_NAME,  'ANONYMOUS', 'Anonyme', 'EXPLOITATION', 'Exploitation', FU.DESCRIPTION),
+       PV.CREATION_DATE,
+       FU1.USER_NAME,
+       DECODE(FU1.USER_NAME, 'ANONYMOUS', 'Anonyme', 'EXPLOITATION', 'Exploitation', FU1.DESCRIPTION),
+       PV.LAST_UPDATE_DATE
+FROM   APPS.PO_VENDORS PV
+INNER JOIN AR.HZ_PARTIES          HP  ON HP.PARTY_ID  = PV.PARTY_ID
+INNER JOIN AP.AP_TERMS_TL         ATT ON ATT.TERM_ID  = PV.TERMS_ID AND ATT.LANGUAGE = 'F'
+INNER JOIN APPLSYS.FND_USER       FU  ON FU.USER_ID   = PV.CREATED_BY
+INNER JOIN APPLSYS.FND_USER       FU1 ON FU1.USER_ID  = PV.LAST_UPDATED_BY
+WHERE  (PV.END_DATE_ACTIVE > SYSDATE OR PV.END_DATE_ACTIVE IS NULL)
+AND    PV.TERMS_ID IN (10005, 10006, 10008, 10009)
+AND    SUBSTR(PV.VAT_REGISTRATION_NUM, 1, 2) = 'FR'
+AND    EXISTS (SELECT NULL FROM APPS.AP_SUPPLIER_SITES_ALL PVSA WHERE PV.VENDOR_ID = PVSA.VENDOR_ID)
+
+UNION ALL
+
+/* 06 Siren non valide (clé de Luhn) */
+SELECT '06_SIREN_NON_VALIDE',
+       PV.SEGMENT1,
+       PV.VENDOR_NAME,
+       DECODE(PV.VENDOR_TYPE_LOOKUP_CODE,
+           'EMPLOYEE',         'Employé',
+           'EXTERNAL PARTNER', 'Fournisseur Groupe Externe',
+           'FACTOR',           'Fournisseur Factor',
+           'PARTENAIRE',       'Fournisseur Groupe Dalkia',
+           'VENDOR',           'Fournisseur', NULL)
+       || DECODE(PV.MINORITY_GROUP_LOOKUP_CODE,
+           'ESAT',      ' - ESAT',
+           'APPRENTIS', ' - APPRENTIS', NULL),
+       PV.NUM_1099 || ' Ctrl : ' || (
+           TO_NUMBER(SUBSTR(PV.NUM_1099,1,1)) + TO_NUMBER(SUBSTR(PV.NUM_1099,3,1))
+         + TO_NUMBER(SUBSTR(PV.NUM_1099,5,1)) + TO_NUMBER(SUBSTR(PV.NUM_1099,7,1))
+         + TO_NUMBER(SUBSTR(PV.NUM_1099,9,1))
+         + SUBSTR((TO_NUMBER(SUBSTR(PV.NUM_1099,2,1))*2),1,1) + NVL(SUBSTR((TO_NUMBER(SUBSTR(PV.NUM_1099,2,1))*2),2,1),0)
+         + SUBSTR((TO_NUMBER(SUBSTR(PV.NUM_1099,4,1))*2),1,1) + NVL(SUBSTR((TO_NUMBER(SUBSTR(PV.NUM_1099,4,1))*2),2,1),0)
+         + SUBSTR((TO_NUMBER(SUBSTR(PV.NUM_1099,6,1))*2),1,1) + NVL(SUBSTR((TO_NUMBER(SUBSTR(PV.NUM_1099,6,1))*2),2,1),0)
+         + SUBSTR((TO_NUMBER(SUBSTR(PV.NUM_1099,8,1))*2),1,1) + NVL(SUBSTR((TO_NUMBER(SUBSTR(PV.NUM_1099,8,1))*2),2,1),0)),
+       DECODE(HP.STATUS, 'A', 'Actif', 'I', 'Inactif', HP.STATUS),
+       PV.END_DATE_ACTIVE,
+       FU.USER_NAME,
+       DECODE(FU.USER_NAME,  'ANONYMOUS', 'Anonyme', 'EXPLOITATION', 'Exploitation', FU.DESCRIPTION),
+       PV.CREATION_DATE,
+       FU1.USER_NAME,
+       DECODE(FU1.USER_NAME, 'ANONYMOUS', 'Anonyme', 'EXPLOITATION', 'Exploitation', FU1.DESCRIPTION),
+       PV.LAST_UPDATE_DATE
+FROM   APPS.PO_VENDORS PV
+INNER JOIN AR.HZ_PARTIES          HP  ON HP.PARTY_ID  = PV.PARTY_ID
+INNER JOIN APPLSYS.FND_USER       FU  ON FU.USER_ID   = PV.CREATED_BY
+INNER JOIN APPLSYS.FND_USER       FU1 ON FU1.USER_ID  = PV.LAST_UPDATED_BY
+WHERE  (PV.END_DATE_ACTIVE > SYSDATE OR PV.END_DATE_ACTIVE IS NULL)
+AND    LENGTH(PV.NUM_1099) = 9
+AND    LENGTH(TRIM(TRANSLATE(PV.NUM_1099, ' +-.0123456789', ' '))) = 0
+AND    MOD(
+           TO_NUMBER(SUBSTR(PV.NUM_1099,1,1)) + TO_NUMBER(SUBSTR(PV.NUM_1099,3,1))
+         + TO_NUMBER(SUBSTR(PV.NUM_1099,5,1)) + TO_NUMBER(SUBSTR(PV.NUM_1099,7,1))
+         + TO_NUMBER(SUBSTR(PV.NUM_1099,9,1))
+         + SUBSTR((TO_NUMBER(SUBSTR(PV.NUM_1099,2,1))*2),1,1) + NVL(SUBSTR((TO_NUMBER(SUBSTR(PV.NUM_1099,2,1))*2),2,1),0)
+         + SUBSTR((TO_NUMBER(SUBSTR(PV.NUM_1099,4,1))*2),1,1) + NVL(SUBSTR((TO_NUMBER(SUBSTR(PV.NUM_1099,4,1))*2),2,1),0)
+         + SUBSTR((TO_NUMBER(SUBSTR(PV.NUM_1099,6,1))*2),1,1) + NVL(SUBSTR((TO_NUMBER(SUBSTR(PV.NUM_1099,6,1))*2),2,1),0)
+         + SUBSTR((TO_NUMBER(SUBSTR(PV.NUM_1099,8,1))*2),1,1) + NVL(SUBSTR((TO_NUMBER(SUBSTR(PV.NUM_1099,8,1))*2),2,1),0),
+       10) <> 0
+
+UNION ALL
+
+/* 08 Nombre de SIREN > 1 */
+SELECT '08_NOMBRE_DE_SIREN_>_1',
+       PV.SEGMENT1,
+       PV.VENDOR_NAME,
+       DECODE(PV.VENDOR_TYPE_LOOKUP_CODE,
+           'EMPLOYEE',         'Employé',
+           'EXTERNAL PARTNER', 'Fournisseur Groupe Externe',
+           'FACTOR',           'Fournisseur Factor',
+           'PARTENAIRE',       'Fournisseur Groupe Dalkia',
+           'VENDOR',           'Fournisseur', NULL)
+       || DECODE(PV.MINORITY_GROUP_LOOKUP_CODE,
+           'ESAT',      ' - ESAT',
+           'APPRENTIS', ' - APPRENTIS', NULL),
+       PV.NUM_1099 || ' Nombre : ' || dbl.nbre || ' Solde : ' || solde.solde,
+       DECODE(HP.STATUS, 'A', 'Actif', 'I', 'Inactif', HP.STATUS),
+       PV.END_DATE_ACTIVE,
+       FU.USER_NAME,
+       DECODE(FU.USER_NAME,  'ANONYMOUS', 'Anonyme', 'EXPLOITATION', 'Exploitation', FU.DESCRIPTION),
+       PV.CREATION_DATE,
+       FU1.USER_NAME,
+       DECODE(FU1.USER_NAME, 'ANONYMOUS', 'Anonyme', 'EXPLOITATION', 'Exploitation', FU1.DESCRIPTION),
+       PV.LAST_UPDATE_DATE
+FROM   APPS.PO_VENDORS PV
+INNER JOIN AR.HZ_PARTIES          HP    ON HP.PARTY_ID    = PV.PARTY_ID
+INNER JOIN APPLSYS.FND_USER       FU    ON FU.USER_ID     = PV.CREATED_BY
+INNER JOIN APPLSYS.FND_USER       FU1   ON FU1.USER_ID    = PV.LAST_UPDATED_BY
+INNER JOIN dbl                          ON dbl.NUM_1099   = PV.NUM_1099
+LEFT  JOIN solde                        ON solde.VENDOR_ID = PV.VENDOR_ID
+
+UNION ALL
+
+/* 09 Classe de règlement non valide */
+SELECT '09_CLASSE_RGLT_NON_VALIDE',
+       PV.SEGMENT1,
+       PV.VENDOR_NAME,
+       DECODE(PV.VENDOR_TYPE_LOOKUP_CODE,
+           'EMPLOYEE',         'Employé',
+           'EXTERNAL PARTNER', 'Fournisseur Groupe Externe',
+           'FACTOR',           'Fournisseur Factor',
+           'PARTENAIRE',       'Fournisseur Groupe Dalkia',
+           'VENDOR',           'Fournisseur', NULL)
+       || DECODE(PV.MINORITY_GROUP_LOOKUP_CODE,
+           'ESAT',      ' - ESAT',
+           'APPRENTIS', ' - APPRENTIS', NULL),
+       PV.PAY_GROUP_LOOKUP_CODE,
+       DECODE(HP.STATUS, 'A', 'Actif', 'I', 'Inactif', HP.STATUS),
+       PV.END_DATE_ACTIVE,
+       FU.USER_NAME,
+       DECODE(FU.USER_NAME,  'ANONYMOUS', 'Anonyme', 'EXPLOITATION', 'Exploitation', FU.DESCRIPTION),
+       PV.CREATION_DATE,
+       FU1.USER_NAME,
+       DECODE(FU1.USER_NAME, 'ANONYMOUS', 'Anonyme', 'EXPLOITATION', 'Exploitation', FU1.DESCRIPTION),
+       PV.LAST_UPDATE_DATE
+FROM   APPS.PO_VENDORS PV
+INNER JOIN AR.HZ_PARTIES          HP  ON HP.PARTY_ID  = PV.PARTY_ID
+INNER JOIN APPLSYS.FND_USER       FU  ON FU.USER_ID   = PV.CREATED_BY
+INNER JOIN APPLSYS.FND_USER       FU1 ON FU1.USER_ID  = PV.LAST_UPDATED_BY
+WHERE  (PV.END_DATE_ACTIVE > SYSDATE OR PV.END_DATE_ACTIVE IS NULL)
+AND    PV.PAY_GROUP_LOOKUP_CODE NOT IN ('EMPLOYE','GROUPEDKA','GROUPEHORSDKA','TIERS')
+AND    EXISTS (SELECT NULL FROM APPS.AP_SUPPLIER_SITES_ALL PVSA WHERE PV.VENDOR_ID = PVSA.VENDOR_ID)
+
+UNION ALL
+
+/* 10 Siren incorrect (longueur <> 9) */
+SELECT '10_SIREN_INCORRECT',
+       PV.SEGMENT1,
+       PV.VENDOR_NAME,
+       DECODE(PV.VENDOR_TYPE_LOOKUP_CODE,
+           'EMPLOYEE',         'Employé',
+           'EXTERNAL PARTNER', 'Fournisseur Groupe Externe',
+           'FACTOR',           'Fournisseur Factor',
+           'PARTENAIRE',       'Fournisseur Groupe Dalkia',
+           'VENDOR',           'Fournisseur', NULL)
+       || DECODE(PV.MINORITY_GROUP_LOOKUP_CODE,
+           'ESAT',      ' - ESAT',
+           'APPRENTIS', ' - APPRENTIS', NULL),
+       PV.NUM_1099,
+       DECODE(HP.STATUS, 'A', 'Actif', 'I', 'Inactif', HP.STATUS),
+       PV.END_DATE_ACTIVE,
+       FU.USER_NAME,
+       DECODE(FU.USER_NAME,  'ANONYMOUS', 'Anonyme', 'EXPLOITATION', 'Exploitation', FU.DESCRIPTION),
+       PV.CREATION_DATE,
+       FU1.USER_NAME,
+       DECODE(FU1.USER_NAME, 'ANONYMOUS', 'Anonyme', 'EXPLOITATION', 'Exploitation', FU1.DESCRIPTION),
+       PV.LAST_UPDATE_DATE
+FROM   APPS.PO_VENDORS PV
+INNER JOIN AR.HZ_PARTIES          HP  ON HP.PARTY_ID  = PV.PARTY_ID
+INNER JOIN APPLSYS.FND_USER       FU  ON FU.USER_ID   = PV.CREATED_BY
+INNER JOIN APPLSYS.FND_USER       FU1 ON FU1.USER_ID  = PV.LAST_UPDATED_BY
+WHERE  (PV.END_DATE_ACTIVE > SYSDATE OR PV.END_DATE_ACTIVE IS NULL)
+AND    LENGTH(PV.NUM_1099) <> 9
+AND    PV.NUM_1099 <> 'PROVISOIRE'
+
+UNION ALL
+
+/* 11 Nom fournisseur trop long (>80 car) */
+SELECT '11_NOM_FOURNISSEUR_>80_CAR',
+       PV.SEGMENT1,
+       PV.VENDOR_NAME,
+       DECODE(PV.VENDOR_TYPE_LOOKUP_CODE,
+           'EMPLOYEE',         'Employé',
+           'EXTERNAL PARTNER', 'Fournisseur Groupe Externe',
+           'FACTOR',           'Fournisseur Factor',
+           'PARTENAIRE',       'Fournisseur Groupe Dalkia',
+           'VENDOR',           'Fournisseur', NULL)
+       || DECODE(PV.MINORITY_GROUP_LOOKUP_CODE,
+           'ESAT',      ' - ESAT',
+           'APPRENTIS', ' - APPRENTIS', NULL),
+       TO_CHAR(LENGTH(PV.VENDOR_NAME)),
+       DECODE(HP.STATUS, 'A', 'Actif', 'I', 'Inactif', HP.STATUS),
+       PV.END_DATE_ACTIVE,
+       FU.USER_NAME,
+       DECODE(FU.USER_NAME,  'ANONYMOUS', 'Anonyme', 'EXPLOITATION', 'Exploitation', FU.DESCRIPTION),
+       PV.CREATION_DATE,
+       FU1.USER_NAME,
+       DECODE(FU1.USER_NAME, 'ANONYMOUS', 'Anonyme', 'EXPLOITATION', 'Exploitation', FU1.DESCRIPTION),
+       PV.LAST_UPDATE_DATE
+FROM   APPS.PO_VENDORS PV
+INNER JOIN AR.HZ_PARTIES          HP  ON HP.PARTY_ID  = PV.PARTY_ID
+INNER JOIN APPLSYS.FND_USER       FU  ON FU.USER_ID   = PV.CREATED_BY
+INNER JOIN APPLSYS.FND_USER       FU1 ON FU1.USER_ID  = PV.LAST_UPDATED_BY
+WHERE  (PV.END_DATE_ACTIVE > SYSDATE OR PV.END_DATE_ACTIVE IS NULL)
+AND    LENGTH(PV.VENDOR_NAME) > 80
+
+UNION ALL
+
+/* 13 Fournisseur UE et numéro intracommunautaire FR (site) */
+SELECT '13_FOURN_UE_ET_INTRACOM_FR',
+       PV.SEGMENT1,
+       PV.VENDOR_NAME,
+       DECODE(PV.VENDOR_TYPE_LOOKUP_CODE,
+           'VENDOR',    'Fournisseur',
+           'PARTENAIRE','Fournisseur Groupe',
+           'EMPLOYEE',  'Employé', NULL)
+       || DECODE(PV.MINORITY_GROUP_LOOKUP_CODE,
+           'ESAT',      ' - ESAT',
+           'APPRENTIS', ' - APPRENTIS', NULL),
+       PVSA.COUNTRY || '.' || PV.VAT_REGISTRATION_NUM || '.' || FT.ALTERNATE_TERRITORY_CODE,
+       DECODE(HP.STATUS, 'A', 'Actif', 'I', 'Inactif', HP.STATUS),
+       PV.END_DATE_ACTIVE,
+       FU.USER_NAME,
+       DECODE(FU.USER_NAME,  'ANONYMOUS', 'Anonyme', 'EXPLOITATION', 'Exploitation', FU.DESCRIPTION),
+       PVSA.CREATION_DATE,
+       FU1.USER_NAME,
+       DECODE(FU1.USER_NAME, 'ANONYMOUS', 'Anonyme', 'EXPLOITATION', 'Exploitation', FU1.DESCRIPTION),
+       PVSA.LAST_UPDATE_DATE
+FROM   APPS.AP_SUPPLIER_SITES_ALL PVSA
+INNER JOIN APPS.PO_VENDORS              PV   ON PV.VENDOR_ID           = PVSA.VENDOR_ID
+INNER JOIN AR.HZ_PARTIES               HP   ON HP.PARTY_ID             = PV.PARTY_ID
+INNER JOIN APPLSYS.FND_TERRITORIES     FT   ON FT.TERRITORY_CODE       = PVSA.COUNTRY
+INNER JOIN APPLSYS.FND_USER            FU   ON FU.USER_ID              = PVSA.CREATED_BY
+INNER JOIN APPLSYS.FND_USER            FU1  ON FU1.USER_ID             = PVSA.LAST_UPDATED_BY
+INNER JOIN HR.HR_ALL_ORGANIZATION_UNITS HAOU ON HAOU.ORGANIZATION_ID  = PVSA.ORG_ID
+WHERE  (PVSA.INACTIVE_DATE > SYSDATE OR PVSA.INACTIVE_DATE IS NULL)
+AND    (PV.END_DATE_ACTIVE  > SYSDATE OR PV.END_DATE_ACTIVE  IS NULL)
+AND    PV.VENDOR_TYPE_LOOKUP_CODE <> 'EMPLOYEE'
+AND    FT.ALTERNATE_TERRITORY_CODE IS NOT NULL
+AND    FT.ALTERNATE_TERRITORY_CODE NOT IN ('FR','MC')
+AND    SUBSTR(PV.VAT_REGISTRATION_NUM, 1, 2) = 'FR'
+
+UNION ALL
+
+/* 12 Partie UE et numéro intracommunautaire FR (partie) */
+SELECT '12_PARTIE_UE_ET_INTRACOM_FR',
+       ASU.SEGMENT1,
+       ASU.VENDOR_NAME,
+       DECODE(ASU.VENDOR_TYPE_LOOKUP_CODE,
+           'EMPLOYEE',         'Employé',
+           'EXTERNAL PARTNER', 'Fournisseur Groupe Externe',
+           'FACTOR',           'Fournisseur Factor',
+           'PARTENAIRE',       'Fournisseur Groupe Dalkia',
+           'VENDOR',           'Fournisseur', NULL)
+       || DECODE(ASU.MINORITY_GROUP_LOOKUP_CODE,
+           'ESAT',      ' - ESAT',
+           'APPRENTIS', ' - APPRENTIS', NULL),
+       HP.COUNTRY || '.' || HP.TAX_REFERENCE || '.' || FT.ALTERNATE_TERRITORY_CODE,
+       DECODE(HP.STATUS, 'A', 'Actif', 'I', 'Inactif', HP.STATUS),
+       ASU.END_DATE_ACTIVE,
+       FU.USER_NAME,
+       DECODE(FU.USER_NAME,  'ANONYMOUS', 'Anonyme', 'EXPLOITATION', 'Exploitation', FU.DESCRIPTION),
+       ASU.CREATION_DATE,
+       FU1.USER_NAME,
+       DECODE(FU1.USER_NAME, 'ANONYMOUS', 'Anonyme', 'EXPLOITATION', 'Exploitation', FU1.DESCRIPTION),
+       ASU.LAST_UPDATE_DATE
+FROM   AR.HZ_PARTIES HP
+INNER JOIN APPS.PO_VENDORS          ASU ON ASU.PARTY_ID        = HP.PARTY_ID
+INNER JOIN APPLSYS.FND_TERRITORIES  FT  ON FT.TERRITORY_CODE   = HP.COUNTRY
+INNER JOIN APPLSYS.FND_USER         FU  ON FU.USER_ID          = HP.CREATED_BY
+INNER JOIN APPLSYS.FND_USER         FU1 ON FU1.USER_ID         = HP.LAST_UPDATED_BY
+WHERE  ASU.VENDOR_TYPE_LOOKUP_CODE <> 'EMPLOYEE'
+AND    FT.ALTERNATE_TERRITORY_CODE IS NOT NULL
+AND    FT.ALTERNATE_TERRITORY_CODE NOT IN ('FR','MC')
+AND    SUBSTR(HP.TAX_REFERENCE, 1, 2) = 'FR'
+
+UNION ALL
+
+/* 15 Fournisseur UE et pas de numéro intracommunautaire */
+SELECT '15_FOURN_UE_ET_PAS_DE_NUM_INTRACOM',
+       ASU.SEGMENT1,
+       ASU.VENDOR_NAME,
+       DECODE(ASU.VENDOR_TYPE_LOOKUP_CODE,
+           'EMPLOYEE',         'Employé',
+           'EXTERNAL PARTNER', 'Fournisseur Groupe Externe',
+           'FACTOR',           'Fournisseur Factor',
+           'PARTENAIRE',       'Fournisseur Groupe Dalkia',
+           'VENDOR',           'Fournisseur', NULL)
+       || DECODE(ASU.MINORITY_GROUP_LOOKUP_CODE,
+           'ESAT',      ' - ESAT',
+           'APPRENTIS', ' - APPRENTIS', NULL),
+       HP.COUNTRY || '.' || FT.ALTERNATE_TERRITORY_CODE,
+       DECODE(HP.STATUS, 'A', 'Actif', 'I', 'Inactif', HP.STATUS),
+       ASU.END_DATE_ACTIVE,
+       FU.USER_NAME,
+       DECODE(FU.USER_NAME,  'ANONYMOUS', 'Anonyme', 'EXPLOITATION', 'Exploitation', FU.DESCRIPTION),
+       HP.CREATION_DATE,
+       FU1.USER_NAME,
+       DECODE(FU1.USER_NAME, 'ANONYMOUS', 'Anonyme', 'EXPLOITATION', 'Exploitation', FU1.DESCRIPTION),
+       HP.LAST_UPDATE_DATE
+FROM   AR.HZ_PARTIES HP
+INNER JOIN APPS.PO_VENDORS          ASU ON ASU.PARTY_ID        = HP.PARTY_ID
+INNER JOIN APPLSYS.FND_TERRITORIES  FT  ON FT.TERRITORY_CODE   = HP.COUNTRY
+INNER JOIN APPLSYS.FND_USER         FU  ON FU.USER_ID          = HP.CREATED_BY
+INNER JOIN APPLSYS.FND_USER         FU1 ON FU1.USER_ID         = HP.LAST_UPDATED_BY
+WHERE  (ASU.END_DATE_ACTIVE > SYSDATE OR ASU.END_DATE_ACTIVE IS NULL)
+AND    ASU.VENDOR_TYPE_LOOKUP_CODE <> 'EMPLOYEE'
+AND    HP.COUNTRY <> 'FR'
+AND    FT.ALTERNATE_TERRITORY_CODE IS NOT NULL
+AND    HP.TAX_REFERENCE IS NULL
+
+UNION ALL
+
+/* 16 Fournisseur UE et pays intracommunautaire divergeant */
+SELECT '16_FOURN_UE_ET_PAYS_INTRACOM_DIVERGEANT',
+       ASU.SEGMENT1,
+       ASU.VENDOR_NAME,
+       DECODE(ASU.VENDOR_TYPE_LOOKUP_CODE,
+           'EMPLOYEE',         'Employé',
+           'EXTERNAL PARTNER', 'Fournisseur Groupe Externe',
+           'FACTOR',           'Fournisseur Factor',
+           'PARTENAIRE',       'Fournisseur Groupe Dalkia',
+           'VENDOR',           'Fournisseur', NULL)
+       || DECODE(ASU.MINORITY_GROUP_LOOKUP_CODE,
+           'ESAT',      ' - ESAT',
+           'APPRENTIS', ' - APPRENTIS', NULL),
+       HP.COUNTRY || '.' || HP.TAX_REFERENCE || '.' || FT.ALTERNATE_TERRITORY_CODE,
+       DECODE(HP.STATUS, 'A', 'Actif', 'I', 'Inactif', HP.STATUS),
+       ASU.END_DATE_ACTIVE,
+       FU.USER_NAME,
+       DECODE(FU.USER_NAME,  'ANONYMOUS', 'Anonyme', 'EXPLOITATION', 'Exploitation', FU.DESCRIPTION),
+       HP.CREATION_DATE,
+       FU1.USER_NAME,
+       DECODE(FU1.USER_NAME, 'ANONYMOUS', 'Anonyme', 'EXPLOITATION', 'Exploitation', FU1.DESCRIPTION),
+       HP.LAST_UPDATE_DATE
+FROM   AR.HZ_PARTIES HP
+INNER JOIN APPS.PO_VENDORS          ASU ON ASU.PARTY_ID        = HP.PARTY_ID
+INNER JOIN APPLSYS.FND_TERRITORIES  FT  ON FT.TERRITORY_CODE   = HP.COUNTRY
+INNER JOIN APPLSYS.FND_USER         FU  ON FU.USER_ID          = HP.CREATED_BY
+INNER JOIN APPLSYS.FND_USER         FU1 ON FU1.USER_ID         = HP.LAST_UPDATED_BY
+WHERE  (ASU.END_DATE_ACTIVE > SYSDATE OR ASU.END_DATE_ACTIVE IS NULL)
+AND    ASU.VENDOR_TYPE_LOOKUP_CODE <> 'EMPLOYEE'
+AND    FT.ALTERNATE_TERRITORY_CODE IS NOT NULL
+AND    FT.ALTERNATE_TERRITORY_CODE <> 'FR'
+AND    SUBSTR(HP.TAX_REFERENCE, 1, 2) <> 'FR'
+AND    SUBSTR(HP.TAX_REFERENCE, 1, 2) <> FT.ALTERNATE_TERRITORY_CODE
+
+UNION ALL
+
+/* 17 Fournisseur BE et numéro intracommunautaire faux */
+SELECT '17_FOURN_BE_ET_INTRACOM_FAUX',
+       ASU.SEGMENT1,
+       ASU.VENDOR_NAME,
+       DECODE(ASU.VENDOR_TYPE_LOOKUP_CODE,
+           'EMPLOYEE',         'Employé',
+           'EXTERNAL PARTNER', 'Fournisseur Groupe Externe',
+           'FACTOR',           'Fournisseur Factor',
+           'PARTENAIRE',       'Fournisseur Groupe Dalkia',
+           'VENDOR',           'Fournisseur', NULL)
+       || DECODE(ASU.MINORITY_GROUP_LOOKUP_CODE,
+           'ESAT',      ' - ESAT',
+           'APPRENTIS', ' - APPRENTIS', NULL),
+       CASE
+           WHEN LENGTH(REPLACE(HP.TAX_REFERENCE,' ','')) = 11
+               THEN HP.COUNTRY||'.'||REPLACE(HP.TAX_REFERENCE,' ','')||'.'||(97-MOD(TO_NUMBER(REGEXP_SUBSTR(REPLACE(HP.TAX_REFERENCE,' ',''),3,7)),97))||'.'||FT.ALTERNATE_TERRITORY_CODE
+           WHEN LENGTH(REPLACE(HP.TAX_REFERENCE,' ','')) = 12
+               THEN HP.COUNTRY||'.'||REPLACE(HP.TAX_REFERENCE,' ','')||'.'||(97-MOD(TO_NUMBER(REGEXP_SUBSTR(REPLACE(HP.TAX_REFERENCE,' ',''),3,8)),97))||'.'||FT.ALTERNATE_TERRITORY_CODE
+           ELSE HP.COUNTRY||'.'||REPLACE(HP.TAX_REFERENCE,' ','')||'.N/A.'||FT.ALTERNATE_TERRITORY_CODE
+       END,
+       DECODE(HP.STATUS, 'A', 'Actif', 'I', 'Inactif', HP.STATUS),
+       ASU.END_DATE_ACTIVE,
+       FU.USER_NAME,
+       DECODE(FU.USER_NAME,  'ANONYMOUS', 'Anonyme', 'EXPLOITATION', 'Exploitation', FU.DESCRIPTION),
+       HP.CREATION_DATE,
+       FU1.USER_NAME,
+       DECODE(FU1.USER_NAME, 'ANONYMOUS', 'Anonyme', 'EXPLOITATION', 'Exploitation', FU1.DESCRIPTION),
+       HP.LAST_UPDATE_DATE
+FROM   AR.HZ_PARTIES HP
+INNER JOIN APPS.PO_VENDORS          ASU ON ASU.PARTY_ID        = HP.PARTY_ID
+INNER JOIN APPLSYS.FND_TERRITORIES  FT  ON FT.TERRITORY_CODE   = HP.COUNTRY
+INNER JOIN APPLSYS.FND_USER         FU  ON FU.USER_ID          = HP.CREATED_BY
+INNER JOIN APPLSYS.FND_USER         FU1 ON FU1.USER_ID         = HP.LAST_UPDATED_BY
+WHERE  (ASU.END_DATE_ACTIVE > SYSDATE OR ASU.END_DATE_ACTIVE IS NULL)
+AND    ASU.VENDOR_TYPE_LOOKUP_CODE <> 'EMPLOYEE'
+AND    FT.ALTERNATE_TERRITORY_CODE = 'BE'
+AND    SUBSTR(HP.TAX_REFERENCE, 1, 2) = 'BE'
+AND    (
+           (LENGTH(REPLACE(HP.TAX_REFERENCE,' ','')) NOT IN (11, 12))
+        OR (LENGTH(REPLACE(HP.TAX_REFERENCE,' ','')) = 11
+            AND TO_NUMBER(REGEXP_SUBSTR(REPLACE(HP.TAX_REFERENCE,' ',''),10,2)) <> (97 - MOD(TO_NUMBER(REGEXP_SUBSTR(REPLACE(HP.TAX_REFERENCE,' ',''),3,7)),97)))
+        OR (LENGTH(REPLACE(HP.TAX_REFERENCE,' ','')) = 12
+            AND TO_NUMBER(REGEXP_SUBSTR(REPLACE(HP.TAX_REFERENCE,' ',''),11,2)) <> (97 - MOD(TO_NUMBER(REGEXP_SUBSTR(REPLACE(HP.TAX_REFERENCE,' ',''),3,8)),97)))
+       )
+
+UNION ALL
+
+/* 18 Format numéro intracommunautaire faux */
+SELECT '18_FORMAT_INTRACOM_FAUX',
+       ASU.SEGMENT1,
+       ASU.VENDOR_NAME,
+       DECODE(ASU.VENDOR_TYPE_LOOKUP_CODE,
+           'EMPLOYEE',         'Employé',
+           'EXTERNAL PARTNER', 'Fournisseur Groupe Externe',
+           'FACTOR',           'Fournisseur Factor',
+           'PARTENAIRE',       'Fournisseur Groupe Dalkia',
+           'VENDOR',           'Fournisseur', NULL)
+       || DECODE(ASU.MINORITY_GROUP_LOOKUP_CODE,
+           'ESAT',      ' - ESAT',
+           'APPRENTIS', ' - APPRENTIS', NULL),
+       HP.TAX_REFERENCE || ' - Nbre car : ' || LENGTH(HP.TAX_REFERENCE),
+       DECODE(HP.STATUS, 'A', 'Actif', 'I', 'Inactif', HP.STATUS),
+       ASU.END_DATE_ACTIVE,
+       FU.USER_NAME,
+       DECODE(FU.USER_NAME,  'ANONYMOUS', 'Anonyme', 'EXPLOITATION', 'Exploitation', FU.DESCRIPTION),
+       HP.CREATION_DATE,
+       FU1.USER_NAME,
+       DECODE(FU1.USER_NAME, 'ANONYMOUS', 'Anonyme', 'EXPLOITATION', 'Exploitation', FU1.DESCRIPTION),
+       HP.LAST_UPDATE_DATE
+FROM   AR.HZ_PARTIES HP
+INNER JOIN APPS.PO_VENDORS          ASU ON ASU.PARTY_ID        = HP.PARTY_ID
+INNER JOIN APPLSYS.FND_TERRITORIES  FT  ON FT.TERRITORY_CODE   = HP.COUNTRY
+INNER JOIN APPLSYS.FND_USER         FU  ON FU.USER_ID          = HP.CREATED_BY
+INNER JOIN APPLSYS.FND_USER         FU1 ON FU1.USER_ID         = HP.LAST_UPDATED_BY
+WHERE  (ASU.END_DATE_ACTIVE > SYSDATE OR ASU.END_DATE_ACTIVE IS NULL)
+AND    ASU.VENDOR_TYPE_LOOKUP_CODE <> 'EMPLOYEE'
+AND    (
+           (SUBSTR(NVL(HP.TAX_REFERENCE,'XX'),1,2) IN ('DE','CY','ES','EE','EL','PT','GB') AND LENGTH(HP.TAX_REFERENCE) <> 11)
+        OR (SUBSTR(NVL(HP.TAX_REFERENCE,'XX'),1,3) = 'ATU'  AND LENGTH(HP.TAX_REFERENCE) <> 11)
+        OR (SUBSTR(NVL(HP.TAX_REFERENCE,'XX'),1,3) = 'BE0'  AND LENGTH(HP.TAX_REFERENCE) <> 12)
+        OR (SUBSTR(NVL(HP.TAX_REFERENCE,'XX'),1,2) = 'BG'   AND (LENGTH(HP.TAX_REFERENCE) < 11 OR LENGTH(HP.TAX_REFERENCE) > 12))
+        OR (SUBSTR(NVL(HP.TAX_REFERENCE,'XX'),1,2) IN ('HR','FR','IT','LV') AND LENGTH(HP.TAX_REFERENCE) <> 13)
+        OR (SUBSTR(NVL(HP.TAX_REFERENCE,'XX'),1,2) IN ('DK','FI','HU','LU','MT','SI') AND LENGTH(HP.TAX_REFERENCE) <> 10)
+        OR (SUBSTR(NVL(HP.TAX_REFERENCE,'XX'),1,2) = 'IE'   AND (LENGTH(HP.TAX_REFERENCE) < 10 OR LENGTH(HP.TAX_REFERENCE) > 11))
+        OR (SUBSTR(NVL(HP.TAX_REFERENCE,'XX'),1,2) = 'LT'   AND (LENGTH(HP.TAX_REFERENCE) <> 11 OR LENGTH(HP.TAX_REFERENCE) <> 14))
+        OR (SUBSTR(NVL(HP.TAX_REFERENCE,'XX'),1,2) = 'NL'   AND LENGTH(HP.TAX_REFERENCE) <> 14)
+        OR (SUBSTR(NVL(HP.TAX_REFERENCE,'XX'),1,2) IN ('PL','SK') AND LENGTH(HP.TAX_REFERENCE) <> 12)
+        OR (SUBSTR(NVL(HP.TAX_REFERENCE,'XX'),1,2) = 'CZ'   AND (LENGTH(HP.TAX_REFERENCE) < 10 OR LENGTH(HP.TAX_REFERENCE) > 12))
+        OR (SUBSTR(NVL(HP.TAX_REFERENCE,'XX'),1,2) = 'RO'   AND (LENGTH(HP.TAX_REFERENCE) < 4  OR LENGTH(HP.TAX_REFERENCE) > 12))
+        OR (SUBSTR(NVL(HP.TAX_REFERENCE,'XX'),1,2) = 'SE'   AND LENGTH(HP.TAX_REFERENCE) <> 14 AND SUBSTR(HP.TAX_REFERENCE,13,2) <> '01')
+       )
+
+ORDER BY 2, 1

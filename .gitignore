@@ -1,0 +1,41 @@
+# =====================================================================
+# Règle générale : ignorer les fichiers sans extension
+# =====================================================================
+# ATTENTION : Cette section ignore par défaut les fichiers sans extension
+# (ex: Makefile, Dockerfile, scripts shell sans extension, etc.).
+
+# 1. On ignore tout par défaut
+*
+# 2. On ré-inclut les dossiers pour que git puisse les parcourir
+!*/
+# 3. On ré-inclut les fichiers qui ont une extension (contenant un point)
+!*.*
+# 4. On s'assure que le fichier .gitignore lui-même est bien suivi
+!.gitignore
+
+# =====================================================================
+# Fichier .gitignore pour les projets PL/SQL et scripts d'analyse
+# =====================================================================
+
+# 1. Ignorer tous les fichiers CSV comme demandé
+#    (rapports, exports, fusions, etc.)
+*.csv
+
+# 2. Ignorer les fichiers de log
+*.log
+
+# 3. Ignorer les dossiers de rapport générés par les outils
+rapport_*/
+Logs/
+
+# 4. Ignorer les dossiers de cache Python
+#    (générés par l'exécution de scripts comme controle_virements.py)
+__pycache__/
+
+# 5. Ignorer les fichiers texte génériques
+#    (exports, notes, etc.)
+*.txt
+
+# 6. Ignorer les fichiers de sortie et de requête Oracle
+*.req
+*.out

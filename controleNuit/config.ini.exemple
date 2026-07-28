@@ -1,0 +1,28 @@
+; =====================================================================
+; Configuration du Rapport de Contrôle Quotidien
+; =====================================================================
+; Copier ce fichier en config.ini et renseigner les valeurs
+; NE PAS COMMITTER le fichier avec le mot de passe en clair
+; =====================================================================
+
+[database]
+; Connexion Oracle EBS Production
+user = APPS
+password = XXXXXXXX
+; Format DSN : host:port/service_name
+dsn = hostname:1521/PROD
+
+[parametres]
+; Nombre de jours d'historique à afficher dans les tableaux
+nb_jours_histo = 3
+; Plage horaire de la nuit (traitements batch)
+heure_fermeture = 19
+heure_ouverture = 7
+; Seuil en minutes pour signaler un traitement long
+seuil_long_min = 30
+
+[sortie]
+; Répertoire de sortie pour les PDF générés
+output_dir = .
+; Nom du fichier (laisser vide pour auto-génération avec la date)
+output_filename =

@@ -1,0 +1,2 @@
+select status from ap_invoices_interface where attribute10='CEL01_SRC_FACTURESFOURNISSEURS_030326-200401_ST_CEL01_639081650413786957_001'
+and attribute9='CEC'

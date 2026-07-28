@@ -1,0 +1,12 @@
+{
+  "csvFolder": "Extraits",
+  "consolidatedFile": "ctm_finance_consolidated.csv",
+  "processedFile": "ctm_finance_processed.txt",
+  "appFilter": "FIN-FINANCE",
+  "thresholds": {
+    "longJobMultiplier": 3.0,
+    "errorAlertMin": 1,
+    "missingJobLookbackDays": 14,
+    "trendWindowDays": 30
+  }
+}
