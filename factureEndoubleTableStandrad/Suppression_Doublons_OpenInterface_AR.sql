@@ -87,8 +87,8 @@ SELECT ril.org_id                          AS ORG_ID,
 FROM   ar.ra_interface_lines_all  ril
 JOIN   ar.ra_interface_errors_all rie
        ON rie.interface_line_id = ril.interface_line_id
-WHERE  UPPER(rie.message_text) LIKE UPPER('&&P_MOTIF')
-AND    (&&P_ORG_ID = 0 OR ril.org_id = &&P_ORG_ID)
+WHERE  UPPER(rie.message_text) LIKE UPPER('Numéro de facture en double')
+AND    rie.interface_line_id = ril.interface_line_id
 GROUP BY ril.org_id, ril.batch_source_name
 ORDER BY ril.org_id, ril.batch_source_name;
 
