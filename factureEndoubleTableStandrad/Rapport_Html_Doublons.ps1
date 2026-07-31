@@ -73,7 +73,6 @@ function New-RapportDoublonsHtml {
         @{ n = 'Erreurs';                   v = ('{0:N0}' -f [int]$cErr);    c = '#003366' }
         @{ n = 'Distributions';             v = ('{0:N0}' -f [int]$cDist);   c = '#003366' }
         @{ n = 'Credits de vente';          v = ('{0:N0}' -f [int]$cSc);     c = '#003366' }
-        @{ n = 'Montant concerne';          v = (Format-MontantHtml $montantTotal); c = '#5b2d8e' }
         @{ n = 'Deja integrees en base';    v = ('{0:N0}' -f $dejaIntegrees.Count); c = '#0b6b3a' }
         @{ n = 'Doublons internes';         v = ('{0:N0}' -f $internes.Count);      c = '#8a5a00' }
         @{ n = 'Organisations';             v = ('{0:N0}' -f $nbOrg);        c = '#57606a' }
@@ -92,11 +91,11 @@ function New-RapportDoublonsHtml {
     } elseif ($Mode -eq 'EXECUTION') {
         $globClass = 'ko'
         $globTitre = "$total enregistrement(s) supprime(s) definitivement"
-        $globTexte = "$($lg.Count) ligne(s) d'interface et leurs enfants, pour $(Format-MontantHtml $montantTotal) au total."
+        $globTexte = "$($lg.Count) ligne(s) d'interface et leurs enfants."
     } else {
         $globClass = 'warn'
         $globTitre = "$total enregistrement(s) seraient supprime(s)"
-        $globTexte = "$($lg.Count) ligne(s) d'interface et leurs enfants, pour $(Format-MontantHtml $montantTotal) au total. " +
+        $globTexte = "$($lg.Count) ligne(s) d'interface et leurs enfants. " +
                      'Rien n''a ete modifie en base : ce rapport est une simulation.'
     }
 
@@ -123,25 +122,21 @@ function New-RapportDoublonsHtml {
     $blocSynthese = {
         param($Titre, $Champ, $Limite)
         $g = $lg | Group-Object -Property $Champ | ForEach-Object {
-            $mt = ($_.Group | Measure-Object -Property Montant -Sum).Sum
             [PSCustomObject]@{
                 Cle     = $(if ([string]::IsNullOrEmpty($_.Name)) { '(vide)' } else { $_.Name })
                 Nb      = $_.Count
                 Deja    = @($_.Group | Where-Object { [int]$_.NbTrxExistantes -gt 0 }).Count
                 Interne = @($_.Group | Where-Object { [int]$_.NbTrxExistantes -eq 0 -and [int]$_.NbDansInterface -gt 1 }).Count
-                Mt      = $(if ($null -eq $mt) { 0 } else { $mt })
             }
         } | Sort-Object -Property Nb -Descending
         if ($Limite -gt 0) { $g = $g | Select-Object -First $Limite }
 
         $l = ($g | ForEach-Object {
             $cls = if ($_.Interne -gt 0) { ' class="warn"' } else { '' }
-            "<tr$cls><td>$(ConvertTo-HtmlTexte $_.Cle)</td><td class=""num"">$($_.Nb)</td>" +
-            "<td class=""num"">$($_.Deja)</td><td class=""num"">$($_.Interne)</td>" +
-            "<td class=""num strong"">$(Format-MontantHtml $_.Mt)</td></tr>"
+            "<tr$cls><td>$(ConvertTo-HtmlTexte $_.Cle)</td><td class=""num"">$($_.Nb)</td><td class=""num"">$($_.Deja)</td><td class=""num"">$($_.Interne)</td></tr>"
         }) -join ''
         "<div><h3>$Titre</h3><table class=""synth""><thead><tr><th>$Champ</th><th>Lignes</th>" +
-        "<th>Deja integrees</th><th>Interne</th><th>Montant</th></tr></thead><tbody>$l</tbody></table></div>"
+        "<th>Deja integrees</th><th>Interne</th></tr></thead><tbody>$l</tbody></table></div>"
     }
     $htmlSynthese = (& $blocSynthese 'Par organisation' 'OrgId' 0) +
                     (& $blocSynthese 'Par source (20 premieres)' 'Source' 20)
@@ -150,7 +145,7 @@ function New-RapportDoublonsHtml {
     $triees = $lg | Sort-Object `
         @{ Expression = { if ([int]$_.NbTrxExistantes -eq 0 -and [int]$_.NbDansInterface -gt 1) { 1 }
                           elseif ([int]$_.NbTrxExistantes -eq 0) { 2 } else { 3 } } },
-        @{ Expression = { [math]::Abs([double]$_.Montant) }; Descending = $true }
+        @{ Expression = { $_.Attribut1 } }
 
     $htmlLignes = ($triees | ForEach-Object {
         if ([int]$_.NbTrxExistantes -gt 0) {
@@ -172,8 +167,7 @@ function New-RapportDoublonsHtml {
         "<td class=""mono strong"">$(ConvertTo-HtmlTexte $_.TrxNumber)</td>" +
         "<td class=""ctr"">$(ConvertTo-HtmlTexte $_.TrxDate)</td>" +
         "<td class=""ctr"">$(ConvertTo-HtmlTexte $_.GlDate)</td>" +
-        "<td class=""num strong"">$(Format-MontantHtml $_.Montant)</td>" +
-        "<td class=""ctr"">$(ConvertTo-HtmlTexte $_.Devise)</td>" +
+        "<td class=""mono com"" title=""$(ConvertTo-HtmlTexte $_.Attribut1)"">$(ConvertTo-HtmlTexte $_.Attribut1)</td>" +
         "<td class=""mono"">$(ConvertTo-HtmlTexte $_.ClientRef)</td>" +
         "<td>$(ConvertTo-HtmlTexte $_.TypeTrx)</td>" +
         "<td class=""com"" title=""$(ConvertTo-HtmlTexte $_.Description)"">$(ConvertTo-HtmlTexte $_.Description)</td>" +
@@ -394,7 +388,7 @@ $htmlSynthese
 <table id="detail">
 <thead><tr>
   <th>Line ID</th><th>Source</th><th>Org</th><th>N facture</th><th>Date</th><th>Date GL</th>
-  <th>Montant</th><th>Devise</th><th>Ref client</th><th>Type</th><th>Description</th>
+  <th>Nom Fichier</th><th>Ref client</th><th>Type</th><th>Description</th>
   <th class="sep">Err.</th><th>Dist.</th><th>Cred.</th>
   <th class="sep">Deja en base</th><th>Exemplaires<br>en interface</th>
   <th>Message</th><th>Categorie</th><th>Creee le</th>

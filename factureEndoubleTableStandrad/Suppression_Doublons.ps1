@@ -33,7 +33,6 @@
 param(
     [string] $Motif     = '%facture en double%',
     [int]    $OrgId     = 0,          # 0 = toutes les organisations
-    [int]    $MaxLignes = 5000,
     [switch] $Executer,
     [switch] $RapportSeul,
     [switch] $SansConfirmation,
@@ -397,13 +396,15 @@ foreach ($s in $creditsVente) {
 $exportCsv | Export-Csv -Path $FichierCsv -NoTypeInformation -Delimiter ';' -Encoding UTF8
 Ok "CSV  : $FichierCsv ($($exportCsv.Count) enregistrement(s))"
 
-New-RapportDoublonsHtml -Lignes $lignes -Erreurs $erreurs `
-    -Distributions $distributions -CreditsVente $creditsVente `
-    -CheminHtml $FichierHtml -Compteurs $compteurs `
-    -Mode $(if ($RapportSeul) { 'RAPPORT' } else { $Mode }) -Motif $Motif `
-    -Org $(if ($OrgId -eq 0) { 'TOUTES' } else { "$OrgId" }) `
-    -Base "${ORA_USER}@${OraDsn}" -Duree $dureeRapport -CheminCsv $FichierCsv
-Ok "HTML : $FichierHtml"
+if ($Mode -ne 'EXECUTION') {
+    New-RapportDoublonsHtml -Lignes ($lignes.ToArray()) -Erreurs ($erreurs.ToArray()) `
+        -Distributions ($distributions.ToArray()) -CreditsVente ($creditsVente.ToArray()) `
+        -CheminHtml $FichierHtml -Compteurs $compteurs `
+        -Mode $(if ($RapportSeul) { 'RAPPORT' } else { $Mode }) -Motif $Motif `
+        -Org $(if ($OrgId -eq 0) { 'TOUTES' } else { "$OrgId" }) `
+        -Base "${ORA_USER}@${OraDsn}" -Duree $dureeRapport -CheminCsv $FichierCsv
+    Ok "HTML : $FichierHtml"
+}
 Write-Host ''
 
 $dejaIntegrees = @($lignes | Where-Object { [int]$_.NbTrxExistantes -gt 0 })
@@ -415,7 +416,6 @@ Write-Host ("  {0,-34} : {1,8}" -f 'RA_INTERFACE_LINES_ALL', $lignes.Count)
 Write-Host ("  {0,-34} : {1,8}" -f 'RA_INTERFACE_ERRORS_ALL', $erreurs.Count)
 Write-Host ("  {0,-34} : {1,8}" -f 'RA_INTERFACE_DISTRIBUTIONS_ALL', $distributions.Count)
 Write-Host ("  {0,-34} : {1,8}" -f 'RA_INTERFACE_SALESCREDITS_ALL', $creditsVente.Count)
-Write-Host ("  {0,-34} : {1,8}" -f 'Montant concerne', ('{0:N2}' -f $montantTotal))
 Write-Host ''
 Write-Host ("  {0,-34} : {1,8}" -f 'Deja integrees en base', $dejaIntegrees.Count) -ForegroundColor Green
 Write-Host ("  {0,-34} : {1,8}" -f 'Doublons internes a l''interface', $internes.Count) -ForegroundColor $(if ($internes.Count -gt 0) { 'Red' } else { 'Gray' })
@@ -434,8 +434,10 @@ if ($internes.Count -gt 0) {
     if ($internes.Count -gt 10) { Avt "            ... et $($internes.Count - 10) autre(s)" }
 }
 
-if (-not $SansOuverture -and (Test-Path $FichierHtml)) {
-    Start-Process $FichierHtml
+if ($Mode -ne 'EXECUTION') {
+    if (-not $SansOuverture -and (Test-Path $FichierHtml)) {
+        Start-Process $FichierHtml
+    }
 }
 
 if ($lignes.Count -eq 0) {
@@ -455,14 +457,6 @@ if ($RapportSeul) {
     exit $EXIT_OK
 }
 
-if ($lignes.Count -gt $MaxLignes) {
-    Write-Host ''
-    Ko "[ERREUR] $($lignes.Count) lignes visees, au-dela du plafond de $MaxLignes."
-    Ko '         Le rapport reste consultable, aucune suppression tentee.'
-    Ko '         Restreindre le perimetre (-OrgId, -Motif) ou relever -MaxLignes.'
-    exit $EXIT_ECART
-}
-
 # =====================================================================
 #  ETAPE 6 : CONFIRMATION AVANT SUPPRESSION REELLE
 # =====================================================================
@@ -472,13 +466,12 @@ if ($Mode -eq 'EXECUTION' -and -not $SansConfirmation) {
     Write-Host "  Vous allez supprimer definitivement $total enregistrement(s) :" -ForegroundColor Red
     Write-Host "    $($lignes.Count) ligne(s) d'interface, $($erreurs.Count) erreur(s)," -ForegroundColor Red
     Write-Host "    $($distributions.Count) distribution(s), $($creditsVente.Count) credit(s) de vente." -ForegroundColor Red
-    Write-Host "  Montant concerne : $('{0:N2}' -f $montantTotal)" -ForegroundColor Red
     Write-Host "  Base             : ${ORA_USER}@${OraDsn}" -ForegroundColor Red
     if ($internes.Count -gt 0) {
         Write-Host "  Dont $($internes.Count) doublon(s) INTERNE(S) : la facture n'existe nulle part ailleurs." -ForegroundColor Red
     }
     Write-Host ''
-    Write-Host "  Le detail complet est dans : $FichierHtml" -ForegroundColor Yellow
+    Write-Host "  Le detail complet est dans le fichier CSV : $FichierCsv" -ForegroundColor Yellow
     Write-Host '  Saisir OUI (en majuscules) pour confirmer, toute autre saisie annule.' -ForegroundColor Yellow
     $rep = $null
     try { $rep = Read-Host '  Confirmation' }
@@ -511,7 +504,7 @@ $entetePurge = @(
     "DEFINE P_MODE       = `"$Mode`"",
     "DEFINE P_MOTIF      = `"$Motif`"",
     "DEFINE P_ORG_ID     = $OrgId",
-    "DEFINE P_MAX_LIGNES = $MaxLignes",
+    "DEFINE P_MAX_LIGNES = 9999999 -- Plafond desactive",
     "DEFINE P_NB_ATTENDU = $nbAttendu",
     "DEFINE P_SOMME_IDS  = $sommeIds",
     '',
@@ -587,7 +580,9 @@ Write-Host ("  {0,-34} : {1,8}" -f 'RA_INTERFACE_LINES_ALL', $nbLig)
 Write-Host ("  {0,-34} : {1,8}" -f 'RA_INTERFACE_ERRORS_ALL', $nbErr)
 Write-Host ("  {0,-34} : {1,8}" -f 'RA_INTERFACE_DISTRIBUTIONS_ALL', $nbDist)
 Write-Host ("  {0,-34} : {1,8}" -f 'RA_INTERFACE_SALESCREDITS_ALL', $nbSc)
-Write-Host ("  {0,-34} : {1}" -f 'Rapport HTML', $FichierHtml) -ForegroundColor Green
+if ($Mode -ne 'EXECUTION') {
+    Write-Host ("  {0,-34} : {1}" -f 'Rapport HTML', $FichierHtml) -ForegroundColor Green
+}
 Write-Host ("  {0,-34} : {1}" -f 'Rapport CSV', $FichierCsv) -ForegroundColor Green
 Write-Host ("  {0,-34} : {1}" -f 'Log suppression', $FichierPurge) -ForegroundColor Green
 
