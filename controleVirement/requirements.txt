@@ -1,0 +1,7 @@
+# Dependances du controle des virements.
+# Le coeur du contrôle (DK, DK_FIN01, ACK, CSV Oracle) n'utilise que la stdlib.
+# xlrd est requis uniquement pour lire le retour Quartz au format .xls binaire (niveau 3).
+xlrd>=2.0
+
+# Pour lancer les tests :
+# pytest>=8
