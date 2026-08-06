@@ -1,0 +1,6 @@
+# Dependances du rapprochement des prelevements Oracle / EDF.
+# Le coeur du controle (lecture Oracle, EDF, rejets) n'utilise que la stdlib.
+# openpyxl est requis uniquement pour generer le classeur .xlsx de restitution ;
+# il remplace l'automatisation COM du script PowerShell et supprime ainsi
+# la dependance a une installation locale de Microsoft Excel.
+openpyxl>=3.1

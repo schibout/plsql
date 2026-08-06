@@ -1,0 +1,174 @@
+﻿<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>Controle Folio Rose - 28/07/2026 17:02</title>
+<style>
+  * { box-sizing: border-box; }
+  body { font-family: Segoe UI, Calibri, Arial, sans-serif; margin: 0; padding: 22px;
+         background: #f4f6f9; color: #24292f; }
+  .wrap { max-width: 1700px; margin: 0 auto; }
+  h1 { background: #003366; color: #fff; padding: 15px 22px; border-radius: 6px;
+       font-size: 1.22em; margin: 0 0 12px 0; }
+  h2 { color: #003366; border-bottom: 2px solid #003366; padding-bottom: 5px;
+       margin-top: 30px; font-size: 1.04em; }
+  h3 { color: #003366; font-size: .9em; margin: 16px 0 8px 0; }
+  .meta { background: #e8f0fe; border-left: 4px solid #003366; padding: 9px 15px;
+          margin-bottom: 15px; border-radius: 0 4px 4px 0; font-size: .85em; }
+  .meta span { margin-right: 20px; display: inline-block; }
+  .bandeau { padding: 13px 19px; border-radius: 6px; margin-bottom: 16px; font-size: .92em; }
+  .bandeau strong { display: block; font-size: 1.14em; margin-bottom: 3px; }
+  .bandeau.ok   { background: #d7f2e3; color: #0b6b3a; border: 1px solid #7fc9a3; }
+  .bandeau.warn { background: #fff4d6; color: #7a5600; border: 1px solid #e8c46a; }
+  .bandeau.ko   { background: #fbdcdc; color: #9b1c1c; border: 1px solid #e39292; }
+  .note { background: #fff8e6; border-left: 4px solid #d9a441; padding: 9px 15px;
+          border-radius: 0 4px 4px 0; margin-bottom: 16px; font-size: .84em; color: #7a5600; }
+  .tiles { display: flex; flex-wrap: wrap; gap: 11px; }
+  .tile { flex: 1 1 145px; background: #fff; border: 1px solid #dde3ea; border-radius: 6px;
+          padding: 13px 9px; text-align: center; box-shadow: 0 1px 2px rgba(0,0,0,.05); }
+  .tv { font-size: 1.45em; font-weight: 700; line-height: 1.15; }
+  .tn { font-size: .73em; color: #57606a; text-transform: uppercase;
+        letter-spacing: .03em; margin-top: 4px; }
+  .cols { display: flex; gap: 22px; flex-wrap: wrap; }
+  .cols > div { flex: 1 1 380px; }
+  table { border-collapse: collapse; width: 100%; background: #fff; }
+  .tablewrap { overflow-x: auto; background: #fff; border-radius: 6px;
+               box-shadow: 0 1px 3px rgba(0,0,0,.12); }
+  th { background: #003366; color: #fff; padding: 9px 10px; text-align: left;
+       font-size: .77em; white-space: nowrap; position: sticky; top: 0; z-index: 2; }
+  td { padding: 6px 10px; border-bottom: 1px solid #eceff2; font-size: .81em; white-space: nowrap; }
+  tr:nth-child(even) td { background: #fafbfc; }
+  tr:hover td { background: #eef4fd; }
+  tr.warn td { background: #fffaf0; }
+  table.synth { border-radius: 6px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,.1); }
+  .mono { font-family: Consolas, Menlo, monospace; font-size: .95em; }
+  .num  { text-align: right; font-variant-numeric: tabular-nums; }
+  .ctr  { text-align: center; }
+  .strong { font-weight: 700; }
+  .sep { border-left: 2px solid #dde3ea; }
+  .fic { max-width: 340px; overflow: hidden; text-overflow: ellipsis; }
+  .com { max-width: 260px; white-space: normal; color: #57606a; font-style: italic; }
+  td:empty::after { content: '-'; color: #c9ced4; }
+  .pill { display: inline-block; padding: 2px 9px; border-radius: 11px;
+          font-size: .8em; font-weight: 600; }
+  .flag { display: inline-block; margin-left: 5px; padding: 1px 7px; border-radius: 9px;
+          font-size: .73em; font-weight: 600; cursor: help; }
+  .flag.rien  { background: #ede7f6; color: #5b2d8e; }
+  .flag.inter { background: #e3f0fb; color: #0a4d8c; }
+  .age-moyen { color: #8a5a00; font-weight: 600; }
+  .age-vieux { color: #9b1c1c; font-weight: 700; }
+  .barre { background: #fff; border-radius: 6px; padding: 11px 15px; margin-bottom: 12px;
+           box-shadow: 0 1px 2px rgba(0,0,0,.08); font-size: .84em; }
+  .barre button { border: 1px solid #c5cdd6; background: #f6f8fa; border-radius: 14px;
+                  padding: 4px 13px; margin-right: 6px; cursor: pointer; font-size: .95em;
+                  font-family: inherit; }
+  .barre button.on { background: #003366; color: #fff; border-color: #003366; }
+  .barre input { border: 1px solid #c5cdd6; border-radius: 4px; padding: 5px 9px;
+                 width: 250px; font-family: inherit; font-size: .95em; margin-left: 10px; }
+  #compteur { color: #57606a; margin-left: 12px; }
+  .footer { font-size: .76em; color: #8b949e; margin-top: 30px; text-align: center; }
+  @media print {
+    .barre { display: none; }
+    body { background: #fff; padding: 0; }
+    th { position: static; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+<h1>Controle Folio Rose &mdash; reconciliation des factures</h1>
+<div class="meta"><span><strong>Genere le :</strong> 28/07/2026 17:02:39</span></div>
+<div class="bandeau ko"><strong>28 ligne(s) en ecart</strong>Montant cumule en ecart : 1 815 516,62.</div>
+<div class="note"><strong>22 ligne(s) presentes en interface mais absentes des tables definitives</strong> &mdash; le fichier est bien arrive, l'integration n'a pas eu lieu. Ce n'est pas un ecart de montant : c'est un traitement d'integration a relancer ou a debloquer.</div>
+<div class="tiles"><div class="tile"><div class="tv" style="color:#003366">29</div><div class="tn">Lignes controlees</div></div><div class="tile"><div class="tv" style="color:#0b6b3a">1</div><div class="tn">Concordantes</div></div><div class="tile"><div class="tv" style="color:#9b1c1c">28</div><div class="tn">En ecart</div></div><div class="tile"><div class="tv" style="color:#8a5a00">0</div><div class="tn">Indeterminees</div></div><div class="tile"><div class="tv" style="color:#9b1c1c">1 815 516,62</div><div class="tn">Montant en ecart</div></div><div class="tile"><div class="tv" style="color:#5b2d8e">82 j</div><div class="tn">Ecart le plus ancien</div></div><div class="tile"><div class="tv" style="color:#8a5a00">22</div><div class="tn">En interface, non integre</div></div><div class="tile"><div class="tv" style="color:#8a5a00">0</div><div class="tn">Sans reponse Oracle</div></div></div>
+
+<h2>Synthese</h2>
+<div class="cols">
+<div><h3>Par nature de flux</h3><table class="synth"><thead><tr><th>Type</th><th>Lignes</th><th>En ecart</th><th>Indet.</th><th>Montant en ecart</th></tr></thead><tbody><tr class="warn"><td>FOURNISSEURS</td><td class="num">12</td><td class="num">12</td><td class="num">0</td><td class="num strong">-40 312 069,40</td></tr><tr class="warn"><td>CLIENTS</td><td class="num">14</td><td class="num">13</td><td class="num">0</td><td class="num strong">31 502 265,97</td></tr><tr class="warn"><td>GL</td><td class="num">3</td><td class="num">3</td><td class="num">0</td><td class="num strong">10 625 320,05</td></tr></tbody></table></div><div><h3>Par folio (15 premiers)</h3><table class="synth"><thead><tr><th>Folio</th><th>Lignes</th><th>En ecart</th><th>Indet.</th><th>Montant en ecart</th></tr></thead><tbody><tr class="warn"><td>ING</td><td class="num">3</td><td class="num">3</td><td class="num">0</td><td class="num strong">-40 930 928,55</td></tr><tr class="warn"><td>GCA</td><td class="num">4</td><td class="num">3</td><td class="num">0</td><td class="num strong">13 734 587,95</td></tr><tr class="warn"><td>CMB</td><td class="num">1</td><td class="num">1</td><td class="num">0</td><td class="num strong">10 552 281,17</td></tr><tr class="warn"><td>CYC</td><td class="num">3</td><td class="num">3</td><td class="num">0</td><td class="num strong">8 918 560,23</td></tr><tr class="warn"><td>IGP</td><td class="num">2</td><td class="num">2</td><td class="num">0</td><td class="num strong">8 659 370,59</td></tr><tr class="warn"><td>CYF</td><td class="num">1</td><td class="num">1</td><td class="num">0</td><td class="num strong">307 992,59</td></tr><tr class="warn"><td>CEG</td><td class="num">1</td><td class="num">1</td><td class="num">0</td><td class="num strong">145 448,67</td></tr><tr class="warn"><td>SVD</td><td class="num">1</td><td class="num">1</td><td class="num">0</td><td class="num strong">131 106,95</td></tr><tr class="warn"><td>HAF</td><td class="num">1</td><td class="num">1</td><td class="num">0</td><td class="num strong">108 913,66</td></tr><tr class="warn"><td>FGE</td><td class="num">1</td><td class="num">1</td><td class="num">0</td><td class="num strong">63 524,91</td></tr><tr class="warn"><td>GAZ</td><td class="num">1</td><td class="num">1</td><td class="num">0</td><td class="num strong">48 269,68</td></tr><tr class="warn"><td>RNE</td><td class="num">1</td><td class="num">1</td><td class="num">0</td><td class="num strong">31 208,48</td></tr><tr class="warn"><td>VTC</td><td class="num">1</td><td class="num">1</td><td class="num">0</td><td class="num strong">24 618,86</td></tr><tr class="warn"><td>CEC</td><td class="num">1</td><td class="num">1</td><td class="num">0</td><td class="num strong">-23 074,77</td></tr><tr class="warn"><td>CEE</td><td class="num">1</td><td class="num">1</td><td class="num">0</td><td class="num strong">18 843,52</td></tr></tbody></table></div>
+</div>
+
+<h2>Detail des lignes</h2>
+<div class="barre">
+  <button class="on" data-f="TOUS">Toutes</button>
+  <button data-f="KO">En ecart</button>
+  <button data-f="INDETERMINE">Indeterminees</button>
+  <button data-f="OK">Concordantes</button>
+  <input type="text" id="q" placeholder="Rechercher un folio, un fichier...">
+  <span id="compteur"></span>
+</div>
+<div class="tablewrap">
+<table id="detail">
+<thead><tr>
+  <th>Folio</th><th>Type</th><th>Date</th><th>Age</th><th>Fichier transmis</th>
+  <th>Ecart Nb<br>(fichier)</th><th>Ecart Debit<br>(fichier)</th>
+  <th class="sep">Nb Oracle</th><th>Montant Oracle</th><th>Montant Interface</th>
+  <th class="sep">Ecart Nb<br>(calcule)</th><th>Ecart Montant<br>(calcule)</th>
+  <th>Commentaire</th><th>Statut</th>
+</tr></thead>
+<tbody>
+<tr data-statut="KO"><td class="mono">ING</td><td>FOURNISSEURS</td><td class="ctr">25/06/2026</td><td class="ctr age-vieux">33 j</td><td class="mono fic" title="FAC02_SRC_FACTURESFOURNISSEURS_020626-033340_ST_FAC02_639159680209510670_001">FAC02_SRC_FACTURESFOURNISSEURS_020626-033340_…</td><td class="num">-4</td><td class="num">-59 622,23</td><td class="num sep">478</td><td class="num">41 630 327,17</td><td class="num">41 630 327,17</td><td class="num sep">-478</td><td class="num strong">-41 630 327,17</td><td class="com"></td><td><span class="pill" style="color:#9b1c1c;background:#fbdcdc">KO</span> </td></tr>
+<tr data-statut="KO"><td class="mono">GCA</td><td>CLIENTS</td><td class="ctr">30/06/2026</td><td class="ctr age-moyen">28 j</td><td class="mono fic" title="FAC02_SRC_FACTURESCLIENTS_300626-011447_ST_FAC02_639183788877097677_001">FAC02_SRC_FACTURESCLIENTS_300626-011447_ST_FA…</td><td class="num">0</td><td class="num">-2 866 129,34</td><td class="num sep">0</td><td class="num">0,00</td><td class="num">10 589 180,55</td><td class="num sep">3 923</td><td class="num strong">10 589 180,55</td><td class="com"></td><td><span class="pill" style="color:#9b1c1c;background:#fbdcdc">KO</span> <span class="flag inter" title="Present en interface mais absent des tables definitives : le fichier est arrive, l'integration n'a pas eu lieu.">en interface</span></td></tr>
+<tr data-statut="KO"><td class="mono">CMB</td><td>GL</td><td class="ctr">26/06/2026</td><td class="ctr age-vieux">32 j</td><td class="mono fic" title="PRN01_SRC_ECRITURESGL_20260626-084744">PRN01_SRC_ECRITURESGL_20260626-084744</td><td class="num">0</td><td class="num">-0,07</td><td class="num sep">766</td><td class="num">10 552 281,24</td><td class="num">10 552 281,24</td><td class="num sep">766</td><td class="num strong">10 552 281,17</td><td class="com"></td><td><span class="pill" style="color:#9b1c1c;background:#fbdcdc">KO</span> </td></tr>
+<tr data-statut="KO"><td class="mono">IGP</td><td>CLIENTS</td><td class="ctr">29/06/2026</td><td class="ctr age-moyen">29 j</td><td class="mono fic" title="FAC02_SRC_FACTURESCLIENTS_270626-005428_ST_FAC02_639181184681528721_001">FAC02_SRC_FACTURESCLIENTS_270626-005428_ST_FA…</td><td class="num">0</td><td class="num">-317 647,04</td><td class="num sep">0</td><td class="num">0,00</td><td class="num">7 116 055,65</td><td class="num sep">27</td><td class="num strong">7 116 055,65</td><td class="com"></td><td><span class="pill" style="color:#9b1c1c;background:#fbdcdc">KO</span> <span class="flag inter" title="Present en interface mais absent des tables definitives : le fichier est arrive, l'integration n'a pas eu lieu.">en interface</span></td></tr>
+<tr data-statut="KO"><td class="mono">CYC</td><td>CLIENTS</td><td class="ctr">01/07/2026</td><td class="ctr age-moyen">27 j</td><td class="mono fic" title="HEF01_SRC_FACTURESCLIENTS_010726-011002_ST_HEF01_639184650021108836_001">HEF01_SRC_FACTURESCLIENTS_010726-011002_ST_HE…</td><td class="num">376</td><td class="num">3 172 162,09</td><td class="num sep">0</td><td class="num">0,00</td><td class="num">3 172 162,09</td><td class="num sep">376</td><td class="num strong">3 172 162,09</td><td class="com"></td><td><span class="pill" style="color:#9b1c1c;background:#fbdcdc">KO</span> <span class="flag inter" title="Present en interface mais absent des tables definitives : le fichier est arrive, l'integration n'a pas eu lieu.">en interface</span></td></tr>
+<tr data-statut="KO"><td class="mono">GCA</td><td>CLIENTS</td><td class="ctr">29/06/2026</td><td class="ctr age-moyen">29 j</td><td class="mono fic" title="FAC02_SRC_FACTURESCLIENTS_270626-005428_ST_FAC02_639181184681528721_001">FAC02_SRC_FACTURESCLIENTS_270626-005428_ST_FA…</td><td class="num">0</td><td class="num">-3 428 912,46</td><td class="num sep">0</td><td class="num">0,00</td><td class="num">3 147 078,54</td><td class="num sep">422</td><td class="num strong">3 147 078,54</td><td class="com"></td><td><span class="pill" style="color:#9b1c1c;background:#fbdcdc">KO</span> <span class="flag inter" title="Present en interface mais absent des tables definitives : le fichier est arrive, l'integration n'a pas eu lieu.">en interface</span></td></tr>
+<tr data-statut="KO"><td class="mono">CYC</td><td>CLIENTS</td><td class="ctr">30/06/2026</td><td class="ctr age-moyen">28 j</td><td class="mono fic" title="HEF01_SRC_FACTURESCLIENTS_300626-010932_ST_HEF01_639183785720902444_001">HEF01_SRC_FACTURESCLIENTS_300626-010932_ST_HE…</td><td class="num">0</td><td class="num">-383 283,66</td><td class="num sep">0</td><td class="num">0,00</td><td class="num">2 934 232,63</td><td class="num sep">379</td><td class="num strong">2 934 232,63</td><td class="com"></td><td><span class="pill" style="color:#9b1c1c;background:#fbdcdc">KO</span> <span class="flag inter" title="Present en interface mais absent des tables definitives : le fichier est arrive, l'integration n'a pas eu lieu.">en interface</span></td></tr>
+<tr data-statut="KO"><td class="mono">CYC</td><td>CLIENTS</td><td class="ctr">29/06/2026</td><td class="ctr age-moyen">29 j</td><td class="mono fic" title="HEF01_SRC_FACTURESCLIENTS_270626-010926_ST_HEF01_639181193668240670_001">HEF01_SRC_FACTURESCLIENTS_270626-010926_ST_HE…</td><td class="num">0</td><td class="num">-1 112 586,66</td><td class="num sep">2</td><td class="num">-298 295,63</td><td class="num">2 812 165,51</td><td class="num sep">370</td><td class="num strong">2 812 165,51</td><td class="com"></td><td><span class="pill" style="color:#9b1c1c;background:#fbdcdc">KO</span> </td></tr>
+<tr data-statut="KO"><td class="mono">IGP</td><td>CLIENTS</td><td class="ctr">30/06/2026</td><td class="ctr age-moyen">28 j</td><td class="mono fic" title="FAC02_SRC_FACTURESCLIENTS_300626-011447_ST_FAC02_639183788877097677_001">FAC02_SRC_FACTURESCLIENTS_300626-011447_ST_FA…</td><td class="num">0</td><td class="num">-640,76</td><td class="num sep">0</td><td class="num">0,00</td><td class="num">1 543 314,94</td><td class="num sep">126</td><td class="num strong">1 543 314,94</td><td class="com"></td><td><span class="pill" style="color:#9b1c1c;background:#fbdcdc">KO</span> <span class="flag inter" title="Present en interface mais absent des tables definitives : le fichier est arrive, l'integration n'a pas eu lieu.">en interface</span></td></tr>
+<tr data-statut="KO"><td class="mono">ING</td><td>FOURNISSEURS</td><td class="ctr">01/07/2026</td><td class="ctr age-moyen">27 j</td><td class="mono fic" title="FAC02_SRC_FACTURESFOURNISSEURS_010726-010649_ST_FAC02_639184648091081654_001">FAC02_SRC_FACTURESFOURNISSEURS_010726-010649_…</td><td class="num">32</td><td class="num">685 095,28</td><td class="num sep">0</td><td class="num">0,00</td><td class="num">673 896,96</td><td class="num sep">32</td><td class="num strong">685 095,28</td><td class="com"></td><td><span class="pill" style="color:#9b1c1c;background:#fbdcdc">KO</span> <span class="flag inter" title="Present en interface mais absent des tables definitives : le fichier est arrive, l'integration n'a pas eu lieu.">en interface</span></td></tr>
+<tr data-statut="KO"><td class="mono">CYF</td><td>FOURNISSEURS</td><td class="ctr">01/07/2026</td><td class="ctr age-moyen">27 j</td><td class="mono fic" title="HEF01_SRC_FACTURESFOURNISSEURS_010726-011017_ST_HEF01_639184650176825394_001">HEF01_SRC_FACTURESFOURNISSEURS_010726-011017_…</td><td class="num">8</td><td class="num">307 992,59</td><td class="num sep">0</td><td class="num">0,00</td><td class="num">307 992,59</td><td class="num sep">8</td><td class="num strong">307 992,59</td><td class="com"></td><td><span class="pill" style="color:#9b1c1c;background:#fbdcdc">KO</span> <span class="flag inter" title="Present en interface mais absent des tables definitives : le fichier est arrive, l'integration n'a pas eu lieu.">en interface</span></td></tr>
+<tr data-statut="KO"><td class="mono">CEG</td><td>FOURNISSEURS</td><td class="ctr">30/06/2026</td><td class="ctr age-moyen">28 j</td><td class="mono fic" title="CEL01_SRC_FACTURESFOURNISSEURS_300626-200458_ST_CEL01_639184466982671030_001">CEL01_SRC_FACTURESFOURNISSEURS_300626-200458_…</td><td class="num">69</td><td class="num">145 448,67</td><td class="num sep">0</td><td class="num">0,00</td><td class="num">152 655,18</td><td class="num sep">69</td><td class="num strong">145 448,67</td><td class="com"></td><td><span class="pill" style="color:#9b1c1c;background:#fbdcdc">KO</span> <span class="flag inter" title="Present en interface mais absent des tables definitives : le fichier est arrive, l'integration n'a pas eu lieu.">en interface</span></td></tr>
+<tr data-statut="KO"><td class="mono">SVD</td><td>CLIENTS</td><td class="ctr">29/06/2026</td><td class="ctr age-moyen">29 j</td><td class="mono fic" title="FAC02_SRC_FACTURESCLIENTS_270626-005428_ST_FAC02_639181184681528721_001">FAC02_SRC_FACTURESCLIENTS_270626-005428_ST_FA…</td><td class="num">0</td><td class="num">-462 191,16</td><td class="num sep">0</td><td class="num">0,00</td><td class="num">131 106,95</td><td class="num sep">379</td><td class="num strong">131 106,95</td><td class="com"></td><td><span class="pill" style="color:#9b1c1c;background:#fbdcdc">KO</span> <span class="flag inter" title="Present en interface mais absent des tables definitives : le fichier est arrive, l'integration n'a pas eu lieu.">en interface</span></td></tr>
+<tr data-statut="KO"><td class="mono">HAF</td><td>FOURNISSEURS</td><td class="ctr">30/06/2026</td><td class="ctr age-moyen">28 j</td><td class="mono fic" title="PRN01_SRC_FACTURESFOURNISSEURS_20260630_205445">PRN01_SRC_FACTURESFOURNISSEURS_20260630_205445</td><td class="num">106</td><td class="num">108 913,66</td><td class="num sep">0</td><td class="num">0,00</td><td class="num">86 294,98</td><td class="num sep">106</td><td class="num strong">108 913,66</td><td class="com"></td><td><span class="pill" style="color:#9b1c1c;background:#fbdcdc">KO</span> <span class="flag inter" title="Present en interface mais absent des tables definitives : le fichier est arrive, l'integration n'a pas eu lieu.">en interface</span></td></tr>
+<tr data-statut="KO"><td class="mono">FGE</td><td>GL</td><td class="ctr">01/07/2026</td><td class="ctr age-moyen">27 j</td><td class="mono fic" title="FAC02_SRC_ECRITURESGL_010726-010757">FAC02_SRC_ECRITURESGL_010726-010757</td><td class="num">15</td><td class="num">63 524,91</td><td class="num sep">0</td><td class="num">0,00</td><td class="num">63 524,91</td><td class="num sep">15</td><td class="num strong">63 524,91</td><td class="com"></td><td><span class="pill" style="color:#9b1c1c;background:#fbdcdc">KO</span> <span class="flag inter" title="Present en interface mais absent des tables definitives : le fichier est arrive, l'integration n'a pas eu lieu.">en interface</span></td></tr>
+<tr data-statut="KO"><td class="mono">GAZ</td><td>FOURNISSEURS</td><td class="ctr">01/07/2026</td><td class="ctr age-moyen">27 j</td><td class="mono fic" title="FAC02_SRC_FACTURESFOURNISSEURS_010726-010649_ST_FAC02_639184648091081654_001">FAC02_SRC_FACTURESFOURNISSEURS_010726-010649_…</td><td class="num">11</td><td class="num">48 269,68</td><td class="num sep">0</td><td class="num">0,00</td><td class="num">48 269,68</td><td class="num sep">11</td><td class="num strong">48 269,68</td><td class="com"></td><td><span class="pill" style="color:#9b1c1c;background:#fbdcdc">KO</span> <span class="flag inter" title="Present en interface mais absent des tables definitives : le fichier est arrive, l'integration n'a pas eu lieu.">en interface</span></td></tr>
+<tr data-statut="KO"><td class="mono">RNE</td><td>CLIENTS</td><td class="ctr">29/06/2026</td><td class="ctr age-moyen">29 j</td><td class="mono fic" title="FAC02_SRC_FACTURESCLIENTS_270626-005428_ST_FAC02_639181184681528721_001">FAC02_SRC_FACTURESCLIENTS_270626-005428_ST_FA…</td><td class="num">0</td><td class="num">-9 438,74</td><td class="num sep">0</td><td class="num">0,00</td><td class="num">31 208,48</td><td class="num sep">8</td><td class="num strong">31 208,48</td><td class="com"></td><td><span class="pill" style="color:#9b1c1c;background:#fbdcdc">KO</span> <span class="flag inter" title="Present en interface mais absent des tables definitives : le fichier est arrive, l'integration n'a pas eu lieu.">en interface</span></td></tr>
+<tr data-statut="KO"><td class="mono">VTC</td><td>CLIENTS</td><td class="ctr">29/06/2026</td><td class="ctr age-moyen">29 j</td><td class="mono fic" title="FAC02_SRC_FACTURESCLIENTS_270626-005428_ST_FAC02_639181184681528721_001">FAC02_SRC_FACTURESCLIENTS_270626-005428_ST_FA…</td><td class="num">0</td><td class="num">-4 191,58</td><td class="num sep">0</td><td class="num">0,00</td><td class="num">24 618,86</td><td class="num sep">11</td><td class="num strong">24 618,86</td><td class="com"></td><td><span class="pill" style="color:#9b1c1c;background:#fbdcdc">KO</span> <span class="flag inter" title="Present en interface mais absent des tables definitives : le fichier est arrive, l'integration n'a pas eu lieu.">en interface</span></td></tr>
+<tr data-statut="KO"><td class="mono">CEC</td><td>FOURNISSEURS</td><td class="ctr">30/06/2026</td><td class="ctr age-moyen">28 j</td><td class="mono fic" title="CEL01_SRC_FACTURESFOURNISSEURS_300626-200458_ST_CEL01_639184466982671030_001">CEL01_SRC_FACTURESFOURNISSEURS_300626-200458_…</td><td class="num">12</td><td class="num">-23 074,77</td><td class="num sep">0</td><td class="num">0,00</td><td class="num">-24 065,65</td><td class="num sep">12</td><td class="num strong">-23 074,77</td><td class="com"></td><td><span class="pill" style="color:#9b1c1c;background:#fbdcdc">KO</span> <span class="flag inter" title="Present en interface mais absent des tables definitives : le fichier est arrive, l'integration n'a pas eu lieu.">en interface</span></td></tr>
+<tr data-statut="KO"><td class="mono">CEE</td><td>FOURNISSEURS</td><td class="ctr">30/06/2026</td><td class="ctr age-moyen">28 j</td><td class="mono fic" title="CEL01_SRC_FACTURESFOURNISSEURS_300626-200458_ST_CEL01_639184466982671030_001">CEL01_SRC_FACTURESFOURNISSEURS_300626-200458_…</td><td class="num">81</td><td class="num">18 843,52</td><td class="num sep">0</td><td class="num">0,00</td><td class="num">18 519,15</td><td class="num sep">81</td><td class="num strong">18 843,52</td><td class="com"></td><td><span class="pill" style="color:#9b1c1c;background:#fbdcdc">KO</span> <span class="flag inter" title="Present en interface mais absent des tables definitives : le fichier est arrive, l'integration n'a pas eu lieu.">en interface</span></td></tr>
+<tr data-statut="KO"><td class="mono">ING</td><td>FOURNISSEURS</td><td class="ctr">24/06/2026</td><td class="ctr age-vieux">34 j</td><td class="mono fic" title="FAC02_SRC_FACTURESFOURNISSEURS_240626-010708_ST_FAC02_639178600281489344_001">FAC02_SRC_FACTURESFOURNISSEURS_240626-010708_…</td><td class="num">1</td><td class="num">14 303,34</td><td class="num sep">3</td><td class="num">52 662,26</td><td class="num">52 662,26</td><td class="num sep">1</td><td class="num strong">14 303,34</td><td class="com"></td><td><span class="pill" style="color:#9b1c1c;background:#fbdcdc">KO</span> </td></tr>
+<tr data-statut="KO"><td class="mono">GER</td><td>GL</td><td class="ctr">01/07/2026</td><td class="ctr age-moyen">27 j</td><td class="mono fic" title="FAC02_SRC_ECRITURESGL_010726-010757">FAC02_SRC_ECRITURESGL_010726-010757</td><td class="num">29</td><td class="num">9 513,97</td><td class="num sep">0</td><td class="num">0,00</td><td class="num">9 513,97</td><td class="num sep">29</td><td class="num strong">9 513,97</td><td class="com"></td><td><span class="pill" style="color:#9b1c1c;background:#fbdcdc">KO</span> <span class="flag inter" title="Present en interface mais absent des tables definitives : le fichier est arrive, l'integration n'a pas eu lieu.">en interface</span></td></tr>
+<tr data-statut="KO"><td class="mono">HAC</td><td>FOURNISSEURS</td><td class="ctr">01/07/2026</td><td class="ctr age-moyen">27 j</td><td class="mono fic" title="FAC02_SRC_FACTURESFOURNISSEURS_010726-010649_ST_FAC02_639184648091081654_001">FAC02_SRC_FACTURESFOURNISSEURS_010726-010649_…</td><td class="num">6</td><td class="num">6 417,58</td><td class="num sep">0</td><td class="num">0,00</td><td class="num">6 417,58</td><td class="num sep">6</td><td class="num strong">6 417,58</td><td class="com"></td><td><span class="pill" style="color:#9b1c1c;background:#fbdcdc">KO</span> <span class="flag inter" title="Present en interface mais absent des tables definitives : le fichier est arrive, l'integration n'a pas eu lieu.">en interface</span></td></tr>
+<tr data-statut="KO"><td class="mono">BIO</td><td>FOURNISSEURS</td><td class="ctr">01/07/2026</td><td class="ctr age-moyen">27 j</td><td class="mono fic" title="FAC02_SRC_FACTURESFOURNISSEURS_010726-010649_ST_FAC02_639184648091081654_001">FAC02_SRC_FACTURESFOURNISSEURS_010726-010649_…</td><td class="num">2</td><td class="num">3 497,61</td><td class="num sep">0</td><td class="num">0,00</td><td class="num">3 497,61</td><td class="num sep">2</td><td class="num strong">3 497,61</td><td class="com"></td><td><span class="pill" style="color:#9b1c1c;background:#fbdcdc">KO</span> <span class="flag inter" title="Present en interface mais absent des tables definitives : le fichier est arrive, l'integration n'a pas eu lieu.">en interface</span></td></tr>
+<tr data-statut="KO"><td class="mono">NOT</td><td>FOURNISSEURS</td><td class="ctr">30/06/2026</td><td class="ctr age-moyen">28 j</td><td class="mono fic" title="NOT01_SRC_FACTURESFOURNISSEURS_20260630232456">NOT01_SRC_FACTURESFOURNISSEURS_20260630232456</td><td class="num">106</td><td class="num">2 550,61</td><td class="num sep">0</td><td class="num">0,00</td><td class="num">2 387,00</td><td class="num sep">106</td><td class="num strong">2 550,61</td><td class="com"></td><td><span class="pill" style="color:#9b1c1c;background:#fbdcdc">KO</span> <span class="flag inter" title="Present en interface mais absent des tables definitives : le fichier est arrive, l'integration n'a pas eu lieu.">en interface</span></td></tr>
+<tr data-statut="KO"><td class="mono">FAS</td><td>CLIENTS</td><td class="ctr">29/05/2026</td><td class="ctr age-vieux">60 j</td><td class="mono fic" title="FAC02_SRC_FACTURESCLIENTS_290526-014312_ST_FAC02_639156157927905840_001">FAC02_SRC_FACTURESCLIENTS_290526-014312_ST_FA…</td><td class="num">0</td><td class="num">-1 423 491,78</td><td class="num sep">4 436</td><td class="num">1 055 335,52</td><td class="num">0,00</td><td class="num sep">1</td><td class="num strong">2 293,34</td><td class="com"></td><td><span class="pill" style="color:#9b1c1c;background:#fbdcdc">KO</span> </td></tr>
+<tr data-statut="KO"><td class="mono">GCA</td><td>CLIENTS</td><td class="ctr">07/05/2026</td><td class="ctr age-vieux">82 j</td><td class="mono fic" title="FAC02_SRC_FACTURESCLIENTS_070526-013850_ST_FAC02_639137147301688549_001">FAC02_SRC_FACTURESCLIENTS_070526-013850_ST_FA…</td><td class="num">0</td><td class="num">-6 477,76</td><td class="num sep">3 143</td><td class="num">11 858 018,77</td><td class="num">-1 671,14</td><td class="num sep">2</td><td class="num strong">-1 671,14</td><td class="com"></td><td><span class="pill" style="color:#9b1c1c;background:#fbdcdc">KO</span> </td></tr>
+<tr data-statut="KO"><td class="mono">SVB</td><td>CLIENTS</td><td class="ctr">29/06/2026</td><td class="ctr age-moyen">29 j</td><td class="mono fic" title="FAC02_SRC_FACTURESCLIENTS_270626-005428_ST_FAC02_639181184681528721_001">FAC02_SRC_FACTURESCLIENTS_270626-005428_ST_FA…</td><td class="num">0</td><td class="num">-22 437,32</td><td class="num sep">0</td><td class="num">0,00</td><td class="num">519,57</td><td class="num sep">2</td><td class="num strong">519,57</td><td class="com"></td><td><span class="pill" style="color:#9b1c1c;background:#fbdcdc">KO</span> <span class="flag inter" title="Present en interface mais absent des tables definitives : le fichier est arrive, l'integration n'a pas eu lieu.">en interface</span></td></tr>
+<tr data-statut="OK"><td class="mono">GCA</td><td>CLIENTS</td><td class="ctr">11/06/2026</td><td class="ctr age-vieux">47 j</td><td class="mono fic" title="FAC02_SRC_FACTURESCLIENTS_110626-021056_ST_FAC02_639167406567980652_001">FAC02_SRC_FACTURESCLIENTS_110626-021056_ST_FA…</td><td class="num">0</td><td class="num">-22 072,64</td><td class="num sep">800</td><td class="num">5 373 826,56</td><td class="num">0,00</td><td class="num sep">0</td><td class="num strong">0,00</td><td class="com"></td><td><span class="pill" style="color:#0b6b3a;background:#d7f2e3">OK</span> </td></tr>
+</tbody>
+</table>
+</div>
+<div class="footer">Genere par Verifier_Factures.ps1 &mdash; donnees detaillees : Rapport_Verification_01072026_102225.csv</div>
+</div>
+<script>
+(function () {
+  var filtreStatut = "TOUS";
+  function appliquer() {
+    var q = document.getElementById("q").value.toLowerCase();
+    var lignes = document.querySelectorAll("#detail tbody tr");
+    var visibles = 0;
+    for (var i = 0; i < lignes.length; i++) {
+      var tr = lignes[i];
+      var okStatut = (filtreStatut === "TOUS") || (tr.getAttribute("data-statut") === filtreStatut);
+      var okTexte  = (q === "") || (tr.textContent.toLowerCase().indexOf(q) >= 0);
+      var visible  = okStatut && okTexte;
+      tr.style.display = visible ? "" : "none";
+      if (visible) { visibles++; }
+    }
+    document.getElementById("compteur").textContent = visibles + " ligne(s) affichee(s)";
+  }
+  var boutons = document.querySelectorAll(".barre button");
+  for (var b = 0; b < boutons.length; b++) {
+    boutons[b].addEventListener("click", function () {
+      for (var k = 0; k < boutons.length; k++) { boutons[k].className = ""; }
+      this.className = "on";
+      filtreStatut = this.getAttribute("data-f");
+      appliquer();
+    });
+  }
+  document.getElementById("q").addEventListener("input", appliquer);
+  appliquer();
+})();
+</script>
+</body>
+</html>

@@ -204,21 +204,6 @@ try {
     $excelRegPath = "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths\excel.exe"
     if (-not (Test-Path $excelRegPath)) {
         throw "Microsoft Excel ne semble pas etre installe sur ce poste. L'installation d'Excel est requise pour generer le rapport .xlsx."
-    # --- VERIFICATION PREALABLE : Presence du module ImportExcel ---
-    # Le script utilise le module ImportExcel pour generer le rapport .xlsx
-    # sans dependre d'une installation locale de Microsoft Excel.
-    if (-not (Get-Module -ListAvailable -Name ImportExcel)) {
-        Write-Warning "Le module PowerShell 'ImportExcel' est requis."
-        $rep = Read-Host "Voulez-vous tenter de l'installer depuis PowerShell Gallery? (O/N)"
-        if ($rep -eq 'O') {
-            try {
-                Install-Module ImportExcel -Scope CurrentUser -Force -AllowClobber
-            } catch {
-                throw "Echec de l'installation du module ImportExcel. Veuillez l'installer manuellement et relancer le script."
-            }
-        } else {
-            throw "Module 'ImportExcel' manquant. Operation annulee."
-        }
     }
 
     # -----------------------------------------------------------------
@@ -449,16 +434,14 @@ try {
 
     # -----------------------------------------------------------------
     # 6. Restitution Excel
-    #    (avec le module ImportExcel, sans dependance a Excel)
+    #    (automatisation COM : necessite Microsoft Excel installe localement)
     # -----------------------------------------------------------------
-    Write-Host "Generation du classeur Excel..." -ForegroundColor Yellow
     Write-Host "Génération du classeur Excel..." -ForegroundColor Yellow
 
     $excel = New-Object -ComObject Excel.Application
     $excel.Visible = $false
     $excel.DisplayAlerts = $false
     $excel.ScreenUpdating = $false
-    # --- Préparation des données pour les onglets ---
 
     # Memorise le PID de cette instance precise, avant toute autre operation.
     [uint32] $pidTrouve = 0
@@ -499,18 +482,6 @@ try {
         $ws1.Range($ws1.Cells.Item(5, 1), $ws1.Cells.Item($derniere, 1)).HorizontalAlignment = $XL_CENTER
         $ws1.Range($ws1.Cells.Item(5, 2), $ws1.Cells.Item($derniere, 2)).NumberFormatLocal = $formatNombre
         $ws1.Range($ws1.Cells.Item(5, 3), $ws1.Cells.Item($derniere, 3)).NumberFormatLocal = $formatMontant
-    # Onglet 1 : Fusion des deux tables (Oracle et EDF) en une seule pour affichage côte à côte.
-    $maxRows = [Math]::Max($oracleSummary.Count, $edfSummary.Count)
-    $syntheseBrute = for ($i = 0; $i -lt $maxRows; $i++) {
-        [PSCustomObject]@{
-            'Date Gén. Oracle'      = if ($i -lt $oracleSummary.Count) { (Get-DateYyyyMMdd $oracleSummary[$i].Date).ToString('dd/MM/yyyy') } else { $null }
-            'Nb Total Lignes'       = if ($i -lt $oracleSummary.Count) { $oracleSummary[$i].NbLines } else { $null }
-            'Montant Total (€)'     = if ($i -lt $oracleSummary.Count) { $oracleSummary[$i].Total } else { $null }
-            ' '                     = '' # Colonne de séparation
-            'Date Prise Chg EDF'    = if ($i -lt $edfSummary.Count) { (Get-DateYyyyMMdd $edfSummary[$i].DateEdf).ToString('dd/MM/yyyy') } else { $null }
-            'Nb Prél. Pris en Chg'  = if ($i -lt $edfSummary.Count) { $edfSummary[$i].NbEdf } else { $null }
-            'Montant Pris en Chg (€)' = if ($i -lt $edfSummary.Count) { $edfSummary[$i].TotalEdf } else { $null }
-        }
     }
 
     if ($edfSummary.Count -gt 0) {
@@ -523,22 +494,9 @@ try {
         $ws1.Range($ws1.Cells.Item(5, 6), $ws1.Cells.Item($derniere, 6)).NumberFormatLocal = $formatNombre
         $ws1.Range($ws1.Cells.Item(5, 7), $ws1.Cells.Item($derniere, 7)).NumberFormatLocal = $formatMontant
     }
-    # Onglet 2 : Renommage des propriétés pour des en-têtes clairs.
-    $tableauComparatif = $tableauRapprochement | Select-Object @{N = 'Date(s) Gén. Oracle'; E = 'Date_Oracle' },
-        @{N = 'Date Reç. EDF (Cible)'; E = 'Date_EDF' },
-        @{N = 'Nb Attendu (Ora)'; E = 'Nb_Oracle' },
-        @{N = 'Nb Reçu (EDF)'; E = 'Nb_EDF' },
-        @{N = 'Écart Nombre'; E = 'Ecart_Nb' },
-        @{N = 'Total Attendu (Ora)'; E = 'Total_Oracle' },
-        @{N = 'Total Reçu (EDF)'; E = 'Total_EDF' },
-        @{N = 'Écart Montant (€)'; E = 'Ecart_Montant' },
-        @{N = 'Statut / Délai'; E = 'Statut' }
 
     $ws1.UsedRange.Columns.AutoFit() | Out-Null
     $ws1.Columns.Item(1).ColumnWidth = 26
-    # Onglet 3 : Renommage des propriétés.
-    $rejetsBruts = $lignesBrutesRejets | Select-Object @{N = 'Nom du Fichier Source'; E = 'Fichier' },
-        @{N = 'Ligne Brute (Contenu Intégral du Fichier CSV)'; E = 'TexteBrut' }
 
     # --- ONGLET 2 : Etat comparatif et ecarts ---
     $ws2 = $workbook.Sheets.Add([System.Reflection.Missing]::Value, $ws1)
@@ -546,7 +504,6 @@ try {
     $ws2.Cells.Item(1, 1).Value2 = 'ÉTAPE 2 : ÉTAT COMPARATIF ET RAPPROCHEMENT DES ÉCARTS'
     $ws2.Cells.Item(1, 1).Font.Bold = $true
     $ws2.Cells.Item(1, 1).Font.Size = 14
-    # --- Création du classeur Excel en une seule passe ---
 
     Set-EnteteExcel $ws2 3 1 @(
         'Date(s) Gén. Oracle', 'Date Reç. EDF (Cible)', 'Nb Attendu (Ora)', 'Nb Reçu (EDF)',
@@ -580,29 +537,10 @@ try {
             }
             $rowIdx++
         }
-    # Paramètres communs à tous les onglets
-    $excelParams = @{
-        AutoSize     = $true
-        FreezeTopRow = $true
-        BoldTopRow   = $true
-        AutoFilter   = $true
-        Show         = $false # Ne pas ouvrir le fichier à la fin
     }
 
     $ws2.UsedRange.Columns.AutoFit() | Out-Null
     $ws2.Columns.Item(1).ColumnWidth = 22
-    # Création du premier onglet, qui retourne un "package" Excel
-    $excelPackage = $syntheseBrute | Export-Excel -Path $outputPath -WorksheetName 'Synthèse Journalière Brute' `
-        -Title 'ÉTAPE 1 : SYNTHÈSE JOURNALIÈRE BRUTE' -TitleBold -TitleSize 14 `
-        -Header 'Données Émises par ORACLE' -HeaderBold -StartRow 3 -StartColumn 1 `
-        -Header 'Données Reçues par EDF' -HeaderBold -StartRow 3 -StartColumn 5 `
-        -StartRow 4 `
-        -NumberFormat @{
-        'Nb Total Lignes'       = '#,##0'
-        'Montant Total (€)'     = '#,##0.00'
-        'Nb Prél. Pris en Chg'  = '#,##0'
-        'Montant Pris en Chg (€)' = '#,##0.00'
-    } @excelParams -PassThru
 
     # --- ONGLET 3 : Fichiers de rejets bruts ---
     $ws3 = $workbook.Sheets.Add([System.Reflection.Missing]::Value, $ws2)
@@ -610,31 +548,13 @@ try {
     $ws3.Cells.Item(1, 1).Value2 = 'DONNÉES BRUTES EXTRAITES DES FICHIERS DE REJETS'
     $ws3.Cells.Item(1, 1).Font.Bold = $true
     $ws3.Cells.Item(1, 1).Font.Size = 14
-    # Ajout du deuxième onglet au package existant
-    $tableauComparatif | Export-Excel -ExcelPackage $excelPackage -WorksheetName 'État Comparatif & Écarts' `
-        -Title 'ÉTAPE 2 : ÉTAT COMPARATIF ET RAPPROCHEMENT DES ÉCARTS' -TitleBold -TitleSize 14 `
-        -StartRow 2 `
-        -NumberFormat @{
-        'Nb Attendu (Ora)'    = '#,##0'
-        'Nb Reçu (EDF)'       = '#,##0'
-        'Écart Nombre'        = '#,##0'
-        'Total Attendu (Ora)' = '#,##0.00'
-        'Total Reçu (EDF)'    = '#,##0.00'
-        'Écart Montant (€)'   = '#,##0.00'
-    } @excelParams
 
     Set-EnteteExcel $ws3 3 1 @(
         'Nom du Fichier Source',
         'Ligne Brute (Contenu Intégral du Fichier CSV)') $COULEUR_BRUT
-    # Ajout du troisième onglet
-    $rejetsBruts | Export-Excel -ExcelPackage $excelPackage -WorksheetName 'Fichiers de Rejets Bruts' `
-        -Title 'DONNÉES BRUTES EXTRAITES DES FICHIERS DE REJETS' -TitleBold -TitleSize 14 `
-        -StartRow 2 @excelParams
 
     # Colonne en mode texte strict : preserve les IBAN et les zeros de tete.
     $ws3.Columns.Item(2).NumberFormatLocal = $formatTexte
-    # Sauvegarde et fermeture du fichier
-    Close-ExcelPackage $excelPackage
 
     if ($lignesBrutesRejets.Count -gt 0) {
         $bloc = @($lignesBrutesRejets | ForEach-Object { , @($_.Fichier, $_.TexteBrut) })
