@@ -103,7 +103,18 @@ Les compteurs affichés avant le classeur sont un contrôle en soi : si le nombr
 lignes s'écarte de l'ordinaire, le rapport est suspect avant même d'être ouvert.
 
 Le classeur s'appelle `Rapprochement_Oracle_EDF_<AAAAMMJJ>_<HHMMSS>.xlsx` — horodaté, donc jamais
-écrasé.
+écrasé — et il est écrit dans le **sous-dossier `rapport\`**, jamais au milieu des fichiers
+sources analysés. Le dossier est créé automatiquement.
+
+```
+CTRL_QUASI_AUTOMATIQUE_DES_PRELEVEMENTS\
+├── ORACLE\        <- sources analysées
+├── EDF\           <- sources analysées
+└── rapport\       <- tout ce qui est produit
+    └── Rapprochement_Oracle_EDF_20260807_235122.xlsx
+```
+
+`--sortie` désigne le dossier **parent** : le sous-dossier `rapport\` y est toujours ajouté.
 
 ---
 
@@ -135,10 +146,83 @@ Sur la première ligne : 485 prélèvements émis le 22/06, 484 reçus le 24/06,
 Ce montant correspond exactement à un rejet (`CC01 mandat invalide`) présent dans l'onglet 3 —
 mais **c'est à vous de faire le rapprochement**, l'outil ne le fait pas.
 
+#### Les trois dernières colonnes : d'où viennent les données
+
+| Colonne | Contenu |
+|---|---|
+| `Fichier(s) ORACLE` | Le ou les fichiers émetteurs |
+| `Fichier EDF` | Le fichier de réception, ou `(aucun)` |
+| `Fichier(s) REJET` | Le fichier de rejets qui explique l'écart — **renseigné uniquement sur les lignes en écart** |
+
+EDF ne produit **qu'un seul fichier par date** : son nom est donc toujours exact et directement
+exploitable.
+
+Oracle, lui, peut compter **jusqu'à 78 fichiers pour une seule date**. La colonne s'adapte :
+
+```
+1 à 3 fichiers  ->  les noms complets
+    DK_30003-0001DMSPCXFRST-20260624-48288632_20260624-002346.txt
+
+plus de 3       ->  le dossier et le nombre
+    ORACLE\20260622 (71 fichiers)
+```
+
+Le seuil évite qu'une cellule devienne illisible : au-delà de trois noms, le dossier suffit à
+retrouver les fichiers, et le détail ligne par ligne relève de l'autre outil.
+
+#### La colonne `Fichier(s) REJET`
+
+Elle ne se remplit que sur les **lignes en écart**, pour ne pas encombrer les journées conformes.
+
+```
+REJETS_INTERNES_DK.20260624.070002.csv — 1 rejet(s), 932.25 € (CC01) : explique l'écart
+```
+
+**Comment le fichier est choisi.** Les fichiers de rejets **ne portent pas le nom du SI** : se
+contenter de prendre ceux parus entre l'émission et la réception ramène aussi des rejets étrangers
+à la ligne. Constaté sur vos données : pour l'écart du 23/07, deux fichiers tombent dans la
+fenêtre, mais l'un ne contient que des rejets d'un autre SI.
+
+L'outil ne désigne donc un fichier que lorsque **son total égale exactement l'écart**. Trois
+formulations possibles :
+
+| Ce qui s'affiche | Signification |
+|---|---|
+| `… : explique l'écart` | Le montant correspond au centime — écart justifié |
+| `… : à vérifier` | Des rejets existent dans la période mais aucun ne correspond — **à ouvrir** |
+| `(aucun)` | Aucun rejet sur la période : l'écart a une autre cause |
+
+Sur vos données, les **6 écarts sont tous justifiés** par un fichier de rejets identifié nommément.
+
+Les trois colonnes sont en **format texte** : les noms ne sont jamais réinterprétés par Excel.
+
 ### Onglet 3 — *Fichiers de Rejets Bruts*
 
-Le contenu intégral des fichiers de rejets, recopié ligne par ligne, en mode texte strict pour
-préserver les IBAN et les zéros de tête. Aucune analyse : c'est une pièce jointe consultable.
+Les rejets internes présentés **en tableau exploitable**, et non plus en texte brut.
+
+Les fichiers de rejets ont une structure constante, vérifiée sur l'ensemble du gisement :
+
+```
+ligne 1  LISTE DES REJETS INTERNES AU:24/06/2026 a 07:00     -> devient une COLONNE
+ligne 2  IBAN CREANCIER;RUM;IBAN DEBITEUR;DATE D'ECHEANCE;…  -> devient les EN-TÊTES
+ligne 3+ FR7630003012070002018665043;NVOA0147…;…             -> deviennent les LIGNES
+```
+
+L'onglet reprend cette structure :
+
+| Nom du Fichier Source | LISTE DES REJETS INTERNES AU | IBAN CREANCIER | RUM | … | MONTANT | CODE REJET | MOTIF DU REJET |
+|---|---|---|---|---|---|---|---|
+| REJETS_INTERNES_DK.20260624… | 24/06/2026 a 07:00 | FR7630003012070… | NVOA0147072… | … | 932,25 | CC01 | MANDAT INVALIDE |
+
+Trois points utiles :
+
+- **Les en-têtes sont lus dans le fichier**, jamais codés en dur. Un changement de format côté EDF
+  déclenche un avertissement au lieu de décaler silencieusement les colonnes.
+- **`MONTANT` est un nombre** : la colonne est sommable et filtrable directement dans Excel. Tout
+  le reste (IBAN, RUM, dates) reste en texte strict, donc jamais réinterprété.
+- **Filtre automatique et en-têtes figés** : on isole un code rejet ou un créancier en deux clics.
+
+Sur vos données, l'onglet passe de 41 lignes de texte brut à **19 lignes de données réelles**.
 
 ---
 
@@ -243,8 +327,9 @@ Elles sont réelles et mesurées. Il faut les avoir en tête pour interpréter l
 **+5 jours dans 88 % des cas**, pas +4. Elle ignore aussi les jours fériés : EDF n'a produit aucun
 fichier les 13, 14 et 16/07. → **Corrigé par `--recherche-jn`** (§5).
 
-**Un écart n'est jamais expliqué.** Le rapport indique qu'il manque une ligne et 932,25 €, jamais
-pourquoi. Le rapprochement avec les rejets est manuel.
+**Un écart est rattaché à un fichier de rejets, pas à un prélèvement.** La colonne
+`Fichier(s) REJET` nomme le fichier qui explique l'écart, mais pas *quel* prélèvement a été rejeté
+ni pour quel bénéficiaire. Ce niveau de détail relève de l'autre outil.
 
 **La comparaison porte sur des totaux journaliers.** Une journée où un prélèvement manquerait et
 un autre serait en trop du même montant tomberait juste.
@@ -252,7 +337,9 @@ un autre serait en trop du même montant tomberait juste.
 **Le statut ne teste que le nombre.** Une journée au bon compte mais au mauvais montant est
 affichée `OK`.
 
-**Les rejets ne sont pas analysés.** Ils sont recopiés bruts, sans être rattachés aux écarts.
+**Les rejets ne sont pas rattachés au prélèvement.** L'onglet 3 les présente en tableau et la
+colonne `Fichier(s) REJET` désigne le fichier explicatif, mais le lien entre un rejet précis et la
+ligne Oracle qui l'a émis n'est pas établi ici.
 
 Ces limites sont précisément ce que corrige
 [le rapprochement par clé métier](GUIDE_rapprochement_cle_metier.md), qui rapproche sur
@@ -266,9 +353,12 @@ l'autre donne le diagnostic.
 
 ## 7. Que faire en cas d'écart
 
-1. Noter la date et le montant de l'écart dans l'onglet 2.
-2. Chercher ce montant dans l'onglet 3 (rejets) : s'il y figure, l'écart est normal.
-3. Sinon, lancer `rapprochement_cle_metier.bat` — il désigne la clé exacte en cause.
+1. Lire la colonne `Fichier(s) REJET` de la ligne en écart :
+   - `explique l'écart` → rien à faire, la justification est le fichier nommé ;
+   - `à vérifier` ou `(aucun)` → passer à l'étape suivante.
+2. Ouvrir le fichier nommé, ou l'onglet 3 qui en recopie le contenu.
+3. Si l'écart reste inexpliqué, lancer `rapprochement_cle_metier.bat` — il descend jusqu'au
+   prélèvement, au bénéficiaire et au fichier Oracle exact.
 4. Si les compteurs de fichiers en tête d'exécution sont anormalement bas, vérifier d'abord la
    collecte avant toute analyse.
 

@@ -51,6 +51,9 @@ FORMAT_TEXTE = "@"
 BLANC = "FFFFFFFF"
 TAILLE_BASE = 11   # taille ecrite explicitement, comme le fait Excel via COM
 
+# Tous les fichiers produits atterrissent ici, sous le dossier de sortie.
+DOSSIER_RAPPORT = "rapport"
+
 
 class ErreurTraitement(Exception):
     """Erreur fonctionnelle : interrompt le traitement avec un message clair."""
@@ -113,7 +116,7 @@ def analyser_oracle(oracle_path, motifs, diag):
     if not oracle_path.is_dir():
         raise ErreurTraitement(f"Dossier Oracle introuvable : {oracle_path}")
 
-    brut = defaultdict(lambda: {"nb": 0, "total": Decimal(0)})
+    brut = defaultdict(lambda: {"nb": 0, "total": Decimal(0), "fichiers": set()})
 
     for fichier in sorted(oracle_path.rglob("*")):
         if not fichier.is_file():
@@ -151,6 +154,7 @@ def analyser_oracle(oracle_path, motifs, diag):
 
             brut[date_dossier]["nb"] += 1
             brut[date_dossier]["total"] += montant
+            brut[date_dossier]["fichiers"].add(fichier.name)
             diag.lignes_oracle += 1
 
     if diag.lignes_oracle_ignorees:
@@ -159,7 +163,8 @@ def analyser_oracle(oracle_path, motifs, diag):
     if not brut:
         raise ErreurTraitement(f"Aucune ligne Oracle exploitable trouvee sous {oracle_path}.")
 
-    return [{"date": d, "nb": v["nb"], "total": v["total"]} for d, v in sorted(brut.items())]
+    return [{"date": d, "nb": v["nb"], "total": v["total"],
+             "fichiers": sorted(v["fichiers"])} for d, v in sorted(brut.items())]
 
 
 # ---------------------------------------------------------------------------
@@ -172,7 +177,7 @@ def analyser_edf(edf_path, motif, nom_si, diag):
                      "Les volumes recus seront a zero.")
         return []
 
-    brut = defaultdict(lambda: {"nb": 0, "total": Decimal(0)})
+    brut = defaultdict(lambda: {"nb": 0, "total": Decimal(0), "fichiers": set()})
 
     for fichier in sorted(edf_path.glob(motif)):
         if not fichier.is_file():
@@ -198,6 +203,7 @@ def analyser_edf(edf_path, motif, nom_si, diag):
 
             brut[date_edf]["nb"] += nb
             brut[date_edf]["total"] += total
+            brut[date_edf]["fichiers"].add(fichier.name)
             diag.lignes_edf += 1
 
     # Un rapport ou tout l'EDF est a zero ressemble a un ecart total : il faut
@@ -207,30 +213,71 @@ def analyser_edf(edf_path, motif, nom_si, diag):
                      "fichier(s) EDF lus. Verifiez --nom-si ou le format des fichiers : "
                      "les ecarts affiches seront trompeurs.")
 
-    return [{"date": d, "nb": v["nb"], "total": v["total"]} for d, v in sorted(brut.items())]
+    return [{"date": d, "nb": v["nb"], "total": v["total"],
+             "fichiers": sorted(v["fichiers"])} for d, v in sorted(brut.items())]
 
 
 # ---------------------------------------------------------------------------
 # 4. Lecture brute des fichiers de REJETS
 # ---------------------------------------------------------------------------
-def lire_rejets(rejets_path, motif, diag):
+PREFIXE_TITRE_REJETS = "LISTE DES REJETS INTERNES AU"
+
+
+def lire_rejets_structures(rejets_path, motif, diag):
+    """Decoupe les fichiers de rejets en tableau exploitable.
+
+    Structure constante des fichiers (verifiee sur l'ensemble du gisement) :
+      ligne 1 : 'LISTE DES REJETS INTERNES AU:<date> a <heure>'  -> devient une COLONNE
+      ligne 2 : l'en-tete des champs                             -> devient les COLONNES
+      ligne 3 et suivantes : les donnees                         -> deviennent les LIGNES
+
+    L'en-tete est lu DANS le fichier, jamais code en dur : un changement de
+    format doit se voir plutot que de decaler silencieusement les colonnes.
+
+    Retourne (colonnes, lignes).
+    """
+    lignes = []
+    colonnes = []
     if not rejets_path.is_dir():
         diag.avertir(f"Dossier de rejets introuvable : {rejets_path}.")
-        return []
+        return colonnes, lignes
 
-    lignes_brutes = []
     fichiers = sorted(p for p in rejets_path.iterdir()
                       if p.is_file() and fnmatch.fnmatch(p.name, motif))
     diag.fichiers_rejets = len(fichiers)
 
     for fichier in fichiers:
-        for ligne in lire_lignes(fichier):
-            if not ligne.strip():
-                continue
-            lignes_brutes.append({"fichier": fichier.name, "texte": ligne})
+        contenu = [l for l in lire_lignes(fichier) if l.strip()]
+        if len(contenu) < 2:
+            diag.avertir(f"Fichier de rejets trop court, ignore : {fichier.name}")
+            continue
+
+        titre, entete = contenu[0], contenu[1]
+        if not titre.startswith(PREFIXE_TITRE_REJETS):
+            diag.avertir(f"Titre inattendu dans {fichier.name} : {titre[:60]}")
+        # Le titre porte la date d'edition apres le ':' ; c'est la seule partie
+        # variable, donc la seule qui merite une colonne.
+        edite_le = titre.split(":", 1)[1].strip() if ":" in titre else titre
+
+        # Le ';' final produit un champ vide en fin d'en-tete : on l'ecarte.
+        champs_entete = [c.strip() for c in entete.split(";")]
+        while champs_entete and not champs_entete[-1]:
+            champs_entete.pop()
+
+        if not colonnes:
+            colonnes = champs_entete
+        elif champs_entete != colonnes:
+            diag.avertir(f"En-tete different dans {fichier.name} : "
+                         f"{entete[:80]} — colonnes possiblement decalees.")
+
+        for brute in contenu[2:]:
+            valeurs = [v.strip() for v in brute.split(";")][:len(colonnes)]
+            valeurs += [""] * (len(colonnes) - len(valeurs))
+            lignes.append({"fichier": fichier.name, "edite_le": edite_le,
+                           "valeurs": valeurs})
             diag.lignes_rejets += 1
 
-    return lignes_brutes
+    return colonnes, lignes
 
 
 # ---------------------------------------------------------------------------
@@ -245,6 +292,70 @@ def date_cible(date_oracle):
     if date_oracle.weekday() in (3, 4):
         return date_oracle + timedelta(days=4)
     return date_oracle + timedelta(days=2)
+
+
+def resumer_rejets(rejets_path, motif, diag):
+    """Resume chaque fichier de rejets : total et codes, sans toucher a l'onglet brut.
+
+    Sert uniquement a designer le fichier a ouvrir quand un ecart apparait ;
+    l'onglet 3 continue de recopier les lignes telles quelles.
+    """
+    resume = {}
+    if not rejets_path.is_dir():
+        return resume
+
+    for fichier in sorted(p for p in rejets_path.iterdir()
+                          if p.is_file() and fnmatch.fnmatch(p.name, motif)):
+        segments = fichier.name.split(".")
+        date_rejet = parse_date(segments[1]) if len(segments) > 1 else None
+        if date_rejet is None:
+            diag.avertir(f"Date illisible dans le nom du fichier de rejets : {fichier.name}")
+            continue
+
+        total, nb, codes = Decimal(0), 0, set()
+        for ligne in lire_lignes(fichier):
+            champs = ligne.split(";")
+            # Une ligne de donnees commence par un IBAN creancier.
+            if len(champs) < 7 or not champs[0].strip().startswith("FR"):
+                continue
+            try:
+                total += vers_decimal(champs[4])
+            except InvalidOperation:
+                continue
+            nb += 1
+            codes.add(champs[5].strip())
+
+        if nb:
+            resume[date_rejet] = {"fichier": fichier.name, "total": total,
+                                  "nb": nb, "codes": sorted(codes)}
+    return resume
+
+
+def rejets_de_la_periode(date_ora, date_edf, resume_rejets, ecart_montant):
+    """Designe le ou les fichiers de rejets susceptibles d'expliquer un ecart.
+
+    Les fichiers de rejets ne portent pas le nom du SI : la seule fenetre de
+    dates ramene aussi des rejets etrangers a la ligne (constate sur 2 cas sur 6).
+    On ne conclut donc que lorsque les montants concordent, et on le dit
+    clairement sinon plutot que de laisser croire a une explication.
+    """
+    candidats = [v for d, v in sorted(resume_rejets.items()) if date_ora < d <= date_edf]
+    if not candidats:
+        return "(aucun)"
+
+    manque = -ecart_montant   # un ecart negatif signifie un manque cote EDF
+    if manque > 0:
+        for c in candidats:
+            if c["total"] == manque:
+                return (f"{c['fichier']} — {c['nb']} rejet(s), "
+                        f"{c['total']} € ({', '.join(c['codes'])}) : explique l'écart")
+        if sum(c["total"] for c in candidats) == manque:
+            return (" + ".join(c["fichier"] for c in candidats)
+                    + f" — {sum(c['nb'] for c in candidats)} rejet(s) : expliquent l'écart")
+
+    return (" + ".join(c["fichier"] for c in candidats)
+            + f" — {sum(c['nb'] for c in candidats)} rejet(s), "
+              f"{sum(c['total'] for c in candidats)} € : à vérifier")
 
 
 def chercher_date_cible(date_ora, nb_ora, total_ora, edf_par_date, n_max):
@@ -291,7 +402,8 @@ def chercher_date_cible(date_ora, nb_ora, total_ora, edf_par_date, n_max):
     return None, "introuvable"
 
 
-def construire_rapprochement(oracle_summary, edf_summary, recherche_jn=0):
+def construire_rapprochement(oracle_summary, edf_summary, recherche_jn=0,
+                             resume_rejets=None):
     edf_par_date = {e["date"]: e for e in edf_summary}
 
     # Plusieurs dates Oracle peuvent viser la meme date EDF : on les regroupe.
@@ -323,6 +435,33 @@ def construire_rapprochement(oracle_summary, edf_summary, recherche_jn=0):
         nb_recu = correspondance["nb"] if correspondance else 0
         total_recu = correspondance["total"] if correspondance else Decimal(0)
 
+        # Provenance : de quel fichier vient chaque cote de la comparaison.
+        # EDF ne produit qu'un fichier par date, son nom est donc toujours utile.
+        # Oracle peut en compter jusqu'a 78 pour une seule date : au-dela de
+        # trois, la liste devient illisible et le dossier suffit a s'y retrouver.
+        fichiers_ora = sorted({f for o in groupe for f in o.get("fichiers", [])})
+        if not fichiers_ora:
+            provenance_ora = "(aucun)"
+        elif len(fichiers_ora) <= 3:
+            provenance_ora = " + ".join(fichiers_ora)
+        else:
+            dossiers = " + ".join(dates_origine)
+            provenance_ora = f"ORACLE\\{dossiers} ({len(fichiers_ora)} fichiers)"
+        provenance_edf = (" + ".join(correspondance.get("fichiers", []))
+                          if correspondance else "(aucun)")
+
+        # Rejets : renseignes uniquement sur les lignes en ecart, sinon la
+        # colonne se remplirait de bruit sur les journees conformes.
+        ecart_montant_ligne = total_recu - total_attendu
+        # `is not None` et non `if resume_rejets` : un dossier de rejets vide doit
+        # afficher « (aucun) » sur une ligne en ecart, l'information est utile.
+        if resume_rejets is not None and ecart_montant_ligne != 0:
+            provenance_rejet = rejets_de_la_periode(
+                parse_date(dates_origine[0]), parse_date(date_edf_cible),
+                resume_rejets, ecart_montant_ligne)
+        else:
+            provenance_rejet = ""
+
         date_edf_parsee = parse_date(date_edf_cible)
         # Delai mesure depuis la premiere date d'origine du groupe.
         delai = (date_edf_parsee - parse_date(dates_origine[0])).days
@@ -345,6 +484,9 @@ def construire_rapprochement(oracle_summary, edf_summary, recherche_jn=0):
             "total_edf": arrondi(total_recu),
             "ecart_montant": arrondi(total_recu - total_attendu),
             "statut": statut,
+            "fichier_oracle": provenance_ora,
+            "fichier_edf": provenance_edf,
+            "fichier_rejet": provenance_rejet,
         })
 
     return lignes
@@ -442,7 +584,8 @@ def generer_classeur(chemin, oracle_summary, edf_summary, rapprochement, rejets)
     _entetes(ws2, 3, 1, [
         "Date(s) Gén. Oracle", "Date Reç. EDF (Cible)", "Nb Attendu (Ora)",
         "Nb Reçu (EDF)", "Écart Nombre", "Total Attendu (Ora)", "Total Reçu (EDF)",
-        "Écart Montant (€)", "Statut / Délai"], COULEUR_ENTETE)
+        "Écart Montant (€)", "Statut / Délai",
+        "Fichier(s) ORACLE", "Fichier EDF", "Fichier(s) REJET"], COULEUR_ENTETE)
 
     fill_ecart = PatternFill("solid", fgColor=COULEUR_ECART)
     fill_ok = PatternFill("solid", fgColor=COULEUR_OK)
@@ -459,6 +602,9 @@ def generer_classeur(chemin, oracle_summary, edf_summary, rapprochement, rejets)
                             (8, row["ecart_montant"])):
             ws2.cell(row=r, column=col, value=valeur).number_format = FORMAT_MONTANT
         ws2.cell(row=r, column=9, value=row["statut"])
+        ws2.cell(row=r, column=10, value=row["fichier_oracle"])
+        ws2.cell(row=r, column=11, value=row["fichier_edf"])
+        ws2.cell(row=r, column=12, value=row["fichier_rejet"])
 
         if row["ecart_nb"] != 0:
             ws2.cell(row=r, column=5).fill = fill_ecart
@@ -468,25 +614,55 @@ def generer_classeur(chemin, oracle_summary, edf_summary, rapprochement, rejets)
         else:
             ws2.cell(row=r, column=9).fill = fill_ok
 
-    _colonnes_texte(ws2, (1, 2))
-    _ajuster_largeurs(ws2, {"A": 22})
+    # Les noms de fichiers restent en texte : jamais reinterpretes par Excel.
+    _colonnes_texte(ws2, (1, 2, 10, 11, 12))
+    _ajuster_largeurs(ws2, {"A": 22, "J": 62, "K": 34, "L": 70}, maxi=70)
 
-    # --- ONGLET 3 : Fichiers de rejets bruts ---
+    # --- ONGLET 3 : Rejets internes, sous forme de tableau ---
+    colonnes_rejets, lignes_rejets = rejets
     ws3 = wb.create_sheet("Fichiers de Rejets Bruts")
-    _titre(ws3, "A1", "DONNÉES BRUTES EXTRAITES DES FICHIERS DE REJETS")
-    _entetes(ws3, 3, 1, ["Nom du Fichier Source",
-                         "Ligne Brute (Contenu Intégral du Fichier CSV)"], COULEUR_BRUT)
+    _titre(ws3, "A1", "REJETS INTERNES")
 
-    for i, rejet in enumerate(rejets):
+    if not colonnes_rejets:
+        ws3["A3"] = "Aucun fichier de rejets exploitable."
+        ws3["A3"].font = Font(bold=True, size=TAILLE_BASE)
+        ws3.column_dimensions["A"].width = 50
+        wb.save(chemin)
+        return
+
+    # La 1re ligne du fichier devient une colonne, la 2e fournit les en-tetes.
+    entetes = ["Nom du Fichier Source", PREFIXE_TITRE_REJETS] + colonnes_rejets
+    _entetes(ws3, 3, 1, entetes, COULEUR_BRUT)
+
+    # Le montant est ecrit en nombre pour rester sommable dans Excel ; tout le
+    # reste (IBAN, RUM, dates) doit rester du texte strict.
+    try:
+        idx_montant_rejet = colonnes_rejets.index("MONTANT")
+    except ValueError:
+        idx_montant_rejet = -1
+
+    for i, rejet in enumerate(lignes_rejets):
         r = 4 + i
         ws3.cell(row=r, column=1, value=rejet["fichier"])
-        ws3.cell(row=r, column=2, value=rejet["texte"])
+        ws3.cell(row=r, column=2, value=rejet["edite_le"])
+        for j, valeur in enumerate(rejet["valeurs"]):
+            cell = ws3.cell(row=r, column=3 + j)
+            if j == idx_montant_rejet:
+                try:
+                    cell.value = float(vers_decimal(valeur))
+                    cell.number_format = FORMAT_MONTANT
+                    continue
+                except InvalidOperation:
+                    pass          # montant illisible : on garde le texte brut
+            cell.value = valeur
 
-    # Mode texte strict : preserve les IBAN et les zeros de tete.
-    _colonnes_texte(ws3, (2,))
+    colonnes_texte = [c for c in range(1, 3 + len(colonnes_rejets))
+                      if c != 3 + idx_montant_rejet]
+    _colonnes_texte(ws3, colonnes_texte)
 
-    ws3.column_dimensions["A"].width = 35
-    ws3.column_dimensions["B"].width = 120
+    ws3.auto_filter.ref = f"A3:{get_column_letter(len(entetes))}{3 + len(lignes_rejets)}"
+    ws3.freeze_panes = "A4"
+    _ajuster_largeurs(ws3, {"A": 38, "B": 20}, maxi=38)
 
     wb.save(chemin)
 
@@ -501,7 +677,8 @@ def construire_parser():
     p.add_argument("--racine", type=Path, default=Path(__file__).resolve().parent,
                    help="Racine de traitement")
     p.add_argument("--sortie", type=Path, default=None,
-                   help="Dossier de sortie du classeur (defaut : la racine)")
+                   help="Dossier de sortie (defaut : la racine). Le classeur est "
+                        f"ecrit dans son sous-dossier '{DOSSIER_RAPPORT}'")
     p.add_argument("--dossier-oracle", default="ORACLE",
                    help="Sous-dossier de l'arborescence Oracle")
     p.add_argument("--dossier-edf", default="EDF",
@@ -537,7 +714,9 @@ def main(argv=None):
         racine = args.racine.resolve()
         if not racine.is_dir():
             raise ErreurTraitement(f"Racine de traitement introuvable : {racine}")
-        sortie = (args.sortie or racine).resolve()
+        # Les rapports sont toujours regroupes dans un sous-dossier dedie : ils
+        # ne se melangent jamais aux fichiers sources analyses.
+        sortie = (args.sortie or racine).resolve() / DOSSIER_RAPPORT
         sortie.mkdir(parents=True, exist_ok=True)
 
         edf_path = racine / args.dossier_edf
@@ -556,12 +735,15 @@ def main(argv=None):
             print(f"EDF : {diag.fichiers_edf} fichier(s), {diag.lignes_edf} ligne(s) "
                   f"'{args.nom_si}', {len(edf_summary)} date(s).")
 
-        rejets = lire_rejets(trouver_dossier_rejets(edf_path), args.motif_rejets, diag)
+        rejets = lire_rejets_structures(trouver_dossier_rejets(edf_path),
+                                        args.motif_rejets, diag)
         if diag.fichiers_rejets:
             print(f"Rejets : {diag.fichiers_rejets} fichier(s), {diag.lignes_rejets} ligne(s).")
 
+        resume_rejets = resumer_rejets(trouver_dossier_rejets(edf_path),
+                                       args.motif_rejets, diag)
         rapprochement = construire_rapprochement(oracle_summary, edf_summary,
-                                                 args.recherche_jn)
+                                                 args.recherche_jn, resume_rejets)
 
         print("Génération du classeur Excel...")
         generer_classeur(chemin_sortie, oracle_summary, edf_summary, rapprochement, rejets)

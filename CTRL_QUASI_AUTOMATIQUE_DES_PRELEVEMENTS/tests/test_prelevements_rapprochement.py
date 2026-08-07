@@ -101,3 +101,86 @@ def test_journee_introuvable_est_marquee_non_trouve():
     lignes = construire_rapprochement(
         [{"date": "20260805", "nb": 1, "total": Decimal("8000.00")}], [], recherche_jn=8)
     assert lignes[0]["statut"] == "Non trouvé"
+
+
+# --- Provenance : de quel fichier vient la ligne ----------------------------
+def test_colonne_oracle_liste_les_noms_quand_ils_sont_peu_nombreux():
+    ora = [{"date": "20260622", "nb": 1, "total": Decimal("100.00"),
+            "fichiers": ["DK_a.txt", "DK_b.txt"]}]
+    edf = [{"date": "20260624", "nb": 1, "total": Decimal("100.00"),
+            "fichiers": ["IMPORT_AVP_DK.20260624.070103.csv"]}]
+    lignes = construire_rapprochement(ora, edf)
+    assert lignes[0]["fichier_oracle"] == "DK_a.txt + DK_b.txt"
+    assert lignes[0]["fichier_edf"] == "IMPORT_AVP_DK.20260624.070103.csv"
+
+
+def test_colonne_oracle_bascule_sur_le_dossier_au_dela_de_trois_fichiers():
+    """Une date Oracle peut compter jusqu'a 78 fichiers : les lister rendrait
+    la cellule illisible."""
+    ora = [{"date": "20260622", "nb": 4, "total": Decimal("100.00"),
+            "fichiers": [f"DK_{i}.txt" for i in range(4)]}]
+    lignes = construire_rapprochement(ora, [])
+    assert lignes[0]["fichier_oracle"] == "ORACLE\\20260622 (4 fichiers)"
+
+
+def test_colonne_edf_indique_aucun_quand_rien_n_a_ete_recu():
+    ora = [{"date": "20260805", "nb": 1, "total": Decimal("8000.00"), "fichiers": ["DK_a.txt"]}]
+    lignes = construire_rapprochement(ora, [])
+    assert lignes[0]["fichier_edf"] == "(aucun)"
+
+
+# --- Rattachement du fichier de rejet --------------------------------------
+def rejets(**par_date):
+    """{'20260624': ('REJETS_...csv', '932.25', 1, ['CC01'])}"""
+    from prelevements_rapprochement import parse_date
+    return {parse_date(d): {"fichier": f, "total": Decimal(t), "nb": n, "codes": c}
+            for d, (f, t, n, c) in par_date.items()}
+
+
+def test_le_fichier_de_rejet_dont_le_total_egale_l_ecart_est_designe():
+    """Cas reel du 22/06 : ecart de -932,25 EUR, un fichier de rejets du meme
+    montant."""
+    ora = [{"date": "20260622", "nb": 485, "total": Decimal("2923846.19"), "fichiers": []}]
+    edf = [{"date": "20260624", "nb": 484, "total": Decimal("2922913.94"), "fichiers": []}]
+    res = rejets(**{"20260624": ("REJETS_INTERNES_DK.20260624.070002.csv", "932.25", 1, ["CC01"])})
+    lignes = construire_rapprochement(ora, edf, resume_rejets=res)
+    assert "REJETS_INTERNES_DK.20260624.070002.csv" in lignes[0]["fichier_rejet"]
+    assert "explique l'écart" in lignes[0]["fichier_rejet"]
+
+
+def test_un_fichier_de_rejet_etranger_a_l_ecart_n_est_pas_designe_a_tort():
+    """Cas reel du 23/07 : deux fichiers de rejets tombent dans la fenetre, mais
+    seul celui dont le total correspond explique l'ecart. L'autre porte des
+    rejets d'un autre SI (les fichiers de rejets ne nomment pas le SI)."""
+    ora = [{"date": "20260723", "nb": 644, "total": Decimal("4015509.34"), "fichiers": []}]
+    edf = [{"date": "20260727", "nb": 641, "total": Decimal("4002598.43"), "fichiers": []}]
+    res = rejets(**{
+        "20260724": ("REJETS_AUTRE_SI.csv", "183.67", 2, ["CC01"]),
+        "20260727": ("REJETS_INTERNES_DK.20260727.070015.csv", "12910.91", 3, ["CC01", "CC02"]),
+    })
+    lignes = construire_rapprochement(ora, edf, recherche_jn=8, resume_rejets=res)
+    assert lignes[0]["fichier_rejet"].startswith("REJETS_INTERNES_DK.20260727")
+    assert "REJETS_AUTRE_SI.csv" not in lignes[0]["fichier_rejet"]
+
+
+def test_quand_aucun_montant_ne_correspond_l_outil_ne_conclut_pas():
+    ora = [{"date": "20260622", "nb": 10, "total": Decimal("1000.00"), "fichiers": []}]
+    edf = [{"date": "20260624", "nb": 9, "total": Decimal("900.00"), "fichiers": []}]
+    res = rejets(**{"20260624": ("REJETS_X.csv", "42.00", 1, ["CC01"])})
+    lignes = construire_rapprochement(ora, edf, resume_rejets=res)
+    assert "à vérifier" in lignes[0]["fichier_rejet"]
+    assert "REJETS_X.csv" in lignes[0]["fichier_rejet"]
+
+
+def test_aucun_rejet_dans_la_fenetre():
+    ora = [{"date": "20260622", "nb": 10, "total": Decimal("1000.00"), "fichiers": []}]
+    edf = [{"date": "20260624", "nb": 9, "total": Decimal("900.00"), "fichiers": []}]
+    assert construire_rapprochement(ora, edf, resume_rejets={})[0]["fichier_rejet"] == "(aucun)"
+
+
+def test_une_journee_conforme_ne_reference_aucun_rejet():
+    """Sinon la colonne se remplirait de bruit sur les journees sans ecart."""
+    ora = [{"date": "20260622", "nb": 1, "total": Decimal("100.00"), "fichiers": []}]
+    edf = [{"date": "20260624", "nb": 1, "total": Decimal("100.00"), "fichiers": []}]
+    res = rejets(**{"20260624": ("REJETS_X.csv", "42.00", 1, ["CC01"])})
+    assert construire_rapprochement(ora, edf, resume_rejets=res)[0]["fichier_rejet"] == ""

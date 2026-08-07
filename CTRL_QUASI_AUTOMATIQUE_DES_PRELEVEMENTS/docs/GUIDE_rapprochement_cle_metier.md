@@ -149,13 +149,14 @@ Rejets : 11 fichier(s), 18 ligne(s), 1 doublon(s) ecarte(s).
 **155 clés, aucune anomalie, code retour 0.** À comparer à l'ancien outil qui, sur les mêmes
 données, affichait **7 dates « en écart » sans aucune explication**.
 
-Trois fichiers sont produits :
+Trois fichiers sont produits, tous dans le **sous-dossier `rapport\`** — jamais au milieu des
+fichiers sources. Le dossier est créé automatiquement, et `--sortie` désigne son **parent**.
 
 | Fichier | Usage |
 |---|---|
-| `Rapprochement_Cle_Metier_<date>_<heure>.xlsx` | Lecture — commencer par l'onglet *Justification des écarts* |
-| `..._justifications.csv` | **Les écarts justifiés**, un par ligne, exploitable en machine |
-| `....csv` | Le rapprochement complet, toutes clés |
+| `rapport\Rapprochement_Cle_Metier_<date>_<heure>.xlsx` | Lecture — commencer par l'onglet *Justification des écarts* |
+| `rapport\..._justifications.csv` | **Les écarts justifiés**, un par ligne, exploitable en machine |
+| `rapport\....csv` | Le rapprochement complet, toutes clés |
 
 ---
 

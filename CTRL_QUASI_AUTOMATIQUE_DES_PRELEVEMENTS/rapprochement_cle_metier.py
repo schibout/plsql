@@ -67,6 +67,9 @@ SEUIL_FICHIERS_EDF = 2
 # correspondant a une remontee EDF pouvait se trouver dans l'historique.
 LAG_MAX_EDF = 5
 
+# Tous les fichiers produits atterrissent ici, sous le dossier de sortie.
+DOSSIER_RAPPORT = "rapport"
+
 COULEUR_ATTENTE = "FFFFF2CC"   # jaune pale
 COULEUR_SIGNALE = "FFFCE4D6"   # peche
 
@@ -883,7 +886,8 @@ def construire_parser():
     p.add_argument("--racine", type=Path, default=Path(__file__).resolve().parent,
                    help="Racine de traitement")
     p.add_argument("--sortie", type=Path, default=None,
-                   help="Dossier de sortie (defaut : la racine)")
+                   help="Dossier de sortie (defaut : la racine). Les rapports sont "
+                        f"ecrits dans son sous-dossier '{DOSSIER_RAPPORT}'")
     p.add_argument("--date", default=None,
                    help="Date de reference AAAA-MM-JJ (defaut : aujourd'hui)")
     p.add_argument("--jours", type=int, default=10,
@@ -979,7 +983,9 @@ def main(argv=None):
     try:
         rapprochement, rejets, lignes_ko, contexte, reference = analyser(args, diag)
 
-        sortie = (args.sortie or args.racine).resolve()
+        # Les rapports sont toujours regroupes dans un sous-dossier dedie : ils
+        # ne se melangent jamais aux fichiers sources analyses.
+        sortie = (args.sortie or args.racine).resolve() / DOSSIER_RAPPORT
         sortie.mkdir(parents=True, exist_ok=True)
         base = f"Rapprochement_Cle_Metier_{reference.strftime('%Y%m%d')}_" \
                f"{datetime.now().strftime('%H%M%S')}"
