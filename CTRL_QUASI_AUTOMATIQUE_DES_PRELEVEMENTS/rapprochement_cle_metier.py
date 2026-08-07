@@ -135,6 +135,9 @@ class LigneRejet:
     fichier: str
     date_fichier: date
     appariee: bool = False
+    # Ligne Oracle a l'origine du prelevement rejete : c'est elle qui porte le
+    # fichier d'emission, indispensable pour justifier l'ecart devant le metier.
+    origine: object = None
 
 
 @dataclass
@@ -142,6 +145,7 @@ class Tranche:
     date_fichier: date
     nb: int
     montant: Decimal
+    fichier: str = ""
 
 
 @dataclass
@@ -376,7 +380,7 @@ def charger_edf(edf_path, motif, nom_si, diag):
             agg = agregats[cle]
             agg.nb += nb
             agg.montant += montant
-            agg.tranches.append(Tranche(date_fichier, nb, montant))
+            agg.tranches.append(Tranche(date_fichier, nb, montant, fichier.name))
             diag.lignes_edf += 1
             lignes_si += 1
 
@@ -462,6 +466,8 @@ def apparier_rejets(lignes_oracle, rejets):
         if not candidats:
             continue
         rejet.appariee = True
+        # On retient la ligne Oracle d'origine : elle designe le fichier emetteur.
+        rejet.origine = candidats[0]
         apparies[(rejet.iban_creancier, rejet.echeance)].append(rejet)
     return apparies
 
@@ -520,12 +526,14 @@ def construire_rapprochement(lignes_oracle, agregats_edf, rejets_par_cle,
     debut = reference - timedelta(days=jours)
     fin = reference + timedelta(days=MARGE_ECHEANCE_FUTURE)
 
-    ora = defaultdict(lambda: {"nb": 0, "montant": Decimal(0), "emissions": set()})
+    ora = defaultdict(lambda: {"nb": 0, "montant": Decimal(0), "emissions": set(),
+                               "fichiers": set()})
     for lo in lignes_oracle:
         e = ora[(lo.iban_creancier, lo.echeance)]
         e["nb"] += 1
         e["montant"] += lo.montant
         e["emissions"].add(lo.emission)
+        e["fichiers"].add(lo.fichier)
 
     couverture_debut = min((lo.emission for lo in lignes_oracle), default=None)
 
@@ -563,8 +571,88 @@ def construire_rapprochement(lignes_oracle, agregats_edf, rejets_par_cle,
             "emissions": " + ".join(d.strftime("%d/%m/%Y") for d in emissions),
             "tranches_edf": " + ".join(
                 f"{t.date_fichier.strftime('%d/%m')}:{t.nb}" for t in edf.tranches) if edf else "",
+            # Objets conserves pour la justification detaillee (hors CSV de synthese).
+            "_rejets": rejets_cle,
+            "_fichiers_oracle": sorted(o["fichiers"]) if o else [],
+            "_tranches": edf.tranches if edf else [],
         })
     return resultat
+
+
+# ---------------------------------------------------------------------------
+# Justification des ecarts : une ligne par cause, avec son fichier d'origine
+# ---------------------------------------------------------------------------
+def construire_justifications(rapprochement):
+    """Detaille chaque ecart pour qu'il soit justifiable sans rouvrir les fichiers.
+
+    Une ligne par CAUSE identifiee, et non par cle : un ecart de 3 lignes du a
+    3 rejets produit 3 lignes, chacune nommant son beneficiaire, son motif et le
+    fichier Oracle d'ou le prelevement est parti.
+    """
+    justifications = []
+    for r in rapprochement:
+        if r["statut"] in (RAPPROCHE, HORS_PERIMETRE_HISTORIQUE):
+            continue
+
+        commun = {
+            "echeance": r["echeance"],
+            "iban_creancier": r["iban_creancier"],
+            "statut_cle": r["statut"],
+            "ecart_nb_cle": r["ecart_nb"],
+            "ecart_montant_cle": r["ecart_montant"],
+            "fichier_edf": " + ".join(t.fichier for t in r["_tranches"]) or "(aucun)",
+        }
+
+        # 1. Les rejets : la cause la mieux documentee, tracee jusqu'a l'emission.
+        montant_justifie = Decimal(0)
+        nb_justifie = 0
+        for rejet in sorted(r["_rejets"], key=lambda x: x.montant, reverse=True):
+            origine = rejet.origine
+            justifications.append({**commun,
+                "cause": "REJET",
+                "beneficiaire": origine.nom if origine else "",
+                "rum": rejet.rum,
+                "iban_debiteur": rejet.iban_debiteur,
+                "nb": 1,
+                "montant": rejet.montant,
+                "code": rejet.code,
+                "motif": rejet.motif,
+                "emission": origine.emission.strftime("%d/%m/%Y") if origine else "",
+                "fichier_oracle": origine.fichier if origine else "(non retrouve)",
+                "fichier_rejet": rejet.fichier,
+            })
+            montant_justifie += rejet.montant
+            nb_justifie += 1
+
+        # 2. Ce que les rejets n'expliquent pas. C'est la seule part qui demande
+        #    reellement une investigation.
+        residu_nb = -r["ecart_nb"] - nb_justifie
+        residu_montant = -r["ecart_montant"] - montant_justifie
+        if residu_nb or residu_montant:
+            if r["statut"] in (EN_ATTENTE, NON_RECU):
+                cause = "NON_CONFIRME"
+                motif = ("Emis, EDF ne l'a pas encore remonte"
+                         if r["statut"] == EN_ATTENTE
+                         else "Emis, non remonte par EDF au-dela du delai normal")
+            elif r["statut"] == EDF_SANS_ORACLE:
+                cause = "SANS_ORACLE"
+                motif = "Remonte par EDF sans contrepartie Oracle"
+            else:
+                cause = "INEXPLIQUE"
+                motif = "Ecart non couvert par les rejets : a investiguer"
+            justifications.append({**commun,
+                "cause": cause,
+                "beneficiaire": "", "rum": "", "iban_debiteur": "",
+                "nb": residu_nb,
+                "montant": residu_montant,
+                "code": "", "motif": motif,
+                "emission": r["emissions"],
+                "fichier_oracle": " + ".join(r["_fichiers_oracle"]) or "(aucun)",
+                "fichier_rejet": "",
+            })
+
+    justifications.sort(key=lambda j: (j["echeance"], j["iban_creancier"], j["cause"]))
+    return justifications
 
 
 # ---------------------------------------------------------------------------
@@ -574,7 +662,63 @@ def _f(valeur):
     return float(round(valeur, 2))
 
 
-def generer_classeur(chemin, rapprochement, rejets, lignes_ko, resume, contexte):
+CAUSES_A_INVESTIGUER = {"INEXPLIQUE", "SANS_ORACLE"}
+
+
+def _onglet_justification(wb, justifications):
+    """Le plan de travail quotidien : chaque ecart, sa cause, son fichier."""
+    ws = wb.create_sheet("Justification des écarts", 0)
+    _titre(ws, "A1", "JUSTIFICATION DES ÉCARTS — UNE LIGNE PAR CAUSE")
+
+    if not justifications:
+        ws["A3"] = "Aucun écart à justifier : tout est rapproché."
+        ws["A3"].font = Font(bold=True, size=TAILLE_BASE)
+        ws.column_dimensions["A"].width = 60
+        return
+
+    _entetes(ws, 3, 1, [
+        "Échéance", "IBAN Créancier", "Cause", "Nb", "Montant (€)", "Bénéficiaire",
+        "RUM", "Code", "Motif / Explication", "Émission", "Fichier ORACLE d'origine",
+        "Fichier REJET", "Fichier EDF", "Statut de la clé"], COULEUR_ENTETE)
+
+    fill_investiguer = PatternFill("solid", fgColor=COULEUR_ECART)
+    fill_explique = PatternFill("solid", fgColor=COULEUR_OK)
+    fill_attente = PatternFill("solid", fgColor=COULEUR_ATTENTE)
+
+    for i, j in enumerate(justifications):
+        lg = 4 + i
+        ws.cell(row=lg, column=1, value=j["echeance"].strftime("%d/%m/%Y"))
+        ws.cell(row=lg, column=2, value=j["iban_creancier"])
+        ws.cell(row=lg, column=3, value=j["cause"])
+        ws.cell(row=lg, column=4, value=j["nb"]).number_format = FORMAT_NOMBRE
+        ws.cell(row=lg, column=5, value=_f(j["montant"])).number_format = FORMAT_MONTANT
+        ws.cell(row=lg, column=6, value=j["beneficiaire"])
+        ws.cell(row=lg, column=7, value=j["rum"])
+        ws.cell(row=lg, column=8, value=j["code"])
+        ws.cell(row=lg, column=9, value=j["motif"])
+        ws.cell(row=lg, column=10, value=j["emission"])
+        ws.cell(row=lg, column=11, value=j["fichier_oracle"])
+        ws.cell(row=lg, column=12, value=j["fichier_rejet"])
+        ws.cell(row=lg, column=13, value=j["fichier_edf"])
+        ws.cell(row=lg, column=14, value=j["statut_cle"])
+
+        if j["cause"] in CAUSES_A_INVESTIGUER:
+            for col in range(1, 15):
+                ws.cell(row=lg, column=col).fill = fill_investiguer
+            ws.cell(row=lg, column=3).font = Font(bold=True, size=TAILLE_BASE)
+        elif j["cause"] == "NON_CONFIRME":
+            ws.cell(row=lg, column=3).fill = fill_attente
+        else:
+            ws.cell(row=lg, column=3).fill = fill_explique
+
+    _colonnes_texte(ws, (1, 2, 7, 10, 11, 12, 13))
+    ws.auto_filter.ref = f"A3:N{3 + len(justifications)}"
+    ws.freeze_panes = "A4"
+    _ajuster_largeurs(ws, {"B": 30, "G": 34, "I": 42, "K": 50, "L": 40, "M": 40}, maxi=50)
+
+
+def generer_classeur(chemin, rapprochement, rejets, lignes_ko, resume, contexte,
+                     justifications):
     wb = Workbook()
 
     # --- Synthese ---
@@ -686,10 +830,30 @@ def generer_classeur(chemin, rapprochement, rejets, lignes_ko, resume, contexte)
             ws4.cell(row=lg, column=4, value=k["extrait"]).number_format = FORMAT_TEXTE
         _ajuster_largeurs(ws4, {"D": 100}, maxi=100)
 
+    # L'onglet de justification est insere en PREMIER : c'est lui qu'on ouvre
+    # chaque matin, les autres servent a remonter au detail.
+    _onglet_justification(wb, justifications)
+
     # Ecriture sous nom temporaire puis renommage : jamais de fichier a moitie
     # ecrit si le disque ou Excel pose probleme.
     temporaire = chemin.with_suffix(".tmp.xlsx")
     wb.save(temporaire)
+    os.replace(temporaire, chemin)
+
+
+def generer_csv_justifications(chemin, justifications):
+    colonnes = ["echeance", "iban_creancier", "cause", "nb", "montant", "beneficiaire",
+                "rum", "iban_debiteur", "code", "motif", "emission",
+                "fichier_oracle", "fichier_rejet", "fichier_edf",
+                "statut_cle", "ecart_nb_cle", "ecart_montant_cle"]
+    temporaire = chemin.with_suffix(".tmp.csv")
+    with temporaire.open("w", newline="", encoding="utf-8-sig") as fh:
+        writer = csv.DictWriter(fh, fieldnames=colonnes, delimiter=";")
+        writer.writeheader()
+        for j in justifications:
+            ligne = dict(j)
+            ligne["echeance"] = j["echeance"].strftime("%d/%m/%Y")
+            writer.writerow({c: ligne.get(c, "") for c in colonnes})
     os.replace(temporaire, chemin)
 
 
@@ -827,10 +991,13 @@ def main(argv=None):
             e["nb"] += r["nb_oracle"] or r["nb_edf"]
             e["montant"] += r["montant_oracle"] or r["montant_edf"]
 
+        justifications = construire_justifications(rapprochement)
+
         print("Génération du rapport...")
         generer_classeur(sortie / f"{base}.xlsx", rapprochement, rejets,
-                         lignes_ko, resume, contexte)
+                         lignes_ko, resume, contexte, justifications)
         generer_csv(sortie / f"{base}.csv", rapprochement)
+        generer_csv_justifications(sortie / f"{base}_justifications.csv", justifications)
 
     except ErreurTraitement as exc:
         print(f"Erreur critique : {exc}", file=sys.stderr)
@@ -842,12 +1009,19 @@ def main(argv=None):
     anomalies = sum(1 for r in rapprochement if r["statut"] in STATUTS_ANOMALIE)
     signales = sum(1 for r in rapprochement if r["statut"] in STATUTS_SIGNALES)
 
+    a_investiguer = [j for j in justifications if j["cause"] in CAUSES_A_INVESTIGUER]
+
     print("\n=======================================================")
     print(f" Rapport : {sortie / (base + '.xlsx')}")
     for statut in ORDRE_STATUTS:
         if statut in resume:
             print(f"   {resume[statut]['cles']:5}  {statut}")
     print("-------------------------------------------------------")
+    if justifications:
+        justifie = sum(1 for j in justifications if j["cause"] == "REJET")
+        print(f" {len(justifications)} écart(s) à justifier, dont {justifie} par un rejet"
+              f" et {len(a_investiguer)} à investiguer.")
+        print(" Détail et fichiers d'origine : onglet « Justification des écarts ».")
     if lignes_ko:
         print(f" {len(lignes_ko)} ligne(s) Oracle non conforme(s) — résultat non fiable.")
     if signales:

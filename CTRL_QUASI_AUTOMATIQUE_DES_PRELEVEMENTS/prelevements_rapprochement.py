@@ -247,13 +247,68 @@ def date_cible(date_oracle):
     return date_oracle + timedelta(days=2)
 
 
-def construire_rapprochement(oracle_summary, edf_summary):
+def chercher_date_cible(date_ora, nb_ora, total_ora, edf_par_date, n_max):
+    """Cherche la date EDF qui repond a une date Oracle, au lieu de la deviner.
+
+    Le decalage reel n'est pas constant : il depend du jour de la semaine, des
+    jours feries et du rythme de production d'EDF. Plutot que de le postuler, on
+    essaie J+1 a J+n et on retient le meilleur candidat.
+
+    Regle de selection, deduite du fonctionnement du flux : EDF remonte NET des
+    rejets, donc un candidat credible ne peut jamais afficher PLUS que ce
+    qu'Oracle a emis, ni en nombre ni en montant. Cette contrainte de signe est
+    ce qui elimine les coincidences : une journee EDF affichant le meme NOMBRE
+    de prelevements mais un montant sans rapport est ecartee.
+
+    Retourne (date_cible AAAAMMJJ ou None, mode) ou mode vaut
+    'exact', 'ecart', 'ambigu' ou 'introuvable'.
+    """
+    exacts, plausibles = [], []
+    for n in range(1, n_max + 1):
+        cible = date_ora + timedelta(days=n)
+        candidat = edf_par_date.get(cible.strftime("%Y%m%d"))
+        if not candidat or candidat["nb"] == 0:
+            continue
+        manque_nb = nb_ora - candidat["nb"]
+        manque_montant = total_ora - candidat["total"]
+        if (manque_nb, manque_montant) == (0, Decimal(0)):
+            exacts.append((n, cible))
+        elif manque_nb >= 0 and manque_montant >= 0:
+            plausibles.append((manque_nb, n, cible))
+
+    if len(exacts) == 1:
+        return exacts[0][1].strftime("%Y%m%d"), "exact"
+    if len(exacts) > 1:
+        # Deux journees EDF concordent parfaitement : on prend la plus proche,
+        # mais le rapport doit dire que le choix n'est pas certain.
+        return exacts[0][1].strftime("%Y%m%d"), "ambigu"
+    if plausibles:
+        # Departage par l'ECART LE PLUS FAIBLE, pas par la date la plus proche :
+        # une petite journee EDF sans rapport satisfait la contrainte de signe et
+        # serait retenue a tort si l'on prenait simplement le premier candidat.
+        plausibles.sort()
+        return plausibles[0][2].strftime("%Y%m%d"), "ecart"
+    return None, "introuvable"
+
+
+def construire_rapprochement(oracle_summary, edf_summary, recherche_jn=0):
     edf_par_date = {e["date"]: e for e in edf_summary}
 
     # Plusieurs dates Oracle peuvent viser la meme date EDF : on les regroupe.
     groupes = defaultdict(list)
+    modes = {}
     for ora in oracle_summary:
-        cible = date_cible(parse_date(ora["date"])).strftime("%Y%m%d")
+        date_ora = parse_date(ora["date"])
+        if recherche_jn:
+            cible, mode = chercher_date_cible(
+                date_ora, ora["nb"], ora["total"], edf_par_date, recherche_jn)
+            if cible is None:
+                # Aucun candidat : on garde la projection par defaut pour que la
+                # journee figure quand meme au rapport, en ecart total.
+                cible = date_cible(date_ora).strftime("%Y%m%d")
+            modes[cible] = mode if cible not in modes else "groupe"
+        else:
+            cible = date_cible(date_ora).strftime("%Y%m%d")
         groupes[cible].append(ora)
 
     lignes = []
@@ -273,6 +328,13 @@ def construire_rapprochement(oracle_summary, edf_summary):
         delai = (date_edf_parsee - parse_date(dates_origine[0])).days
         ecart_nb = nb_recu - nb_attendu
 
+        statut = f"OK (J+{delai})" if ecart_nb == 0 else f"Écart (J+{delai})"
+        mode = modes.get(date_edf_cible)
+        if mode == "ambigu":
+            statut += " ambigu"
+        elif mode == "introuvable":
+            statut = "Non trouvé"
+
         lignes.append({
             "date_oracle": " + ".join(parse_date(d).strftime("%d/%m/%Y") for d in dates_origine),
             "date_edf": date_edf_parsee.strftime("%d/%m/%Y"),
@@ -282,7 +344,7 @@ def construire_rapprochement(oracle_summary, edf_summary):
             "total_oracle": arrondi(total_attendu),
             "total_edf": arrondi(total_recu),
             "ecart_montant": arrondi(total_recu - total_attendu),
-            "statut": f"OK (J+{delai})" if ecart_nb == 0 else f"Écart (J+{delai})",
+            "statut": statut,
         })
 
     return lignes
@@ -452,6 +514,9 @@ def construire_parser():
                    help="Motif de nom des fichiers de rejets internes")
     p.add_argument("--nom-si", default="ORACLE",
                    help="Valeur de la colonne 'NOM DU SI' a rapprocher")
+    p.add_argument("--recherche-jn", type=int, default=0, metavar="N",
+                   help="Chercher la date EDF parmi J+1..J+N au lieu d'appliquer "
+                        "la regle fixe J+2/J+4. 0 = desactive. Valeur conseillee : 8")
     return p
 
 
@@ -495,7 +560,8 @@ def main(argv=None):
         if diag.fichiers_rejets:
             print(f"Rejets : {diag.fichiers_rejets} fichier(s), {diag.lignes_rejets} ligne(s).")
 
-        rapprochement = construire_rapprochement(oracle_summary, edf_summary)
+        rapprochement = construire_rapprochement(oracle_summary, edf_summary,
+                                                 args.recherche_jn)
 
         print("Génération du classeur Excel...")
         generer_classeur(chemin_sortie, oracle_summary, edf_summary, rapprochement, rejets)

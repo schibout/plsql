@@ -327,3 +327,116 @@ def test_echeance_hors_fenetre_est_exclue():
                           date(2026, 1, 1), "f")]
     res = construire_rapprochement(lignes, {}, {}, [], date(2026, 8, 6), 10)
     assert res == []
+
+
+# --- Justification des ecarts ----------------------------------------------
+def _contexte_rejet(montant_rejet="932.25", nb_oracle=21, montant_oracle="24703.22",
+                    nb_edf=20, montant_edf="23770.97"):
+    """Reproduit le cas reel FR7630003012070002018665043 / echeance 10/07."""
+    from rapprochement_cle_metier import LigneOracle
+    ech = date(2026, 7, 10)
+    lignes = [LigneOracle(IBAN_A, ech, Decimal(montant_rejet), "NVOA0147", "FR7610096",
+                          "SDC ALTAIR", date(2026, 6, 23),
+                          "DK_30003-0441DMSPCLFRST-20260623-48278459_20260623-015707.txt")]
+    lignes += [LigneOracle(IBAN_A, ech, Decimal("1.00"), f"RUM{i}", "FR76", f"B{i}",
+                           date(2026, 6, 23), "autre_fichier.txt")
+               for i in range(nb_oracle - 1)]
+    # On force les totaux attendus via un agregat EDF construit a la main.
+    agg = AgregatEdf(nb=nb_edf, montant=Decimal(montant_edf),
+                     tranches=[Tranche(date(2026, 6, 24), nb_edf, Decimal(montant_edf),
+                                       "IMPORT_AVP_DK.20260624.070103.csv")])
+    rejet = LigneRejet(IBAN_A, "NVOA0147", "FR7610096", ech, Decimal(montant_rejet),
+                       "CC01", "MANDAT INVALIDE",
+                       "REJETS_INTERNES_DK.20260624.070002.csv", date(2026, 6, 24))
+    rejet.appariee = True
+    rejet.origine = lignes[0]
+    return lignes, {(IBAN_A, ech): agg}, {(IBAN_A, ech): [rejet]}
+
+
+def test_justification_nomme_le_fichier_oracle_et_le_fichier_rejet():
+    """L'objet du controle : savoir de quel fichier vient l'ecart."""
+    from rapprochement_cle_metier import construire_justifications
+    lignes, edf_agg, rejets = _contexte_rejet(nb_oracle=21, montant_oracle="24703.22",
+                                              nb_edf=20, montant_edf="23770.97")
+    # Oracle : 1 ligne a 932.25 + 20 lignes a 1.00 = 952.25 ; on aligne l'EDF dessus.
+    edf_agg[(IBAN_A, date(2026, 7, 10))].montant = Decimal("20.00")
+    edf_agg[(IBAN_A, date(2026, 7, 10))].nb = 20
+    res = construire_rapprochement(lignes, edf_agg, rejets, [], date(2026, 7, 20), 30)
+    just = construire_justifications(res)
+
+    assert len(just) == 1
+    j = just[0]
+    assert j["cause"] == "REJET"
+    assert j["montant"] == Decimal("932.25")
+    assert j["beneficiaire"] == "SDC ALTAIR"
+    assert j["code"] == "CC01"
+    assert j["fichier_oracle"].startswith("DK_30003-0441DMSPCLFRST")
+    assert j["fichier_rejet"] == "REJETS_INTERNES_DK.20260624.070002.csv"
+    assert j["fichier_edf"] == "IMPORT_AVP_DK.20260624.070103.csv"
+
+
+def test_une_cle_rapprochee_ne_genere_aucune_justification():
+    from rapprochement_cle_metier import construire_justifications, LigneOracle
+    ech = date(2026, 7, 31)
+    lignes = [LigneOracle(IBAN_A, ech, Decimal("100.00"), "R", "FR76", "N",
+                          date(2026, 7, 11), "f.txt")]
+    agg = AgregatEdf(nb=1, montant=Decimal("100.00"),
+                     tranches=[Tranche(date(2026, 7, 15), 1, Decimal("100.00"), "edf.csv")])
+    res = construire_rapprochement(lignes, {(IBAN_A, ech): agg}, {}, [], date(2026, 7, 20), 30)
+    assert res[0]["statut"] == RAPPROCHE
+    assert construire_justifications(res) == []
+
+
+def test_ecart_non_couvert_par_les_rejets_est_marque_a_investiguer():
+    from rapprochement_cle_metier import construire_justifications, LigneOracle
+    ech = date(2026, 7, 31)
+    lignes = [LigneOracle(IBAN_A, ech, Decimal("100.00"), f"R{i}", "FR76", f"B{i}",
+                          date(2026, 7, 11), "lot_du_11_07.txt") for i in range(3)]
+    agg = AgregatEdf(nb=1, montant=Decimal("100.00"),
+                     tranches=[Tranche(date(2026, 7, 15), 1, Decimal("100.00"), "edf.csv")])
+    res = construire_rapprochement(lignes, {(IBAN_A, ech): agg}, {}, [], date(2026, 7, 20), 30)
+    just = construire_justifications(res)
+
+    assert [j["cause"] for j in just] == ["INEXPLIQUE"]
+    assert just[0]["nb"] == 2
+    assert just[0]["montant"] == Decimal("200.00")
+    assert just[0]["fichier_oracle"] == "lot_du_11_07.txt"
+
+
+def test_prelevement_non_encore_remonte_est_marque_non_confirme():
+    from rapprochement_cle_metier import construire_justifications, LigneOracle
+    ech = date(2026, 8, 10)
+    lignes = [LigneOracle(IBAN_A, ech, Decimal("8000.00"), "R", "FR76", "N",
+                          date(2026, 8, 6), "DK_30004-0284DEWPCXFRST.txt")]
+    res = construire_rapprochement(lignes, {}, {}, [], date(2026, 8, 6), 10)
+    just = construire_justifications(res)
+
+    assert just[0]["cause"] == "NON_CONFIRME"
+    assert just[0]["fichier_oracle"] == "DK_30004-0284DEWPCXFRST.txt"
+    assert just[0]["fichier_edf"] == "(aucun)"
+
+
+def test_les_justifications_couvrent_exactement_l_ecart():
+    """Garantie de coherence : rien ne doit rester hors du compte."""
+    from rapprochement_cle_metier import construire_justifications, LigneOracle
+    ech = date(2026, 7, 31)
+    lignes = [LigneOracle(IBAN_A, ech, Decimal("50.00"), "R1", "FR76", "B1",
+                          date(2026, 7, 11), "f.txt"),
+              LigneOracle(IBAN_A, ech, Decimal("30.00"), "R2", "FR76", "B2",
+                          date(2026, 7, 11), "f.txt"),
+              LigneOracle(IBAN_A, ech, Decimal("20.00"), "R3", "FR76", "B3",
+                          date(2026, 7, 11), "f.txt")]
+    rejet = LigneRejet(IBAN_A, "R1", "FR76", ech, Decimal("50.00"), "CC01", "M",
+                       "rej.csv", date(2026, 7, 15))
+    rejet.origine = lignes[0]
+    agg = AgregatEdf(nb=1, montant=Decimal("30.00"),
+                     tranches=[Tranche(date(2026, 7, 15), 1, Decimal("30.00"), "edf.csv")])
+
+    res = construire_rapprochement(lignes, {(IBAN_A, ech): agg},
+                                   {(IBAN_A, ech): [rejet]}, [], date(2026, 7, 20), 30)
+    just = construire_justifications(res)
+
+    # Oracle 100,00 - EDF 30,00 = 70,00 manquants : 50,00 de rejet + 20,00 inexpliques.
+    assert sum(j["montant"] for j in just) == -res[0]["ecart_montant"] == Decimal("70.00")
+    assert sum(j["nb"] for j in just) == -res[0]["ecart_nb"] == 2
+    assert sorted(j["cause"] for j in just) == ["INEXPLIQUE", "REJET"]
