@@ -1,8 +1,19 @@
 /**
  * @OnlyCurrentDoc
  *
- * Ce script automatise la récupération des pièces jointes 'IMPORT_AVP_DK'
- * depuis les e-mails de synthèse des prélèvements et leur sauvegarde sur Google Drive.
+ * Récupération des pièces jointes 'IMPORT_AVP_DK' depuis les e-mails de synthèse des
+ * prélèvements et sauvegarde sur Google Drive.
+ *
+ * Script AUTONOME : il n'a besoin d'aucun autre fichier. Si vous l'installez dans le même
+ * projet Apps Script que 'importPiecesJointes.gs', ne planifiez QU'UNE SEULE des deux
+ * fonctions — les deux écrivent dans le même dossier Drive et posent le même label, avec
+ * chacune son propre état, ce qui ferait le travail en double.
+ *
+ * Fonctions à exécuter / planifier :
+ *   - prelevement_importAttachments() : traitement (fonction du déclencheur).
+ *   - prelevement_listSenders()       : diagnostic, liste les expéditeurs réels.
+ *   - prelevement_showState()         : diagnostic, affiche l'état mémorisé.
+ *   - prelevement_resetState()        : purge l'état mémorisé (force un scan complet).
  */
 
 // --- CONFIGURATION ---
@@ -29,116 +40,209 @@ const PRELEVEMENT_CONFIG = {
   // ce contrôle élimine les faux positifs (mails de recette, réponses, transferts).
   STRICT_SUBJECT: true,
 
+  // Profondeur de la recherche Gmail, en jours.
+  SEARCH_WINDOW_DAYS: 30,
+
+  // Label posé sur les conversations traitées. Laisser vide pour désactiver.
+  // Note : dans Apps Script un label s'applique à la CONVERSATION, pas au message. Il sert
+  // donc au classement et au contrôle visuel, mais ce n'est pas lui qui empêche de relire
+  // un mail : ce message quotidien ayant toujours le même sujet, Gmail peut regrouper
+  // plusieurs jours dans une même conversation, et un filtre '-label:' rendrait le mail du
+  // lendemain invisible. Le "déjà traité" repose sur l'ID de message mémorisé.
+  PROCESSED_LABEL: 'z_traite_gdrive',
+
   // Faut-il ignorer les fichiers déjà présents dans le dossier de destination ?
   SKIP_DUPLICATES: true,
+
+  // Adresse à prévenir en cas d'anomalie. Laisser vide pour ne notifier que dans les logs.
+  NOTIFY_EMAIL: '',
+
+  // Fenêtre utilisée par prelevement_listSenders() pour découvrir les expéditeurs.
+  DISCOVERY_WINDOW: 'newer_than:180d',
+
+  // Clé de persistance de l'état dans les propriétés du script. Ne pas la modifier :
+  // un changement efface l'historique et provoque une relecture complète.
+  STATE_KEY: 'PRELEVEMENT_STATE',
+
+  // Marge d'élagage des ID mémorisés, au-delà de la fenêtre de recherche (en jours).
+  PROCESSED_RETENTION_MARGIN_DAYS: 7,
+
+  // Plafond d'ID mémorisés (les propriétés du script sont limitées à 9 Ko par clé).
+  MAX_PROCESSED_IDS: 500,
 };
 // --- FIN DE LA CONFIGURATION ---
 
 
 /**
- * Fonction principale pour importer les pièces jointes des prélèvements.
- * À exécuter manuellement ou via un déclencheur.
+ * Fonction principale : recherche les e-mails autorisés, extrait les pièces jointes
+ * correspondantes, les sauvegarde sur Drive, mémorise les messages traités et pose le label.
  */
 function prelevement_importAttachments() {
-  // Vérification de la configuration
+  Logger.log('--- Début de l\'import des prélèvements ---');
+
+  const report = {
+    saved: 0,
+    duplicates: 0,
+    alreadyProcessed: 0,
+    labeled: 0,
+    rejectedSender: 0,
+    rejectedSubject: 0,
+    errors: [],
+  };
+
   if (!PRELEVEMENT_CONFIG.DRIVE_FOLDER_ID) {
-    prelevement_fail_("ERREUR : L'ID du dossier Google Drive n'est pas configuré dans la variable 'PRELEVEMENT_CONFIG.DRIVE_FOLDER_ID'.");
+    prelevement_alert_(
+      'Prélèvements : configuration incomplète',
+      "L'ID du dossier Google Drive n'est pas configuré dans 'PRELEVEMENT_CONFIG.DRIVE_FOLDER_ID'."
+    );
     return;
   }
 
-  const allowedSenders = prelevement_allowedSenders_();
+  const allowedSenders = prelevement_normalizeSenders_(PRELEVEMENT_CONFIG.ALLOWED_SENDERS);
   if (allowedSenders.length === 0) {
-    prelevement_fail_("ERREUR : aucun expéditeur autorisé dans 'PRELEVEMENT_CONFIG.ALLOWED_SENDERS'. Import annulé. Exécutez 'prelevement_listSenders' pour identifier les expéditeurs légitimes, puis renseignez la liste.");
+    prelevement_alert_(
+      'Prélèvements : configuration incomplète',
+      "Aucun expéditeur autorisé dans 'PRELEVEMENT_CONFIG.ALLOWED_SENDERS' : import annulé. " +
+      "Exécutez 'prelevement_listSenders' pour identifier les expéditeurs légitimes, puis renseignez la liste."
+    );
     return;
   }
 
-  // Construction de la requête de recherche Gmail.
-  // La syntaxe {a b} signifie 'a OU b'. Ce filtre est une première barrière : il porte
-  // aussi sur le nom d'affichage, donc l'adresse réelle est revérifiée plus bas.
-  const fromClause = `from:{${allowedSenders.join(' ')}}`;
-  const searchQuery = `${fromClause} subject:("${PRELEVEMENT_CONFIG.EMAIL_SUBJECT}") has:attachment newer_than:30d`;
+  const state = prelevement_loadState_();
 
   try {
     const destinationFolder = DriveApp.getFolderById(PRELEVEMENT_CONFIG.DRIVE_FOLDER_ID);
-    Logger.log(`Dossier de destination trouvé : "${destinationFolder.getName()}"`);
+    const query = prelevement_buildQuery_(allowedSenders, state);
+    const processedLabel = PRELEVEMENT_CONFIG.PROCESSED_LABEL
+      ? prelevement_getOrCreateLabel_(PRELEVEMENT_CONFIG.PROCESSED_LABEL)
+      : null;
+
+    Logger.log(`Destination : "${destinationFolder.getName()}"`);
     Logger.log(`Expéditeurs autorisés : ${allowedSenders.join(', ')}`);
-    Logger.log(`Recherche des e-mails avec la requête : "${searchQuery}"`);
-
-    const threads = GmailApp.search(searchQuery);
-    Logger.log(`${threads.length} conversation(s) trouvée(s) à traiter.`);
-
-    if (threads.length === 0) {
-      Logger.log("Aucun e-mail correspondant trouvé. Fin du script.");
-      return;
+    Logger.log(`Dernière exécution : ${state.lastRunIso || 'jamais'}`);
+    Logger.log(`Requête : ${query}`);
+    if (PRELEVEMENT_CONFIG.PROCESSED_LABEL && !processedLabel) {
+      report.errors.push(
+        `Le label "${PRELEVEMENT_CONFIG.PROCESSED_LABEL}" est inaccessible : les conversations ne seront pas marquées.`
+      );
     }
 
-    let savedFilesCount = 0;
-    let rejectedSenderCount = 0;
-    let rejectedSubjectCount = 0;
+    const threads = GmailApp.search(query);
+    Logger.log(`${threads.length} conversation(s) trouvée(s).`);
 
     threads.forEach(thread => {
-      const messages = thread.getMessages();
-      messages.forEach(message => {
+      let threadHandled = false;
+
+      thread.getMessages().forEach(message => {
         if (message.isInTrash() || message.isDraft()) return;
 
-        // Contrôle 2 : l'adresse réelle de l'expéditeur, et non le nom d'affichage.
+        // Contrôle 0 : message déjà traité lors d'une exécution précédente.
+        // Ce test se fait sur l'ID du MESSAGE (et non sur le label, qui est porté par la
+        // conversation) : un nouveau message arrivé dans une conversation déjà labellisée
+        // est donc bien traité. Il précède les appels à Drive, qui sont les plus coûteux.
+        const messageId = message.getId();
+        if (state.processed[messageId]) {
+          report.alreadyProcessed++;
+          return;
+        }
+
+        // Contrôle 1 : l'adresse réelle de l'expéditeur, et non le nom d'affichage.
         // GmailApp.search('from:') matche aussi le nom affiché : un expéditeur externe
         // qui se nomme "cashcollection@dalkia.fr" passerait le filtre de la requête.
         const sender = prelevement_extractEmail_(message.getFrom());
         if (allowedSenders.indexOf(sender) === -1) {
-          rejectedSenderCount++;
-          Logger.log(`  -> REJETÉ : expéditeur non autorisé "${sender}" (sujet : "${message.getSubject()}"). Import ignoré.`);
+          report.rejectedSender++;
+          Logger.log(`REJETÉ (expéditeur) : "${sender}" — sujet "${message.getSubject()}".`);
           return;
         }
 
-        // Contrôle 3 : le sujet exact, la recherche Gmail étant approximative.
+        // Contrôle 2 : le sujet exact, la recherche Gmail 'subject:' étant approximative.
         const subject = message.getSubject();
         if (PRELEVEMENT_CONFIG.STRICT_SUBJECT && subject.trim() !== PRELEVEMENT_CONFIG.EMAIL_SUBJECT) {
-          rejectedSubjectCount++;
-          Logger.log(`  -> REJETÉ : sujet non conforme "${subject}" (expéditeur : ${sender}). Import ignoré.`);
+          report.rejectedSubject++;
+          Logger.log(`REJETÉ (sujet) : "${subject}" — expéditeur ${sender}.`);
           return;
         }
 
-        const attachments = message.getAttachments();
-        attachments.forEach(attachment => {
+        let messageComplete = true;
+
+        message.getAttachments().forEach(attachment => {
           const fileName = attachment.getName();
+          if (!fileName.startsWith(PRELEVEMENT_CONFIG.ATTACHMENT_NAME_PREFIX)) return;
 
-          if (fileName.startsWith(PRELEVEMENT_CONFIG.ATTACHMENT_NAME_PREFIX)) {
-            Logger.log(`Pièce jointe trouvée : "${fileName}" dans l'e-mail de ${sender}`);
+          Logger.log(`Pièce jointe trouvée : "${fileName}" (de ${sender}).`);
 
-            if (PRELEVEMENT_CONFIG.SKIP_DUPLICATES) {
-              const existingFiles = destinationFolder.getFilesByName(fileName);
-              if (existingFiles.hasNext()) {
-                Logger.log(`  -> Fichier "${fileName}" déjà présent dans le dossier. Ignoré.`);
-                return;
-              }
+          try {
+            if (PRELEVEMENT_CONFIG.SKIP_DUPLICATES && destinationFolder.getFilesByName(fileName).hasNext()) {
+              report.duplicates++;
+              Logger.log(`  -> Déjà présent dans le dossier. Ignoré.`);
+              return;
             }
 
-            const fileBlob = attachment.copyBlob();
-            destinationFolder.createFile(fileBlob);
-            Logger.log(`  -> SUCCÈS : Fichier "${fileName}" sauvegardé dans "${destinationFolder.getName()}".`);
-            savedFilesCount++;
+            destinationFolder.createFile(attachment.copyBlob());
+            report.saved++;
+            Logger.log(`  -> SUCCÈS : sauvegardé dans "${destinationFolder.getName()}".`);
+          } catch (e) {
+            // Le message ne sera pas mémorisé : la prochaine exécution réessaiera cette PJ,
+            // et le contrôle des doublons empêchera de ré-importer celles déjà passées.
+            messageComplete = false;
+            report.errors.push(`Échec de l'import de "${fileName}" : ${e.message}`);
+            Logger.log(`  -> ERREUR : ${e.message}`);
           }
         });
+
+        if (messageComplete) {
+          state.processed[messageId] = prelevement_messageTime_(message);
+          threadHandled = true;
+        }
       });
+
+      if (threadHandled && processedLabel) {
+        try {
+          thread.addLabel(processedLabel);
+          report.labeled++;
+        } catch (e) {
+          // L'import a réussi : un échec de labellisation ne doit pas le remettre en cause.
+          report.errors.push(`Label non appliqué à une conversation : ${e.message}`);
+          Logger.log(`! Label non appliqué : ${e.message}`);
+        }
+      }
     });
 
-    Logger.log(`--- Bilan de l'exécution ---`);
-    Logger.log(`Fichiers sauvegardés : ${savedFilesCount}`);
-    Logger.log(`Messages rejetés (expéditeur) : ${rejectedSenderCount}`);
-    Logger.log(`Messages rejetés (sujet) : ${rejectedSubjectCount}`);
-    Logger.log(`--------------------------`);
-
-    // Un mail au bon sujet mais du mauvais expéditeur signale soit un changement
-    // légitime d'émetteur (à répercuter dans la config, sinon l'import s'arrête
-    // silencieusement), soit une tentative d'usurpation. Dans les deux cas, il faut le voir.
-    if (savedFilesCount === 0 && (rejectedSenderCount > 0 || rejectedSubjectCount > 0)) {
-      prelevement_fail_(`ATTENTION : aucun fichier importé alors que ${rejectedSenderCount + rejectedSubjectCount} message(s) ont été rejetés (expéditeur ou sujet non conforme). Vérifiez 'PRELEVEMENT_CONFIG.ALLOWED_SENDERS' et 'EMAIL_SUBJECT'.`);
-    }
-
   } catch (e) {
-    Logger.log(`ERREUR CRITIQUE : Une erreur est survenue durant l'exécution. Détails : ${e.message}`);
+    report.errors.push(`Erreur durant le traitement : ${e.message}`);
+    Logger.log(`ERREUR CRITIQUE : ${e.message}`);
     Logger.log(`Stack trace: ${e.stack}`);
+  }
+
+  // Les ID traités sont toujours enregistrés (le travail effectué ne doit pas être refait),
+  // mais la date de dernière exécution n'avance qu'en l'absence d'erreur : en cas d'incident,
+  // la plage reste couverte par la prochaine recherche.
+  if (report.errors.length === 0) {
+    state.lastRunIso = new Date().toISOString();
+  }
+  prelevement_saveState_(state);
+
+  Logger.log('--- Bilan de l\'exécution ---');
+  Logger.log(
+    `${report.saved} importé(s), ${report.duplicates} doublon(s), ` +
+    `${report.alreadyProcessed} déjà traité(s), ${report.labeled} conversation(s) labellisée(s), ` +
+    `${report.rejectedSender} rejet(s) expéditeur, ${report.rejectedSubject} rejet(s) sujet.`
+  );
+  Logger.log('----------------------------');
+
+  // Un message au bon sujet mais du mauvais expéditeur signale soit un changement légitime
+  // d'émetteur (à répercuter dans la config, sinon l'import s'arrête silencieusement),
+  // soit une tentative d'usurpation. Dans les deux cas, il faut le voir.
+  const anomalies = report.errors.slice();
+  if (report.saved === 0 && (report.rejectedSender > 0 || report.rejectedSubject > 0)) {
+    anomalies.push(
+      `Aucun fichier importé alors que ${report.rejectedSender + report.rejectedSubject} ` +
+      `message(s) ont été rejetés. Vérifiez ALLOWED_SENDERS et EMAIL_SUBJECT.`
+    );
+  }
+  if (anomalies.length > 0) {
+    prelevement_alert_('Prélèvements : anomalies détectées', anomalies.join('\n'));
   }
 }
 
@@ -149,21 +253,31 @@ function prelevement_importAttachments() {
  * 'PRELEVEMENT_CONFIG.ALLOWED_SENDERS'.
  */
 function prelevement_listSenders() {
-  const query = `subject:("${PRELEVEMENT_CONFIG.EMAIL_SUBJECT}") has:attachment newer_than:180d`;
-  Logger.log(`Recherche des expéditeurs avec la requête : "${query}"`);
+  const query = `subject:("${PRELEVEMENT_CONFIG.EMAIL_SUBJECT}") has:attachment ${PRELEVEMENT_CONFIG.DISCOVERY_WINDOW}`;
+  Logger.log(`Requête : ${query}`);
 
   const counts = {};
-  GmailApp.search(query).forEach(thread => {
-    thread.getMessages().forEach(message => {
-      if (message.isInTrash() || message.isDraft()) return;
-      const sender = prelevement_extractEmail_(message.getFrom());
-      counts[sender] = (counts[sender] || 0) + 1;
+  try {
+    GmailApp.search(query).forEach(thread => {
+      thread.getMessages().forEach(message => {
+        if (message.isInTrash() || message.isDraft()) return;
+        // On ne retient que les messages portant réellement la PJ attendue.
+        const hasAttachment = message.getAttachments().some(
+          attachment => attachment.getName().startsWith(PRELEVEMENT_CONFIG.ATTACHMENT_NAME_PREFIX)
+        );
+        if (!hasAttachment) return;
+        const sender = prelevement_extractEmail_(message.getFrom());
+        counts[sender] = (counts[sender] || 0) + 1;
+      });
     });
-  });
+  } catch (e) {
+    Logger.log(`ERREUR : ${e.message}`);
+    return;
+  }
 
   const senders = Object.keys(counts);
   if (senders.length === 0) {
-    Logger.log('Aucun message trouvé sur les 180 derniers jours.');
+    Logger.log('Aucun message trouvé sur la période.');
     return;
   }
 
@@ -176,12 +290,167 @@ function prelevement_listSenders() {
 
 
 /**
- * Retourne la liste des expéditeurs autorisés, normalisée (minuscules, sans espaces).
- * @return {string[]} Les adresses autorisées.
+ * Outil de diagnostic : affiche l'état mémorisé.
  */
-function prelevement_allowedSenders_() {
-  return (PRELEVEMENT_CONFIG.ALLOWED_SENDERS || [])
-    .map(sender => String(sender).trim().toLowerCase())
+function prelevement_showState() {
+  const state = prelevement_loadState_();
+  Logger.log(
+    `Prélèvements : dernière exécution = ${state.lastRunIso || 'jamais'}, ` +
+    `${Object.keys(state.processed).length} message(s) mémorisé(s).`
+  );
+}
+
+
+/**
+ * Outil de maintenance : purge l'état mémorisé.
+ * La prochaine exécution rescannera toute la fenêtre de recherche. Sans danger : le contrôle
+ * des doublons empêche de ré-importer un fichier déjà présent sur Drive.
+ */
+function prelevement_resetState() {
+  PropertiesService.getScriptProperties().deleteProperty(PRELEVEMENT_CONFIG.STATE_KEY);
+  Logger.log('État purgé pour les prélèvements.');
+}
+
+
+/**
+ * Construit la requête Gmail.
+ * @param {string[]} allowedSenders Les expéditeurs autorisés, normalisés.
+ * @param {Object} state L'état mémorisé.
+ * @return {string} La requête de recherche.
+ */
+function prelevement_buildQuery_(allowedSenders, state) {
+  // La syntaxe {a b} signifie 'a OU b'. Ce filtre est une première barrière : il porte
+  // aussi sur le nom d'affichage, donc l'adresse réelle est revérifiée à la lecture.
+  return [
+    `from:{${allowedSenders.join(' ')}}`,
+    `subject:("${PRELEVEMENT_CONFIG.EMAIL_SUBJECT}")`,
+    'has:attachment',
+    `after:${prelevement_searchStartDate_(state)}`,
+  ].join(' ');
+}
+
+
+/**
+ * Calcule la date de début de recherche, au format attendu par l'opérateur Gmail 'after:'.
+ * On retient la PLUS ANCIENNE des deux bornes : la fenêtre nominale reste donc d'au moins
+ * SEARCH_WINDOW_DAYS jours, et s'élargit automatiquement si le déclencheur est resté en panne
+ * plus longtemps que cette fenêtre.
+ * @param {Object} state L'état mémorisé.
+ * @return {string} La date au format 'yyyy/MM/dd'.
+ */
+function prelevement_searchStartDate_(state) {
+  const dayMs = 24 * 60 * 60 * 1000;
+  let start = Date.now() - PRELEVEMENT_CONFIG.SEARCH_WINDOW_DAYS * dayMs;
+
+  if (state.lastRunIso) {
+    // 'after:' a une granularité au jour : on recule d'un jour pour absorber les fuseaux.
+    const lastRun = new Date(state.lastRunIso).getTime() - dayMs;
+    if (!isNaN(lastRun) && lastRun < start) start = lastRun;
+  }
+
+  return Utilities.formatDate(new Date(start), Session.getScriptTimeZone(), 'yyyy/MM/dd');
+}
+
+
+/**
+ * Lit l'état mémorisé. Un état absent ou corrompu ne doit jamais bloquer l'import :
+ * on repart alors d'un état vierge.
+ * @return {{lastRunIso: ?string, processed: Object}} L'état.
+ */
+function prelevement_loadState_() {
+  const empty = { lastRunIso: null, processed: {} };
+  try {
+    const raw = PropertiesService.getScriptProperties().getProperty(PRELEVEMENT_CONFIG.STATE_KEY);
+    if (!raw) return empty;
+    const parsed = JSON.parse(raw);
+    return {
+      lastRunIso: parsed.lastRunIso || null,
+      processed: parsed.processed || {},
+    };
+  } catch (e) {
+    Logger.log(`! État illisible, repart de zéro : ${e.message}`);
+    return empty;
+  }
+}
+
+
+/**
+ * Enregistre l'état, après élagage des ID de messages devenus inutiles (hors fenêtre de
+ * recherche, ou au-delà du plafond) : les propriétés du script sont limitées à 9 Ko par clé.
+ * @param {Object} state L'état à enregistrer.
+ */
+function prelevement_saveState_(state) {
+  const dayMs = 24 * 60 * 60 * 1000;
+  const retentionDays =
+    PRELEVEMENT_CONFIG.SEARCH_WINDOW_DAYS + PRELEVEMENT_CONFIG.PROCESSED_RETENTION_MARGIN_DAYS;
+  const cutoff = Date.now() - retentionDays * dayMs;
+
+  // Du plus récent au plus ancien, on ne garde que ce qui reste utile.
+  const kept = {};
+  Object.keys(state.processed)
+    .filter(id => state.processed[id] >= cutoff)
+    .sort((a, b) => state.processed[b] - state.processed[a])
+    .slice(0, PRELEVEMENT_CONFIG.MAX_PROCESSED_IDS)
+    .forEach(id => { kept[id] = state.processed[id]; });
+
+  try {
+    PropertiesService.getScriptProperties().setProperty(
+      PRELEVEMENT_CONFIG.STATE_KEY,
+      JSON.stringify({ lastRunIso: state.lastRunIso, processed: kept })
+    );
+  } catch (e) {
+    // Sans état, la prochaine exécution relira les mails : coûteux, mais pas faux
+    // (le contrôle des doublons reste le filet de sécurité).
+    Logger.log(`! État non enregistré : ${e.message}`);
+  }
+}
+
+
+/**
+ * Date d'un message en millisecondes, avec repli sur l'instant courant si elle est indisponible.
+ * @param {GmailMessage} message Le message.
+ * @return {number} L'horodatage en millisecondes.
+ */
+function prelevement_messageTime_(message) {
+  try {
+    const date = message.getDate();
+    if (date) return date.getTime();
+  } catch (e) {
+    // Repli ci-dessous.
+  }
+  return Date.now();
+}
+
+
+/**
+ * Récupère ou crée un label Gmail.
+ * @param {string} name Le nom du label.
+ * @return {?GmailLabel} Le label, ou null s'il est inaccessible.
+ */
+function prelevement_getOrCreateLabel_(name) {
+  try {
+    let label = GmailApp.getUserLabelByName(name);
+    if (!label) {
+      label = GmailApp.createLabel(name);
+      Logger.log(`Label Gmail "${name}" créé.`);
+    }
+    return label;
+  } catch (e) {
+    Logger.log(`! Label "${name}" inaccessible : ${e.message}`);
+    return null;
+  }
+}
+
+
+/**
+ * Normalise une liste d'adresses (minuscules, sans espaces, sans entrées vides).
+ * @param {string[]} senders Les adresses brutes.
+ * @return {string[]} Les adresses normalisées.
+ */
+function prelevement_normalizeSenders_(senders) {
+  return (senders || [])
+    .filter(sender => typeof sender === 'string')
+    .map(sender => sender.trim().toLowerCase())
     .filter(sender => sender !== '');
 }
 
@@ -198,14 +467,25 @@ function prelevement_extractEmail_(from) {
 
 
 /**
- * Journalise un message d'erreur et tente de l'afficher à l'utilisateur.
- * @param {string} message Le message à signaler.
+ * Signale une anomalie : journal, e-mail si NOTIFY_EMAIL est renseigné, alerte UI sinon.
+ * @param {string} subject L'objet de l'alerte.
+ * @param {string} body Le détail de l'alerte.
  */
-function prelevement_fail_(message) {
-  Logger.log(message);
+function prelevement_alert_(subject, body) {
+  Logger.log(`ALERTE — ${subject}\n${body}`);
+
+  if (PRELEVEMENT_CONFIG.NOTIFY_EMAIL) {
+    try {
+      MailApp.sendEmail(PRELEVEMENT_CONFIG.NOTIFY_EMAIL, subject, body);
+      return;
+    } catch (e) {
+      Logger.log(`Échec de l'envoi de l'alerte par e-mail : ${e.message}`);
+    }
+  }
+
   try {
-    SpreadsheetApp.getUi().alert(message);
+    SpreadsheetApp.getUi().alert(`${subject}\n\n${body}`);
   } catch (e) {
-    // Ignore l'erreur si aucune UI n'est disponible (exécution par déclencheur).
+    // Aucune UI disponible (exécution par déclencheur) : le journal suffit.
   }
 }
