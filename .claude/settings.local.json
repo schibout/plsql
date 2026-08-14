@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(node harness.js .)",
+      "Bash(cp \"c:/Projects/plsql/AppsScript/odat/rapportOdat.gs\" check.js)",
+      "Bash(node --check check.js)"
+    ]
+  }
+}
