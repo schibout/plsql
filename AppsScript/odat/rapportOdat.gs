@@ -29,15 +29,15 @@ const ODAT_CONFIG = {
    * pouvant envoyer un mail au bon sujet avec la bonne pièce jointe piloterait le rapport.
    * Exécutez odat_listSenders() pour découvrir les expéditeurs réels.
    */
-  ALLOWED_SENDERS: [],
+  ALLOWED_SENDERS: ['Indic_CTM@dalkia.fr'],
 
   /** Sujet attendu du mail Control-M. Laisser vide pour ne pas filtrer sur le sujet. */
-  SUBJECT: '',
+  SUBJECT: 'DALKIA / Extract CSV du Suivi Quotidien CTM',
 
   /**
-   * Exiger l'égalité stricte du sujet. La recherche Gmail 'subject:' est approximative
-   * (ponctuation ignorée, RE:/TR: inclus) : ce contrôle élimine les faux positifs.
-   * Sans effet si SUBJECT est vide.
+   * Exiger que le sujet COMMENCE par le texte de SUBJECT. La recherche Gmail 'subject:'
+   * étant approximative (ponctuation ignorée, RE:/TR: inclus, 'contient' et non 'commence par'),
+   * ce contrôle élimine les faux positifs. Sans effet si SUBJECT est vide.
    */
   STRICT_SUBJECT: true,
 
@@ -61,7 +61,7 @@ const ODAT_CONFIG = {
   FAILED_STATUSES: ['Ended Not OK'],
 
   /** Destinataires du rapport, séparés par des virgules. */
-  RECIPIENTS: '',
+  RECIPIENTS: 'samir-externe.chibout@dalkia.fr',
 
   /**
    * Adresse prévenue en cas d'anomalie TECHNIQUE (mail introuvable, ZIP illisible, format du
@@ -319,10 +319,10 @@ function odat_findReportMessage_(allowedSenders, state) {
         return;
       }
 
-      if (ODAT_CONFIG.SUBJECT && ODAT_CONFIG.STRICT_SUBJECT &&
-          (message.getSubject() || '').trim() !== ODAT_CONFIG.SUBJECT.trim()) {
+      const subject = (message.getSubject() || '').trim();
+      if (ODAT_CONFIG.SUBJECT && ODAT_CONFIG.STRICT_SUBJECT && !subject.startsWith(ODAT_CONFIG.SUBJECT)) {
         result.rejectedSubject++;
-        Logger.log(`  REJETÉ (sujet) : "${message.getSubject()}".`);
+        Logger.log(`  REJETÉ (sujet ne commence pas par le préfixe attendu) : "${subject}".`);
         return;
       }
 
