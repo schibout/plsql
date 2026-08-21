@@ -18,9 +18,11 @@
 #       PARTIELLE    : reparti entre definitif et interface
 #       ABSENTE      : nulle part dans Oracle
 #       ECART        : montants incoherents
-#  4) Produit un rapport CSV de synthese, un CSV de detail facture par
-#     facture, et si Excel est installe un classeur .xlsx a 2 onglets
-#     (Synthese + Detail Factures).
+#  4) Produit UN SEUL fichier : un classeur .xlsx a 2 onglets (Synthese +
+#     Detail Factures), statuts colores vert (INTEGREE) / rouge (anomalie),
+#     sur le modele des rapports CTRL_QUASI_AUTOMATIQUE_DES_PRELEVEMENTS.
+#     Sans Excel sur le poste, deux CSV (synthese + detail) sont produits
+#     en secours.
 #
 #  Base sur ControleFolioRose\Verifier_Factures.ps1 (meme enveloppe
 #  sqlplus, meme convention ##RES##cle|...).
@@ -51,9 +53,9 @@ function Format-Montant { param($V) return ('{0:N2}' -f [double]$V) }
 # =====================================================================
 # Constantes Excel (evite la dependance a la PIA Microsoft.Office.Interop).
 $XL_CENTER        = -4108
-$COULEUR_ENTETE   = 0x7D491F   # BGR
-$COULEUR_ANOMALIE = 0xD6E4FC
-$COULEUR_OK       = 0xDAEFED
+$COULEUR_ENTETE   = 0x7D491F   # BGR (bleu fonce)
+$COULEUR_ANOMALIE = 0xCEC7FF   # BGR : rouge clair (RGB FFC7CE)
+$COULEUR_OK       = 0xCEEFC6   # BGR : vert clair (RGB C6EFCE)
 
 # Permet d'identifier le PID de NOTRE instance Excel (via son handle de
 # fenetre) pour garantir sa fermeture, sans toucher aux Excel de l'utilisateur.
@@ -70,7 +72,8 @@ function Export-RapportExcel {
         automatisation COM. Renvoie $true si le classeur a ete produit, $false
         si Excel n'est pas installe (les rapports CSV restent disponibles).
         Chaque onglet : titre en ligne 1, entete en ligne 3, donnees ecrites en
-        un seul bloc COM, colonne Statut coloree (vert = INTEGREE).
+        un seul bloc COM, colonne Statut coloree (vert = INTEGREE,
+        rouge = tout autre statut).
     #>
     param(
         [string] $CheminXlsx,
@@ -101,7 +104,13 @@ function Export-RapportExcel {
             else { $ws = $wb.Sheets.Add([System.Reflection.Missing]::Value, $ws) }
             $feuilles += $ws
             $ws.Name = $o.Nom
-            $ws.Cells.Item(1, 1).Value2 = $o.Titre
+            # Le titre passe par une matrice 1x1 et non par une chaine : une
+            # affectation directe de chaine a Value2 corrompt la liaison COM de
+            # PowerShell et fait echouer les ecritures en bloc qui suivent
+            # (cast Object[,] -> String impossible).
+            $matT = New-Object 'object[,]' 1, 1
+            $matT[0, 0] = $o.Titre
+            $ws.Range($ws.Cells.Item(1, 1), $ws.Cells.Item(1, 1)).Value2 = $matT
             $ws.Cells.Item(1, 1).Font.Bold = $true
             $ws.Cells.Item(1, 1).Font.Size = 14
 
@@ -505,11 +514,8 @@ foreach ($d in $SrcDet.Values) {
 # =====================================================================
 #  5. EXPORT ET SYNTHESE
 # =====================================================================
-$Tableau | Export-Csv -Path $FichierRapportCsv -Delimiter ';' -NoTypeInformation -Encoding UTF8
-
-$FichierDetailCsv = Join-Path $LogDir "Rapport_Oracle_FAC02_Detail_${Timestamp}.csv"
-$TableauDetail | Export-Csv -Path $FichierDetailCsv -Delimiter ';' -NoTypeInformation -Encoding UTF8
-
+#  Rapport unique : un classeur Excel a 2 onglets (Synthese + Detail
+#  Factures). Les CSV ne sont produits qu'en secours, si Excel est absent.
 $FichierRapportXlsx = Join-Path $LogDir "Rapport_Oracle_FAC02_${Timestamp}.xlsx"
 $xlsxOk = Export-RapportExcel -CheminXlsx $FichierRapportXlsx `
     -Titre 'CONTROLE FAC02 CLIENTS' `
@@ -519,6 +525,13 @@ $xlsxOk = Export-RapportExcel -CheminXlsx $FichierRapportXlsx `
     -Detail @($TableauDetail) -ColDetail @(
         'Portefeuille', 'Numero Piece', 'Reference Facture', 'Date Piece',
         'Montant Fichier', 'Montant Oracle', 'Montant Interface', 'Statut')
+
+$FichierDetailCsv = $null
+if (-not $xlsxOk) {
+    $Tableau | Export-Csv -Path $FichierRapportCsv -Delimiter ';' -NoTypeInformation -Encoding UTF8
+    $FichierDetailCsv = Join-Path $LogDir "Rapport_Oracle_FAC02_Detail_${Timestamp}.csv"
+    $TableauDetail | Export-Csv -Path $FichierDetailCsv -Delimiter ';' -NoTypeInformation -Encoding UTF8
+}
 
 Write-Host ''
 Write-Host '=======================================================================' -ForegroundColor Cyan
@@ -531,10 +544,11 @@ Write-Host ("  {0,-26} : {1}" -f 'Autres (absent/ecart...)', $nbAutre) -Foregrou
 Write-Host ("  {0,-26} : {1}" -f 'Factures controlees', $SrcDet.Count)
 Write-Host ("  {0,-26} : {1}" -f 'Factures en anomalie', $nbDetAnomalie) -ForegroundColor $(if ($nbDetAnomalie -gt 0) { 'Red' } else { 'Green' })
 Write-Host ("  {0,-26} : {1}" -f 'Duree Oracle', "${duree}s")
-Write-Host ("  {0,-26} : {1}" -f 'Rapport (CSV)', $FichierRapportCsv) -ForegroundColor Green
-Write-Host ("  {0,-26} : {1}" -f 'Detail factures (CSV)', $FichierDetailCsv) -ForegroundColor Green
 if ($xlsxOk) {
     Write-Host ("  {0,-26} : {1}" -f 'Rapport (Excel)', $FichierRapportXlsx) -ForegroundColor Green
+} else {
+    Write-Host ("  {0,-26} : {1}" -f 'Rapport (CSV)', $FichierRapportCsv) -ForegroundColor Green
+    Write-Host ("  {0,-26} : {1}" -f 'Detail factures (CSV)', $FichierDetailCsv) -ForegroundColor Green
 }
 Write-Host '=======================================================================' -ForegroundColor Cyan
 Write-Host ''

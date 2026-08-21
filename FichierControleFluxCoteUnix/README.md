@@ -130,6 +130,20 @@ ctl_fac02_fournisseur.bat [dossier_source | fichier_SRC] [fichier_CTL]
 
 Mêmes trois modes d'appel que `ctl_fac02_client.bat` (sans argument : cherche `FAC02FACTURESFOURNISSEURS\SOURCE\`), mêmes codes retour, mêmes sorties (synthèse par folio, rapprochement, factures à 0) et rapport Excel dans `rapport\FAC02_SYNTHESE_FOURNISSEURS_<horodatage>.xlsx`. Le script Python réutilise les fonctions communes de `ctl_fac02.py` (les deux fichiers doivent rester dans le même dossier).
 
+## 7bis. Récupération des fichiers côté Unix : `copier_instances_local.sh`
+
+Sur le serveur Unix, copie **à plat** les fichiers SRC + CTL du sous-dossier `SOURCE/` des instances d'un flux créées à une date donnée, dans un dossier local `DDMMYYYY_<FLUX>` (ex : `21082026_FAC02_FOURNISSEUR`) :
+
+```sh
+./copier_instances_local.sh [FLUX] [DD-MM-YYYY]
+# sans argument : flux FAC02_FOURNISSEUR, date du jour
+./copier_instances_local.sh NOT 21-08-2026
+```
+
+Flux connus (table de correspondance dans le script, une ligne à ajouter par nouveau flux) : `FAC02_FOURNISSEUR` (défaut) et `FAC02_CLIENT` ; `NOT` → `NOT01.FACTURES` ; `ING`, `VHC`, `GAZ`, `BIO`, `HAC` → `FAC02.FACTURESFOURNISSEURS` (seul le nom du dossier de destination change).
+
+Le dossier obtenu se glisse tel quel sur le `.bat` de contrôle Windows (ex. `ctl_fac02_fournisseur.bat`) : le fichier SRC le plus récent du dossier est contrôlé contre son CTL et le rapport Excel est généré dans `rapport\`.
+
 ## 8. Vérification dans Oracle EBS : un lanceur par flux
 
 Contrôle complémentaire, sur le modèle de `ControleFolioRose` : vérifie si les factures du fichier SRC sont **intégrées dans Oracle** (tables définitives) ou **bloquées en open interface**. Un couple `.bat` + `.ps1` par flux :
@@ -158,11 +172,10 @@ Statut par portefeuille/folio :
 | `ABSENTE` | Introuvable dans Oracle |
 | `ECART` | Montants incohérents |
 
-Sorties dans `Logs\` (clients : `Rapport_Oracle_FAC02_*`, fournisseurs : `Rapport_Oracle_FAC02_FOURNISSEURS_*`) :
+Sortie dans `Logs\` (clients : `Rapport_Oracle_FAC02_*`, fournisseurs : `Rapport_Oracle_FAC02_FOURNISSEURS_*`) — **un seul fichier**, sur le modèle des rapports de `CTRL_QUASI_AUTOMATIQUE_DES_PRELEVEMENTS` :
 
-- `..._<horodatage>.csv` : synthèse par portefeuille/folio ;
-- `..._Detail_<horodatage>.csv` : détail facture par facture (pièce, date, montant fichier vs Oracle vs interface, statut) ;
-- `..._<horodatage>.xlsx` : classeur Excel à 2 onglets — **Synthèse** et **Détail Factures** (nécessite Excel installé sur le poste ; via automatisation COM, sans dépendance supplémentaire. Sans Excel, seuls les CSV sont produits).
+- `..._<horodatage>.xlsx` : classeur Excel à 2 onglets — **Synthèse** (par portefeuille/folio) et **Détail Factures** (pièce, date, montant fichier vs Oracle vs interface). La colonne Statut est colorée : **vert** = `INTEGREE`, **rouge** = tout autre statut (nécessite Excel installé sur le poste ; via automatisation COM, sans dépendance supplémentaire).
+- Sans Excel sur le poste uniquement, deux CSV de secours sont produits à la place : `..._<horodatage>.csv` (synthèse) et `..._Detail_<horodatage>.csv` (détail).
 
 Codes retour : 0 = tout intégré, 1 = erreur technique (dont erreur Oracle : aucun rapport produit, pour ne pas présenter des zéros comme un résultat), 2 = anomalies (interface / absent / écart).
 
