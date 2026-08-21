@@ -18,6 +18,9 @@
 #       PARTIELLE    : reparti entre definitif et interface
 #       ABSENTE      : nulle part dans Oracle
 #       ECART        : montants incoherents
+#  4) Produit un rapport CSV de synthese, un CSV de detail facture par
+#     facture, et si Excel est installe un classeur .xlsx a 2 onglets
+#     (Synthese + Detail Factures).
 #
 #  Base sur ControleFolioRose\Verifier_Factures.ps1 (meme enveloppe
 #  sqlplus, meme convention ##RES##cle|...).
@@ -42,6 +45,145 @@ $ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 $EXIT_OK = 0; $EXIT_TECH = 1; $EXIT_ANOMALIE = 2
 
 function Format-Montant { param($V) return ('{0:N2}' -f [double]$V) }
+
+# =====================================================================
+#  RESTITUTION EXCEL (2 onglets : Synthese + Detail facture par facture)
+# =====================================================================
+# Constantes Excel (evite la dependance a la PIA Microsoft.Office.Interop).
+$XL_CENTER        = -4108
+$COULEUR_ENTETE   = 0x7D491F   # BGR
+$COULEUR_ANOMALIE = 0xD6E4FC
+$COULEUR_OK       = 0xDAEFED
+
+# Permet d'identifier le PID de NOTRE instance Excel (via son handle de
+# fenetre) pour garantir sa fermeture, sans toucher aux Excel de l'utilisateur.
+if (-not ('Win32Fenetre' -as [type])) {
+    Add-Type -Namespace '' -Name 'Win32Fenetre' -MemberDefinition @'
+[DllImport("user32.dll", SetLastError = true)]
+public static extern uint GetWindowThreadProcessId(System.IntPtr hWnd, out uint lpdwProcessId);
+'@
+}
+
+function Export-RapportExcel {
+    <#
+        Genere un classeur .xlsx a 2 onglets (Synthese + Detail Factures) par
+        automatisation COM. Renvoie $true si le classeur a ete produit, $false
+        si Excel n'est pas installe (les rapports CSV restent disponibles).
+        Chaque onglet : titre en ligne 1, entete en ligne 3, donnees ecrites en
+        un seul bloc COM, colonne Statut coloree (vert = INTEGREE).
+    #>
+    param(
+        [string] $CheminXlsx,
+        [string] $Titre,
+        [object[]] $Synthese, [string[]] $ColSynthese,
+        [object[]] $Detail,   [string[]] $ColDetail
+    )
+    if (-not (Test-Path 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths\excel.exe')) {
+        Write-Host '   [ATTENTION] Excel non installe sur ce poste : classeur .xlsx non genere.' -ForegroundColor Yellow
+        return $false
+    }
+    $excel = $null; $wb = $null; $feuilles = @(); $excelPid = 0
+    try {
+        $excel = New-Object -ComObject Excel.Application
+        $excel.Visible = $false; $excel.DisplayAlerts = $false; $excel.ScreenUpdating = $false
+        [uint32] $pidTrouve = 0
+        [void][Win32Fenetre]::GetWindowThreadProcessId([System.IntPtr]$excel.Hwnd, [ref] $pidTrouve)
+        $excelPid = [int] $pidTrouve
+        $wb = $excel.Workbooks.Add()
+
+        $onglets = @(
+            @{ Nom = 'Synthese';        Titre = "$Titre - SYNTHESE";                   Donnees = $Synthese; Colonnes = $ColSynthese },
+            @{ Nom = 'Detail Factures'; Titre = "$Titre - DETAIL FACTURE PAR FACTURE"; Donnees = $Detail;   Colonnes = $ColDetail }
+        )
+        $ws = $null
+        foreach ($o in $onglets) {
+            if ($null -eq $ws) { $ws = $wb.Sheets.Item(1) }
+            else { $ws = $wb.Sheets.Add([System.Reflection.Missing]::Value, $ws) }
+            $feuilles += $ws
+            $ws.Name = $o.Nom
+            $ws.Cells.Item(1, 1).Value2 = $o.Titre
+            $ws.Cells.Item(1, 1).Font.Bold = $true
+            $ws.Cells.Item(1, 1).Font.Size = 14
+
+            $cols = $o.Colonnes
+            $matE = New-Object 'object[,]' 1, $cols.Count
+            for ($c = 0; $c -lt $cols.Count; $c++) { $matE[0, $c] = $cols[$c] }
+            $plE = $ws.Range($ws.Cells.Item(3, 1), $ws.Cells.Item(3, $cols.Count))
+            $plE.Value2              = $matE
+            $plE.Interior.Color      = $COULEUR_ENTETE
+            $plE.Font.Color          = 0xFFFFFF
+            $plE.Font.Bold           = $true
+            $plE.HorizontalAlignment = $XL_CENTER
+
+            $donnees = @($o.Donnees)
+            if ($donnees.Count -gt 0) {
+                # Formats poses sur les colonnes avant ecriture.
+                for ($c = 0; $c -lt $cols.Count; $c++) {
+                    if ($cols[$c] -like 'Montant*') { $ws.Columns.Item($c + 1).NumberFormatLocal = '# ##0,00' }
+                    elseif ($cols[$c] -like 'Nb *')  { $ws.Columns.Item($c + 1).NumberFormatLocal = '# ##0' }
+                    elseif ($cols[$c] -like 'Date*' -or $cols[$c] -like 'Numero*' -or $cols[$c] -like 'Reference*' -or $cols[$c] -eq 'Fichier') {
+                        $ws.Columns.Item($c + 1).NumberFormatLocal = '@'
+                    }
+                }
+                # Ecriture en un seul aller-retour COM (cellule par cellule :
+                # un appel inter-processus par valeur, redhibitoire au-dela de
+                # quelques centaines de lignes).
+                $mat = New-Object 'object[,]' $donnees.Count, $cols.Count
+                for ($r = 0; $r -lt $donnees.Count; $r++) {
+                    for ($c = 0; $c -lt $cols.Count; $c++) { $mat[$r, $c] = $donnees[$r].($cols[$c]) }
+                }
+                $pl = $ws.Range($ws.Cells.Item(4, 1), $ws.Cells.Item(3 + $donnees.Count, $cols.Count))
+                $pl.Value2 = $mat
+
+                # Colonne Statut : fond vert en un bloc, puis surlignage des
+                # seules anomalies (peu d'appels COM).
+                $colStatut = [array]::IndexOf($cols, 'Statut') + 1
+                if ($colStatut -gt 0) {
+                    $plS = $ws.Range($ws.Cells.Item(4, $colStatut), $ws.Cells.Item(3 + $donnees.Count, $colStatut))
+                    $plS.Interior.Color = $COULEUR_OK
+                    for ($r = 0; $r -lt $donnees.Count; $r++) {
+                        if ($donnees[$r].Statut -ne 'INTEGREE') {
+                            $cel = $ws.Cells.Item(4 + $r, $colStatut)
+                            $cel.Interior.Color = $COULEUR_ANOMALIE
+                            $cel.Font.Bold = $true
+                        }
+                    }
+                }
+            }
+            $ws.UsedRange.Columns.AutoFit() | Out-Null
+        }
+        $wb.SaveAs($CheminXlsx)
+        $wb.Close($false)
+        $wb = $null
+        return $true
+    } catch {
+        Write-Host "   [ATTENTION] Echec de la generation Excel : $($_.Exception.Message)" -ForegroundColor Yellow
+        return $false
+    } finally {
+        # Liberation systematique : sans cela, un EXCEL.EXE orphelin invisible
+        # s'accumule a chaque execution. Les feuilles partent avant le classeur.
+        foreach ($f in $feuilles) {
+            try { [System.Runtime.InteropServices.Marshal]::ReleaseComObject($f) | Out-Null } catch { }
+        }
+        if ($wb) {
+            try { $wb.Close($false) } catch { }
+            try { [System.Runtime.InteropServices.Marshal]::ReleaseComObject($wb) | Out-Null } catch { }
+        }
+        if ($excel) {
+            try { $excel.Quit() } catch { }
+            try { [System.Runtime.InteropServices.Marshal]::ReleaseComObject($excel) | Out-Null } catch { }
+        }
+        [System.GC]::Collect(); [System.GC]::WaitForPendingFinalizers(); [System.GC]::Collect()
+        # Filet de securite : ne cible que le PID demarre par cette fonction.
+        if ($excelPid -gt 0) {
+            for ($i = 0; $i -lt 20; $i++) {
+                if (-not (Get-Process -Id $excelPid -ErrorAction SilentlyContinue)) { break }
+                Start-Sleep -Milliseconds 250
+            }
+            try { Stop-Process -Id $excelPid -Force -ErrorAction Stop } catch { }
+        }
+    }
+}
 
 Write-Host ''
 Write-Host '=======================================================================' -ForegroundColor Cyan
@@ -96,6 +238,7 @@ Write-Host ''
 # Champs SRC (index 0) : 2=facture, 6=compte, 11=sens D/C,
 # 12=montant en centimes, 13=signe, 16=portefeuille
 $SrcCnt = @{}; $SrcAmt = @{}
+$SrcDet = [ordered]@{}   # cle "ptf|piece|reference" -> detail facture par facture
 foreach ($ligne in [System.IO.File]::ReadLines($CheminAbsolu.Path)) {
     $ch = $ligne.Split(';')
     if ($ch.Count -lt 17 -or -not $ch[6].StartsWith('411')) { continue }
@@ -107,6 +250,17 @@ foreach ($ligne in [System.IO.File]::ReadLines($CheminAbsolu.Path)) {
     if (-not $SrcCnt.ContainsKey($ptf)) { $SrcCnt[$ptf] = 0; $SrcAmt[$ptf] = [long]0 }
     $SrcCnt[$ptf]++
     $SrcAmt[$ptf] += $m
+
+    # Detail facture par facture : 2=reference facture, 8=date, 9=piece.
+    $piece = $ch[9].Trim(); $refFac = $ch[2].Trim()
+    $cleDet = "$ptf|$piece|$refFac"
+    if (-not $SrcDet.Contains($cleDet)) {
+        $SrcDet[$cleDet] = [PSCustomObject]@{
+            Ptf = $ptf; Piece = $piece; Reference = $refFac
+            DatePiece = $ch[8].Trim(); Montant = [long]0
+        }
+    }
+    $SrcDet[$cleDet].Montant += $m
 }
 if ($SrcCnt.Count -eq 0) {
     Write-Host '[ERREUR] Aucune ligne compte 411* dans le fichier SRC.' -ForegroundColor Red
@@ -177,6 +331,30 @@ CROSS JOIN
     [void]$sb.AppendLine('')
     $cle++
 }
+
+# Detail facture par facture : liste des factures presentes dans Oracle pour
+# ce fichier, en definitif (##DEF##) et en open interface (##INT##).
+[void]$sb.AppendLine(@"
+SELECT '##DEF##' || racta.TRX_NUMBER || '|' || rctl.attribute9 || '|' || SUM(rctl.EXTENDED_AMOUNT)
+FROM   APPS.RA_CUSTOMER_TRX_ALL racta,
+       APPS.RA_CUSTOMER_TRX_LINES_ALL rctl
+WHERE  racta.CUSTOMER_TRX_ID = rctl.CUSTOMER_TRX_ID
+  AND  rctl.attribute10 LIKE TRIM('$b') || '%'
+GROUP BY racta.TRX_NUMBER, rctl.attribute9;
+"@)
+[void]$sb.AppendLine('')
+[void]$sb.AppendLine(@"
+SELECT '##INT##' || dii.INVOICE_NUMBER || '|' || dii.FMT_ORIGIN || '|' || SUM(CASE
+           WHEN dii.TYPMVT = 'SI_AMT_FACTURE' THEN dii.FMT_AMOUNT
+           ELSE -1 * dii.FMT_AMOUNT
+       END)
+FROM   DKA_IARPAFAC_INTERFACE dii
+WHERE  dii.FIC_IDENT LIKE TRIM('$b') || '%'
+  AND  dii.LOCAL_ACCOUNT LIKE '411%'
+  AND  dii.OA_status != 'A'
+GROUP BY dii.INVOICE_NUMBER, dii.FMT_ORIGIN;
+"@)
+[void]$sb.AppendLine('')
 [void]$sb.AppendLine('EXIT;')
 
 # UTF-8 sans BOM : sqlplus echoue sur la premiere instruction s'il en trouve un.
@@ -209,12 +387,21 @@ if ($erreursOra.Count -gt 0) {
 }
 
 $resultats = @{}
+$detDef = @{}; $detInt = @{}   # cle = numero de facture Oracle -> @{ Ptf; Mt }
 foreach ($l in $sortie) {
     if ("$l" -match '##RES##(\d+)\|([^|]*)\|([^|]*)\|([^|]*)\|(.*)$') {
         $resultats[[int]$Matches[1]] = @{
             NbDef = $Matches[2].Trim(); MtDef = $Matches[3].Trim()
             NbInt = $Matches[4].Trim(); MtInt = $Matches[5].Trim()
         }
+    } elseif ("$l" -match '##(DEF|INT)##(.*)\|([^|]*)\|([^|]*)$') {
+        $numFac = $Matches[2].Trim().ToUpper()
+        $mtTxt  = $Matches[4].Trim() -replace ',', '.'
+        $mt = [double]0
+        if ($mtTxt -ne '') { $mt = [double]$mtTxt }
+        $cible = if ($Matches[1] -eq 'DEF') { $detDef } else { $detInt }
+        if (-not $cible.ContainsKey($numFac)) { $cible[$numFac] = @{ Ptf = $Matches[3].Trim(); Mt = [double]0 } }
+        $cible[$numFac].Mt += $mt
     }
 }
 
@@ -281,9 +468,57 @@ foreach ($p in $Portefeuilles) {
 }
 
 # =====================================================================
+#  4bis. DETAIL FACTURE PAR FACTURE
+# =====================================================================
+#  Chaque facture du fichier SRC est confrontee aux listes Oracle (definitif
+#  et open interface) recuperees dans la meme session sqlplus. Le numero de
+#  facture Oracle est cherche d'abord sur la piece, puis sur la reference.
+$TableauDetail = [System.Collections.Generic.List[PSCustomObject]]::new()
+$nbDetAnomalie = 0
+foreach ($d in $SrcDet.Values) {
+    $mtSrcF = [double]($d.Montant / 100)
+    $oraDef = $null; $oraInt = $null
+    foreach ($numFac in @($d.Piece.ToUpper(), $d.Reference.ToUpper())) {
+        if ($numFac -eq '') { continue }
+        if ($null -eq $oraDef -and $detDef.ContainsKey($numFac)) { $oraDef = $detDef[$numFac] }
+        if ($null -eq $oraInt -and $detInt.ContainsKey($numFac)) { $oraInt = $detInt[$numFac] }
+    }
+
+    if ($oraDef -and [math]::Abs($oraDef.Mt - $mtSrcF) -le $TOLERANCE) { $stDet = 'INTEGREE' }
+    elseif ($oraDef)                                                   { $stDet = 'ECART'; $nbDetAnomalie++ }
+    elseif ($oraInt -and [math]::Abs($oraInt.Mt - $mtSrcF) -le $TOLERANCE) { $stDet = 'EN INTERFACE'; $nbDetAnomalie++ }
+    elseif ($oraInt)                                                   { $stDet = 'ECART'; $nbDetAnomalie++ }
+    else                                                               { $stDet = 'ABSENTE'; $nbDetAnomalie++ }
+
+    $TableauDetail.Add([PSCustomObject]@{
+        'Portefeuille'      = $d.Ptf
+        'Numero Piece'      = $d.Piece
+        'Reference Facture' = $d.Reference
+        'Date Piece'        = $d.DatePiece
+        'Montant Fichier'   = [math]::Round($mtSrcF, 2)
+        'Montant Oracle'    = $(if ($oraDef) { [math]::Round($oraDef.Mt, 2) })
+        'Montant Interface' = $(if ($oraInt) { [math]::Round($oraInt.Mt, 2) })
+        'Statut'            = $stDet
+    })
+}
+
+# =====================================================================
 #  5. EXPORT ET SYNTHESE
 # =====================================================================
 $Tableau | Export-Csv -Path $FichierRapportCsv -Delimiter ';' -NoTypeInformation -Encoding UTF8
+
+$FichierDetailCsv = Join-Path $LogDir "Rapport_Oracle_FAC02_Detail_${Timestamp}.csv"
+$TableauDetail | Export-Csv -Path $FichierDetailCsv -Delimiter ';' -NoTypeInformation -Encoding UTF8
+
+$FichierRapportXlsx = Join-Path $LogDir "Rapport_Oracle_FAC02_${Timestamp}.xlsx"
+$xlsxOk = Export-RapportExcel -CheminXlsx $FichierRapportXlsx `
+    -Titre 'CONTROLE FAC02 CLIENTS' `
+    -Synthese @($Tableau) -ColSynthese @(
+        'Portefeuille', 'Fichier', 'Nb Factures Fichier', 'Montant Fichier',
+        'Nb Factures Oracle', 'Montant Oracle', 'Nb Lignes Interface', 'Montant Interface', 'Statut') `
+    -Detail @($TableauDetail) -ColDetail @(
+        'Portefeuille', 'Numero Piece', 'Reference Facture', 'Date Piece',
+        'Montant Fichier', 'Montant Oracle', 'Montant Interface', 'Statut')
 
 Write-Host ''
 Write-Host '=======================================================================' -ForegroundColor Cyan
@@ -293,8 +528,14 @@ Write-Host ("  {0,-26} : {1}" -f 'Portefeuilles controles', $Portefeuilles.Count
 Write-Host ("  {0,-26} : {1}" -f 'Integres dans Oracle', $nbInteg) -ForegroundColor Green
 Write-Host ("  {0,-26} : {1}" -f 'En open interface', $nbInterface) -ForegroundColor $(if ($nbInterface -gt 0) { 'Yellow' } else { 'Green' })
 Write-Host ("  {0,-26} : {1}" -f 'Autres (absent/ecart...)', $nbAutre) -ForegroundColor $(if ($nbAutre -gt 0) { 'Red' } else { 'Green' })
+Write-Host ("  {0,-26} : {1}" -f 'Factures controlees', $SrcDet.Count)
+Write-Host ("  {0,-26} : {1}" -f 'Factures en anomalie', $nbDetAnomalie) -ForegroundColor $(if ($nbDetAnomalie -gt 0) { 'Red' } else { 'Green' })
 Write-Host ("  {0,-26} : {1}" -f 'Duree Oracle', "${duree}s")
 Write-Host ("  {0,-26} : {1}" -f 'Rapport (CSV)', $FichierRapportCsv) -ForegroundColor Green
+Write-Host ("  {0,-26} : {1}" -f 'Detail factures (CSV)', $FichierDetailCsv) -ForegroundColor Green
+if ($xlsxOk) {
+    Write-Host ("  {0,-26} : {1}" -f 'Rapport (Excel)', $FichierRapportXlsx) -ForegroundColor Green
+}
 Write-Host '=======================================================================' -ForegroundColor Cyan
 Write-Host ''
 

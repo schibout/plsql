@@ -158,7 +158,13 @@ Statut par portefeuille/folio :
 | `ABSENTE` | Introuvable dans Oracle |
 | `ECART` | Montants incohérents |
 
-Rapport CSV dans `Logs\Rapport_Oracle_FAC02_<horodatage>.csv` (clients) ou `Logs\Rapport_Oracle_FAC02_FOURNISSEURS_<horodatage>.csv`. Codes retour : 0 = tout intégré, 1 = erreur technique (dont erreur Oracle : aucun rapport produit, pour ne pas présenter des zéros comme un résultat), 2 = anomalies (interface / absent / écart).
+Sorties dans `Logs\` (clients : `Rapport_Oracle_FAC02_*`, fournisseurs : `Rapport_Oracle_FAC02_FOURNISSEURS_*`) :
+
+- `..._<horodatage>.csv` : synthèse par portefeuille/folio ;
+- `..._Detail_<horodatage>.csv` : détail facture par facture (pièce, date, montant fichier vs Oracle vs interface, statut) ;
+- `..._<horodatage>.xlsx` : classeur Excel à 2 onglets — **Synthèse** et **Détail Factures** (nécessite Excel installé sur le poste ; via automatisation COM, sans dépendance supplémentaire. Sans Excel, seuls les CSV sont produits).
+
+Codes retour : 0 = tout intégré, 1 = erreur technique (dont erreur Oracle : aucun rapport produit, pour ne pas présenter des zéros comme un résultat), 2 = anomalies (interface / absent / écart).
 
 Options du script PowerShell : `-Diagnostic` (affiche le SQL généré et la sortie brute d'Oracle), `-GarderTempSQL` (conserve le script SQL dans `Logs\`).
 

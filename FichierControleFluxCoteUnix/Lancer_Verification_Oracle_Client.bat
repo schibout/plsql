@@ -49,7 +49,7 @@ echo.
 if %RC% EQU 1 (
     echo [ERREUR TECHNIQUE] Le controle n'a pas pu aboutir.
 ) else if %RC% EQU 2 (
-    echo [ANOMALIES] Des factures sont en interface, absentes ou en ecart - voir le rapport CSV.
+    echo [ANOMALIES] Des factures sont en interface, absentes ou en ecart - voir l'onglet Detail Factures du rapport Excel ou les CSV.
 ) else (
     echo [OK] Toutes les factures sont integrees dans Oracle.
 )
