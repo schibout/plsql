@@ -22,14 +22,20 @@ import os
 import sys
 
 
-def _lire_code(chemin):
-    """Retourne le code de statut contenu dans un marqueur LS_IN.*."""
+def _lire_marqueur(chemin):
+    """Retourne (code, fichier vise) d'un marqueur LS_IN.*.
+
+    Le marqueur contient le code de statut (ex. ERR_F_0002_DATAVALIDATION),
+    parfois suivi, sur une deuxieme ligne, du nom du fichier source concerne.
+    """
     try:
         with open(chemin, "r", encoding="latin-1") as f:
-            code = f.read().strip()
-        return code or "(fichier vide)"
+            lignes = [l.strip() for l in f if l.strip()]
     except OSError as exc:
-        return "(illisible : %s)" % exc
+        return "(illisible : %s)" % exc, None
+    if not lignes:
+        return "(fichier vide)", None
+    return lignes[0], lignes[1] if len(lignes) > 1 else None
 
 
 def _indices_utiles(entete):
@@ -72,7 +78,13 @@ def afficher_err_format(chemin):
             return ch[i].strip() if i is not None and i < len(ch) else ""
 
         erreur = val("idx_erreur") or "(erreur non renseignee)"
-        par_type[erreur] = par_type.get(erreur, 0) + 1
+        # Une ligne peut cumuler plusieurs erreurs separees par des virgules
+        # (ex. "CodeSociete:empty or null,CodeTache:empty or null") : chacune
+        # compte pour son propre type dans les totaux.
+        for elementaire in erreur.split(","):
+            elementaire = elementaire.strip()
+            if elementaire:
+                par_type[elementaire] = par_type.get(elementaire, 0) + 1
         detail = []
         if val("idx_ligne"):
             detail.append("ligne %s" % val("idx_ligne").lstrip("0").rjust(1))
@@ -108,7 +120,10 @@ def main():
         return 2
 
     if os.path.isfile(marqueur_ko):
-        print("Marqueur Talend : LS_IN.KO (statut %s)" % _lire_code(marqueur_ko))
+        code, fichier_vise = _lire_marqueur(marqueur_ko)
+        print("Marqueur Talend : LS_IN.KO (statut %s)" % code)
+        if fichier_vise:
+            print("Fichier vise    : %s" % fichier_vise)
         erreurs_format = sorted(glob.glob(os.path.join(target, "*_ERR_FORMAT_*.csv")))
         if not erreurs_format:
             print("ATTENTION : aucun fichier *_ERR_FORMAT_*.csv trouve dans %s" % target)
@@ -121,7 +136,8 @@ def main():
         return 1
 
     if os.path.isfile(marqueur_ok):
-        print("Marqueur Talend : LS_IN.OK (statut %s)" % _lire_code(marqueur_ok))
+        code, _ = _lire_marqueur(marqueur_ok)
+        print("Marqueur Talend : LS_IN.OK (statut %s)" % code)
         print("[OK] Traitement Talend termine sans erreur de formatage.")
         return 0
 
