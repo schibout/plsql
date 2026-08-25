@@ -6,8 +6,9 @@ Deux usages :
   selectionner_source.py CLIENT|FOURNISSEUR|GL [dossier|fichier_SRC]
       affiche le chemin du SRC de ce flux (comportement historique) ;
   selectionner_source.py --detecter [dossier|fichier_SRC]
-      affiche une ligne "TYPE;chemin" par flux present sous l'entree, ce qui
-      permet au lanceur unique controle.bat de savoir quoi controler.
+      affiche une ligne "TYPE;chemin" par fichier SRC present sous l'entree
+      (tous les exports, pas seulement le plus recent), ce qui permet au
+      lanceur unique controle.bat de tous les controler.
 """
 
 import fnmatch
@@ -30,7 +31,8 @@ def _correspond(type_flux: str, chemin: Path) -> bool:
     return fnmatch.fnmatchcase(chemin.name.upper(), MOTIFS[type_flux])
 
 
-def selectionner_source(type_flux: str, entree=None) -> Path:
+def lister_sources(type_flux: str, entree=None):
+    """Tous les fichiers SRC du flux sous l'entree, du plus ancien au plus recent."""
     type_normalise = str(type_flux).strip().upper()
     if type_normalise not in MOTIFS:
         raise ErreurSelection("type de flux inconnu : %s" % type_flux)
@@ -47,7 +49,7 @@ def selectionner_source(type_flux: str, entree=None) -> Path:
                 "le fichier ne correspond pas au flux %s (%s) : %s"
                 % (type_normalise, MOTIFS[type_normalise], racine)
             )
-        return racine.resolve()
+        return [racine.resolve()]
 
     candidats = [
         chemin
@@ -62,23 +64,31 @@ def selectionner_source(type_flux: str, entree=None) -> Path:
             % (MOTIFS[type_normalise], racine)
         )
 
-    return max(
-        candidats,
-        key=lambda chemin: (chemin.stat().st_mtime_ns, str(chemin).lower()),
-    ).resolve()
+    return [
+        chemin.resolve()
+        for chemin in sorted(
+            candidats,
+            key=lambda chemin: (chemin.stat().st_mtime_ns, str(chemin).lower()),
+        )
+    ]
+
+
+def selectionner_source(type_flux: str, entree=None) -> Path:
+    return lister_sources(type_flux, entree)[-1]
 
 
 def detecter_flux(entree=None):
-    """Types de flux presents sous l'entree, avec leur SRC le plus recent.
+    """Fichiers SRC presents sous l'entree, tous exports confondus.
 
-    Renvoie un dictionnaire {type: chemin}, dans l'ordre CLIENT, FOURNISSEUR,
-    GL. Un dossier d'export n'en contient qu'un ; un dossier parent peut en
-    contenir plusieurs, qui sont alors tous controles.
+    Renvoie une liste de couples (type, chemin), dans l'ordre CLIENT,
+    FOURNISSEUR, GL puis du plus ancien au plus recent. Un dossier parent
+    contenant plusieurs exports du meme flux les renvoie donc tous, pour
+    qu'ils soient chacun controles.
     """
-    trouves = {}
+    trouves = []
     for type_flux in MOTIFS:
         try:
-            trouves[type_flux] = selectionner_source(type_flux, entree)
+            trouves.extend((type_flux, chemin) for chemin in lister_sources(type_flux, entree))
         except ErreurSelection:
             continue
     if not trouves:
@@ -101,7 +111,7 @@ def main(arguments=None) -> int:
     entree = args[1] if len(args) == 2 else None
     try:
         if args[0] == "--detecter":
-            for type_flux, chemin in detecter_flux(entree).items():
+            for type_flux, chemin in detecter_flux(entree):
                 print("%s;%s" % (type_flux, chemin))
         else:
             print(selectionner_source(args[0], entree))
