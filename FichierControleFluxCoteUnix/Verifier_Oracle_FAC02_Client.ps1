@@ -53,9 +53,13 @@ function Format-Montant { param($V) return ('{0:N2}' -f [double]$V) }
 # =====================================================================
 # Constantes Excel (evite la dependance a la PIA Microsoft.Office.Interop).
 $XL_CENTER        = -4108
-$COULEUR_ENTETE   = 0x7D491F   # BGR (bleu fonce)
-$COULEUR_ANOMALIE = 0xCEC7FF   # BGR : rouge clair (RGB FFC7CE)
-$COULEUR_OK       = 0xCEEFC6   # BGR : vert clair (RGB C6EFCE)
+$XL_LEFT          = -4131
+$XL_CONTINUOUS    = 1
+$COULEUR_ENTETE   = 0x7D491F   # bleu fonce (RGB 1F497D)
+$COULEUR_ANOMALIE = 0xD6E4FC   # peche (RGB FCE4D6)
+$COULEUR_OK       = 0xDAEFED   # vert pale (RGB EDEFDA)
+$COULEUR_BANDE    = 0xF8F2EA   # bleu tres clair
+$COULEUR_BORDURE  = 0xD9D9D9
 
 # Permet d'identifier le PID de NOTRE instance Excel (via son handle de
 # fenetre) pour garantir sa fermeture, sans toucher aux Excel de l'utilisateur.
@@ -104,6 +108,8 @@ function Export-RapportExcel {
             else { $ws = $wb.Sheets.Add([System.Reflection.Missing]::Value, $ws) }
             $feuilles += $ws
             $ws.Name = $o.Nom
+            $cols = $o.Colonnes
+            $ws.Application.ActiveWindow.DisplayGridlines = $false
             # Le titre passe par une matrice 1x1 et non par une chaine : une
             # affectation directe de chaine a Value2 corrompt la liaison COM de
             # PowerShell et fait echouer les ecritures en bloc qui suivent
@@ -111,18 +117,31 @@ function Export-RapportExcel {
             $matT = New-Object 'object[,]' 1, 1
             $matT[0, 0] = $o.Titre
             $ws.Range($ws.Cells.Item(1, 1), $ws.Cells.Item(1, 1)).Value2 = $matT
+            $bandeTitre = $ws.Range($ws.Cells.Item(1, 1), $ws.Cells.Item(1, $cols.Count))
+            $bandeTitre.Interior.Color = $COULEUR_ENTETE
+            $bandeTitre.Font.Color = 0xFFFFFF
+            $bandeTitre.Font.Bold = $true
             $ws.Cells.Item(1, 1).Font.Bold = $true
-            $ws.Cells.Item(1, 1).Font.Size = 14
+            $ws.Cells.Item(1, 1).Font.Size = 16
+            $ws.Cells.Item(1, 1).HorizontalAlignment = $XL_LEFT
+            $ws.Rows.Item(1).RowHeight = 28
 
-            $cols = $o.Colonnes
+            $matSousTitre = New-Object 'object[,]' 1, 1
+            $matSousTitre[0, 0] = "Execution : $(Get-Date -Format 'dd/MM/yyyy HH:mm:ss')"
+            $ws.Range($ws.Cells.Item(2, 1), $ws.Cells.Item(2, 1)).Value2 = $matSousTitre
+            $ws.Cells.Item(2, 1).Font.Italic = $true
+            $ws.Cells.Item(2, 1).Font.Color = 0x666666
+
             $matE = New-Object 'object[,]' 1, $cols.Count
             for ($c = 0; $c -lt $cols.Count; $c++) { $matE[0, $c] = $cols[$c] }
-            $plE = $ws.Range($ws.Cells.Item(3, 1), $ws.Cells.Item(3, $cols.Count))
+            $plE = $ws.Range($ws.Cells.Item(4, 1), $ws.Cells.Item(4, $cols.Count))
             $plE.Value2              = $matE
             $plE.Interior.Color      = $COULEUR_ENTETE
             $plE.Font.Color          = 0xFFFFFF
             $plE.Font.Bold           = $true
             $plE.HorizontalAlignment = $XL_CENTER
+            $plE.WrapText            = $true
+            $ws.Rows.Item(4).RowHeight = 34
 
             $donnees = @($o.Donnees)
             if ($donnees.Count -gt 0) {
@@ -134,32 +153,51 @@ function Export-RapportExcel {
                         $ws.Columns.Item($c + 1).NumberFormatLocal = '@'
                     }
                 }
-                # Ecriture en un seul aller-retour COM (cellule par cellule :
-                # un appel inter-processus par valeur, redhibitoire au-dela de
-                # quelques centaines de lignes).
-                $mat = New-Object 'object[,]' $donnees.Count, $cols.Count
+                # Excel 32 bits refuse les matrices heterogenes sur certains
+                # postes. L'ecriture scalaire est plus lente, mais fiable.
                 for ($r = 0; $r -lt $donnees.Count; $r++) {
-                    for ($c = 0; $c -lt $cols.Count; $c++) { $mat[$r, $c] = $donnees[$r].($cols[$c]) }
+                    for ($c = 0; $c -lt $cols.Count; $c++) {
+                        $valeur = $donnees[$r].($cols[$c])
+                        $ws.Cells.Item(5 + $r, 1 + $c).Value2 = if ($null -eq $valeur) { '' } else { $valeur }
+                    }
                 }
-                $pl = $ws.Range($ws.Cells.Item(4, 1), $ws.Cells.Item(3 + $donnees.Count, $cols.Count))
-                $pl.Value2 = $mat
+                $pl = $ws.Range($ws.Cells.Item(5, 1), $ws.Cells.Item(4 + $donnees.Count, $cols.Count))
+                $pl.Borders.LineStyle = $XL_CONTINUOUS
+                $pl.Borders.Color = $COULEUR_BORDURE
+
+                for ($r = 0; $r -lt $donnees.Count; $r++) {
+                    if (($r % 2) -eq 1) {
+                        $ws.Range($ws.Cells.Item(5 + $r, 1), $ws.Cells.Item(5 + $r, $cols.Count)).Interior.Color = $COULEUR_BANDE
+                    }
+                }
 
                 # Colonne Statut : fond vert en un bloc, puis surlignage des
                 # seules anomalies (peu d'appels COM).
                 $colStatut = [array]::IndexOf($cols, 'Statut') + 1
                 if ($colStatut -gt 0) {
-                    $plS = $ws.Range($ws.Cells.Item(4, $colStatut), $ws.Cells.Item(3 + $donnees.Count, $colStatut))
+                    $plS = $ws.Range($ws.Cells.Item(5, $colStatut), $ws.Cells.Item(4 + $donnees.Count, $colStatut))
                     $plS.Interior.Color = $COULEUR_OK
                     for ($r = 0; $r -lt $donnees.Count; $r++) {
                         if ($donnees[$r].Statut -ne 'INTEGREE') {
-                            $cel = $ws.Cells.Item(4 + $r, $colStatut)
+                            $cel = $ws.Cells.Item(5 + $r, $colStatut)
                             $cel.Interior.Color = $COULEUR_ANOMALIE
                             $cel.Font.Bold = $true
                         }
                     }
+                    $plS.Font.Bold = $true
+                    $plS.HorizontalAlignment = $XL_CENTER
                 }
+                $plE.AutoFilter() | Out-Null
             }
             $ws.UsedRange.Columns.AutoFit() | Out-Null
+            for ($c = 1; $c -le $cols.Count; $c++) {
+                $largeurMini = [math]::Min(24, [math]::Max(11, $cols[$c - 1].Length + 3))
+                if ($ws.Columns.Item($c).ColumnWidth -lt $largeurMini) { $ws.Columns.Item($c).ColumnWidth = $largeurMini }
+                if ($ws.Columns.Item($c).ColumnWidth -gt 28) { $ws.Columns.Item($c).ColumnWidth = 28 }
+            }
+            $ws.Activate() | Out-Null
+            $ws.Application.ActiveWindow.SplitRow = 4
+            $ws.Application.ActiveWindow.FreezePanes = $true
         }
         $wb.SaveAs($CheminXlsx)
         $wb.Close($false)
@@ -167,6 +205,7 @@ function Export-RapportExcel {
         return $true
     } catch {
         Write-Host "   [ATTENTION] Echec de la generation Excel : $($_.Exception.Message)" -ForegroundColor Yellow
+        if ($Diagnostic) { Write-Host $_.ScriptStackTrace -ForegroundColor DarkGray }
         return $false
     } finally {
         # Liberation systematique : sans cela, un EXCEL.EXE orphelin invisible
@@ -292,7 +331,7 @@ Write-Host ''
 # =====================================================================
 Write-Host 'Etape 2 : Interrogation Oracle...' -ForegroundColor Yellow
 
-$LogDir = Join-Path $ScriptDir 'Logs'
+$LogDir = if ($env:CONTROLE_FLUX_LOG_DIR) { $env:CONTROLE_FLUX_LOG_DIR } else { Join-Path $ScriptDir 'Logs' }
 if (-not (Test-Path $LogDir)) { New-Item -ItemType Directory -Path $LogDir | Out-Null }
 $Timestamp         = Get-Date -Format 'ddMMyyyy_HHmmss'
 $FichierRapportCsv = Join-Path $LogDir "Rapport_Oracle_FAC02_${Timestamp}.csv"

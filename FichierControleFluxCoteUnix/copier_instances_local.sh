@@ -138,6 +138,11 @@ done
 
 resoudre_flux "$FLUX_CODE" "$FLUX_TYPE"
 INSTANCES_DIR="${FILEREPOSITORY}/${FLUX_NAME}/INSTANCES"
+case "$FLUX_TYPE" in
+    "CLIENT")      LANCEUR_WINDOWS="controleClient.bat" ;;
+    "FOURNISSEUR") LANCEUR_WINDOWS="controleFournisseur.bat" ;;
+    "GL")          LANCEUR_WINDOWS="controleGL.bat" ;;
+esac
 # Le suffixe du dossier local contiendra maintenant le type et le code (ex: FOURNISSEUR_VHC)
 DEST_SUFFIX="${FLUX_TYPE}_${FLUX_CODE}"
 
@@ -178,9 +183,11 @@ echo "Les logs de copie seront enregistrés dans le fichier : ./${LOG_FILE}"
     else
         echo "Opération de copie terminée avec succès."
         echo "$total_copied_count instance(s) copiée(s) dans ./${DEST_DIR_NAME}"
-        echo ""
-        echo "Étape suivante (Windows) : glisser le dossier SOURCE spécifique de l'instance"
-        echo "souhaitée sur ctl_fac02_fournisseur.bat"
+        if [ -n "$LANCEUR_WINDOWS" ]; then
+            echo ""
+            echo "Étape suivante (Windows) : glisser le dossier d'export complet"
+            echo "./${DEST_DIR_NAME} sur $LANCEUR_WINDOWS"
+        fi
     fi
 
 } > "$LOG_FILE" 2>&1

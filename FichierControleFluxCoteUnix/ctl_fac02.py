@@ -69,7 +69,7 @@ def generer_excel(src, ctl, rappro, zeros, ecart,
     """Rapport Excel : onglet synthese/rapprochement + onglet factures a 0."""
     try:
         from openpyxl import Workbook
-        from openpyxl.styles import Alignment, Font, PatternFill
+        from openpyxl.styles import Alignment, Border, Font, PatternFill, Side
     except ImportError:
         print("INFO : openpyxl non installe, rapport Excel non genere "
               "(pip install openpyxl)", file=sys.stderr)
@@ -77,29 +77,46 @@ def generer_excel(src, ctl, rappro, zeros, ecart,
 
     m = re.search(r"_(\d{6}-\d{6})_", os.path.basename(src))
     suffixe = m.group(1) if m else "rapport"
-    dossier = os.path.join(os.path.dirname(os.path.abspath(__file__)), "rapport")
+    dossier = os.environ.get("CONTROLE_FLUX_RAPPORT_DIR") or os.path.join(
+        os.path.dirname(os.path.abspath(__file__)), "rapport"
+    )
     os.makedirs(dossier, exist_ok=True)
     chemin = os.path.join(dossier, "%s_%s.xlsx" % (prefixe, suffixe))
 
+    bleu = "1F497D"
+    bleu_clair = "EAF2F8"
+    peche = "FCE4D6"
+    vert = "EDEFDA"
+    gris = "666666"
     gras = Font(bold=True)
-    entete_fill = PatternFill("solid", fgColor="4472C4")
+    entete_fill = PatternFill("solid", fgColor=bleu)
     entete_font = Font(bold=True, color="FFFFFF")
-    ok_fill = PatternFill("solid", fgColor="C6EFCE")
-    ko_fill = PatternFill("solid", fgColor="FFC7CE")
-    centre = Alignment(horizontal="center")
+    ok_fill = PatternFill("solid", fgColor=vert)
+    ko_fill = PatternFill("solid", fgColor=peche)
+    bande_fill = PatternFill("solid", fgColor=bleu_clair)
+    centre = Alignment(horizontal="center", vertical="center")
+    bordure = Border(bottom=Side(style="thin", color="D9D9D9"))
 
     wb = Workbook()
 
     ws = wb.active
     ws.title = "Synthese"
     ws.append([titre])
-    ws["A1"].font = Font(bold=True, size=14)
+    ws.merge_cells("A1:F1")
+    ws["A1"].font = Font(bold=True, size=16, color="FFFFFF")
+    ws["A1"].fill = entete_fill
+    ws["A1"].alignment = Alignment(horizontal="left", vertical="center")
+    ws.row_dimensions[1].height = 28
     ws.append(["Fichier SRC", os.path.basename(src)])
     ws.append(["Fichier CTL", os.path.basename(ctl)])
     ws.append(["Resultat", "ECART(S) DETECTE(S)" if ecart else "RAPPROCHEMENT OK"])
     for lig in (2, 3, 4):
         ws.cell(row=lig, column=1).font = gras
+        ws.cell(row=lig, column=1).fill = bande_fill
+    ws["B2"].font = Font(italic=True, color=gris)
+    ws["B3"].font = Font(italic=True, color=gris)
     ws.cell(row=4, column=2).fill = ko_fill if ecart else ok_fill
+    ws.cell(row=4, column=2).font = gras
     ws.append([])
 
     entetes = [libelle, "Nb factures SRC", "Montant SRC",
@@ -109,6 +126,8 @@ def generer_excel(src, ctl, rappro, zeros, ecart,
     for col in range(1, len(entetes) + 1):
         c = ws.cell(row=lig_entete, column=col)
         c.font, c.fill, c.alignment = entete_font, entete_fill, centre
+        c.border = bordure
+    ws.row_dimensions[lig_entete].height = 32
 
     tot_cnt = tot_amt = 0
     for r in rappro:
@@ -117,29 +136,63 @@ def generer_excel(src, ctl, rappro, zeros, ecart,
         c = ws.cell(row=ws.max_row, column=6)
         c.fill = ok_fill if r["statut"] == "OK" else ko_fill
         c.alignment = centre
+        c.font = gras
+        if (ws.max_row - lig_entete) % 2 == 0:
+            for col in range(1, 6):
+                ws.cell(row=ws.max_row, column=col).fill = bande_fill
+        for col in range(1, 7):
+            ws.cell(row=ws.max_row, column=col).border = bordure
         tot_cnt += r["src_cnt"] or 0
         tot_amt += r["src_amt"] or 0
     ws.append(["TOTAL", tot_cnt, round(tot_amt, 2), None, None, None])
-    for col in range(1, 4):
+    for col in range(1, 7):
         ws.cell(row=ws.max_row, column=col).font = gras
+        ws.cell(row=ws.max_row, column=col).fill = bande_fill
+        ws.cell(row=ws.max_row, column=col).border = bordure
     for lig in range(lig_entete + 1, ws.max_row + 1):
         for col in (3, 5):
-            ws.cell(row=lig, column=col).number_format = "#,##0.00"
-    for col, largeur in zip("ABCDEF", (16, 16, 16, 16, 16, 10)):
+            ws.cell(row=lig, column=col).number_format = '#,##0.00;[Red](#,##0.00);-'
+    ws.freeze_panes = "A7"
+    ws.auto_filter.ref = "A%d:F%d" % (lig_entete, ws.max_row - 1)
+    ws.sheet_view.showGridLines = False
+    for col, largeur in zip("ABCDEF", (18, 19, 18, 19, 18, 14)):
         ws.column_dimensions[col].width = largeur
 
     ws2 = wb.create_sheet("Factures a 0")
+    ws2.append(["FACTURES A MONTANT ZERO"])
+    ws2.merge_cells("A1:D1")
+    ws2["A1"].font = Font(bold=True, size=16, color="FFFFFF")
+    ws2["A1"].fill = entete_fill
+    ws2["A1"].alignment = Alignment(horizontal="left", vertical="center")
+    ws2.row_dimensions[1].height = 28
+    ws2.append(["Fichier source", os.path.basename(src)])
+    ws2["A2"].font = gras
+    ws2["A2"].fill = bande_fill
+    ws2["B2"].font = Font(italic=True, color=gris)
+    ws2.append([])
     entetes2 = [libelle, "N° facture", "Compte", "Date piece"]
     ws2.append(entetes2)
     for col in range(1, len(entetes2) + 1):
-        c = ws2.cell(row=1, column=col)
+        c = ws2.cell(row=4, column=col)
         c.font, c.fill, c.alignment = entete_font, entete_fill, centre
+        c.border = bordure
+    ws2.row_dimensions[4].height = 30
     if zeros:
-        for p, facture, compte, date in zeros:
+        for index, (p, facture, compte, date) in enumerate(zeros, 1):
             ws2.append([p, facture, compte, date])
+            if index % 2 == 0:
+                for col in range(1, 5):
+                    ws2.cell(row=ws2.max_row, column=col).fill = bande_fill
+            for col in range(1, 5):
+                ws2.cell(row=ws2.max_row, column=col).border = bordure
     else:
         ws2.append(["Aucune facture a montant 0", None, None, None])
-    for col, largeur in zip("ABCD", (14, 16, 10, 12)):
+        ws2["A5"].fill = ok_fill
+        ws2["A5"].font = gras
+    ws2.freeze_panes = "A5"
+    ws2.auto_filter.ref = "A4:D%d" % ws2.max_row
+    ws2.sheet_view.showGridLines = False
+    for col, largeur in zip("ABCD", (18, 20, 16, 16)):
         ws2.column_dimensions[col].width = largeur
 
     try:

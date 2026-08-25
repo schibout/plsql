@@ -93,30 +93,35 @@ cd FichierControleFluxCoteUnix/FAC02factureClient
 
 Portable AIX / Linux : `sh` POSIX + `awk` POSIX uniquement, aucune dépendance externe (`bc`, GNU awk…).
 
-## 6. Version Windows : `ctl_fac02_client.bat` + `ctl_fac02.py`
+## 6. Version Windows CLIENTS : `controleClient.bat` + `ctl_fac02.py`
 
-Même contrôle, mêmes sorties et mêmes codes retour que le script Unix, en Python (bibliothèque standard uniquement) :
+Le rapprochement SRC/CTL reprend le même contrôle et les mêmes sorties que le script Unix, en Python :
 
 ```bat
-ctl_fac02_client.bat [dossier_source | fichier_SRC] [fichier_CTL]
+controleClient.bat [dossier_export | fichier_SRC] [fichier_CTL]
 ```
 
-- **Dossier en paramètre** : traite le fichier SRC le plus récent de ce dossier — `ctl_fac02_client.bat FAC02factureClient\SOURCE`
-- **Fichier en paramètre** : traite ce fichier (CTL optionnel en 2e argument)
-- **Sans argument** : cherche le dossier SOURCE aux emplacements connus (`SOURCE\`, `FAC02factureClient\SOURCE\`…) et prend le fichier SRC le plus récent
+- **Dossier d'export en paramètre** : descend récursivement jusqu'aux répertoires `SOURCE` et traite le fichier `*_SRC_FACTURESCLIENTS*.csv` le plus récent — par exemple `controleClient.bat 31072026_FAS`
+- **Fichier en paramètre** : traite ce fichier s'il se trouve dans `SOURCE` (CTL optionnel en 2e argument)
+- **Préfixe libre** : le nom peut commencer par `FAC02`, `CEL01`, `PRN01`, etc.
+- **Sans argument** : cherche récursivement sous le dossier du lanceur
 
-Le script Python peut aussi être lancé directement : `python ctl_fac02.py <fichier_SRC> [fichier_CTL]`.
+Le lanceur unique exécute successivement le rapprochement SRC/CTL avec `ctl_fac02.py`, puis la vérification de l'intégration dans Oracle avec `Verifier_Oracle_FAC02_Client.ps1`, sur le même fichier SRC. Le script Python peut aussi être lancé directement : `python ctl_fac02.py <fichier_SRC> [fichier_CTL]`.
+
+Codes retour du lanceur Windows : `0` = contrôles OK, `1` = erreur technique, `2` = anomalie ou écart.
 
 ### Rapport Excel
 
 La version Python génère en plus un rapport **`rapport/FAC02_SYNTHESE_<horodatage>.xlsx`** (le dossier `rapport/` est créé automatiquement à côté du script) (nécessite `openpyxl` : `pip install openpyxl` ; sans lui le contrôle fonctionne, seul l'Excel est ignoré) :
 
-- **Onglet « Synthese »** : en-tête (fichiers, résultat global), puis une ligne par portefeuille avec nb factures et montant SRC vs CTL, statut OK (vert) / ECART (rouge), et ligne TOTAL
+- **Onglet « Synthese »** : en-tête (fichiers, résultat global), puis une ligne par portefeuille avec nb factures et montant SRC vs CTL, statut OK (vert) / ECART (pêche), et ligne TOTAL
 - **Onglet « Factures a 0 »** : liste des factures à montant nul (portefeuille, n° facture, compte, date)
 
-## 7. Flux FOURNISSEURS : `ctl_fac02_fournisseur.bat` + `ctl_fac02_fournisseur.py`
+Tous les rapports Excel clients, fournisseurs et GL utilisent la même charte : bandeau et en-têtes bleu foncé, lignes alternées bleu très clair, conformités vert pâle, anomalies pêche, montants avec séparateurs, filtres automatiques, volets figés, largeurs contrôlées et quadrillage masqué. Cette charte s'applique aux contrôles locaux comme aux rapports Oracle.
 
-Même contrôle que le flux clients, adapté à la structure du fichier `FAC02_SRC_FACTURESFOURNISSEURS_...csv`, qui diffère :
+## 7. Flux FOURNISSEURS : `controleFournisseur.bat` + `ctl_fac02_fournisseur.py`
+
+Même contrôle que le flux clients, adapté à la structure du fichier `*_SRC_FACTURESFOURNISSEURS_...csv`, qui diffère :
 
 - **1re ligne = en-tête** (ignorée)
 - Montants **décimaux à virgule**, déjà signés (pas de centimes, pas de sens D/C)
@@ -125,34 +130,58 @@ Même contrôle que le flux clients, adapté à la structure du fichier `FAC02_S
 Règle de rapprochement (vérifiée à 100 % sur le fichier du 19/08/2026, 4 folios) : **NB_FACTURES** = nombre de lignes sur comptes fournisseurs `401*` par folio ; **MONTANT** = somme des montants de ces lignes. Le fichier CTL a le même format que celui des clients.
 
 ```bat
-ctl_fac02_fournisseur.bat [dossier_source | fichier_SRC] [fichier_CTL]
+controleFournisseur.bat [dossier_export | fichier_SRC] [fichier_CTL]
 ```
 
-Ce lanceur unique exécute successivement le rapprochement SRC/CTL en Python, puis la vérification de l'intégration dans Oracle avec `Verifier_Oracle_FAC02_Fournisseur.ps1`, sur le même fichier SRC. Il accepte les mêmes trois modes d'appel que `ctl_fac02_client.bat` (sans argument : cherche `FAC02FACTURESFOURNISSEURS\SOURCE\`). Le fichier CTL peut être fourni en second argument ; sinon son nom est déduit du SRC.
+Ce lanceur unique exécute successivement le rapprochement SRC/CTL en Python, puis la vérification de l'intégration dans Oracle avec `Verifier_Oracle_FAC02_Fournisseur.ps1`, sur le même fichier SRC. Un dossier d'export complet tel que `10082026_FOURNISSEUR_CEG` peut être passé directement : le lanceur descend jusqu'à `SOURCE` et accepte tout préfixe (`FAC02`, `CEL01`, `PRN01`…). Le fichier CTL peut être fourni en second argument ; sinon son nom est déduit du SRC.
 
 Le rapport de rapprochement est généré dans `rapport\FAC02_SYNTHESE_FOURNISSEURS_<horodatage>.xlsx`. Le script Python réutilise les fonctions communes de `ctl_fac02.py` (les deux fichiers doivent rester dans le même dossier). Codes retour du lanceur : `0` = contrôles OK, `1` = erreur technique, `2` = anomalie ou écart.
 
-## 7bis. Récupération des fichiers côté Unix : `copier_instances_local.sh`
+## 7bis. Flux ÉCRITURES GL : `controleGL.bat` + `ctl_ecritures_gl.py`
 
-Sur le serveur Unix, copie **à plat** les fichiers SRC + CTL du sous-dossier `SOURCE/` des instances d'un flux créées à une date donnée, dans un dossier local `DDMMYYYY_<FLUX>` (ex : `21082026_FAC02_FOURNISSEUR`) :
+Le contrôle GL rapproche le fichier `*_SRC_ECRITURESGL*.csv` avec son CTL. Pour chaque origine de flux (colonne 12 du SRC), il vérifie :
 
-```sh
-./copier_instances_local.sh [FLUX] [DD-MM-YYYY]
-# sans argument : flux FAC02_FOURNISSEUR, date du jour
-./copier_instances_local.sh NOT 21-08-2026
+- le nombre de numéros de pièce distincts (colonne 1) ;
+- le total débit (colonne 9) ;
+- le total crédit (colonne 10) ;
+- l'équilibre débit/crédit de chaque pièce et de chaque origine.
+
+```bat
+controleGL.bat [dossier | fichier_SRC] [fichier_CTL]
 ```
 
-Flux connus (table de correspondance dans le script, une ligne à ajouter par nouveau flux) : `FAC02_FOURNISSEUR` (défaut) et `FAC02_CLIENT` ; `NOT` → `NOT01.FACTURES` ; `ING`, `VHC`, `GAZ`, `BIO`, `HAC` → `FAC02.FACTURESFOURNISSEURS` (seul le nom du dossier de destination change).
+Un dossier peut être glissé sur le lanceur : la recherche du SRC le plus récent est récursive et limitée aux répertoires nommés `SOURCE`, ce qui permet de passer directement un dossier d'export complet tel que `04072026_GL_GER`. Le préfixe du fichier est libre. Le CTL est déduit automatiquement du nom du SRC s'il n'est pas fourni. Le rapport local est généré dans `rapport\GL_SYNTHESE_<horodatage>.xlsx`.
 
-Le dossier obtenu se glisse tel quel sur le `.bat` de contrôle Windows (ex. `ctl_fac02_fournisseur.bat`) : le fichier SRC le plus récent du dossier est contrôlé contre son CTL et le rapport Excel est généré dans `rapport\`.
+Le lanceur exécute ensuite `Verifier_Oracle_Ecritures_GL.ps1` sur le même SRC. La requête reprend la convention de `ControleFolioRose` (`attribute9 = origine`, `attribute10 LIKE nom_fichier%`) et rapproche `GL_JE_HEADERS`/`GL_JE_LINES` avec `GL_INTERFACE`.
+
+Le rapport Oracle coloré est créé dans `Logs\Rapport_Oracle_GL_<horodatage>.xlsx` avec deux onglets : **Synthese Oracle** et **Detail Pieces SRC**. Il reprend la palette du projet `CTRL_QUASI_AUTOMATIQUE_DES_PRELEVEMENTS` (en-têtes bleu foncé, conformités vert pâle, anomalies pêche), les filtres, les volets figés et les montants formatés. Si Excel n'est pas installé, deux CSV de secours sont produits.
+
+Statuts Oracle : `INTEGREE`, `EN INTERFACE`, `PARTIELLE`, `ABSENTE` ou `ECART`. Codes retour du lanceur : `0` = contrôles local et Oracle conformes, `1` = erreur technique, `2` = écart, écriture déséquilibrée ou intégration Oracle incomplète. Le contrôle des transformations du fichier `FAC02_PIVOT_GL_*` reste hors périmètre.
+
+## 7ter. Récupération des fichiers côté Unix : `copier_instances_local.sh`
+
+Sur le serveur Unix, copie les **dossiers d'instances complets** d'un flux créés à une date donnée dans un dossier local `DDMMYYYY_<TYPE>_<CODE>` (ex. `10082026_FOURNISSEUR_CEG`). Chaque instance conserve ses sous-répertoires `SOURCE`, `TARGET` et `TALEND` :
+
+```sh
+./copier_instances_local.sh [TYPE] [CODE] [DD-MM-YYYY]
+# sans argument : type FOURNISSEUR, code FAC02, date du jour
+./copier_instances_local.sh FOURNISSEUR CEG 10-08-2026
+./copier_instances_local.sh CLIENT FAS 31-07-2026
+./copier_instances_local.sh GL GER 04-07-2026
+```
+
+Types connus : `FOURNISSEUR`, `CLIENT` et `GL`. Le code détermine le préfixe applicatif (`FAC02`, `CEL01`, `PRN01`, `HEF01`, `NOT01`, `VHC03`…), utilisé avec le suffixe correspondant au type de flux.
+
+Le dossier d'export obtenu se glisse tel quel sur le `.bat` correspondant (`controleClient.bat`, `controleFournisseur.bat` ou `controleGL.bat`) : le lanceur descend dans les répertoires `SOURCE`, sélectionne le SRC le plus récent et ignore les fichiers de `TARGET`.
 
 ## 8. Vérification dans Oracle EBS
 
-Contrôle complémentaire, sur le modèle de `ControleFolioRose` : vérifie si les factures du fichier SRC sont **intégrées dans Oracle** (tables définitives) ou **bloquées en open interface**. Le flux fournisseurs utilise désormais son lanceur de contrôle unique :
+Contrôle complémentaire, sur le modèle de `ControleFolioRose` : vérifie si les factures du fichier SRC sont **intégrées dans Oracle** (tables définitives) ou **bloquées en open interface**. Chaque flux utilise désormais un lanceur de contrôle unique :
 
 ```bat
-Lancer_Verification_Oracle_Client.bat      [dossier_source | fichier_SRC]
-ctl_fac02_fournisseur.bat [dossier_source | fichier_SRC] [fichier_CTL]
+controleClient.bat      [dossier_export | fichier_SRC] [fichier_CTL]
+controleFournisseur.bat [dossier_export | fichier_SRC] [fichier_CTL]
+controleGL.bat          [dossier_export | fichier_SRC] [fichier_CTL]
 ```
 
 Dossier en paramètre : fichier SRC le plus récent de ce dossier. Fichier en paramètre : ce fichier (glisser-déposer possible). Sans argument : dossier SOURCE aux emplacements connus.
@@ -163,6 +192,7 @@ Fonctionnement (une seule session `sqlplus`, connexion partagée dans `config.ps
 |---|---|---|
 | **Clients** (`Verifier_Oracle_FAC02_Client.ps1`) | `APPS.RA_CUSTOMER_TRX_ALL` / `RA_CUSTOMER_TRX_LINES_ALL` | `DKA_IARPAFAC_INTERFACE` (`FIC_IDENT LIKE fichier%`, `FMT_ORIGIN = portefeuille`, comptes `411%`, lignes non soldées `OA_status != 'A'`) |
 | **Fournisseurs** (`Verifier_Oracle_FAC02_Fournisseur.ps1`) | `APPS.AP_INVOICES_ALL` | `APPS.AP_INVOICES_INTERFACE` + `AP_INVOICE_LINES_INTERFACE`, hors lignes rejetées (`AP_INTERFACE_REJECTIONS`) |
+| **GL** (`Verifier_Oracle_Ecritures_GL.ps1`) | `APPS.GL_JE_HEADERS` + `APPS.GL_JE_LINES` | `APPS.GL_INTERFACE` |
 
 Statut par portefeuille/folio :
 
@@ -176,7 +206,7 @@ Statut par portefeuille/folio :
 
 Sortie dans `Logs\` (clients : `Rapport_Oracle_FAC02_*`, fournisseurs : `Rapport_Oracle_FAC02_FOURNISSEURS_*`) — **un seul fichier**, sur le modèle des rapports de `CTRL_QUASI_AUTOMATIQUE_DES_PRELEVEMENTS` :
 
-- `..._<horodatage>.xlsx` : classeur Excel à 2 onglets — **Synthèse** (par portefeuille/folio) et **Détail Factures** (pièce, date, montant fichier vs Oracle vs interface). La colonne Statut est colorée : **vert** = `INTEGREE`, **rouge** = tout autre statut (nécessite Excel installé sur le poste ; via automatisation COM, sans dépendance supplémentaire).
+- `..._<horodatage>.xlsx` : classeur Excel à 2 onglets — **Synthèse** (par portefeuille/folio) et **Détail Factures** (pièce, date, montant fichier vs Oracle vs interface). La colonne Statut est colorée : **vert** = `INTEGREE`, **pêche** = tout autre statut (nécessite Excel installé sur le poste ; via automatisation COM, sans dépendance supplémentaire).
 - Sans Excel sur le poste uniquement, deux CSV de secours sont produits à la place : `..._<horodatage>.csv` (synthèse) et `..._Detail_<horodatage>.csv` (détail).
 
 Codes retour : 0 = tout intégré, 1 = erreur technique (dont erreur Oracle : aucun rapport produit, pour ne pas présenter des zéros comme un résultat), 2 = anomalies (interface / absent / écart).
