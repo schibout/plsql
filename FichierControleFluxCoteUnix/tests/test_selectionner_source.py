@@ -86,7 +86,7 @@ def test_detecte_le_flux_unique_d_un_dossier_d_export(tmp_path):
     attendu = creer_src(tmp_path, "10082026_FOURNISSEUR_CEG",
                         "CEL01_SRC_FACTURESFOURNISSEURS_TEST.csv")
 
-    assert detecter_flux(tmp_path) == {"FOURNISSEUR": attendu.resolve()}
+    assert detecter_flux(tmp_path) == [("FOURNISSEUR", attendu.resolve())]
 
 
 def test_detecte_tous_les_flux_d_un_dossier_parent(tmp_path):
@@ -94,11 +94,27 @@ def test_detecte_tous_les_flux_d_un_dossier_parent(tmp_path):
     frs = creer_src(tmp_path, "10082026_CEG", "CEL01_SRC_FACTURESFOURNISSEURS_T.csv")
     gl = creer_src(tmp_path, "04072026_GER", "FAC02_SRC_ECRITURESGL_T.csv")
 
-    assert detecter_flux(tmp_path) == {
-        "CLIENT": client.resolve(),
-        "FOURNISSEUR": frs.resolve(),
-        "GL": gl.resolve(),
-    }
+    assert detecter_flux(tmp_path) == [
+        ("CLIENT", client.resolve()),
+        ("FOURNISSEUR", frs.resolve()),
+        ("GL", gl.resolve()),
+    ]
+
+
+def test_detecte_tous_les_exports_d_un_meme_flux(tmp_path):
+    """Un dossier de flux a plusieurs exports : chacun doit etre controle."""
+    flux = "17082026_FOURNISSEUR_VFF"
+    ancien = creer_src(tmp_path / flux, "export1",
+                       "VHC03_SRC_FACTURESFOURNISSEURS_170826_134008.csv")
+    recent = creer_src(tmp_path / flux, "export2",
+                       "VHC03_SRC_FACTURESFOURNISSEURS_170826_161552.csv")
+    os.utime(ancien, (1, 1))
+    os.utime(recent, (2, 2))
+
+    assert detecter_flux(tmp_path / flux) == [
+        ("FOURNISSEUR", ancien.resolve()),
+        ("FOURNISSEUR", recent.resolve()),
+    ]
 
 
 def test_detecter_sans_aucun_flux_est_une_erreur_explicite(tmp_path):

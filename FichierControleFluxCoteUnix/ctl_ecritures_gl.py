@@ -10,7 +10,7 @@ from decimal import Decimal, InvalidOperation
 from pathlib import Path
 from typing import Dict, List, Optional, Sequence, Set, Tuple
 
-from rapport_excel import chemin_rapport
+from rapport_excel import chemin_rapport, nom_onglet
 from selectionner_source import ErreurSelection, selectionner_source
 
 
@@ -233,7 +233,7 @@ def rapprocher(src: Path, ctl: Path) -> ResultatControle:
 
 def generer_excel(resultat: ResultatControle) -> Optional[Path]:
     try:
-        from openpyxl import Workbook
+        from openpyxl import Workbook, load_workbook
         from openpyxl.styles import Alignment, Border, Font, PatternFill, Side
     except ImportError:
         print("INFO : openpyxl non installe, rapport Excel non genere", file=sys.stderr)
@@ -241,6 +241,11 @@ def generer_excel(resultat: ResultatControle) -> Optional[Path]:
 
     chemin = Path(chemin_rapport(resultat.src, "GL_SYNTHESE"))
     chemin.parent.mkdir(parents=True, exist_ok=True)
+
+    # Le classeur du flux est partage entre les exports : chaque export y ecrit
+    # ses propres onglets (suffixes par son horodatage) sans toucher aux autres.
+    nom_synthese = nom_onglet("Synthese", resultat.src)
+    nom_desequilibrees = nom_onglet("Pieces desequilibrees", resultat.src)
 
     bleu = "1F497D"
     bleu_clair = "EAF2F8"
@@ -254,9 +259,20 @@ def generer_excel(resultat: ResultatControle) -> Optional[Path]:
     centre = Alignment(horizontal="center", vertical="center")
     bordure = Border(bottom=Side(style="thin", color="D9D9D9"))
 
-    wb = Workbook()
-    ws = wb.active
-    ws.title = "Synthese"
+    if chemin.is_file():
+        try:
+            wb = load_workbook(chemin)
+        except Exception:
+            wb = Workbook()
+            wb.remove(wb.active)
+    else:
+        wb = Workbook()
+        wb.remove(wb.active)
+    for nom in (nom_synthese, nom_desequilibrees):
+        if nom in wb.sheetnames:
+            del wb[nom]
+
+    ws = wb.create_sheet(nom_synthese)
     ws.append(["CONTROLE ECRITURES GL"])
     ws.merge_cells("A1:H1")
     ws["A1"].font = Font(bold=True, size=16, color="FFFFFF")
@@ -311,7 +327,7 @@ def generer_excel(resultat: ResultatControle) -> Optional[Path]:
     for colonne, largeur in zip("ABCDEFGH", (16, 18, 18, 18, 18, 18, 18, 14)):
         ws.column_dimensions[colonne].width = largeur
 
-    wd = wb.create_sheet("Pieces desequilibrees")
+    wd = wb.create_sheet(nom_desequilibrees)
     wd.append(["PIECES GL DESEQUILIBREES"])
     wd.merge_cells("A1:E1")
     wd["A1"].font = Font(bold=True, size=16, color="FFFFFF")

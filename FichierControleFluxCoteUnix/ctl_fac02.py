@@ -22,7 +22,7 @@ import os
 import sys
 from collections import defaultdict
 
-from rapport_excel import chemin_rapport
+from rapport_excel import chemin_rapport, nom_onglet
 
 
 def fr(montant):
@@ -69,7 +69,7 @@ def generer_excel(src, ctl, rappro, zeros, ecart,
                   libelle="Portefeuille", prefixe="FAC02_SYNTHESE"):
     """Rapport Excel : onglet synthese/rapprochement + onglet factures a 0."""
     try:
-        from openpyxl import Workbook
+        from openpyxl import Workbook, load_workbook
         from openpyxl.styles import Alignment, Border, Font, PatternFill, Side
     except ImportError:
         print("INFO : openpyxl non installe, rapport Excel non genere "
@@ -78,6 +78,11 @@ def generer_excel(src, ctl, rappro, zeros, ecart,
 
     chemin = chemin_rapport(src, prefixe)
     os.makedirs(os.path.dirname(chemin), exist_ok=True)
+
+    # Le classeur du flux est partage entre les exports : chaque export y ecrit
+    # ses propres onglets (suffixes par son horodatage) sans toucher aux autres.
+    nom_synthese = nom_onglet("Synthese", src)
+    nom_zeros = nom_onglet("Factures a 0", src)
 
     bleu = "1F497D"
     bleu_clair = "EAF2F8"
@@ -93,10 +98,20 @@ def generer_excel(src, ctl, rappro, zeros, ecart,
     centre = Alignment(horizontal="center", vertical="center")
     bordure = Border(bottom=Side(style="thin", color="D9D9D9"))
 
-    wb = Workbook()
+    if os.path.isfile(chemin):
+        try:
+            wb = load_workbook(chemin)
+        except Exception:
+            wb = Workbook()
+            wb.remove(wb.active)
+    else:
+        wb = Workbook()
+        wb.remove(wb.active)
+    for nom in (nom_synthese, nom_zeros):
+        if nom in wb.sheetnames:
+            del wb[nom]
 
-    ws = wb.active
-    ws.title = "Synthese"
+    ws = wb.create_sheet(nom_synthese)
     ws.append([titre])
     ws.merge_cells("A1:F1")
     ws["A1"].font = Font(bold=True, size=16, color="FFFFFF")
@@ -154,7 +169,7 @@ def generer_excel(src, ctl, rappro, zeros, ecart,
     for col, largeur in zip("ABCDEF", (18, 19, 18, 19, 18, 14)):
         ws.column_dimensions[col].width = largeur
 
-    ws2 = wb.create_sheet("Factures a 0")
+    ws2 = wb.create_sheet(nom_zeros)
     ws2.append(["FACTURES A MONTANT ZERO"])
     ws2.merge_cells("A1:D1")
     ws2["A1"].font = Font(bold=True, size=16, color="FFFFFF")

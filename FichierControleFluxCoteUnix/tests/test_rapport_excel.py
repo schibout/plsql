@@ -182,7 +182,26 @@ def test_appel_en_ligne_de_commande(tmp_path, monkeypatch, capsys, nom):
 
     assert rapport_excel.main([str(descriptif)]) == 0
     assert capsys.readouterr().out.strip() == str(classeur)
-    assert nom in load_workbook(classeur).sheetnames
+    # L'onglet porte l'horodatage de l'export pour ne pas ecraser ceux des
+    # autres exports du meme flux.
+    assert "%s 100826-201628" % nom in load_workbook(classeur).sheetnames
+
+
+def test_suffixe_export_reconnait_les_deux_horodatages():
+    assert rapport_excel.suffixe_export(NOM_SRC) == "100826-201628"
+    assert rapport_excel.suffixe_export(
+        "VHC03_SRC_FACTURESFOURNISSEURS_170826_161552.csv"
+    ) == "170826_161552"
+    assert rapport_excel.suffixe_export("SANS_DATE.csv") is None
+
+
+def test_nom_onglet_respecte_la_limite_excel_de_31_caracteres():
+    nom = rapport_excel.nom_onglet(
+        "Pieces desequilibrees", "FAC02_SRC_ECRITURESGL_170826_161552.csv"
+    )
+    assert len(nom) <= 31
+    assert nom.endswith("170826_161552")
+    assert rapport_excel.nom_onglet("Synthese", "SANS_DATE.csv") == "Synthese"
 
 
 def test_classeur_absent_est_une_erreur_explicite(tmp_path, monkeypatch, capsys):

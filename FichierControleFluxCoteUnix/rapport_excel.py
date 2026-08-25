@@ -102,6 +102,25 @@ def chemin_rapport(src, prefixe):
     return os.path.join(dossier, "%s.xlsx" % nom)
 
 
+def suffixe_export(src):
+    """Horodatage extrait du nom du SRC (ex. "170826_161552"), ou None.
+
+    Plusieurs exports d'un meme dossier de flux partagent le meme classeur :
+    cet horodatage suffixe les noms d'onglets pour que chaque export garde
+    les siens au lieu d'ecraser ceux du precedent.
+    """
+    correspondance = re.search(r"_(\d{6}[-_]\d{6})(?=[_.])", os.path.basename(str(src)))
+    return correspondance.group(1) if correspondance else None
+
+
+def nom_onglet(base, src):
+    """Nom d'onglet suffixe par l'horodatage de l'export, limite a 31 car."""
+    suffixe = suffixe_export(src)
+    if not suffixe:
+        return base[:31]
+    return "%s %s" % (base[: 31 - len(suffixe) - 1], suffixe)
+
+
 def format_colonne(intitule):
     """Format Excel deduit de l'intitule de colonne (None = format general)."""
     minuscule = str(intitule).strip().lower()
@@ -246,8 +265,14 @@ def main(arguments=None):
         return 1
 
     try:
+        # Les onglets Oracle portent l'horodatage de l'export, comme ceux du
+        # controle local, pour cohabiter dans le classeur unique du flux.
+        onglets = [
+            dict(onglet, nom=nom_onglet(onglet["nom"], donnees.get("src", "")))
+            for onglet in donnees.get("onglets", [])
+        ]
         classeur = resoudre_classeur(donnees)
-        ajouter_onglets(classeur, donnees.get("onglets", []))
+        ajouter_onglets(classeur, onglets)
     except (OSError, IOError, KeyError) as exc:
         print("ERREUR : onglets Oracle non ajoutes : %s" % exc, file=sys.stderr)
         return 1
