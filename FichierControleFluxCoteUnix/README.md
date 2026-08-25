@@ -128,7 +128,9 @@ Règle de rapprochement (vérifiée à 100 % sur le fichier du 19/08/2026, 4 fol
 ctl_fac02_fournisseur.bat [dossier_source | fichier_SRC] [fichier_CTL]
 ```
 
-Mêmes trois modes d'appel que `ctl_fac02_client.bat` (sans argument : cherche `FAC02FACTURESFOURNISSEURS\SOURCE\`), mêmes codes retour, mêmes sorties (synthèse par folio, rapprochement, factures à 0) et rapport Excel dans `rapport\FAC02_SYNTHESE_FOURNISSEURS_<horodatage>.xlsx`. Le script Python réutilise les fonctions communes de `ctl_fac02.py` (les deux fichiers doivent rester dans le même dossier).
+Ce lanceur unique exécute successivement le rapprochement SRC/CTL en Python, puis la vérification de l'intégration dans Oracle avec `Verifier_Oracle_FAC02_Fournisseur.ps1`, sur le même fichier SRC. Il accepte les mêmes trois modes d'appel que `ctl_fac02_client.bat` (sans argument : cherche `FAC02FACTURESFOURNISSEURS\SOURCE\`). Le fichier CTL peut être fourni en second argument ; sinon son nom est déduit du SRC.
+
+Le rapport de rapprochement est généré dans `rapport\FAC02_SYNTHESE_FOURNISSEURS_<horodatage>.xlsx`. Le script Python réutilise les fonctions communes de `ctl_fac02.py` (les deux fichiers doivent rester dans le même dossier). Codes retour du lanceur : `0` = contrôles OK, `1` = erreur technique, `2` = anomalie ou écart.
 
 ## 7bis. Récupération des fichiers côté Unix : `copier_instances_local.sh`
 
@@ -144,13 +146,13 @@ Flux connus (table de correspondance dans le script, une ligne à ajouter par no
 
 Le dossier obtenu se glisse tel quel sur le `.bat` de contrôle Windows (ex. `ctl_fac02_fournisseur.bat`) : le fichier SRC le plus récent du dossier est contrôlé contre son CTL et le rapport Excel est généré dans `rapport\`.
 
-## 8. Vérification dans Oracle EBS : un lanceur par flux
+## 8. Vérification dans Oracle EBS
 
-Contrôle complémentaire, sur le modèle de `ControleFolioRose` : vérifie si les factures du fichier SRC sont **intégrées dans Oracle** (tables définitives) ou **bloquées en open interface**. Un couple `.bat` + `.ps1` par flux :
+Contrôle complémentaire, sur le modèle de `ControleFolioRose` : vérifie si les factures du fichier SRC sont **intégrées dans Oracle** (tables définitives) ou **bloquées en open interface**. Le flux fournisseurs utilise désormais son lanceur de contrôle unique :
 
 ```bat
 Lancer_Verification_Oracle_Client.bat      [dossier_source | fichier_SRC]
-Lancer_Verification_Oracle_Fournisseur.bat [dossier_source | fichier_SRC]
+ctl_fac02_fournisseur.bat [dossier_source | fichier_SRC] [fichier_CTL]
 ```
 
 Dossier en paramètre : fichier SRC le plus récent de ce dossier. Fichier en paramètre : ce fichier (glisser-déposer possible). Sans argument : dossier SOURCE aux emplacements connus.

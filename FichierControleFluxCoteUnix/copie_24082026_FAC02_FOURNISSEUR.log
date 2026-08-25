@@ -1,8 +1,0 @@
-Flux              : FAC02_FOURNISSEUR (FAC02.FACTURESFOURNISSEURS)
-Date de recherche : 24-08-2026
-Recherche des instances dont la date de création est le 24-08-2026
----------------------------------------------------------------------
-Création du répertoire de destination : ./24082026_FAC02_FOURNISSEUR
-Recherche pour le flux FAC02.FACTURESFOURNISSEURS dans : /data/flf/share/EAIBW/EAI/filerepository/FAC02.FACTURESFOURNISSEURS/INSTANCES
-Avertissement : Le répertoire source n'existe pas : /data/flf/share/EAIBW/EAI/filerepository/FAC02.FACTURESFOURNISSEURS/INSTANCES
-Aucun fichier copié pour la date du 24-08-2026.
