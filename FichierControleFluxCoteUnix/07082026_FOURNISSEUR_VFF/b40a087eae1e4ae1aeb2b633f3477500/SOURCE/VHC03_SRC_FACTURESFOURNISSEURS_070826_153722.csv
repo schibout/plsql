@@ -1,0 +1,4 @@
+Date d'arrêté comptable;Code société;Compte local;Identifiant founisseur externe;Code tâche;Code folio amont;Libellé;Quantité;Type;Montant;Devise;Date de la pièce;Numéro de pièce;Taux TVA;Nature1;Nature2;Type de TVA;Date d'échéance;Id scan facture;Origine scan facture;UO Dalkia
+25/08/2026;0001;401100;S00085786-FRA92140;GK0028795X;VFF;Facture garage petit clamart 667578 062026;0;STANDARD;162,00;EUR;18/06/2026;667578;20,00;REPARATIONS ACCIDENTS;;;;;;B00000001B
+25/08/2026;0001;615510;S00085786-FRA92140;GK0001058C;VFF;Facture garage petit clamart 667578 062026;1;STANDARD;135,00;EUR;18/06/2026;667578;20,00;REPARATIONS ACCIDENTS;;;;;;B00000001B
+25/08/2026;0001;445661;S00085786-FRA92140;GK0028795X;VFF;Facture garage petit clamart 667578 062026;0;STANDARD;27,00;EUR;18/06/2026;667578;20,00;REPARATIONS ACCIDENTS;;;;;;B00000001B
