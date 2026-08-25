@@ -3,16 +3,14 @@
 """Controle local du flux d'ecritures GL : rapprochement SRC / CTL."""
 
 import csv
-import os
-import re
 import sys
 from collections import defaultdict
 from dataclasses import dataclass, field
-from datetime import datetime
 from decimal import Decimal, InvalidOperation
 from pathlib import Path
 from typing import Dict, List, Optional, Sequence, Set, Tuple
 
+from rapport_excel import chemin_rapport
 from selectionner_source import ErreurSelection, selectionner_source
 
 
@@ -241,14 +239,8 @@ def generer_excel(resultat: ResultatControle) -> Optional[Path]:
         print("INFO : openpyxl non installe, rapport Excel non genere", file=sys.stderr)
         return None
 
-    correspondance = re.search(r"_(\d{6}-\d{6})(?:_|\.)", resultat.src.name)
-    suffixe = correspondance.group(1) if correspondance else datetime.now().strftime("%d%m%y-%H%M%S")
-    dossier = Path(
-        os.environ.get("CONTROLE_FLUX_RAPPORT_DIR")
-        or (Path(__file__).resolve().parent / "rapport")
-    )
-    dossier.mkdir(parents=True, exist_ok=True)
-    chemin = dossier / ("GL_SYNTHESE_%s.xlsx" % suffixe)
+    chemin = Path(chemin_rapport(resultat.src, "GL_SYNTHESE"))
+    chemin.parent.mkdir(parents=True, exist_ok=True)
 
     bleu = "1F497D"
     bleu_clair = "EAF2F8"

@@ -17,11 +17,10 @@ def test_requete_gl_reutilise_les_cles_controle_folio_rose():
     assert "attribute9 = TRIM('$f')" in script
 
 
-def test_rapport_excel_reprend_la_palette_de_prelevements():
+def test_le_resultat_oracle_est_ajoute_au_classeur_de_synthese_gl():
     script = lire("Verifier_Oracle_Ecritures_GL.ps1")
-    assert "$COULEUR_ENTETE = 0x7D491F" in script
-    assert "$COULEUR_ECART  = 0xD6E4FC" in script
-    assert "$COULEUR_OK     = 0xDAEFED" in script
+    assert "Export-OngletsOracle" in script
+    assert "-Prefixe 'GL_SYNTHESE'" in script
     assert "Synthese Oracle" in script
     assert "Detail Pieces SRC" in script
 

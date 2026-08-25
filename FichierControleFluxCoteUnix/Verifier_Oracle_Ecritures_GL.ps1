@@ -14,16 +14,6 @@ $ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 $EXIT_OK = 0; $EXIT_TECH = 1; $EXIT_ANOMALIE = 2
 $TOLERANCE = [decimal]0.005
 
-# Palette du rapport CTRL_QUASI_AUTOMATIQUE_DES_PRELEVEMENTS (valeurs BGR Excel).
-$XL_CENTER       = -4108
-$XL_LEFT         = -4131
-$XL_CONTINUOUS   = 1
-$COULEUR_ENTETE = 0x7D491F
-$COULEUR_ECART  = 0xD6E4FC
-$COULEUR_OK     = 0xDAEFED
-$COULEUR_BANDE  = 0xF7F2EA
-$COULEUR_BORDURE = 0xD9D9D9
-
 function Format-Montant { param($Valeur) return ('{0:N2}' -f [double]$Valeur) }
 
 function Convertir-Montant {
@@ -45,167 +35,10 @@ function Ecart-Acceptable {
     return [math]::Abs($Valeur1 - $Valeur2) -le $TOLERANCE
 }
 
-function Export-RapportCsvSecours {
-    param([string] $BaseSortie, [object[]] $Synthese, [object[]] $Detail)
-    $csvSynthese = "${BaseSortie}.csv"
-    $csvDetail = "${BaseSortie}_Detail.csv"
-    $Synthese | Export-Csv -LiteralPath $csvSynthese -Delimiter ';' -NoTypeInformation -Encoding UTF8
-    $Detail | Export-Csv -LiteralPath $csvDetail -Delimiter ';' -NoTypeInformation -Encoding UTF8
-    Write-Host "   Rapports CSV : $csvSynthese" -ForegroundColor Yellow
-    Write-Host "                  $csvDetail" -ForegroundColor Yellow
-}
-
-function Mettre-EnFormeOnglet {
-    param(
-        $Feuille,
-        [string] $Titre,
-        [string] $SousTitre,
-        [object[]] $Donnees,
-        [string[]] $Colonnes,
-        [string] $ColonneStatut,
-        [string[]] $ValeursOk
-    )
-    $nbColonnes = $Colonnes.Count
-    $Feuille.Name = $Titre
-    $Feuille.Application.ActiveWindow.DisplayGridlines = $false
-
-    $bandeTitre = $Feuille.Range($Feuille.Cells.Item(1, 1), $Feuille.Cells.Item(1, $nbColonnes))
-    # PowerShell 5.1 peut corrompre les affectations Value2 suivantes quand
-    # une chaine scalaire est ecrite directement : utiliser une matrice 1x1.
-    $titreMatrice = New-Object 'object[,]' 1, 1
-    $titreMatrice[0, 0] = 'CONTROLE ORACLE - ECRITURES GL'
-    $Feuille.Range($Feuille.Cells.Item(1, 1), $Feuille.Cells.Item(1, 1)).Value2 = $titreMatrice
-    $bandeTitre.Interior.Color = $COULEUR_ENTETE
-    $bandeTitre.Font.Color = 0xFFFFFF
-    $bandeTitre.Font.Bold = $true
-    $Feuille.Cells.Item(1, 1).Font.Size = 16
-    $Feuille.Cells.Item(1, 1).HorizontalAlignment = $XL_LEFT
-    $Feuille.Rows.Item(1).RowHeight = 28
-
-    $sousTitreMatrice = New-Object 'object[,]' 1, 1
-    $sousTitreMatrice[0, 0] = $SousTitre
-    $Feuille.Range($Feuille.Cells.Item(2, 1), $Feuille.Cells.Item(2, 1)).Value2 = $sousTitreMatrice
-    $Feuille.Cells.Item(2, 1).Font.Color = 0x666666
-    $Feuille.Cells.Item(2, 1).Font.Italic = $true
-
-    $entetes = New-Object 'object[,]' 1, $nbColonnes
-    for ($c = 0; $c -lt $nbColonnes; $c++) { $entetes[0, $c] = $Colonnes[$c] }
-    $plageEntete = $Feuille.Range($Feuille.Cells.Item(4, 1), $Feuille.Cells.Item(4, $nbColonnes))
-    $plageEntete.Value2 = $entetes
-    $plageEntete.Interior.Color = $COULEUR_ENTETE
-    $plageEntete.Font.Color = 0xFFFFFF
-    $plageEntete.Font.Bold = $true
-    $plageEntete.HorizontalAlignment = $XL_CENTER
-    $plageEntete.WrapText = $true
-    $Feuille.Rows.Item(4).RowHeight = 34
-
-    # Poser les formats avant l'ecriture, notamment le format texte qui
-    # preserve les zeros de tete des numeros de piece.
-    for ($c = 0; $c -lt $nbColonnes; $c++) {
-        $nom = $Colonnes[$c]
-        if ($nom -like 'Debit*' -or $nom -like 'Credit*' -or $nom -like 'Ecart*') {
-            $Feuille.Columns.Item($c + 1).NumberFormatLocal = '# ##0,00;[Rouge]-# ##0,00'
-        } elseif ($nom -like 'Nb *') {
-            $Feuille.Columns.Item($c + 1).NumberFormatLocal = '# ##0'
-        } elseif ($nom -like 'Numero*' -or $nom -eq 'Fichier') {
-            $Feuille.Columns.Item($c + 1).NumberFormatLocal = '@'
-        }
-    }
-
-    if ($Donnees.Count -gt 0) {
-        # Certaines versions d'Excel 32 bits refusent une matrice heterogene
-        # et renvoient E_OUTOFMEMORY. L'ecriture cellule par cellule est plus
-        # lente, mais fiable et acceptable ici (une ligne par origine/piece).
-        for ($r = 0; $r -lt $Donnees.Count; $r++) {
-            for ($c = 0; $c -lt $Colonnes.Count; $c++) {
-                $Feuille.Cells.Item(5 + $r, 1 + $c).Value2 = $Donnees[$r].($Colonnes[$c])
-            }
-        }
-        $derniereLigne = 4 + $Donnees.Count
-        $plage = $Feuille.Range($Feuille.Cells.Item(5, 1), $Feuille.Cells.Item($derniereLigne, $nbColonnes))
-        $plage.Borders.LineStyle = $XL_CONTINUOUS
-        $plage.Borders.Color = $COULEUR_BORDURE
-
-        for ($r = 0; $r -lt $Donnees.Count; $r++) {
-            $ligneExcel = 5 + $r
-            if (($r % 2) -eq 1) {
-                $Feuille.Range($Feuille.Cells.Item($ligneExcel, 1), $Feuille.Cells.Item($ligneExcel, $nbColonnes)).Interior.Color = $COULEUR_BANDE
-            }
-        }
-
-        $indexStatut = [array]::IndexOf($Colonnes, $ColonneStatut)
-        if ($indexStatut -ge 0) {
-            for ($r = 0; $r -lt $Donnees.Count; $r++) {
-                $cellule = $Feuille.Cells.Item(5 + $r, $indexStatut + 1)
-                $estOk = $ValeursOk -contains [string]$Donnees[$r].($ColonneStatut)
-                $cellule.Interior.Color = if ($estOk) { $COULEUR_OK } else { $COULEUR_ECART }
-                $cellule.Font.Bold = $true
-                $cellule.HorizontalAlignment = $XL_CENTER
-            }
-        }
-        $plageEntete.AutoFilter() | Out-Null
-    }
-
-    $Feuille.UsedRange.Columns.AutoFit() | Out-Null
-    for ($c = 1; $c -le $nbColonnes; $c++) {
-        if ($Feuille.Columns.Item($c).ColumnWidth -gt 24) { $Feuille.Columns.Item($c).ColumnWidth = 24 }
-        $largeurMini = [math]::Min(24, [math]::Max(11, $Colonnes[$c - 1].Length + 3))
-        if ($Feuille.Columns.Item($c).ColumnWidth -lt $largeurMini) { $Feuille.Columns.Item($c).ColumnWidth = $largeurMini }
-    }
-    $Feuille.Activate() | Out-Null
-    $Feuille.Application.ActiveWindow.SplitRow = 4
-    $Feuille.Application.ActiveWindow.FreezePanes = $true
-}
-
-function Export-RapportExcel {
-    param([string] $Chemin, [string] $NomFichier, [object[]] $Synthese, [object[]] $Detail)
-    if (-not (Test-Path 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths\excel.exe')) {
-        return $false
-    }
-    $excel = $null; $classeur = $null; $feuilles = @()
-    try {
-        $excel = New-Object -ComObject Excel.Application
-        $excel.Visible = $false
-        $excel.DisplayAlerts = $false
-        $excel.ScreenUpdating = $false
-        $classeur = $excel.Workbooks.Add()
-
-        $colonnesSynthese = @(
-            'Origine', 'Nb Pieces SRC', 'Debit SRC', 'Credit SRC',
-            'Nb Journaux Oracle', 'Debit Oracle', 'Credit Oracle',
-            'Debit Interface', 'Credit Interface', 'Ecart Debit', 'Ecart Credit', 'Statut'
-        )
-        $colonnesDetail = @('Origine', 'Numero Piece', 'Debit SRC', 'Credit SRC', 'Ecart', 'Statut')
-
-        $wsSynthese = $classeur.Sheets.Item(1); $feuilles += $wsSynthese
-        Mettre-EnFormeOnglet $wsSynthese 'Synthese Oracle' "Fichier : $NomFichier  |  Execution : $(Get-Date -Format 'dd/MM/yyyy HH:mm:ss')" $Synthese $colonnesSynthese 'Statut' @('INTEGREE')
-
-        $wsDetail = $classeur.Sheets.Add([System.Reflection.Missing]::Value, $wsSynthese); $feuilles += $wsDetail
-        Mettre-EnFormeOnglet $wsDetail 'Detail Pieces SRC' 'Equilibre debit / credit par numero de piece dans le fichier source' $Detail $colonnesDetail 'Statut' @('EQUILIBREE')
-
-        $wsSynthese.Activate() | Out-Null
-        $classeur.SaveAs($Chemin)
-        $classeur.Close($false); $classeur = $null
-        return $true
-    } catch {
-        Write-Host "   [ATTENTION] Echec generation Excel : $($_.Exception.Message)" -ForegroundColor Yellow
-        if ($Diagnostic) { Write-Host $_.ScriptStackTrace -ForegroundColor DarkGray }
-        return $false
-    } finally {
-        foreach ($feuille in $feuilles) {
-            try { [System.Runtime.InteropServices.Marshal]::ReleaseComObject($feuille) | Out-Null } catch { }
-        }
-        if ($classeur) {
-            try { $classeur.Close($false) } catch { }
-            try { [System.Runtime.InteropServices.Marshal]::ReleaseComObject($classeur) | Out-Null } catch { }
-        }
-        if ($excel) {
-            try { $excel.Quit() } catch { }
-            try { [System.Runtime.InteropServices.Marshal]::ReleaseComObject($excel) | Out-Null } catch { }
-        }
-        [System.GC]::Collect(); [System.GC]::WaitForPendingFinalizers(); [System.GC]::Collect()
-    }
-}
+# Les interrogations Oracle sont ajoutees au classeur de synthese produit par
+# ctl_ecritures_gl.py : un seul rapport par flux, ecrit par rapport_excel.py
+# (openpyxl), donc sans dependance a une installation d'Excel.
+. (Join-Path $ScriptDir 'rapport_oracle.ps1')
 
 try {
     Write-Host ''
@@ -255,8 +88,6 @@ try {
     if (-not (Test-Path -LiteralPath $logDir)) { New-Item -ItemType Directory -Path $logDir | Out-Null }
     $timestamp = Get-Date -Format 'ddMMyyyy_HHmmss'
     $sqlTemp = Join-Path $logDir "requetes_gl_${timestamp}.sql"
-    $baseSortie = Join-Path $logDir "Rapport_Oracle_GL_${timestamp}"
-    $xlsx = "${baseSortie}.xlsx"
     $b = $fichierBase.Replace("'", "''")
 
     $sb = New-Object System.Text.StringBuilder
@@ -344,11 +175,35 @@ CROSS JOIN
 
     Write-Host ''
     $synthese | Format-Table Origine, 'Nb Pieces SRC', 'Debit SRC', 'Debit Oracle', 'Debit Interface', Statut -AutoSize
-    if (Export-RapportExcel $xlsx $nomFichier $synthese $detail) {
-        Write-Host "   Rapport Excel : $xlsx" -ForegroundColor Green
-    } else {
-        Export-RapportCsvSecours $baseSortie $synthese $detail
-    }
+
+    $colonnesSynthese = @(
+        'Origine', 'Nb Pieces SRC', 'Debit SRC', 'Credit SRC',
+        'Nb Journaux Oracle', 'Debit Oracle', 'Credit Oracle',
+        'Debit Interface', 'Credit Interface', 'Ecart Debit', 'Ecart Credit', 'Statut')
+    $colonnesDetail = @('Origine', 'Numero Piece', 'Debit SRC', 'Credit SRC', 'Ecart', 'Statut')
+    $horodatage = Get-Date -Format 'dd/MM/yyyy HH:mm:ss'
+
+    $classeur = Export-OngletsOracle -Src $chemin.Path -Prefixe 'GL_SYNTHESE' `
+        -DossierTravail $ScriptDir -Onglets @(
+        [ordered]@{
+            nom            = 'Synthese Oracle'
+            titre          = 'CONTROLE ECRITURES GL - SYNTHESE ORACLE PAR ORIGINE'
+            sous_titre     = "Fichier : $nomFichier  |  Execution : $horodatage"
+            colonnes       = $colonnesSynthese
+            colonne_statut = 'Statut'
+            valeurs_ok     = @('INTEGREE')
+            lignes         = (ConvertTo-LignesOnglet $synthese $colonnesSynthese)
+        },
+        [ordered]@{
+            nom            = 'Detail Pieces SRC'
+            titre          = 'CONTROLE ECRITURES GL - DETAIL PIECE PAR PIECE'
+            sous_titre     = 'Equilibre debit / credit par numero de piece dans le fichier source'
+            colonnes       = $colonnesDetail
+            colonne_statut = 'Statut'
+            valeurs_ok     = @('EQUILIBREE')
+            lignes         = (ConvertTo-LignesOnglet $detail $colonnesDetail)
+        })
+    if ($classeur) { Write-Host "   Rapport Excel : $classeur" -ForegroundColor Green }
     if (-not $GarderTempSQL) { Remove-Item -LiteralPath $sqlTemp -ErrorAction SilentlyContinue }
     exit $(if ($anomalie) { $EXIT_ANOMALIE } else { $EXIT_OK })
 } catch {

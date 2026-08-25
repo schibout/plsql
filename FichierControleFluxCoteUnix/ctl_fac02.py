@@ -19,9 +19,10 @@ Code retour : 0 = rapprochement OK, 1 = ecart detecte, 2 = erreur usage
 """
 
 import os
-import re
 import sys
 from collections import defaultdict
+
+from rapport_excel import chemin_rapport
 
 
 def fr(montant):
@@ -75,13 +76,8 @@ def generer_excel(src, ctl, rappro, zeros, ecart,
               "(pip install openpyxl)", file=sys.stderr)
         return None
 
-    m = re.search(r"_(\d{6}-\d{6})_", os.path.basename(src))
-    suffixe = m.group(1) if m else "rapport"
-    dossier = os.environ.get("CONTROLE_FLUX_RAPPORT_DIR") or os.path.join(
-        os.path.dirname(os.path.abspath(__file__)), "rapport"
-    )
-    os.makedirs(dossier, exist_ok=True)
-    chemin = os.path.join(dossier, "%s_%s.xlsx" % (prefixe, suffixe))
+    chemin = chemin_rapport(src, prefixe)
+    os.makedirs(os.path.dirname(chemin), exist_ok=True)
 
     bleu = "1F497D"
     bleu_clair = "EAF2F8"

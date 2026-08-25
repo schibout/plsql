@@ -18,11 +18,11 @@
 #       PARTIELLE    : reparti entre definitif et interface
 #       ABSENTE      : nulle part dans Oracle
 #       ECART        : montants incoherents
-#  4) Produit UN SEUL fichier : un classeur .xlsx a 2 onglets (Synthese +
-#     Detail Factures), statuts colores vert (INTEGREE) / rouge (anomalie),
-#     sur le modele des rapports CTRL_QUASI_AUTOMATIQUE_DES_PRELEVEMENTS.
-#     Sans Excel sur le poste, deux CSV (synthese + detail) sont produits
-#     en secours.
+#  4) Ajoute deux onglets (Synthese Oracle + Detail Oracle) au classeur de
+#     synthese produit juste avant par ctl_fac02.py : le flux n'a ainsi
+#     qu'un seul rapport. Statuts colores vert (INTEGREE) / rouge
+#     (anomalie), palette des rapports
+#     CTRL_QUASI_AUTOMATIQUE_DES_PRELEVEMENTS.
 #
 #  Base sur ControleFolioRose\Verifier_Factures.ps1 (meme enveloppe
 #  sqlplus, meme convention ##RES##cle|...).
@@ -49,189 +49,13 @@ $EXIT_OK = 0; $EXIT_TECH = 1; $EXIT_ANOMALIE = 2
 function Format-Montant { param($V) return ('{0:N2}' -f [double]$V) }
 
 # =====================================================================
-#  RESTITUTION EXCEL (2 onglets : Synthese + Detail facture par facture)
+#  RESTITUTION : ONGLETS AJOUTES AU CLASSEUR DE SYNTHESE DU FLUX
 # =====================================================================
-# Constantes Excel (evite la dependance a la PIA Microsoft.Office.Interop).
-$XL_CENTER        = -4108
-$XL_LEFT          = -4131
-$XL_CONTINUOUS    = 1
-$COULEUR_ENTETE   = 0x7D491F   # bleu fonce (RGB 1F497D)
-$COULEUR_ANOMALIE = 0xD6E4FC   # peche (RGB FCE4D6)
-$COULEUR_OK       = 0xDAEFED   # vert pale (RGB EDEFDA)
-$COULEUR_BANDE    = 0xF8F2EA   # bleu tres clair
-$COULEUR_BORDURE  = 0xD9D9D9
-
-# Permet d'identifier le PID de NOTRE instance Excel (via son handle de
-# fenetre) pour garantir sa fermeture, sans toucher aux Excel de l'utilisateur.
-if (-not ('Win32Fenetre' -as [type])) {
-    Add-Type -Namespace '' -Name 'Win32Fenetre' -MemberDefinition @'
-[DllImport("user32.dll", SetLastError = true)]
-public static extern uint GetWindowThreadProcessId(System.IntPtr hWnd, out uint lpdwProcessId);
-'@
-}
-
-function Export-RapportExcel {
-    <#
-        Genere un classeur .xlsx a 2 onglets (Synthese + Detail Factures) par
-        automatisation COM. Renvoie $true si le classeur a ete produit, $false
-        si Excel n'est pas installe (les rapports CSV restent disponibles).
-        Chaque onglet : titre en ligne 1, entete en ligne 3, donnees ecrites en
-        un seul bloc COM, colonne Statut coloree (vert = INTEGREE,
-        rouge = tout autre statut).
-    #>
-    param(
-        [string] $CheminXlsx,
-        [string] $Titre,
-        [object[]] $Synthese, [string[]] $ColSynthese,
-        [object[]] $Detail,   [string[]] $ColDetail
-    )
-    if (-not (Test-Path 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths\excel.exe')) {
-        Write-Host '   [ATTENTION] Excel non installe sur ce poste : classeur .xlsx non genere.' -ForegroundColor Yellow
-        return $false
-    }
-    $excel = $null; $wb = $null; $feuilles = @(); $excelPid = 0
-    try {
-        $excel = New-Object -ComObject Excel.Application
-        $excel.Visible = $false; $excel.DisplayAlerts = $false; $excel.ScreenUpdating = $false
-        [uint32] $pidTrouve = 0
-        [void][Win32Fenetre]::GetWindowThreadProcessId([System.IntPtr]$excel.Hwnd, [ref] $pidTrouve)
-        $excelPid = [int] $pidTrouve
-        $wb = $excel.Workbooks.Add()
-
-        $onglets = @(
-            @{ Nom = 'Synthese';        Titre = "$Titre - SYNTHESE";                   Donnees = $Synthese; Colonnes = $ColSynthese },
-            @{ Nom = 'Detail Factures'; Titre = "$Titre - DETAIL FACTURE PAR FACTURE"; Donnees = $Detail;   Colonnes = $ColDetail }
-        )
-        $ws = $null
-        foreach ($o in $onglets) {
-            if ($null -eq $ws) { $ws = $wb.Sheets.Item(1) }
-            else { $ws = $wb.Sheets.Add([System.Reflection.Missing]::Value, $ws) }
-            $feuilles += $ws
-            $ws.Name = $o.Nom
-            $cols = $o.Colonnes
-            $ws.Application.ActiveWindow.DisplayGridlines = $false
-            # Le titre passe par une matrice 1x1 et non par une chaine : une
-            # affectation directe de chaine a Value2 corrompt la liaison COM de
-            # PowerShell et fait echouer les ecritures en bloc qui suivent
-            # (cast Object[,] -> String impossible).
-            $matT = New-Object 'object[,]' 1, 1
-            $matT[0, 0] = $o.Titre
-            $ws.Range($ws.Cells.Item(1, 1), $ws.Cells.Item(1, 1)).Value2 = $matT
-            $bandeTitre = $ws.Range($ws.Cells.Item(1, 1), $ws.Cells.Item(1, $cols.Count))
-            $bandeTitre.Interior.Color = $COULEUR_ENTETE
-            $bandeTitre.Font.Color = 0xFFFFFF
-            $bandeTitre.Font.Bold = $true
-            $ws.Cells.Item(1, 1).Font.Bold = $true
-            $ws.Cells.Item(1, 1).Font.Size = 16
-            $ws.Cells.Item(1, 1).HorizontalAlignment = $XL_LEFT
-            $ws.Rows.Item(1).RowHeight = 28
-
-            $matSousTitre = New-Object 'object[,]' 1, 1
-            $matSousTitre[0, 0] = "Execution : $(Get-Date -Format 'dd/MM/yyyy HH:mm:ss')"
-            $ws.Range($ws.Cells.Item(2, 1), $ws.Cells.Item(2, 1)).Value2 = $matSousTitre
-            $ws.Cells.Item(2, 1).Font.Italic = $true
-            $ws.Cells.Item(2, 1).Font.Color = 0x666666
-
-            $matE = New-Object 'object[,]' 1, $cols.Count
-            for ($c = 0; $c -lt $cols.Count; $c++) { $matE[0, $c] = $cols[$c] }
-            $plE = $ws.Range($ws.Cells.Item(4, 1), $ws.Cells.Item(4, $cols.Count))
-            $plE.Value2              = $matE
-            $plE.Interior.Color      = $COULEUR_ENTETE
-            $plE.Font.Color          = 0xFFFFFF
-            $plE.Font.Bold           = $true
-            $plE.HorizontalAlignment = $XL_CENTER
-            $plE.WrapText            = $true
-            $ws.Rows.Item(4).RowHeight = 34
-
-            $donnees = @($o.Donnees)
-            if ($donnees.Count -gt 0) {
-                # Formats poses sur les colonnes avant ecriture.
-                for ($c = 0; $c -lt $cols.Count; $c++) {
-                    if ($cols[$c] -like 'Montant*') { $ws.Columns.Item($c + 1).NumberFormatLocal = '# ##0,00' }
-                    elseif ($cols[$c] -like 'Nb *')  { $ws.Columns.Item($c + 1).NumberFormatLocal = '# ##0' }
-                    elseif ($cols[$c] -like 'Date*' -or $cols[$c] -like 'Numero*' -or $cols[$c] -like 'Reference*' -or $cols[$c] -eq 'Fichier') {
-                        $ws.Columns.Item($c + 1).NumberFormatLocal = '@'
-                    }
-                }
-                # Excel 32 bits refuse les matrices heterogenes sur certains
-                # postes. L'ecriture scalaire est plus lente, mais fiable.
-                for ($r = 0; $r -lt $donnees.Count; $r++) {
-                    for ($c = 0; $c -lt $cols.Count; $c++) {
-                        $valeur = $donnees[$r].($cols[$c])
-                        $ws.Cells.Item(5 + $r, 1 + $c).Value2 = if ($null -eq $valeur) { '' } else { $valeur }
-                    }
-                }
-                $pl = $ws.Range($ws.Cells.Item(5, 1), $ws.Cells.Item(4 + $donnees.Count, $cols.Count))
-                $pl.Borders.LineStyle = $XL_CONTINUOUS
-                $pl.Borders.Color = $COULEUR_BORDURE
-
-                for ($r = 0; $r -lt $donnees.Count; $r++) {
-                    if (($r % 2) -eq 1) {
-                        $ws.Range($ws.Cells.Item(5 + $r, 1), $ws.Cells.Item(5 + $r, $cols.Count)).Interior.Color = $COULEUR_BANDE
-                    }
-                }
-
-                # Colonne Statut : fond vert en un bloc, puis surlignage des
-                # seules anomalies (peu d'appels COM).
-                $colStatut = [array]::IndexOf($cols, 'Statut') + 1
-                if ($colStatut -gt 0) {
-                    $plS = $ws.Range($ws.Cells.Item(5, $colStatut), $ws.Cells.Item(4 + $donnees.Count, $colStatut))
-                    $plS.Interior.Color = $COULEUR_OK
-                    for ($r = 0; $r -lt $donnees.Count; $r++) {
-                        if ($donnees[$r].Statut -ne 'INTEGREE') {
-                            $cel = $ws.Cells.Item(5 + $r, $colStatut)
-                            $cel.Interior.Color = $COULEUR_ANOMALIE
-                            $cel.Font.Bold = $true
-                        }
-                    }
-                    $plS.Font.Bold = $true
-                    $plS.HorizontalAlignment = $XL_CENTER
-                }
-                $plE.AutoFilter() | Out-Null
-            }
-            $ws.UsedRange.Columns.AutoFit() | Out-Null
-            for ($c = 1; $c -le $cols.Count; $c++) {
-                $largeurMini = [math]::Min(24, [math]::Max(11, $cols[$c - 1].Length + 3))
-                if ($ws.Columns.Item($c).ColumnWidth -lt $largeurMini) { $ws.Columns.Item($c).ColumnWidth = $largeurMini }
-                if ($ws.Columns.Item($c).ColumnWidth -gt 28) { $ws.Columns.Item($c).ColumnWidth = 28 }
-            }
-            $ws.Activate() | Out-Null
-            $ws.Application.ActiveWindow.SplitRow = 4
-            $ws.Application.ActiveWindow.FreezePanes = $true
-        }
-        $wb.SaveAs($CheminXlsx)
-        $wb.Close($false)
-        $wb = $null
-        return $true
-    } catch {
-        Write-Host "   [ATTENTION] Echec de la generation Excel : $($_.Exception.Message)" -ForegroundColor Yellow
-        if ($Diagnostic) { Write-Host $_.ScriptStackTrace -ForegroundColor DarkGray }
-        return $false
-    } finally {
-        # Liberation systematique : sans cela, un EXCEL.EXE orphelin invisible
-        # s'accumule a chaque execution. Les feuilles partent avant le classeur.
-        foreach ($f in $feuilles) {
-            try { [System.Runtime.InteropServices.Marshal]::ReleaseComObject($f) | Out-Null } catch { }
-        }
-        if ($wb) {
-            try { $wb.Close($false) } catch { }
-            try { [System.Runtime.InteropServices.Marshal]::ReleaseComObject($wb) | Out-Null } catch { }
-        }
-        if ($excel) {
-            try { $excel.Quit() } catch { }
-            try { [System.Runtime.InteropServices.Marshal]::ReleaseComObject($excel) | Out-Null } catch { }
-        }
-        [System.GC]::Collect(); [System.GC]::WaitForPendingFinalizers(); [System.GC]::Collect()
-        # Filet de securite : ne cible que le PID demarre par cette fonction.
-        if ($excelPid -gt 0) {
-            for ($i = 0; $i -lt 20; $i++) {
-                if (-not (Get-Process -Id $excelPid -ErrorAction SilentlyContinue)) { break }
-                Start-Sleep -Milliseconds 250
-            }
-            try { Stop-Process -Id $excelPid -Force -ErrorAction Stop } catch { }
-        }
-    }
-}
+#  L'ecriture Excel est confiee a rapport_excel.py (openpyxl) via
+#  rapport_oracle.ps1 : le flux ne produit qu'un seul classeur et le rapport
+#  reste genere meme si Excel n'est pas installe sur le poste.
+# =====================================================================
+. (Join-Path $ScriptDir 'rapport_oracle.ps1')
 
 Write-Host ''
 Write-Host '=======================================================================' -ForegroundColor Cyan
@@ -333,9 +157,8 @@ Write-Host 'Etape 2 : Interrogation Oracle...' -ForegroundColor Yellow
 
 $LogDir = if ($env:CONTROLE_FLUX_LOG_DIR) { $env:CONTROLE_FLUX_LOG_DIR } else { Join-Path $ScriptDir 'Logs' }
 if (-not (Test-Path $LogDir)) { New-Item -ItemType Directory -Path $LogDir | Out-Null }
-$Timestamp         = Get-Date -Format 'ddMMyyyy_HHmmss'
-$FichierRapportCsv = Join-Path $LogDir "Rapport_Oracle_FAC02_${Timestamp}.csv"
-$FichierSqlTmp     = Join-Path $LogDir "requetes_fac02_${Timestamp}.sql"
+$Timestamp     = Get-Date -Format 'ddMMyyyy_HHmmss'
+$FichierSqlTmp = Join-Path $LogDir "requetes_fac02_${Timestamp}.sql"
 
 $b = $FichierBase.Replace("'", "''")
 
@@ -553,24 +376,37 @@ foreach ($d in $SrcDet.Values) {
 # =====================================================================
 #  5. EXPORT ET SYNTHESE
 # =====================================================================
-#  Rapport unique : un classeur Excel a 2 onglets (Synthese + Detail
-#  Factures). Les CSV ne sont produits qu'en secours, si Excel est absent.
-$FichierRapportXlsx = Join-Path $LogDir "Rapport_Oracle_FAC02_${Timestamp}.xlsx"
-$xlsxOk = Export-RapportExcel -CheminXlsx $FichierRapportXlsx `
-    -Titre 'CONTROLE FAC02 CLIENTS' `
-    -Synthese @($Tableau) -ColSynthese @(
-        'Portefeuille', 'Fichier', 'Nb Factures Fichier', 'Montant Fichier',
-        'Nb Factures Oracle', 'Montant Oracle', 'Nb Lignes Interface', 'Montant Interface', 'Statut') `
-    -Detail @($TableauDetail) -ColDetail @(
-        'Portefeuille', 'Numero Piece', 'Reference Facture', 'Date Piece',
-        'Montant Fichier', 'Montant Oracle', 'Montant Interface', 'Statut')
+#  Les interrogations Oracle sont ajoutees au classeur de synthese du flux
+#  (celui produit par ctl_fac02.py) : un seul rapport par controle.
+$ColSynthese = @(
+    'Portefeuille', 'Fichier', 'Nb Factures Fichier', 'Montant Fichier',
+    'Nb Factures Oracle', 'Montant Oracle', 'Nb Lignes Interface',
+    'Montant Interface', 'Statut')
+$ColDetail = @(
+    'Portefeuille', 'Numero Piece', 'Reference Facture', 'Date Piece',
+    'Montant Fichier', 'Montant Oracle', 'Montant Interface', 'Statut')
+$horodatage = Get-Date -Format 'dd/MM/yyyy HH:mm:ss'
 
-$FichierDetailCsv = $null
-if (-not $xlsxOk) {
-    $Tableau | Export-Csv -Path $FichierRapportCsv -Delimiter ';' -NoTypeInformation -Encoding UTF8
-    $FichierDetailCsv = Join-Path $LogDir "Rapport_Oracle_FAC02_Detail_${Timestamp}.csv"
-    $TableauDetail | Export-Csv -Path $FichierDetailCsv -Delimiter ';' -NoTypeInformation -Encoding UTF8
-}
+$Classeur = Export-OngletsOracle -Src $CheminAbsolu.Path `
+    -Prefixe 'FAC02_SYNTHESE' -DossierTravail $ScriptDir -Onglets @(
+    [ordered]@{
+        nom            = 'Synthese Oracle'
+        titre          = 'CONTROLE FAC02 CLIENTS - SYNTHESE ORACLE PAR PORTEFEUILLE'
+        sous_titre     = "Fichier : $NomFichier  |  Execution : $horodatage"
+        colonnes       = $ColSynthese
+        colonne_statut = 'Statut'
+        valeurs_ok     = @('INTEGREE')
+        lignes         = (ConvertTo-LignesOnglet $Tableau $ColSynthese)
+    },
+    [ordered]@{
+        nom            = 'Detail Oracle'
+        titre          = 'CONTROLE FAC02 CLIENTS - DETAIL FACTURE PAR FACTURE'
+        sous_titre     = "Fichier : $NomFichier  |  Execution : $horodatage"
+        colonnes       = $ColDetail
+        colonne_statut = 'Statut'
+        valeurs_ok     = @('INTEGREE')
+        lignes         = (ConvertTo-LignesOnglet $TableauDetail $ColDetail)
+    })
 
 Write-Host ''
 Write-Host '=======================================================================' -ForegroundColor Cyan
@@ -583,11 +419,8 @@ Write-Host ("  {0,-26} : {1}" -f 'Autres (absent/ecart...)', $nbAutre) -Foregrou
 Write-Host ("  {0,-26} : {1}" -f 'Factures controlees', $SrcDet.Count)
 Write-Host ("  {0,-26} : {1}" -f 'Factures en anomalie', $nbDetAnomalie) -ForegroundColor $(if ($nbDetAnomalie -gt 0) { 'Red' } else { 'Green' })
 Write-Host ("  {0,-26} : {1}" -f 'Duree Oracle', "${duree}s")
-if ($xlsxOk) {
-    Write-Host ("  {0,-26} : {1}" -f 'Rapport (Excel)', $FichierRapportXlsx) -ForegroundColor Green
-} else {
-    Write-Host ("  {0,-26} : {1}" -f 'Rapport (CSV)', $FichierRapportCsv) -ForegroundColor Green
-    Write-Host ("  {0,-26} : {1}" -f 'Detail factures (CSV)', $FichierDetailCsv) -ForegroundColor Green
+if ($Classeur) {
+    Write-Host ("  {0,-26} : {1}" -f 'Rapport (Excel)', $Classeur) -ForegroundColor Green
 }
 Write-Host '=======================================================================' -ForegroundColor Cyan
 Write-Host ''
