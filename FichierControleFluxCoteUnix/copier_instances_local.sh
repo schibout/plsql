@@ -138,11 +138,9 @@ done
 
 resoudre_flux "$FLUX_CODE" "$FLUX_TYPE"
 INSTANCES_DIR="${FILEREPOSITORY}/${FLUX_NAME}/INSTANCES"
-case "$FLUX_TYPE" in
-    "CLIENT")      LANCEUR_WINDOWS="controleClient.bat" ;;
-    "FOURNISSEUR") LANCEUR_WINDOWS="controleFournisseur.bat" ;;
-    "GL")          LANCEUR_WINDOWS="controleGL.bat" ;;
-esac
+# Cote Windows, un seul lanceur : il detecte lui-meme le type de flux contenu
+# dans le dossier, il n'y a plus a choisir entre controleClient/Fournisseur/GL.
+LANCEUR_WINDOWS="controle.bat"
 # Le suffixe du dossier local contiendra maintenant le type et le code (ex: FOURNISSEUR_VHC)
 DEST_SUFFIX="${FLUX_TYPE}_${FLUX_CODE}"
 
@@ -183,10 +181,16 @@ echo "Les logs de copie seront enregistrés dans le fichier : ./${LOG_FILE}"
     else
         echo "Opération de copie terminée avec succès."
         echo "$total_copied_count instance(s) copiée(s) dans ./${DEST_DIR_NAME}"
-        if [ -n "$LANCEUR_WINDOWS" ]; then
+        echo ""
+        echo "Étape suivante (Windows) : glisser le dossier d'export complet"
+        echo "./${DEST_DIR_NAME} sur $LANCEUR_WINDOWS"
+        echo "Le rapport produit portera le nom du dossier :"
+        echo "rapport/<FLUX>_SYNTHESE_${DEST_DIR_NAME}.xlsx"
+        if [ "$total_copied_count" -gt 1 ]; then
             echo ""
-            echo "Étape suivante (Windows) : glisser le dossier d'export complet"
-            echo "./${DEST_DIR_NAME} sur $LANCEUR_WINDOWS"
+            echo "Attention : $total_copied_count instances dans le meme dossier."
+            echo "Le controle ne traite que la plus recente et produit un seul"
+            echo "rapport. Copier chaque instance a part pour toutes les controler."
         fi
     fi
 

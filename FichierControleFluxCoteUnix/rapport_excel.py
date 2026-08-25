@@ -82,19 +82,24 @@ def chemin_rapport(src, prefixe):
 
     La regle doit rester deterministe : le controle local cree le classeur,
     puis le controle Oracle le retrouve pour y ajouter ses onglets.
-    Le classeur porte le nom du dossier de flux ; a defaut (SRC isole hors
-    d'un dossier d'export), l'horodatage du fichier SRC sert de repli.
+
+    Le classeur porte le seul nom du dossier de flux, celui passe a
+    controle.bat : 10082026_FOURNISSEUR_CEG.xlsx. Ce nom identifie deja la
+    date, le type de flux et le code, le prefixe n'apporterait rien.
+    Pour un SRC isole hors d'un dossier d'export, le prefixe du flux et
+    l'horodatage du fichier prennent le relais.
     """
-    suffixe = nom_export(src)
-    if not suffixe:
+    dossier = os.environ.get("CONTROLE_FLUX_RAPPORT_DIR") or os.path.join(
+        os.path.dirname(os.path.abspath(__file__)), "rapport"
+    )
+    nom = nom_export(src)
+    if not nom:
         correspondance = re.search(
             r"_(\d{6}-\d{6})(?:_|\.)", os.path.basename(str(src))
         )
         suffixe = correspondance.group(1) if correspondance else "rapport"
-    dossier = os.environ.get("CONTROLE_FLUX_RAPPORT_DIR") or os.path.join(
-        os.path.dirname(os.path.abspath(__file__)), "rapport"
-    )
-    return os.path.join(dossier, "%s_%s.xlsx" % (prefixe, suffixe))
+        nom = "%s_%s" % (prefixe, suffixe)
+    return os.path.join(dossier, "%s.xlsx" % nom)
 
 
 def format_colonne(intitule):

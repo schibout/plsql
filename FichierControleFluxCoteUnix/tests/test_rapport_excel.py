@@ -1,4 +1,5 @@
 import json
+import os
 
 import pytest
 from openpyxl import Workbook, load_workbook
@@ -45,15 +46,25 @@ def src_d_export(tmp_path, flux="10082026_FOURNISSEUR_CEG", export="c0603921"):
     return src
 
 
-def test_le_classeur_porte_le_nom_du_dossier_de_flux(monkeypatch, tmp_path):
+def test_le_classeur_porte_le_seul_nom_du_dossier_de_flux(monkeypatch, tmp_path):
     monkeypatch.setenv("CONTROLE_FLUX_RAPPORT_DIR", str(tmp_path / "rapport"))
     src = src_d_export(tmp_path)
 
     chemin = rapport_excel.chemin_rapport(src, "FAC02_SYNTHESE_FOURNISSEURS")
 
-    assert chemin.endswith(
-        "FAC02_SYNTHESE_FOURNISSEURS_10082026_FOURNISSEUR_CEG.xlsx"
+    assert chemin == str(
+        tmp_path / "rapport" / "10082026_FOURNISSEUR_CEG.xlsx"
     )
+
+
+def test_le_prefixe_du_flux_n_apparait_pas_dans_le_nom(monkeypatch, tmp_path):
+    monkeypatch.setenv("CONTROLE_FLUX_RAPPORT_DIR", str(tmp_path / "rapport"))
+    src = src_d_export(tmp_path)
+
+    for prefixe in ("FAC02_SYNTHESE", "FAC02_SYNTHESE_FOURNISSEURS", "GL_SYNTHESE"):
+        assert os.path.basename(
+            rapport_excel.chemin_rapport(src, prefixe)
+        ) == "10082026_FOURNISSEUR_CEG.xlsx"
 
 
 def test_le_nom_ne_depend_pas_de_l_argument_saisi(monkeypatch, tmp_path):
