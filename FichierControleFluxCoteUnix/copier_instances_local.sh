@@ -42,7 +42,7 @@ resoudre_flux() {
         "BIO"|"FAS"|"FGE"|"GAZ"|"GCA"|"GER"|"HAC"|"IGP"|"ING"|"PAR"|"RNE"|"SVD"|"VTC") 
             prefixe="FAC02" 
             ;;
-        "CEL")       prefixe="CEL01" ;;
+        "CEL"|"CEC"|"CEG"|"CEE") prefixe="CEL01" ;;
         "CMB"|"HAF") prefixe="PRN01" ;;
         "CYC"|"CYF") prefixe="HEF01" ;;
         "NOT")       prefixe="NOT01" ;;
