@@ -3,7 +3,7 @@ from pathlib import Path
 
 import pytest
 
-from selectionner_source import ErreurSelection, selectionner_source
+from selectionner_source import ErreurSelection, detecter_flux, selectionner_source
 
 
 @pytest.mark.parametrize(
@@ -72,3 +72,35 @@ def test_refuse_un_fichier_place_hors_source(tmp_path):
 def test_refuse_un_type_de_flux_inconnu(tmp_path):
     with pytest.raises(ErreurSelection, match="inconnu"):
         selectionner_source("AUTRE", tmp_path)
+
+
+def creer_src(tmp_path, dossier, nom):
+    source = tmp_path / dossier / "export" / "SOURCE"
+    source.mkdir(parents=True, exist_ok=True)
+    fichier = source / nom
+    fichier.write_text("test", encoding="ascii")
+    return fichier
+
+
+def test_detecte_le_flux_unique_d_un_dossier_d_export(tmp_path):
+    attendu = creer_src(tmp_path, "10082026_FOURNISSEUR_CEG",
+                        "CEL01_SRC_FACTURESFOURNISSEURS_TEST.csv")
+
+    assert detecter_flux(tmp_path) == {"FOURNISSEUR": attendu.resolve()}
+
+
+def test_detecte_tous_les_flux_d_un_dossier_parent(tmp_path):
+    client = creer_src(tmp_path, "31072026_FAS", "FAC02_SRC_FACTURESCLIENTS_T.csv")
+    frs = creer_src(tmp_path, "10082026_CEG", "CEL01_SRC_FACTURESFOURNISSEURS_T.csv")
+    gl = creer_src(tmp_path, "04072026_GER", "FAC02_SRC_ECRITURESGL_T.csv")
+
+    assert detecter_flux(tmp_path) == {
+        "CLIENT": client.resolve(),
+        "FOURNISSEUR": frs.resolve(),
+        "GL": gl.resolve(),
+    }
+
+
+def test_detecter_sans_aucun_flux_est_une_erreur_explicite(tmp_path):
+    with pytest.raises(ErreurSelection, match="aucun flux"):
+        detecter_flux(tmp_path)

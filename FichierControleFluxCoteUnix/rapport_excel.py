@@ -58,14 +58,39 @@ PREFIXES_MONTANT = ("montant", "debit", "credit", "ecart")
 PREFIXES_ENTIER = ("nb ",)
 
 
+def nom_export(src):
+    """Nom du dossier de flux d'un export, ou None hors de cette arborescence.
+
+    Un export est range en <dossier de flux>\\<dossier d'export>\\SOURCE\\<SRC>,
+    par exemple 10082026_FOURNISSEUR_CEG\\c060392...\\SOURCE\\CEL01_SRC_...csv :
+    c'est le dossier de flux, celui passe aux lanceurs controle*.bat, qui
+    nomme le rapport. Le nom est deduit du chemin du SRC et non de l'argument
+    saisi, pour rester le meme que l'on passe le dossier, le fichier, ou rien.
+    """
+    chemin = os.path.abspath(str(src))
+    source = os.path.dirname(chemin)
+    if os.path.basename(source).upper() != "SOURCE":
+        return None
+    flux = os.path.dirname(os.path.dirname(source))
+    nom = os.path.basename(flux)
+    # os.path.basename d'une racine de disque ("C:\\") est vide.
+    return nom or None
+
+
 def chemin_rapport(src, prefixe):
-    """Chemin du classeur de synthese d'un flux, deduit du nom du fichier SRC.
+    """Chemin du classeur de synthese d'un flux, deduit du chemin du SRC.
 
     La regle doit rester deterministe : le controle local cree le classeur,
     puis le controle Oracle le retrouve pour y ajouter ses onglets.
+    Le classeur porte le nom du dossier de flux ; a defaut (SRC isole hors
+    d'un dossier d'export), l'horodatage du fichier SRC sert de repli.
     """
-    correspondance = re.search(r"_(\d{6}-\d{6})(?:_|\.)", os.path.basename(str(src)))
-    suffixe = correspondance.group(1) if correspondance else "rapport"
+    suffixe = nom_export(src)
+    if not suffixe:
+        correspondance = re.search(
+            r"_(\d{6}-\d{6})(?:_|\.)", os.path.basename(str(src))
+        )
+        suffixe = correspondance.group(1) if correspondance else "rapport"
     dossier = os.environ.get("CONTROLE_FLUX_RAPPORT_DIR") or os.path.join(
         os.path.dirname(os.path.abspath(__file__)), "rapport"
     )

@@ -37,7 +37,46 @@ def onglet(nom="Detail Oracle", colonnes=None, lignes=None):
     }
 
 
-def test_le_chemin_du_classeur_est_deduit_de_l_horodatage_du_src(monkeypatch, tmp_path):
+def src_d_export(tmp_path, flux="10082026_FOURNISSEUR_CEG", export="c0603921"):
+    source = tmp_path / flux / export / "SOURCE"
+    source.mkdir(parents=True)
+    src = source / NOM_SRC
+    src.write_text("", encoding="latin-1")
+    return src
+
+
+def test_le_classeur_porte_le_nom_du_dossier_de_flux(monkeypatch, tmp_path):
+    monkeypatch.setenv("CONTROLE_FLUX_RAPPORT_DIR", str(tmp_path / "rapport"))
+    src = src_d_export(tmp_path)
+
+    chemin = rapport_excel.chemin_rapport(src, "FAC02_SYNTHESE_FOURNISSEURS")
+
+    assert chemin.endswith(
+        "FAC02_SYNTHESE_FOURNISSEURS_10082026_FOURNISSEUR_CEG.xlsx"
+    )
+
+
+def test_le_nom_ne_depend_pas_de_l_argument_saisi(monkeypatch, tmp_path):
+    """Dossier de flux, dossier d'export ou fichier : meme classeur au final."""
+    monkeypatch.setenv("CONTROLE_FLUX_RAPPORT_DIR", str(tmp_path / "rapport"))
+    src = src_d_export(tmp_path)
+
+    assert rapport_excel.chemin_rapport(src, "P") == rapport_excel.chemin_rapport(
+        str(src).replace("\\", "/"), "P"
+    )
+
+
+def test_deux_exports_du_meme_flux_donnent_le_meme_classeur(monkeypatch, tmp_path):
+    monkeypatch.setenv("CONTROLE_FLUX_RAPPORT_DIR", str(tmp_path / "rapport"))
+    premier = src_d_export(tmp_path, export="export1")
+    second = src_d_export(tmp_path, export="export2")
+
+    assert rapport_excel.chemin_rapport(premier, "P") == rapport_excel.chemin_rapport(
+        second, "P"
+    )
+
+
+def test_src_hors_dossier_d_export_retombe_sur_l_horodatage(monkeypatch, tmp_path):
     monkeypatch.setenv("CONTROLE_FLUX_RAPPORT_DIR", str(tmp_path))
 
     chemin = rapport_excel.chemin_rapport(NOM_SRC, "FAC02_SYNTHESE_FOURNISSEURS")
@@ -45,17 +84,7 @@ def test_le_chemin_du_classeur_est_deduit_de_l_horodatage_du_src(monkeypatch, tm
     assert chemin == str(tmp_path / "FAC02_SYNTHESE_FOURNISSEURS_100826-201628.xlsx")
 
 
-def test_le_chemin_est_stable_entre_deux_appels(monkeypatch, tmp_path):
-    """Le controle local cree le classeur, le controle Oracle doit le retrouver."""
-    monkeypatch.setenv("CONTROLE_FLUX_RAPPORT_DIR", str(tmp_path))
-
-    premier = rapport_excel.chemin_rapport(NOM_SRC, "FAC02_SYNTHESE")
-    second = rapport_excel.chemin_rapport("dossier/" + NOM_SRC, "FAC02_SYNTHESE")
-
-    assert premier == second
-
-
-def test_src_sans_horodatage_reste_deterministe(monkeypatch, tmp_path):
+def test_src_sans_horodatage_ni_dossier_reste_deterministe(monkeypatch, tmp_path):
     monkeypatch.setenv("CONTROLE_FLUX_RAPPORT_DIR", str(tmp_path))
 
     chemin = rapport_excel.chemin_rapport("SANS_DATE.csv", "GL_SYNTHESE")

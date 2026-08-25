@@ -1,6 +1,14 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""Selection commune du fichier SRC d'un export CLIENT, FOURNISSEUR ou GL."""
+"""Selection commune du fichier SRC d'un export CLIENT, FOURNISSEUR ou GL.
+
+Deux usages :
+  selectionner_source.py CLIENT|FOURNISSEUR|GL [dossier|fichier_SRC]
+      affiche le chemin du SRC de ce flux (comportement historique) ;
+  selectionner_source.py --detecter [dossier|fichier_SRC]
+      affiche une ligne "TYPE;chemin" par flux present sous l'entree, ce qui
+      permet au lanceur unique controle.bat de savoir quoi controler.
+"""
 
 import fnmatch
 import sys
@@ -60,16 +68,43 @@ def selectionner_source(type_flux: str, entree=None) -> Path:
     ).resolve()
 
 
+def detecter_flux(entree=None):
+    """Types de flux presents sous l'entree, avec leur SRC le plus recent.
+
+    Renvoie un dictionnaire {type: chemin}, dans l'ordre CLIENT, FOURNISSEUR,
+    GL. Un dossier d'export n'en contient qu'un ; un dossier parent peut en
+    contenir plusieurs, qui sont alors tous controles.
+    """
+    trouves = {}
+    for type_flux in MOTIFS:
+        try:
+            trouves[type_flux] = selectionner_source(type_flux, entree)
+        except ErreurSelection:
+            continue
+    if not trouves:
+        raise ErreurSelection(
+            "aucun flux CLIENT, FOURNISSEUR ou GL trouve sous %s"
+            % (entree if entree else "le dossier du lanceur")
+        )
+    return trouves
+
+
 def main(arguments=None) -> int:
     args = list(sys.argv[1:] if arguments is None else arguments)
     if not 1 <= len(args) <= 2:
         print(
-            "ERREUR : usage : selectionner_source.py CLIENT|FOURNISSEUR|GL [dossier|fichier_SRC]",
+            "ERREUR : usage : selectionner_source.py CLIENT|FOURNISSEUR|GL|--detecter "
+            "[dossier|fichier_SRC]",
             file=sys.stderr,
         )
         return 1
+    entree = args[1] if len(args) == 2 else None
     try:
-        print(selectionner_source(args[0], args[1] if len(args) == 2 else None))
+        if args[0] == "--detecter":
+            for type_flux, chemin in detecter_flux(entree).items():
+                print("%s;%s" % (type_flux, chemin))
+        else:
+            print(selectionner_source(args[0], entree))
         return 0
     except ErreurSelection as exc:
         print("ERREUR : %s" % exc, file=sys.stderr)

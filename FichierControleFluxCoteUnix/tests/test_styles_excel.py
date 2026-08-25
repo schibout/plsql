@@ -55,3 +55,10 @@ def test_le_module_partage_reprend_la_palette_des_rapports():
     assert "freeze_panes" in script
     assert "showGridLines = False" in script
     assert "auto_filter.ref" in script
+
+
+def test_le_lanceur_unique_delegue_aux_trois_flux():
+    lanceur = lire("controle.bat")
+    assert "selectionner_source.py\" --detecter" in lanceur
+    for bat in ("controleClient.bat", "controleFournisseur.bat", "controleGL.bat"):
+        assert bat in lanceur
