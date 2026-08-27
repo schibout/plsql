@@ -20,7 +20,12 @@ param(
     # Ne pas generer le rapport HTML (le CSV reste produit)
     [switch] $PasDeRapport,
     # Generer le rapport HTML sans l'ouvrir dans le navigateur
-    [switch] $PasDOuverture
+    [switch] $PasDOuverture,
+    # Poste sans acces Oracle : aucune requete n'est emise. Le fichier
+    # d'entree est restitue integralement, colonnes Oracle vides et statut
+    # NON CONTROLE. Sert a verifier la lecture du CSV et le rendu du
+    # rapport sur un micro qui n'a pas la base.
+    [switch] $SansOracle
 )
 
 function Html-Echap {
@@ -200,6 +205,17 @@ CROSS JOIN
     return ''
 }
 
+# Une ligne dont toutes les colonnes sont vides ne vient pas des donnees :
+# c'est la ligne blanche de fin de fichier. C'est le seul cas ou une ligne
+# du CSV est ecartee.
+function Test-LigneVide {
+    param($Ligne)
+    foreach ($p in $Ligne.PSObject.Properties) {
+        if (-not [string]::IsNullOrWhiteSpace([string]$p.Value)) { return $false }
+    }
+    return $true
+}
+
 # =====================================================================
 #  1. CONFIGURATION ORACLE
 # =====================================================================
@@ -224,15 +240,22 @@ $CONNECT_STR = "${ORA_USER}/${ORA_PWD}@${ORA_DSN}"
 # absent du PATH, chaque interrogation echouait en silence et le rapport
 # affichait 0 partout, donc KO sur toutes les lignes sans explication.
 $SQL_CMD = $null
-foreach ($c in @('sqlplus', 'sqlcl', 'sql')) {
-    if (Get-Command $c -ErrorAction SilentlyContinue) { $SQL_CMD = $c; break }
+if ($SansOracle) {
+    Write-Host '   Mode      : SANS ORACLE - aucune requete ne sera emise' -ForegroundColor Yellow
+    Write-Host '               Le rapport restitue le fichier d''entree, sans reconciliation.' -ForegroundColor Yellow
+} else {
+    foreach ($c in @('sqlplus', 'sqlcl', 'sql')) {
+        if (Get-Command $c -ErrorAction SilentlyContinue) { $SQL_CMD = $c; break }
+    }
+    if ($null -eq $SQL_CMD) {
+        Write-Host '[ERREUR] Aucun client Oracle trouve (sqlplus, sqlcl ou sql) dans le PATH.' -ForegroundColor Red
+        Write-Host '         Sur un poste sans acces a la base, relancer avec -SansOracle' -ForegroundColor Yellow
+        Write-Host '         pour produire le rapport sans reconciliation.' -ForegroundColor Yellow
+        exit $EXIT_TECH
+    }
+    Write-Host "   Connexion : ${ORA_USER}@${ORA_DSN}" -ForegroundColor Green
+    Write-Host "   Client    : $SQL_CMD" -ForegroundColor Green
 }
-if ($null -eq $SQL_CMD) {
-    Write-Host '[ERREUR] Aucun client Oracle trouve (sqlplus, sqlcl ou sql) dans le PATH.' -ForegroundColor Red
-    exit $EXIT_TECH
-}
-Write-Host "   Connexion : ${ORA_USER}@${ORA_DSN}" -ForegroundColor Green
-Write-Host "   Client    : $SQL_CMD" -ForegroundColor Green
 
 # =====================================================================
 #  2. FICHIER D'ENTREE
@@ -267,7 +290,8 @@ if ($rawContent.Count -gt 0) {
 }
 
 $Lignes = @($rawContent | ConvertFrom-Csv -Delimiter $delimiter)
-Write-Host "   Lignes lues : $($Lignes.Count)" -ForegroundColor Green
+$NbLignesDonnees = @($Lignes | Where-Object { -not (Test-LigneVide $_) }).Count
+Write-Host "   Lignes lues : $NbLignesDonnees" -ForegroundColor Green
 Write-Host ''
 
 # =====================================================================
@@ -276,9 +300,9 @@ Write-Host ''
 $SommeAmontParCle      = @{}
 $SommeEcartDebitParCle = @{}
 foreach ($ligne in $Lignes) {
+    if (Test-LigneVide $ligne) { continue }
     $f   = (Get-ColValue $ligne 'Folio').Trim()
     $fic = (Get-ColValue $ligne 'Nom fichier transmis').Trim()
-    if ([string]::IsNullOrWhiteSpace($fic) -or [string]::IsNullOrWhiteSpace($f)) { continue }
 
     $cle = "$f|$fic"
     if (-not $SommeAmontParCle.ContainsKey($cle)) {
@@ -299,44 +323,69 @@ Write-Host 'Etape 1 : Preparation des interrogations Oracle...' -ForegroundColor
 $couples    = New-Object System.Collections.Generic.List[object]
 $idxParCle  = @{}
 $lignesUtiles = New-Object System.Collections.Generic.List[object]
+$nbTypeAutre  = 0
 
 foreach ($ligne in $Lignes) {
+    # Seule une ligne entierement vide est ignoree (fin de fichier). Toute
+    # autre ligne du CSV se retrouve dans le rapport : le nombre de lignes en
+    # sortie doit etre egal au nombre de lignes de donnees en entree.
+    if (Test-LigneVide $ligne) { continue }
+
     $folio   = (Get-ColValue $ligne 'Folio').Trim()
     $fichier = (Get-ColValue $ligne 'Nom fichier transmis').Trim()
-    if ([string]::IsNullOrWhiteSpace($fichier) -or [string]::IsNullOrWhiteSpace($folio)) { continue }
 
+    # Un nom de fichier hors des trois natures connues n'est plus ecarte : la
+    # ligne est reprise telle quelle avec le type 'AUTRE'. Elle ne peut pas
+    # etre interrogee dans Oracle (aucune requete metier ne lui correspond),
+    # elle ressort donc en NON CONTROLE plutot que de disparaitre du rapport.
+    # Idem pour une ligne dont la colonne 'Nom fichier transmis' est vide :
+    # c'est le cas quand un ';' saisi dans le commentaire a decale les
+    # colonnes. La ligne est restituee telle qu'elle a ete lue.
     $type = ''
     if     ($fichier -match 'CLIENTS')      { $type = 'CLIENTS' }
     elseif ($fichier -match 'FOURNISSEURS') { $type = 'FOURNISSEURS' }
     elseif ($fichier -match 'GL' -or $fichier -match 'GRAND LIVRE') { $type = 'GL' }
-    else { continue }
+    else { $type = 'AUTRE' }
+
+    # Sans folio ou sans nom de fichier, aucune requete n'est possible.
+    if ([string]::IsNullOrWhiteSpace($fichier) -or [string]::IsNullOrWhiteSpace($folio)) { $type = 'AUTRE' }
 
     # Base du nom de fichier, sans le suffixe de transport _ST_..._<GUID>_001
     $fichierBase = $fichier
     $posST = $fichier.IndexOf('_ST_')
     if ($posST -gt 0) { $fichierBase = $fichier.Substring(0, $posST) }
 
-    $cleOracle = "$folio|$fichierBase|$type"
-    if (-not $idxParCle.ContainsKey($cleOracle)) {
-        $idxParCle[$cleOracle] = $couples.Count
-        $couples.Add([PSCustomObject]@{
-            Cle = $couples.Count; Folio = $folio; FichierBase = $fichierBase; Type = $type
-        })
+    # IdxOracle = -1 : pas d'interrogation Oracle pour cette ligne.
+    $idxOracle = -1
+    if ($type -ne 'AUTRE') {
+        $cleOracle = "$folio|$fichierBase|$type"
+        if (-not $idxParCle.ContainsKey($cleOracle)) {
+            $idxParCle[$cleOracle] = $couples.Count
+            $couples.Add([PSCustomObject]@{
+                Cle = $couples.Count; Folio = $folio; FichierBase = $fichierBase; Type = $type
+            })
+        }
+        $idxOracle = $idxParCle[$cleOracle]
+    } else {
+        $nbTypeAutre++
     }
 
     $lignesUtiles.Add([PSCustomObject]@{
         Ligne = $ligne; Folio = $folio; Fichier = $fichier
-        Type = $type; IdxOracle = $idxParCle[$cleOracle]
+        Type = $type; IdxOracle = $idxOracle
     })
 }
 
 if ($lignesUtiles.Count -eq 0) {
-    Write-Host "[ERREUR] Aucune donnee valide. Verifier les colonnes 'Folio' et 'Nom fichier transmis'." -ForegroundColor Red
+    Write-Host "[ERREUR] Le fichier ne contient aucune ligne de donnees." -ForegroundColor Red
     Write-Host "         Colonnes detectees : $(($Lignes[0].PSObject.Properties.Name) -join ' | ')" -ForegroundColor Yellow
     exit $EXIT_TECH
 }
 
 Write-Host "   Lignes a controler : $($lignesUtiles.Count)" -ForegroundColor Green
+if ($nbTypeAutre -gt 0) {
+    Write-Host "   dont type AUTRE (non interrogeable) : $nbTypeAutre" -ForegroundColor Yellow
+}
 Write-Host "   Interrogations Oracle distinctes : $($couples.Count)" -ForegroundColor Green
 Write-Host ''
 
@@ -344,6 +393,17 @@ Write-Host ''
 #  5. UNE SEULE SESSION ORACLE POUR TOUTES LES INTERROGATIONS
 # =====================================================================
 Write-Host 'Etape 2 : Interrogation Oracle...' -ForegroundColor Yellow
+
+if ($SansOracle -or $couples.Count -eq 0) {
+    if ($SansOracle) {
+        Write-Host '   Mode SANS ORACLE : interrogation ignoree.' -ForegroundColor Yellow
+    } else {
+        Write-Host '   Aucune interrogation a emettre.' -ForegroundColor Yellow
+    }
+    $resultats = @{}
+    $duree     = 0
+    Write-Host ''
+} else {
 
 $sb = New-Object System.Text.StringBuilder
 [void]$sb.AppendLine('SET PAGESIZE 0')
@@ -413,11 +473,13 @@ if ($nbSansReponse -gt 0) {
 }
 Write-Host ''
 
+}
+
 # =====================================================================
 #  6. RESTITUTION
 # =====================================================================
 $TableauResultats = [System.Collections.Generic.List[PSCustomObject]]::new()
-$nbOk = 0; $nbKo = 0; $nbIndet = 0
+$nbOk = 0; $nbKo = 0; $nbIndet = 0; $nbNonControle = 0
 
 Write-Host ("{0,-6} | {1,-12} | {2,-40} | {3,8} | {4,15} | {5,15} | {6,12} | {7,12} | {8,12} | {9,9} | {10,15} | {11,15} | {12,8} | {13,15} | {14,-12} | {15}" -f `
     'FOLIO', 'TYPE', 'FICHIER', 'NB AMONT', 'MT AMONT', 'SOMME AMONT', 'ECART DEBIT', 'ECART CREDIT', 'SOMME ECART', 'NB ORA', 'MT ORACLE', 'MT INTERFACE', 'ECART NB', 'ECART MT', 'STATUT', 'COMMENTAIRE')
@@ -441,7 +503,9 @@ foreach ($u in $lignesUtiles) {
     $txtEcartCredit    = Get-ColValue $ligne @('Ecarts Crédit', 'Ecarts Credit', 'Ecart Crédit', 'Ecart Credit')
     $txtCommentaire    = (Get-ColValue $ligne @('Commentaire', 'Commentaires')).Trim()
 
-    $ora = $resultats[$u.IdxOracle]
+    # IdxOracle a -1 = type AUTRE : aucune requete n'a ete emise, la ligne
+    # reste dans le rapport mais sans contrepartie Oracle.
+    $ora = if ($u.IdxOracle -ge 0) { $resultats[$u.IdxOracle] } else { $null }
     $repondu = ($null -ne $ora)
     if ($repondu) {
         $txtNbOra = $ora.Nb; $txtMtOra = $ora.Mt; $txtMtInterface = $ora.Interface
@@ -455,14 +519,31 @@ foreach ($u in $lignesUtiles) {
     $ecart_credit = Parse-Montant $txtEcartCredit
     $nb_amont     = Parse-Montant $txtAppAmontNb
     $nb_ora       = Parse-Montant $txtNbOra
-    $ecart_nb_calcule = $nb_amont - $nb_ora
-    $ecart_mt_calcule = $mt_app_amont - $mt_ora
+    # Une ligne non interrogee n'a pas d'ecart calculable : laisser 0 ferait
+    # croire a une concordance, laisser le montant amont ferait croire a un
+    # ecart total. Les deux colonnes restent donc vides.
+    # En mode -SansOracle aucune requete n'a ete emise : toutes les lignes
+    # sont non controlees, y compris celles dont le type est connu. Les
+    # afficher INDETERMINE avec un ecart egal au montant amont laisserait
+    # croire a un ecart massif alors que rien n'a ete compare.
+    $controlable = ($u.IdxOracle -ge 0 -and -not $SansOracle)
+    if ($controlable) {
+        $ecart_nb_calcule = $nb_amont - $nb_ora
+        $ecart_mt_calcule = $mt_app_amont - $mt_ora
+    } else {
+        $ecart_nb_calcule = ''
+        $ecart_mt_calcule = ''
+    }
 
     $cle = "$folio|$fichier"
     $somme_amont_fichier       = $SommeAmontParCle[$cle]
     $somme_ecart_debit_fichier = $SommeEcartDebitParCle[$cle]
 
-    if (-not $repondu) {
+    if (-not $controlable) {
+        # Type de flux inconnu, ou colonnes decalees : la ligne figure au
+        # rapport telle qu'elle a ete lue, sans verdict de reconciliation.
+        $statut = 'NON CONTROLE'; $couleur = 'DarkGray'; $nbNonControle++
+    } elseif (-not $repondu) {
         $statut = 'INDETERMINE'; $couleur = 'Yellow'; $nbIndet++
     } elseif ($ecart_nb_calcule -eq 0 -and $ecart_mt_calcule -eq 0) {
         $statut = 'OK'; $couleur = 'Green'; $nbOk++
@@ -470,9 +551,11 @@ foreach ($u in $lignesUtiles) {
         $statut = 'KO'; $couleur = 'Red'; $nbKo++
     }
 
-    Write-Host ("{0,-6} | {1,-12} | {2,-40} | {3,8:N0} | {4,15:N2} | {5,15:N2} | {6,12:N2} | {7,12:N2} | {8,12:N2} | {9,9:N0} | {10,15:N2} | {11,15:N2} | {12,8:N0} | {13,15:N2} | " -f `
+    $affEcartNb = if ($controlable) { '{0:N0}' -f $ecart_nb_calcule } else { '-' }
+    $affEcartMt = if ($controlable) { '{0:N2}' -f $ecart_mt_calcule } else { '-' }
+    Write-Host ("{0,-6} | {1,-12} | {2,-40} | {3,8:N0} | {4,15:N2} | {5,15:N2} | {6,12:N2} | {7,12:N2} | {8,12:N2} | {9,9:N0} | {10,15:N2} | {11,15:N2} | {12,8} | {13,15} | " -f `
         $folio, $type, $fichier, $nb_amont, $mt_app_amont, $somme_amont_fichier, $ecart_debit, $ecart_credit, `
-        $somme_ecart_debit_fichier, $nb_ora, $mt_ora, (Parse-Montant $txtMtInterface), $ecart_nb_calcule, $ecart_mt_calcule) -NoNewline
+        $somme_ecart_debit_fichier, $nb_ora, $mt_ora, (Parse-Montant $txtMtInterface), $affEcartNb, $affEcartMt) -NoNewline
     Write-Host ("{0,-12}" -f $statut) -ForegroundColor $couleur -NoNewline
 
     # Commentaire tronque a l'ecran pour ne pas casser l'alignement ; la
@@ -548,6 +631,16 @@ Write-Host ("  {0,-26} : {1}" -f 'En ecart (KO)', $nbKo)          -ForegroundCol
 if ($nbIndet -gt 0) {
     Write-Host ("  {0,-26} : {1}" -f 'Indeterminees', $nbIndet)   -ForegroundColor Yellow
 }
+if ($nbNonControle -gt 0) {
+    Write-Host ("  {0,-26} : {1}" -f 'Non controlees', $nbNonControle) -ForegroundColor DarkGray
+    Write-Host '     Nature de flux inconnue, colonnes decalees ou mode -SansOracle :' -ForegroundColor DarkGray
+    Write-Host '     ces lignes sont restituees telles quelles, sans reconciliation.' -ForegroundColor DarkGray
+}
+# Garde-fou : le rapport doit contenir autant de lignes que le fichier
+# d'entree en comporte de lignes de donnees.
+if ($TableauResultats.Count -ne $NbLignesDonnees) {
+    Write-Host ("  [ATTENTION] {0} ligne(s) de donnees lues, {1} restituee(s)." -f $NbLignesDonnees, $TableauResultats.Count) -ForegroundColor Red
+}
 if ($script:NbMontantsIllisibles -gt 0) {
     Write-Host ("  {0,-26} : {1}" -f 'Montants illisibles', $script:NbMontantsIllisibles) -ForegroundColor Yellow
     Write-Host '     Ces valeurs ont ete comptees comme 0 : relancer avec -Diagnostic pour les voir.' -ForegroundColor Yellow
@@ -564,5 +657,9 @@ if ((-not $PasDeRapport) -and (-not $PasDOuverture) -and (Test-Path $FichierRapp
     Start-Process $FichierRapportHtml
 }
 
+if ($SansOracle) {
+    Write-Host '[INFO] Mode -SansOracle : aucune reconciliation effectuee.' -ForegroundColor Yellow
+    exit $EXIT_OK
+}
 if ($nbKo -gt 0 -or $nbIndet -gt 0) { exit $EXIT_ECART }
 exit $EXIT_OK

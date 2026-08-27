@@ -76,22 +76,25 @@ function New-RapportHtml {
             Commentaire = [string]$r.'Commentaire'
             Statut      = [string]$r.'Statut Verification'
             # Rien nulle part : le flux n'est jamais arrive.
-            OraVide     = ($nbOra -eq 0 -and $mtOra -eq 0 -and $mtInt -eq 0)
+            # Le type AUTRE est exclu : aucune requete Oracle n'a ete emise
+            # pour ces lignes, l'absence de donnees n'y veut rien dire.
+            OraVide     = ([string]$r.'Statut Verification' -ne 'NON CONTROLE' -and $nbOra -eq 0 -and $mtOra -eq 0 -and $mtInt -eq 0)
             # Present en interface mais absent des tables definitives :
             # le fichier a bien ete recu, l'integration n'a pas eu lieu.
             # C'est le cas le plus frequent en pratique, et il appelle une
             # action tres differente d'un simple ecart de montant.
-            EnInterface = ($mtOra -eq 0 -and $mtInt -ne 0)
+            EnInterface = ([string]$r.'Statut Verification' -ne 'NON CONTROLE' -and $mtOra -eq 0 -and $mtInt -ne 0)
         }
     })
 
     $nbOk    = @($enrichi | Where-Object { $_.Statut -eq 'OK' }).Count
     $nbKo    = @($enrichi | Where-Object { $_.Statut -eq 'KO' }).Count
     $nbIndet = @($enrichi | Where-Object { $_.Statut -eq 'INDETERMINE' }).Count
+    $nbNonCtl = @($enrichi | Where-Object { $_.Statut -eq 'NON CONTROLE' }).Count
     $nbVides = @($enrichi | Where-Object { $_.OraVide }).Count
     $nbInter = @($enrichi | Where-Object { $_.EnInterface }).Count
 
-    $montantEnEcart = ($enrichi | Where-Object { $_.Statut -ne 'OK' } |
+    $montantEnEcart = ($enrichi | Where-Object { $_.Statut -ne 'OK' -and $_.Statut -ne 'NON CONTROLE' } |
                        Measure-Object -Property EcartMtCalc -Sum).Sum
     if ($null -eq $montantEnEcart) { $montantEnEcart = 0 }
     $ageMax = ($enrichi | Where-Object { $null -ne $_.Age } | Measure-Object -Property Age -Maximum).Maximum
@@ -116,7 +119,7 @@ function New-RapportHtml {
     $blocSynthese = {
         param($Titre, $Champ, $Limite)
         $g = $enrichi | Group-Object -Property $Champ | ForEach-Object {
-            $mt = ($_.Group | Where-Object { $_.Statut -ne 'OK' } | Measure-Object -Property EcartMtCalc -Sum).Sum
+            $mt = ($_.Group | Where-Object { $_.Statut -ne 'OK' -and $_.Statut -ne 'NON CONTROLE' } | Measure-Object -Property EcartMtCalc -Sum).Sum
             [PSCustomObject]@{
                 Cle   = $_.Name
                 Nb    = $_.Count
@@ -140,7 +143,7 @@ function New-RapportHtml {
                     (& $blocSynthese 'Par folio (15 premiers)' 'Folio' 15)
 
     # ----- Detail : les ecarts d'abord, du plus lourd au plus leger -----
-    $ordre = @{ 'INDETERMINE' = 1; 'KO' = 2; 'OK' = 3 }
+    $ordre = @{ 'INDETERMINE' = 1; 'KO' = 2; 'OK' = 3; 'NON CONTROLE' = 4 }
     $triees = $enrichi | Sort-Object `
         @{ Expression = { if ($ordre.ContainsKey($_.Statut)) { $ordre[$_.Statut] } else { 9 } } },
         @{ Expression = { [math]::Abs([double]$_.EcartMtCalc) }; Descending = $true }
@@ -149,6 +152,7 @@ function New-RapportHtml {
         'OK'          = @{ c = '#0b6b3a'; f = '#d7f2e3' }
         'KO'          = @{ c = '#9b1c1c'; f = '#fbdcdc' }
         'INDETERMINE' = @{ c = '#8a5a00'; f = '#fdeccd' }
+        'NON CONTROLE' = @{ c = '#4a4a4a'; f = '#e6e6e6' }
     }
 
     $htmlLignes = ($triees | ForEach-Object {
@@ -180,11 +184,16 @@ function New-RapportHtml {
         "<td class=""mono fic"" title=""$(ConvertTo-HtmlTexte $_.Fichier)"">$(ConvertTo-HtmlTexte $ficCourt)</td>" +
         "<td class=""num"">$('{0:N0}' -f $_.EcartNbDecl)</td>" +
         "<td class=""num"">$(Format-MontantRapport $_.EcartDbDecl)</td>" +
-        "<td class=""num sep"">$('{0:N0}' -f $_.NbOra)</td>" +
-        "<td class=""num"">$(Format-MontantRapport $_.MtOra)</td>" +
-        "<td class=""num"">$(Format-MontantRapport $_.MtInterface)</td>" +
-        "<td class=""num sep"">$('{0:N0}' -f $_.EcartNbCalc)</td>" +
-        "<td class=""num strong"">$(Format-MontantRapport $_.EcartMtCalc)</td>" +
+        $(if ($_.Statut -eq 'NON CONTROLE') {
+            '<td class="num sep">-</td><td class="num">-</td><td class="num">-</td>' +
+            '<td class="num sep">-</td><td class="num strong">-</td>'
+          } else {
+            "<td class=""num sep"">$('{0:N0}' -f $_.NbOra)</td>" +
+            "<td class=""num"">$(Format-MontantRapport $_.MtOra)</td>" +
+            "<td class=""num"">$(Format-MontantRapport $_.MtInterface)</td>" +
+            "<td class=""num sep"">$('{0:N0}' -f $_.EcartNbCalc)</td>" +
+            "<td class=""num strong"">$(Format-MontantRapport $_.EcartMtCalc)</td>"
+          }) +
         "<td class=""com"">$(ConvertTo-HtmlTexte $_.Commentaire)</td>" +
         "<td><span class=""pill"" style=""color:$($s.c);background:$($s.f)"">$(ConvertTo-HtmlTexte $_.Statut)</span> $marqueur</td>" +
         '</tr>'
@@ -204,6 +213,12 @@ function New-RapportHtml {
         $avertVides += "<div class=""note""><strong>$nbInter ligne(s) presentes en interface mais absentes des tables definitives</strong> " +
                        "&mdash; le fichier est bien arrive, l'integration n'a pas eu lieu. Ce n'est pas un ecart de " +
                        "montant : c'est un traitement d'integration a relancer ou a debloquer.</div>"
+    }
+    if ($nbNonCtl -gt 0) {
+        $avertVides += "<div class=""note""><strong>$nbNonCtl ligne(s) non controlees</strong> " +
+                       "&mdash; nature de flux inconnue, colonnes decalees dans le fichier source, " +
+                       "ou rapport produit sans acces a Oracle. Ces lignes sont restituees telles " +
+                       "qu'elles ont ete lues : leurs colonnes Oracle n'ont pas ete renseignees.</div>"
     }
     if ($nbVides -gt 0) {
         $avertVides += "<div class=""note""><strong>$nbVides ligne(s) sans aucune donnee Oracle</strong> " +
@@ -350,6 +365,7 @@ $htmlSynthese
   <button class="on" data-f="TOUS">Toutes</button>
   <button data-f="KO">En ecart</button>
   <button data-f="INDETERMINE">Indeterminees</button>
+  <button data-f="NON CONTROLE">Non controlees</button>
   <button data-f="OK">Concordantes</button>
   <input type="text" id="q" placeholder="Rechercher un folio, un fichier...">
   <span id="compteur"></span>
