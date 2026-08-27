@@ -1,21 +1,52 @@
 #!/bin/bash
 
 # =====================================================================
-# Copie locale des dossiers d'instances complets d'un flux.
+# Copie locale des instances (amont + FIN01) a partir d'un rapport
+# de verification CSV.
 #
 # Usage:
-#   ./copier_instances_local.sh [TYPE] [CODE] [DD-MM-YYYY]
-#   (sans argument : flux FOURNISSEUR FAC02, date du jour)
+#   ./copier_instances_local.sh Rapport_Verification_XXXX.csv [--ko]
 #
-# Exemples:
-#   ./copier_instances_local.sh FOURNISSEUR VHC 21-08-2026
-#   ./copier_instances_local.sh CLIENT VHC 21-08-2026
-#   ./copier_instances_local.sh GL VHC 21-08-2026
+#   --ko : ne traiter que les lignes dont le statut est KO.
+#
+# Le rapport est lu ligne par ligne ; seules les 4 premieres colonnes
+# sont exploitees :
+#   1: Folio   2: Type   3: Date   4: Nom fichier transmis
+#
+# Pour chaque ligne :
+#   1. Le dossier du flux amont est determine par la table folio+type
+#      (secours : deduit du prefixe du nom de fichier). Le fichier est
+#      recherche dans <flux>/INSTANCES : sous-dossiers tries du plus
+#      recent au plus ancien, en parallele, arret au premier resultat.
+#   2. L'instance FIN01 correspondante est recherchee selon le type :
+#        CLIENT      -> FACTURESCLIENTS.FIN01/INSTANCES
+#        FOURNISSEUR -> FACTURESFOURNISSEURS.FIN01/INSTANCES
+#        GL          -> FIN01.ECRITURESCOMPTABLES/INSTANCES
+#   3. Copie locale :
+#        ./DDMMYYYY_TYPE_FOLIO/SOURCE/<instance amont>
+#        ./DDMMYYYY_TYPE_FOLIO/TARGET/<instance FIN01>
+#
+# Chaque fichier transmis n'est telecharge qu'UNE SEULE FOIS : si le
+# meme nom de fichier apparait sur plusieurs lignes du rapport (ex: un
+# fichier CEL01 partage par les folios CEC/CEE/CEG), les lignes
+# suivantes sont ignorees avec un renvoi vers la premiere copie.
 # =====================================================================
 
 set -uo pipefail
 
 FILEREPOSITORY="/data/flf/share/EAIBW/EAI/filerepository"
+CORES=$(nproc 2>/dev/null || echo 4)
+
+# --- Arguments ---
+RAPPORT="${1:-}"
+ONLY_KO=0
+[ "${2:-}" = "--ko" ] && ONLY_KO=1
+
+if [ -z "$RAPPORT" ] || [ ! -f "$RAPPORT" ]; then
+    echo "Erreur : vous devez fournir le rapport de verification en entree."
+    echo "Usage : ./copier_instances_local.sh Rapport_Verification_XXXX.csv [--ko]"
+    exit 1
+fi
 
 # ---------------------------------------------------------------------
 # Table de correspondance : type et code -> dossier dans filerepository.
@@ -26,21 +57,16 @@ resoudre_flux() {
     local prefixe=""
     local suffixe=""
 
-    # 1. Détermination du suffixe selon le type
     case "$type" in
         "FOURNISSEUR") suffixe="FACTURESFOURNISSEURS" ;;
         "CLIENT")      suffixe="FACTURESCLIENTS" ;;
         "GL")          suffixe="ECRITURESGL" ;;
-        *)
-            echo "Erreur : type de flux inconnu '$type'."
-            exit 1
-            ;;
+        *)             FLUX_NAME=""; return ;;
     esac
 
-    # 2. Détermination du préfixe selon le code passé en argument
     case "$code" in
-        "BIO"|"FAS"|"FGE"|"GAZ"|"GCA"|"GER"|"HAC"|"IGP"|"ING"|"PAR"|"RNE"|"SVD"|"VTC") 
-            prefixe="FAC02" 
+        "BIO"|"FAS"|"FGE"|"GAZ"|"GCA"|"GER"|"HAC"|"IGP"|"ING"|"PAR"|"RNE"|"SVD"|"VTC")
+            prefixe="FAC02"
             ;;
         "CEL"|"CEC"|"CEG"|"CEE") prefixe="CEL01" ;;
         "CMB"|"HAF") prefixe="PRN01" ;;
@@ -50,139 +76,244 @@ resoudre_flux() {
         "VHC"|"VFF") prefixe="VHC03" ;;
         *)
             # Si le code n'est pas dans la liste, on l'utilise tel quel
-            prefixe="$code" 
+            prefixe="$code"
             ;;
     esac
 
     FLUX_NAME="${prefixe}.${suffixe}"
 }
 
-# --- Fonctions ---
+# ---------------------------------------------------------------------
+# Recherche rapide d'un fichier : sous-dossiers tries du plus recent au
+# plus ancien, exploration en parallele, arret au premier resultat.
+# $1 = dossier de base (ex: .../INSTANCES)   $2 = motif (ex: "NOM*")
+# ---------------------------------------------------------------------
+fast_find_file() {
+    local base="$1" pattern="$2" res=""
 
-# Trouve les instances creees a la date demandee et copie l'intégralité
-# du dossier de l'instance dans le dossier de destination.
-copy_and_log_instances() {
-    local flux_name="$1"
-    local source_dir="$2"
-    local dest_dir="$3"
+    [ -d "$base" ] || return 0
 
-    echo "Recherche pour le flux ${flux_name} dans : ${source_dir}"
-    if [ ! -d "$source_dir" ]; then
-        echo "Avertissement : Le répertoire source n'existe pas : ${source_dir}"
-        return
+    # Fichiers directement a la racine (rapide)
+    res=$(find "$base" -maxdepth 1 -type f -name "$pattern" -print -quit 2>/dev/null)
+
+    # Sinon sous-dossiers tries par date, en parallele, arret au premier
+    if [ -z "$res" ]; then
+        res=$(ls -1dt "$base"/*/ 2>/dev/null | tr '\n' '\0' | \
+            xargs -0 -P "$CORES" -I {} find "{}" -type f -name "$pattern" -print -quit 2>/dev/null | \
+            head -n 1)
     fi
-
-    local found_dirs=()
-    local search_method="rapide (-newerBt)"
-
-    # --- STRATÉGIE DE RECHERCHE ROBUSTE ---
-    while IFS= read -r -d $'\0' dir; do found_dirs+=("$dir"); done < <(find "$source_dir" -mindepth 1 -maxdepth 1 -type d -newerBt "$START_DATE" ! -newerBt "$END_DATE" -print0 2>/dev/null)
-
-    # Essai 2: Méthode de secours si la première n'a rien donné.
-    if [ ${#found_dirs[@]} -eq 0 ]; then
-        search_method="lente (stat)"
-        echo " -> La recherche rapide n'a rien retourné. Passage à la méthode de secours (plus lente)..."
-
-        local candidates=()
-        while IFS= read -r -d $'\0' dir; do candidates+=("$dir"); done < <(find "$source_dir" -mindepth 1 -maxdepth 1 -type d -newermt "$START_DATE" ! -newermt "$END_DATE" -print0)
-
-        if [ ${#candidates[@]} -gt 0 ]; then
-            echo " -> ${#candidates[@]} dossier(s) candidat(s) trouvé(s). Vérification de leur date de création exacte..."
-            for dir in "${candidates[@]}"; do
-                birth_timestamp=$(stat -c %W "$dir" 2>/dev/null)
-
-                if [ -n "$birth_timestamp" ] && [ "$birth_timestamp" -ne 0 ]; then
-                    birth_date=$(date -d "@$birth_timestamp" "+%Y-%m-%d")
-                    if [ "$birth_date" == "$START_DATE" ]; then
-                        found_dirs+=("$dir")
-                    fi
-                fi
-            done
-        fi
-    fi
-
-    if [ ${#found_dirs[@]} -eq 0 ]; then
-        echo " -> Aucune instance trouvée pour ${flux_name} pour la date spécifiée."
-        echo "---------------------------------------------------------------------"
-        return
-    fi
-
-    echo " -> ${#found_dirs[@]} instance(s) trouvée(s) pour ${flux_name} (méthode: ${search_method})."
-    for dir in "${found_dirs[@]}"; do
-        
-        echo "  -> Copie de l'instance complète $(basename "$dir") :"
-        if cp -rp "$dir" "$dest_dir/"; then
-            total_copied_count=$((total_copied_count + 1))
-        else
-            echo "     !! ECHEC de la copie de l'instance $(basename "$dir")"
-        fi
-
-    done
-    echo "---------------------------------------------------------------------"
+    echo "$res"
 }
 
-# --- Configuration et Validation ---
-FLUX_TYPE="FOURNISSEUR"
-FLUX_CODE="FAC02"
-INPUT_DATE="$(date "+%d-%m-%Y")"
+# ---------------------------------------------------------------------
+# Normalise le type du rapport (FOURNISSEURS/CLIENTS/GL) vers
+# FOURNISSEUR/CLIENT/GL.
+# ---------------------------------------------------------------------
+normaliser_type() {
+    local type
+    type=$(echo "$1" | tr '[:lower:]' '[:upper:]')
+    case "$type" in
+        FOURNISSEUR*) echo "FOURNISSEUR" ;;
+        CLIENT*)      echo "CLIENT" ;;
+        GL|ECRITURE*) echo "GL" ;;
+        *)            echo "" ;;
+    esac
+}
 
-for arg in "$@"; do
-    if [[ "$arg" =~ ^[0-9]{2}-[0-9]{2}-[0-9]{4}$ ]]; then
-        INPUT_DATE="$arg"
-    elif [[ "$arg" == "FOURNISSEUR" || "$arg" == "CLIENT" || "$arg" == "GL" ]]; then
-        FLUX_TYPE="$arg"
+# ---------------------------------------------------------------------
+# Dossier de flux amont deduit du nom du fichier transmis (secours si
+# la table folio -> prefixe ne donne pas un dossier existant).
+# PREFIXE_SRC_SUFFIXE_... -> PREFIXE.SUFFIXE
+# ---------------------------------------------------------------------
+flux_depuis_fichier() {
+    local fic="$1"
+    local prefixe="${fic%%_*}"
+    local reste="${fic#*_}"
+    local suffixe
+    suffixe=$(echo "$reste" | sed 's/^SRC_//; s/^CTL_//' | cut -d'_' -f1)
+
+    if [ "$prefixe" = "NOT01" ]; then
+        echo "NOT01.FACTURES"
     else
-        FLUX_CODE="$arg"
+        echo "${prefixe}.${suffixe}"
     fi
-done
+}
 
-resoudre_flux "$FLUX_CODE" "$FLUX_TYPE"
-INSTANCES_DIR="${FILEREPOSITORY}/${FLUX_NAME}/INSTANCES"
-# Le suffixe du dossier local contiendra maintenant le type et le code (ex: FOURNISSEUR_VHC)
-DEST_SUFFIX="${FLUX_TYPE}_${FLUX_CODE}"
+# ---------------------------------------------------------------------
+# Dossier FIN01 selon le type normalise
+# ---------------------------------------------------------------------
+resoudre_dossier_fin01() {
+    case "$1" in
+        CLIENT)      echo "FACTURESCLIENTS.FIN01" ;;
+        FOURNISSEUR) echo "FACTURESFOURNISSEURS.FIN01" ;;
+        GL)          echo "FIN01.ECRITURESCOMPTABLES" ;;
+        *)           echo "" ;;
+    esac
+}
 
-# --- Préparation des variables ---
-DAY=${INPUT_DATE:0:2}
-MONTH=${INPUT_DATE:3:2}
-YEAR=${INPUT_DATE:6:4}
+# ---------------------------------------------------------------------
+# Trouve le dossier d'instance FIN01 correspondant.
+# $1 = base FIN01/INSTANCES   $2 = nom instance amont   $3 = nom fichier
+# ---------------------------------------------------------------------
+trouver_instance_fin01() {
+    local base="$1" instance="$2" fichier="$3"
+    local sans_tirets="${instance//-/}"
 
-START_DATE="$YEAR-$MONTH-$DAY"
-if ! END_DATE=$(date -d "$START_DATE + 1 day" "+%Y-%m-%d" 2>/dev/null); then
-    echo "Erreur lors du calcul de la date de fin. Assurez-vous que la date '$INPUT_DATE' est valide."
-    exit 1
-fi
+    # 1) Par nom d'instance (tel quel, puis sans les tirets)
+    local cand
+    for cand in "$instance" "$sans_tirets"; do
+        if [ -d "$base/$cand" ]; then
+            echo "$base/$cand"
+            return
+        fi
+    done
 
-DEST_DIR_NAME="$(date -d "$START_DATE" "+%d%m%Y")_${DEST_SUFFIX}"
+    # 2) Sinon par nom de fichier transmis (present dans SOURCE)
+    local f
+    f=$(fast_find_file "$base" "${fichier}*")
+    if [ -n "$f" ]; then
+        echo "$f" | sed 's#\(.*/INSTANCES/[^/]*\).*#\1#'
+    fi
+}
 
-# --- Fichier de log ---
-LOG_FILE="copie_${DEST_DIR_NAME}.log"
-echo "Les logs de copie seront enregistrés dans le fichier : ./${LOG_FILE}"
+# --- Traitement du rapport ---
+LOG_FILE="copie_rapport_$(date +%Y%m%d_%H%M%S).log"
+echo "Rapport en entree : $RAPPORT"
+echo "Les logs seront enregistres dans : ./$LOG_FILE"
+
+total_ok=0
+total_ko=0
+total_doublons=0
+lignes_traitees=0
+
+# Memorise les fichiers deja telecharges : cle = nom du fichier,
+# valeur = dossier local ou il a ete copie.
+declare -A fichiers_copies
 
 {
-    echo "Flux              : $FLUX_CODE / $FLUX_TYPE ($FLUX_NAME)"
-    echo "Date de recherche : $INPUT_DATE"
-    echo "Recherche des instances dont la date de création est le $INPUT_DATE"
-    echo "---------------------------------------------------------------------"
+    echo "Date de lancement : $(date '+%d/%m/%Y %H:%M:%S')"
+    echo "Rapport           : $RAPPORT"
+    [ "$ONLY_KO" -eq 1 ] && echo "Filtre            : lignes KO uniquement"
+    echo "====================================================================="
 
-    echo "Création du répertoire de destination : ./${DEST_DIR_NAME}"
-    mkdir -p "$DEST_DIR_NAME"
+    while IFS= read -r line; do
+        line="${line%$'\r'}"
+        [ -z "$line" ] && continue
 
-    total_copied_count=0
+        # Filtre optionnel sur le statut de verification (dernier champ)
+        if [ "$ONLY_KO" -eq 1 ] && ! echo "$line" | grep -q ';"KO"[[:space:]]*$'; then
+            continue
+        fi
 
-    # --- Copie des dossiers complets ---
-    copy_and_log_instances "$FLUX_NAME" "$INSTANCES_DIR" "$DEST_DIR_NAME"
+        # Colonnes exploitees : 1=Folio 2=Type 3=Date 4=Nom fichier
+        IFS=';' read -r folio type dt fichier _reste <<< "$line"
+        folio="${folio//\"/}"
+        type="${type//\"/}"
+        dt="${dt//\"/}"
+        fichier="${fichier//\"/}"
 
-    if [ "$total_copied_count" -eq 0 ]; then
-        echo "Aucune instance copiée pour la date du $INPUT_DATE."
-        rmdir "$DEST_DIR_NAME" 2>/dev/null
-    else
-        echo "Opération de copie terminée avec succès."
-        echo "$total_copied_count instance(s) copiée(s) dans ./${DEST_DIR_NAME}"
+        # On ignore l'entete et les lignes non exploitables
+        case "$fichier" in
+            *_SRC_*) ;;
+            *) continue ;;
+        esac
+
+        lignes_traitees=$((lignes_traitees + 1))
         echo ""
-        echo "Étape suivante (Windows) : glisser le dossier SOURCE spécifique de l'instance"
-        echo "souhaitée sur ctl_fac02_fournisseur.bat"
-    fi
+        echo "--- Ligne $lignes_traitees : $folio / $type / $dt / $fichier"
 
+        # Chaque fichier n'est telecharge qu'une seule fois
+        if [ -n "${fichiers_copies[$fichier]:-}" ]; then
+            echo "  Fichier deja telecharge -> voir ./${fichiers_copies[$fichier]}"
+            total_doublons=$((total_doublons + 1))
+            continue
+        fi
+
+        type_norm=$(normaliser_type "$type")
+        if [ -z "$type_norm" ]; then
+            echo "  !! Type inconnu '$type' : ligne ignoree."
+            total_ko=$((total_ko + 1))
+            continue
+        fi
+
+        # === PARTIE 1 : recherche du fichier cote amont ===
+        resoudre_flux "$folio" "$type_norm"
+        flux_amont="$FLUX_NAME"
+
+        # Secours : si le dossier n'existe pas, on le deduit du nom du fichier
+        if [ -z "$flux_amont" ] || [ ! -d "${FILEREPOSITORY}/${flux_amont}" ]; then
+            flux_amont=$(flux_depuis_fichier "$fichier")
+        fi
+        instances_amont="${FILEREPOSITORY}/${flux_amont}/INSTANCES"
+
+        echo "  Recherche dans : $instances_amont"
+        fichier_trouve=$(fast_find_file "$instances_amont" "${fichier}*")
+        if [ -z "$fichier_trouve" ]; then
+            echo "  !! Fichier introuvable dans ${instances_amont}"
+            total_ko=$((total_ko + 1))
+            continue
+        fi
+        echo "  Fichier trouve : $fichier_trouve"
+
+        instance_amont=$(echo "$fichier_trouve" | sed 's#.*/INSTANCES/##' | cut -d'/' -f1)
+        dossier_instance_amont="${instances_amont}/${instance_amont}"
+        echo "  Instance amont : $instance_amont"
+
+        # === PARTIE 2 : recherche de l'instance cote FIN01 ===
+        flux_fin01=$(resoudre_dossier_fin01 "$type_norm")
+        dossier_instance_fin01=""
+        if [ -n "$flux_fin01" ]; then
+            instances_fin01="${FILEREPOSITORY}/${flux_fin01}/INSTANCES"
+            dossier_instance_fin01=$(trouver_instance_fin01 "$instances_fin01" "$instance_amont" "$fichier")
+            if [ -n "$dossier_instance_fin01" ]; then
+                echo "  Instance FIN01 : $(basename "$dossier_instance_fin01") (dans $flux_fin01)"
+            else
+                echo "  !! Instance FIN01 introuvable dans ${instances_fin01}"
+            fi
+        fi
+
+        # === Copie locale : SOURCE = amont, TARGET = FIN01 ===
+        dest_dir="$(echo "$dt" | tr -d '/')_${type}_${folio}"
+        mkdir -p "$dest_dir/SOURCE"
+
+        copie_amont_ok=0
+        if [ -d "$dest_dir/SOURCE/$instance_amont" ]; then
+            echo "  Instance amont deja presente dans ./$dest_dir/SOURCE (ignoree)."
+            copie_amont_ok=1
+        elif cp -rp "$dossier_instance_amont" "$dest_dir/SOURCE/"; then
+            echo "  Copie amont OK -> ./$dest_dir/SOURCE/$instance_amont"
+            copie_amont_ok=1
+        else
+            echo "  !! ECHEC de la copie amont."
+        fi
+
+        if [ -n "$dossier_instance_fin01" ]; then
+            mkdir -p "$dest_dir/TARGET"
+            inst_fin01=$(basename "$dossier_instance_fin01")
+            if [ -d "$dest_dir/TARGET/$inst_fin01" ]; then
+                echo "  Instance FIN01 deja presente dans ./$dest_dir/TARGET (ignoree)."
+            elif cp -rp "$dossier_instance_fin01" "$dest_dir/TARGET/"; then
+                echo "  Copie FIN01 OK -> ./$dest_dir/TARGET/$inst_fin01"
+            else
+                echo "  !! ECHEC de la copie FIN01."
+            fi
+        fi
+
+        if [ "$copie_amont_ok" -eq 1 ]; then
+            fichiers_copies[$fichier]="$dest_dir"
+            total_ok=$((total_ok + 1))
+        else
+            total_ko=$((total_ko + 1))
+        fi
+    done < "$RAPPORT"
+
+    echo ""
+    echo "====================================================================="
+    echo "Lignes traitees      : $lignes_traitees"
+    echo "Fichiers telecharges : $total_ok"
+    echo "Doublons ignores     : $total_doublons"
+    echo "Echecs               : $total_ko"
+    echo "Traitement termine : $(date '+%d/%m/%Y %H:%M:%S')"
 } > "$LOG_FILE" 2>&1
 
-echo "Copie terminée. Consultez ./${LOG_FILE} pour le détail."
+echo "Traitement termine. Consultez ./$LOG_FILE pour le detail."
