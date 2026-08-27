@@ -4,7 +4,8 @@ rem controleFournisseur.bat - Controle complet du flux FOURNISSEURS
 rem
 rem 1. Controle du statut Talend (marqueur LS_IN.OK/KO + erreurs de formatage)
 rem 2. Rapprochement du fichier SRC avec le fichier CTL (Python)
-rem 3. Verification de l'integration des factures dans Oracle (PowerShell)
+rem 3. Reconciliation source -> Oracle sur le second demi-flux (Python)
+rem 4. Verification de l'integration des factures dans Oracle (PowerShell)
 rem
 rem Usage : controleFournisseur.bat [dossier_export ^| fichier_SRC] [fichier_CTL]
 rem   - dossier en parametre : descend jusqu'a SOURCE et prend le SRC le plus recent
@@ -35,13 +36,13 @@ if not "%FICHIER_CTL%"=="" echo Fichier CTL : %FICHIER_CTL%
 echo =======================================================================
 echo.
 
-echo [1/3] Controle du statut Talend
+echo [1/4] Controle du statut Talend
 echo -----------------------------------------------------------------------
 python "%SCRIPT_DIR%controle_talend.py" "%FICHIER_ENTREE%"
 set "RC_TALEND=%ERRORLEVEL%"
 
 echo.
-echo [2/3] Rapprochement SRC / CTL
+echo [2/4] Rapprochement SRC / CTL
 echo -----------------------------------------------------------------------
 if "%FICHIER_CTL%"=="" (
     python "%SCRIPT_DIR%ctl_fac02_fournisseur.py" "%FICHIER_ENTREE%"
@@ -51,7 +52,13 @@ if "%FICHIER_CTL%"=="" (
 set "RC_CTL=%ERRORLEVEL%"
 
 echo.
-echo [3/3] Verification dans Oracle EBS
+echo [3/4] Reconciliation source -^> Oracle (second demi-flux)
+echo -----------------------------------------------------------------------
+python "%SCRIPT_DIR%reconciliation.py" "%FICHIER_ENTREE%"
+set "RC_RECO=%ERRORLEVEL%"
+
+echo.
+echo [4/4] Verification dans Oracle EBS
 echo -----------------------------------------------------------------------
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File "%SCRIPT_DIR%Verifier_Oracle_FAC02_Fournisseur.ps1" -CheminFichierSrc "%FICHIER_ENTREE%"
 set "RC_ORACLE=%ERRORLEVEL%"
@@ -62,23 +69,27 @@ if "%RC_TALEND%"=="1" set "RC_FINAL=2"
 if not "%RC_TALEND%"=="0" if not "%RC_TALEND%"=="1" set "RC_FINAL=1"
 if "%RC_CTL%"=="1" if not "%RC_FINAL%"=="1" set "RC_FINAL=2"
 if not "%RC_CTL%"=="0" if not "%RC_CTL%"=="1" set "RC_FINAL=1"
+if "%RC_RECO%"=="2" if not "%RC_FINAL%"=="1" set "RC_FINAL=2"
+if not "%RC_RECO%"=="0" if not "%RC_RECO%"=="2" set "RC_FINAL=1"
 if "%RC_ORACLE%"=="2" if not "%RC_FINAL%"=="1" set "RC_FINAL=2"
 if not "%RC_ORACLE%"=="0" if not "%RC_ORACLE%"=="2" set "RC_FINAL=1"
 
 echo.
 echo =======================================================================
 echo SYNTHESE DES CONTROLES
-echo   Statut Talend          : code %RC_TALEND%
+echo   Statut Talend           : code %RC_TALEND%
 echo   Rapprochement SRC / CTL : code %RC_CTL%
-echo   Verification Oracle    : code %RC_ORACLE%
+echo   Reconciliation Oracle   : code %RC_RECO%
+echo   Verification Oracle     : code %RC_ORACLE%
 echo -----------------------------------------------------------------------
 if "%RC_FINAL%"=="0" (
     echo [OK] Talend OK, rapprochement conforme et toutes les factures sont integrees.
 ) else if "%RC_FINAL%"=="1" (
     echo [ERREUR TECHNIQUE] Au moins un controle n'a pas pu aboutir.
 ) else (
-    echo [ANOMALIES] Erreur de formatage Talend, ecart SRC/CTL ou factures
-    echo             en interface, absentes ou en ecart.
+    echo [ANOMALIES] Erreur de formatage Talend, ecart SRC/CTL, pieces rejetees
+    echo             ou factures en interface, absentes ou en ecart.
+    echo             Voir l'onglet Rejets du classeur de synthese.
 )
 echo =======================================================================
 exit /b %RC_FINAL%

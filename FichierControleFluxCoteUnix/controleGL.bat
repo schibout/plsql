@@ -1,6 +1,10 @@
 @echo off
 rem =========================================================================
 rem controleGL.bat - Controle du flux d'ecritures GL
+rem
+rem 1. Controle du statut Talend  2. Rapprochement SRC / CTL
+rem 3. Reconciliation source -> Oracle  4. Verification dans Oracle EBS
+rem
 rem Usage : controleGL.bat [dossier_export ^| fichier_SRC] [fichier_CTL]
 rem   - dossier en parametre : descend jusqu'a SOURCE et prend le SRC le plus recent
 rem   - fichier en parametre : accepte tout prefixe, mais le fichier doit etre dans SOURCE
@@ -33,11 +37,17 @@ set "RC_LOCAL=%ERRORLEVEL%"
 
 if "%RC_LOCAL%"=="1" exit /b 1
 
+python "%SCRIPT_DIR%reconciliation.py" "%SOURCE_SELECTIONNEE%"
+set "RC_RECO=%ERRORLEVEL%"
+
+if "%RC_RECO%"=="1" exit /b 1
+
 powershell -NoProfile -ExecutionPolicy Bypass -File "%SCRIPT_DIR%Verifier_Oracle_Ecritures_GL.ps1" -CheminFichierSrc "%SOURCE_SELECTIONNEE%"
 set "RC_ORACLE=%ERRORLEVEL%"
 
 if "%RC_ORACLE%"=="1" exit /b 1
 if "%RC_TALEND%"=="1" exit /b 2
 if "%RC_LOCAL%"=="2" exit /b 2
+if "%RC_RECO%"=="2" exit /b 2
 if "%RC_ORACLE%"=="2" exit /b 2
 exit /b 0

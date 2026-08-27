@@ -1,0 +1,4 @@
+{
+  "FichierControleFluxCoteUnix/tests/test_ctl_ecritures_gl.py": true,
+  "FichierControleFluxCoteUnix/tests/test_selectionner_source.py": true
+}

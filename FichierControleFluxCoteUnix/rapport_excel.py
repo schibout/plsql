@@ -77,6 +77,13 @@ def nom_export(src):
     return nom or None
 
 
+def dossier_rapport():
+    """Repertoire des classeurs de synthese."""
+    return os.environ.get("CONTROLE_FLUX_RAPPORT_DIR") or os.path.join(
+        os.path.dirname(os.path.abspath(__file__)), "rapport"
+    )
+
+
 def chemin_rapport(src, prefixe):
     """Chemin du classeur de synthese d'un flux, deduit du chemin du SRC.
 
@@ -89,9 +96,7 @@ def chemin_rapport(src, prefixe):
     Pour un SRC isole hors d'un dossier d'export, le prefixe du flux et
     l'horodatage du fichier prennent le relais.
     """
-    dossier = os.environ.get("CONTROLE_FLUX_RAPPORT_DIR") or os.path.join(
-        os.path.dirname(os.path.abspath(__file__)), "rapport"
-    )
+    dossier = dossier_rapport()
     nom = nom_export(src)
     if not nom:
         correspondance = re.search(
@@ -212,11 +217,24 @@ def ecrire_onglet(ws, titre, sous_titre, colonnes, lignes,
     return ws
 
 
-def ajouter_onglets(classeur, onglets):
-    """Ajoute (ou remplace) des onglets dans un classeur existant."""
-    from openpyxl import load_workbook
+def ajouter_onglets(classeur, onglets, creer=False):
+    """Ajoute (ou remplace) des onglets dans un classeur.
 
-    wb = load_workbook(classeur)
+    Le classeur doit exister : il est cree par le controle local, qui passe
+    toujours avant les controles Oracle. Le drapeau creer leve cette
+    contrainte pour la reconciliation, qui peut etre lancee seule sur un
+    export dont le controle local n'a pas ete rejoue.
+    """
+    from openpyxl import Workbook, load_workbook
+
+    if creer and not os.path.isfile(classeur):
+        dossier = os.path.dirname(os.path.abspath(classeur))
+        if dossier:
+            os.makedirs(dossier, exist_ok=True)
+        wb = Workbook()
+        wb.remove(wb.active)
+    else:
+        wb = load_workbook(classeur)
     for onglet in onglets:
         nom = onglet["nom"][:31]
         if nom in wb.sheetnames:
