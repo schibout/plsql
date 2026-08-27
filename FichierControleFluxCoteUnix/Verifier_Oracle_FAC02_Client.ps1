@@ -344,21 +344,29 @@ foreach ($p in $Portefeuilles) {
 #  Chaque facture du fichier SRC est confrontee aux listes Oracle (definitif
 #  et open interface) recuperees dans la meme session sqlplus. Le numero de
 #  facture Oracle est cherche d'abord sur la piece, puis sur la reference.
+#  Une facture rejetee par les controles fonctionnels du second demi-flux n'a
+#  jamais ete soumise a Oracle : sans son motif, elle ressort ABSENTE, ce qui
+#  est exact mais n'indique ni la cause ni l'action a mener.
+$Rejets = Get-RejetsDemiFlux2 -CheminSrc $CheminAbsolu.Path -DossierTravail $ScriptDir
+
 $TableauDetail = [System.Collections.Generic.List[PSCustomObject]]::new()
 $nbDetAnomalie = 0
+$nbDetRejete = 0
 foreach ($d in $SrcDet.Values) {
     $mtSrcF = [double]($d.Montant / 100)
-    $oraDef = $null; $oraInt = $null
+    $oraDef = $null; $oraInt = $null; $rejet = $null
     foreach ($numFac in @($d.Piece.ToUpper(), $d.Reference.ToUpper())) {
         if ($numFac -eq '') { continue }
         if ($null -eq $oraDef -and $detDef.ContainsKey($numFac)) { $oraDef = $detDef[$numFac] }
         if ($null -eq $oraInt -and $detInt.ContainsKey($numFac)) { $oraInt = $detInt[$numFac] }
+        if ($null -eq $rejet  -and $Rejets.ContainsKey($numFac))  { $rejet  = $Rejets[$numFac] }
     }
 
     if ($oraDef -and [math]::Abs($oraDef.Mt - $mtSrcF) -le $TOLERANCE) { $stDet = 'INTEGREE' }
     elseif ($oraDef)                                                   { $stDet = 'ECART'; $nbDetAnomalie++ }
     elseif ($oraInt -and [math]::Abs($oraInt.Mt - $mtSrcF) -le $TOLERANCE) { $stDet = 'EN INTERFACE'; $nbDetAnomalie++ }
     elseif ($oraInt)                                                   { $stDet = 'ECART'; $nbDetAnomalie++ }
+    elseif ($rejet)                                                    { $stDet = 'REJETEE'; $nbDetRejete++ }
     else                                                               { $stDet = 'ABSENTE'; $nbDetAnomalie++ }
 
     $TableauDetail.Add([PSCustomObject]@{
@@ -370,6 +378,9 @@ foreach ($d in $SrcDet.Values) {
         'Montant Oracle'    = $(if ($oraDef) { [math]::Round($oraDef.Mt, 2) })
         'Montant Interface' = $(if ($oraInt) { [math]::Round($oraInt.Mt, 2) })
         'Statut'            = $stDet
+        'Code Rejet'        = $(if ($rejet) { $rejet.code })
+        'Motif Rejet'       = $(if ($rejet) { $rejet.libelle })
+        'Appel PL/SQL'      = $(if ($rejet) { $rejet.appel })
     })
 }
 
@@ -384,7 +395,8 @@ $ColSynthese = @(
     'Montant Interface', 'Statut')
 $ColDetail = @(
     'Portefeuille', 'Numero Piece', 'Reference Facture', 'Date Piece',
-    'Montant Fichier', 'Montant Oracle', 'Montant Interface', 'Statut')
+    'Montant Fichier', 'Montant Oracle', 'Montant Interface', 'Statut',
+    'Code Rejet', 'Motif Rejet', 'Appel PL/SQL')
 $horodatage = Get-Date -Format 'dd/MM/yyyy HH:mm:ss'
 
 $Classeur = Export-OngletsOracle -Src $CheminAbsolu.Path `
@@ -418,6 +430,9 @@ Write-Host ("  {0,-26} : {1}" -f 'En open interface', $nbInterface) -ForegroundC
 Write-Host ("  {0,-26} : {1}" -f 'Autres (absent/ecart...)', $nbAutre) -ForegroundColor $(if ($nbAutre -gt 0) { 'Red' } else { 'Green' })
 Write-Host ("  {0,-26} : {1}" -f 'Factures controlees', $SrcDet.Count)
 Write-Host ("  {0,-26} : {1}" -f 'Factures en anomalie', $nbDetAnomalie) -ForegroundColor $(if ($nbDetAnomalie -gt 0) { 'Red' } else { 'Green' })
+# Un rejet fonctionnel est explique et documente : il appelle une correction
+# du referentiel puis un rejeu, pas une recherche dans Oracle.
+Write-Host ("  {0,-26} : {1}" -f 'Factures rejetees (motif)', $nbDetRejete) -ForegroundColor $(if ($nbDetRejete -gt 0) { 'Yellow' } else { 'Green' })
 Write-Host ("  {0,-26} : {1}" -f 'Duree Oracle', "${duree}s")
 if ($Classeur) {
     Write-Host ("  {0,-26} : {1}" -f 'Rapport (Excel)', $Classeur) -ForegroundColor Green
@@ -425,5 +440,5 @@ if ($Classeur) {
 Write-Host '=======================================================================' -ForegroundColor Cyan
 Write-Host ''
 
-if ($nbAutre -gt 0 -or $nbInterface -gt 0) { exit $EXIT_ANOMALIE }
+if ($nbAutre -gt 0 -or $nbInterface -gt 0 -or $nbDetRejete -gt 0) { exit $EXIT_ANOMALIE }
 exit $EXIT_OK

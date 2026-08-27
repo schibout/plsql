@@ -213,3 +213,22 @@ def test_classeur_absent_est_une_erreur_explicite(tmp_path, monkeypatch, capsys)
 
     assert rapport_excel.main([str(descriptif)]) == 1
     assert "introuvable" in capsys.readouterr().err.lower()
+
+
+def test_nom_export_saute_le_niveau_de_demi_flux():
+    r"""Les exports rapatries rangent le SRC sous SOURCE\<instance>\SOURCE.
+
+    Sans ce saut, tous les exports se nommeraient SOURCE et partageraient un
+    unique classeur, en s'ecrasant les uns les autres.
+    """
+    ancienne = os.path.join('C:', 'x', '10082026_FOURNISSEUR_CEG', 'c060392',
+                            'SOURCE', 'CEL01_SRC_a.csv')
+    amont = os.path.join('C:', 'x', '26082026_FOURNISSEURS_HAF', 'SOURCE',
+                         '3f248e34', 'SOURCE', 'PRN01_SRC_a.csv')
+    aval = os.path.join('C:', 'x', '26082026_FOURNISSEURS_HAF', 'TARGET',
+                        '3f248e34', 'SOURCE', 'PRN01_SRC_a.csv')
+
+    assert rapport_excel.nom_export(ancienne) == '10082026_FOURNISSEUR_CEG'
+    assert rapport_excel.nom_export(amont) == '26082026_FOURNISSEURS_HAF'
+    # Les deux demi-flux d'un export ecrivent dans le meme classeur.
+    assert rapport_excel.nom_export(aval) == rapport_excel.nom_export(amont)

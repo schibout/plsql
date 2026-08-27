@@ -156,3 +156,44 @@ def test_onglets_du_rapport():
 def test_dossier_sans_flux_signale_une_erreur(tmp_path):
     with pytest.raises(reconciliation.ErreurReconciliation):
         reconciliation.reconcilier(tmp_path)
+
+
+def test_index_des_rejets_pour_le_detail_oracle():
+    """Les scripts Verifier_Oracle_*.ps1 cherchent la piece en majuscules."""
+    index = reconciliation.index_rejets(
+        reconciliation.reconcilier(EXPORT_FOURNISSEURS)
+    )
+
+    assert set(index) == {
+        "VLF26G0026", "2026-07-VCOM 342", "2026-07-VCOM 341", "2026-07-VCOM 338"
+    }
+    assert all(cle == cle.upper() for cle in index)
+    assert index["VLF26G0026"]["code"] == "OAE025"
+    assert index["VLF26G0026"]["libelle"] == "Site Fournisseur inactif ou inexistant"
+    assert index["VLF26G0026"]["appel"].startswith("XXEAI_INTERFACE_TOOLS_PKG")
+
+
+def test_index_des_rejets_vide_sans_demi_flux2():
+    assert reconciliation.index_rejets(reconciliation.reconcilier(EXPORT_GL)) == {}
+
+
+def test_json_des_rejets_relisible(tmp_path):
+    import json
+
+    destination = tmp_path / "rejets.json"
+    reconciliation.ecrire_rejets_json(
+        reconciliation.reconcilier(EXPORT_FOURNISSEURS), destination
+    )
+    donnees = json.loads(destination.read_text(encoding="utf-8"))
+
+    assert donnees["exports"] == [EXPORT_FOURNISSEURS.name]
+    assert len(donnees["rejets"]) == 4
+
+
+def test_consolidation_de_plusieurs_exports():
+    resultats = reconciliation.reconcilier_tous(DOSSIER_SCRIPT)
+
+    assert len(resultats) == len(TOUS_LES_EXPORTS)
+    assert len(reconciliation.lignes_csv(resultats)) == sum(
+        len(r.cascades) for r in resultats
+    )

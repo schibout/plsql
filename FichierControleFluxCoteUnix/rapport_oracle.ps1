@@ -67,6 +67,65 @@ function Export-OngletsOracle {
     }
 }
 
+function Get-RejetsDemiFlux2 {
+    <#
+        Pieces rejetees par les controles fonctionnels du second demi-flux,
+        indexees par numero de piece en majuscules.
+
+        Une piece rejetee n'atteint jamais Oracle : sans ce motif, le detail
+        la presente comme ABSENTE, sans dire ni pourquoi ni quoi faire.
+
+        -CheminSrc       : fichier SRC controle ; reconciliation.py en deduit
+                           le dossier d'export et lit ses REJETS_FONCTIONNELS
+        -DossierTravail  : dossier des scripts (defaut : celui-ci)
+
+        Renvoie une hashtable vide si l'export n'a pas de second demi-flux
+        rapatrie, ou si la lecture echoue : le controle Oracle continue alors
+        exactement comme avant.
+    #>
+    param(
+        [Parameter(Mandatory = $true)] [string] $CheminSrc,
+        [string] $DossierTravail
+    )
+
+    $vide = @{}
+    $racine = if ($DossierTravail) { $DossierTravail } else { Split-Path -Parent $PSCommandPath }
+    $script = Join-Path $racine 'reconciliation.py'
+    if (-not (Test-Path -LiteralPath $script)) { return $vide }
+
+    $fichierJson = Join-Path ([System.IO.Path]::GetTempPath()) ("rejets_" + [System.Guid]::NewGuid().ToString('N') + '.json')
+    $sortieTmp = "$fichierJson.out"
+    $erreurTmp = "$fichierJson.err"
+    try {
+        # Start-Process, comme Export-OngletsOracle : sous PowerShell 5.1, la
+        # redirection de la sortie d'erreur d'un executable natif leverait un
+        # NativeCommandError qui interromprait le controle.
+        $process = Start-Process -FilePath 'python' `
+            -ArgumentList @($script, $CheminSrc, '--rejets-json', $fichierJson, '--sans-rapport') `
+            -NoNewWindow -Wait -PassThru `
+            -RedirectStandardOutput $sortieTmp -RedirectStandardError $erreurTmp
+        # Code 2 = pieces rejetees : c'est le cas nominal ici, pas une erreur.
+        if ($process.ExitCode -notin @(0, 2) -or -not (Test-Path -LiteralPath $fichierJson)) {
+            Write-Host '   [INFO] Motifs de rejet indisponibles (second demi-flux non rapatrie ?).' -ForegroundColor DarkGray
+            return $vide
+        }
+        $donnees = Get-Content -LiteralPath $fichierJson -Raw -Encoding UTF8 | ConvertFrom-Json
+        $index = @{}
+        foreach ($propriete in $donnees.rejets.PSObject.Properties) {
+            $index[$propriete.Name.ToUpper()] = $propriete.Value
+        }
+        if ($index.Count -gt 0) {
+            Write-Host "   Motifs de rejet charges : $($index.Count) piece(s)" -ForegroundColor Yellow
+        }
+        return $index
+    } catch {
+        Write-Host "   [INFO] Motifs de rejet non charges : $($_.Exception.Message)" -ForegroundColor DarkGray
+        return $vide
+    } finally {
+        Remove-Item -LiteralPath $fichierJson, $sortieTmp, $erreurTmp -ErrorAction SilentlyContinue
+    }
+}
+
 function ConvertTo-LignesOnglet {
     <#
         Transforme des PSCustomObject en hashtables ordonnees serialisables,

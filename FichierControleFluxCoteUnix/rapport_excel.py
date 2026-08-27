@@ -61,17 +61,26 @@ PREFIXES_ENTIER = ("nb ",)
 def nom_export(src):
     """Nom du dossier de flux d'un export, ou None hors de cette arborescence.
 
-    Un export est range en <dossier de flux>\\<dossier d'export>\\SOURCE\\<SRC>,
-    par exemple 10082026_FOURNISSEUR_CEG\\c060392...\\SOURCE\\CEL01_SRC_...csv :
-    c'est le dossier de flux, celui passe aux lanceurs controle*.bat, qui
+    C'est le dossier de flux, celui passe aux lanceurs controle*.bat, qui
     nomme le rapport. Le nom est deduit du chemin du SRC et non de l'argument
     saisi, pour rester le meme que l'on passe le dossier, le fichier, ou rien.
+
+    Deux dispositions coexistent selon l'anciennete de l'export :
+
+        <flux>\\<instance>\\SOURCE\\<SRC>
+        <flux>\\SOURCE|TARGET\\<instance>\\SOURCE\\<SRC>   (deux demi-flux)
+
+    La seconde est celle que rapatrient les copier_instances_*.sh. Sans le
+    saut du niveau de demi-flux, tous les exports se nommeraient SOURCE et
+    partageraient un unique classeur, en s'ecrasant les uns les autres.
     """
     chemin = os.path.abspath(str(src))
     source = os.path.dirname(chemin)
     if os.path.basename(source).upper() != "SOURCE":
         return None
     flux = os.path.dirname(os.path.dirname(source))
+    if os.path.basename(flux).upper() in ("SOURCE", "TARGET"):
+        flux = os.path.dirname(flux)
     nom = os.path.basename(flux)
     # os.path.basename d'une racine de disque ("C:\\") est vide.
     return nom or None

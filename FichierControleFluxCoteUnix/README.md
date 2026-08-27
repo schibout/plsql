@@ -174,6 +174,46 @@ Types connus : `FOURNISSEUR`, `CLIENT` et `GL`. Le code détermine le préfixe a
 
 Le dossier d'export obtenu se glisse tel quel sur le `.bat` correspondant (`controleClient.bat`, `controleFournisseur.bat` ou `controleGL.bat`) : le lanceur descend dans les répertoires `SOURCE`, sélectionne le SRC le plus récent et ignore les fichiers de `TARGET`.
 
+## 7quater. Réconciliation source → Oracle : `reconciliation.py`
+
+Les contrôles précédents rapprochent le SRC de son CTL : ils disent si l'application amont s'est trompée, **pas si le flux est arrivé dans Oracle**. Cette réponse est dans le **second demi-flux** (dossier `TARGET` de l'export), celui qui alimente Oracle et que rien ne lisait jusqu'ici.
+
+`demiflux2.py` en extrait les quatre preuves d'intégration, `reconciliation.py` les enchaîne :
+
+```
+SRC (demi-flux 1) → cible du demi-flux 2 → publiés (TS_OUT) → rejets → Oracle
+```
+
+| Flux | Fichier cible du demi-flux 2 | Table Oracle visée |
+|---|---|---|
+| **Fournisseurs** | `TARGET\Header.csv` + `Line.csv` | `AP_INVOICE*_INTERFACE` |
+| **Clients** | `TARGET\FACTURESCLIENTS_FIN01.txt` | `DKA_IARPAFAC_INTERFACE` |
+| **GL** | `FAC02_PIVOT_GL_*.txt` (porté par le demi-flux 1) | `GL_INTERFACE` |
+
+Identités vérifiées sur les exports du dépôt, sur lesquelles repose le diagnostic :
+
+- **Fournisseurs** : `lignes(Header) + lignes(Line) = publiés = lignes de données du SRC − lignes rejetées`
+- **Clients** : `lignes(FACTURESCLIENTS_FIN01) = publiés = lignes du SRC`
+
+Le résultat n'est plus un OK/KO mais un diagnostic qui nomme l'étage en cause :
+
+| Diagnostic | Signification |
+|---|---|
+| `INTEGRE_COMPLET` | Tout le fichier est parti vers Oracle |
+| `INTEGRE_PARTIEL_REJETS` | Le reste est parti ; les pièces rejetées sont listées avec leur code et leur libellé |
+| `NON_PUBLIE` | Le demi-flux 2 n'a pas abouti (`TS_OUT` KO ou absent) |
+| `ECART_INEXPLIQUE` | La cascade ne boucle pas ; l'étage qui casse est désigné |
+| `DEMI_FLUX2_ABSENT` | Le demi-flux 2 n'a pas été rapatrié (cas des exports GL) |
+
+```bat
+python reconciliation.py <dossier_export | fichier_SRC>
+python reconciliation.py <dossier_parent> --tous --html    rem journée entière
+```
+
+Options : `--tous` (tous les exports d'un dossier parent), `--csv [fichier]`, `--html [fichier]` (rapport consolidé dans `Logs\`), `--rejets-json [fichier]`, `--sans-rapport`. Sans fichier, les sorties machine partent sur la sortie standard. Codes retour : 0 = intégration complète, 1 = erreur technique, 2 = rejets ou écart à traiter.
+
+L'étape est appelée automatiquement par les trois lanceurs `controle*.bat` et ajoute trois onglets au classeur de l'export : **Cascade** (une ligne par fichier transmis), **Rejets** (une ligne par pièce rejetée, avec code, libellé et fonction PL/SQL en cause) et **Statuts Talend**.
+
 ## 8. Vérification dans Oracle EBS
 
 Contrôle complémentaire, sur le modèle de `ControleFolioRose` : vérifie si les factures du fichier SRC sont **intégrées dans Oracle** (tables définitives) ou **bloquées en open interface**. Chaque flux utilise désormais un lanceur de contrôle unique :
@@ -203,6 +243,18 @@ Statut par portefeuille/folio :
 | `PARTIELLE` | Réparti entre définitif et interface (somme cohérente) |
 | `ABSENTE` | Introuvable dans Oracle |
 | `ECART` | Montants incohérents |
+
+### Motif de rejet dans l'onglet Détail
+
+Une pièce refusée par les contrôles fonctionnels du second demi-flux **n'est jamais soumise à Oracle** : elle ressortait donc `ABSENTE`, ce qui est exact mais muet — ni la cause, ni l'action à mener.
+
+L'onglet **Détail Oracle** interroge maintenant `reconciliation.py --rejets-json` (fonction `Get-RejetsDemiFlux2` de `rapport_oracle.ps1`) et gagne trois colonnes, `Code Rejet`, `Motif Rejet` et `Appel PL/SQL`. Ces pièces prennent le statut `REJETEE` :
+
+| Pièce | Statut | Code | Motif | Appel PL/SQL |
+|---|---|---|---|---|
+| `VLF26G0026` | `REJETEE` | `OAE025` | Site Fournisseur inactif ou inexistant | `XXEAI_INTERFACE_TOOLS_PKG.Get_Info_Invoice_Header` |
+
+Le traitement diffère d'une pièce `ABSENTE` : il s'agit de corriger le référentiel puis de rejouer, non de chercher dans Oracle. Si le second demi-flux n'a pas été rapatrié, la lecture échoue en silence et le contrôle se déroule exactement comme avant.
 
 Sortie dans `Logs\` (clients : `Rapport_Oracle_FAC02_*`, fournisseurs : `Rapport_Oracle_FAC02_FOURNISSEURS_*`) — **un seul fichier**, sur le modèle des rapports de `CTRL_QUASI_AUTOMATIQUE_DES_PRELEVEMENTS` :
 

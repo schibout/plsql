@@ -36,6 +36,7 @@ Codes retour : 0 = integration complete, 1 = erreur technique,
 """
 
 import csv
+import json
 import sys
 from dataclasses import dataclass, field
 from decimal import Decimal, InvalidOperation
@@ -650,6 +651,46 @@ def lignes_csv(resultats) -> List[List[str]]:
     return lignes
 
 
+def index_rejets(resultats) -> dict:
+    """Pieces rejetees indexees par numero, pour l'onglet Detail Oracle.
+
+    Une piece rejetee au second demi-flux n'atteint jamais Oracle : sans cet
+    index, les scripts Verifier_Oracle_*.ps1 la classent ABSENTE, ce qui est
+    exact mais muet. Avec lui, ils peuvent dire pourquoi.
+
+    La cle est le numero de piece en majuscules, comme dans ces scripts.
+    """
+    if isinstance(resultats, Resultat):
+        resultats = [resultats]
+    index = {}
+    for cascade in (c for resultat in resultats for c in resultat.cascades):
+        for rejet in cascade.rejets:
+            index[rejet.piece.upper()] = {
+                "code": rejet.code or "(sans code)",
+                "libelle": rejet.libelle,
+                "appel": rejet.appel,
+                "horodatage": rejet.horodatage,
+                "fichier": cascade.fichier,
+                "nb_lignes": rejet.nb_lignes,
+            }
+    return index
+
+
+def ecrire_rejets_json(resultats, destination=None) -> None:
+    """Ecrit l'index des pieces rejetees en JSON, lisible par PowerShell."""
+    if isinstance(resultats, Resultat):
+        resultats = [resultats]
+    donnees = {
+        "exports": [resultat.dossier.name for resultat in resultats],
+        "rejets": index_rejets(resultats),
+    }
+    texte = json.dumps(donnees, ensure_ascii=False, indent=2)
+    if destination:
+        Path(destination).write_text(texte, encoding="utf-8")
+    else:
+        print(texte)
+
+
 def ecrire_csv(resultats, destination=None) -> None:
     """Ecrit les cascades en CSV point-virgule, comme les rapports du depot."""
     if destination:
@@ -683,7 +724,8 @@ def _option(args: List[str], nom: str):
 
 
 USAGE = ("ERREUR : usage : reconciliation.py <dossier> [--tous] "
-         "[--csv [fichier]] [--html [fichier]] [--sans-rapport]")
+         "[--csv [fichier]] [--html [fichier]] [--rejets-json [fichier]] "
+         "[--sans-rapport]")
 
 
 def executer(arguments: Optional[Sequence[str]] = None) -> int:
@@ -694,6 +736,7 @@ def executer(arguments: Optional[Sequence[str]] = None) -> int:
     tous, _ = _option(args, "--tous")
     sortie_csv, destination_csv = _option(args, "--csv")
     sortie_html, destination_html = _option(args, "--html")
+    sortie_rejets, destination_rejets = _option(args, "--rejets-json")
     if len(args) != 1:
         print(USAGE, file=sys.stderr)
         return EXIT_TECHNIQUE
@@ -704,11 +747,16 @@ def executer(arguments: Optional[Sequence[str]] = None) -> int:
         print("ERREUR : %s" % exc, file=sys.stderr)
         return EXIT_TECHNIQUE
 
-    # Le CSV part sur la sortie standard quand aucun fichier n'est donne :
-    # l'affichage lisible laisserait alors la place a des lignes parasites.
-    csv_sur_sortie = sortie_csv and destination_csv is None
+    # Une sortie machine sans fichier part sur la sortie standard : l'affichage
+    # lisible y ajouterait des lignes parasites.
+    csv_sur_sortie = (
+        (sortie_csv and destination_csv is None)
+        or (sortie_rejets and destination_rejets is None)
+    )
     if sortie_csv:
         ecrire_csv(resultats, destination_csv)
+    if sortie_rejets:
+        ecrire_rejets_json(resultats, destination_rejets)
     if not csv_sur_sortie:
         for resultat in resultats:
             afficher(resultat)
