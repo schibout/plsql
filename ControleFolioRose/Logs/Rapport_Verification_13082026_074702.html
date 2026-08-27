@@ -1,0 +1,180 @@
+﻿<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>Controle Folio Rose - 13/08/2026 07:47</title>
+<style>
+  * { box-sizing: border-box; }
+  body { font-family: Segoe UI, Calibri, Arial, sans-serif; margin: 0; padding: 22px;
+         background: #f4f6f9; color: #24292f; }
+  .wrap { max-width: 1700px; margin: 0 auto; }
+  h1 { background: #003366; color: #fff; padding: 15px 22px; border-radius: 6px;
+       font-size: 1.22em; margin: 0 0 12px 0; }
+  h2 { color: #003366; border-bottom: 2px solid #003366; padding-bottom: 5px;
+       margin-top: 30px; font-size: 1.04em; }
+  h3 { color: #003366; font-size: .9em; margin: 16px 0 8px 0; }
+  .meta { background: #e8f0fe; border-left: 4px solid #003366; padding: 9px 15px;
+          margin-bottom: 15px; border-radius: 0 4px 4px 0; font-size: .85em; }
+  .meta span { margin-right: 20px; display: inline-block; }
+  .bandeau { padding: 13px 19px; border-radius: 6px; margin-bottom: 16px; font-size: .92em; }
+  .bandeau strong { display: block; font-size: 1.14em; margin-bottom: 3px; }
+  .bandeau.ok   { background: #d7f2e3; color: #0b6b3a; border: 1px solid #7fc9a3; }
+  .bandeau.warn { background: #fff4d6; color: #7a5600; border: 1px solid #e8c46a; }
+  .bandeau.ko   { background: #fbdcdc; color: #9b1c1c; border: 1px solid #e39292; }
+  .note { background: #fff8e6; border-left: 4px solid #d9a441; padding: 9px 15px;
+          border-radius: 0 4px 4px 0; margin-bottom: 16px; font-size: .84em; color: #7a5600; }
+  .tiles { display: flex; flex-wrap: wrap; gap: 11px; }
+  .tile { flex: 1 1 145px; background: #fff; border: 1px solid #dde3ea; border-radius: 6px;
+          padding: 13px 9px; text-align: center; box-shadow: 0 1px 2px rgba(0,0,0,.05); }
+  .tv { font-size: 1.45em; font-weight: 700; line-height: 1.15; }
+  .tn { font-size: .73em; color: #57606a; text-transform: uppercase;
+        letter-spacing: .03em; margin-top: 4px; }
+  .cols { display: flex; gap: 22px; flex-wrap: wrap; }
+  .cols > div { flex: 1 1 380px; }
+  table { border-collapse: collapse; width: 100%; background: #fff; }
+  .tablewrap { overflow-x: auto; background: #fff; border-radius: 6px;
+               box-shadow: 0 1px 3px rgba(0,0,0,.12); }
+  th { background: #003366; color: #fff; padding: 9px 10px; text-align: left;
+       font-size: .77em; white-space: nowrap; position: sticky; top: 0; z-index: 2; }
+  td { padding: 6px 10px; border-bottom: 1px solid #eceff2; font-size: .81em; white-space: nowrap; }
+  tr:nth-child(even) td { background: #fafbfc; }
+  tr:hover td { background: #eef4fd; }
+  tr.warn td { background: #fffaf0; }
+  table.synth { border-radius: 6px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,.1); }
+  .mono { font-family: Consolas, Menlo, monospace; font-size: .95em; }
+  .num  { text-align: right; font-variant-numeric: tabular-nums; }
+  .ctr  { text-align: center; }
+  .strong { font-weight: 700; }
+  .sep { border-left: 2px solid #dde3ea; }
+  .fic { max-width: 340px; overflow: hidden; text-overflow: ellipsis; }
+  .com { max-width: 260px; white-space: normal; color: #57606a; font-style: italic; }
+  td:empty::after { content: '-'; color: #c9ced4; }
+  .pill { display: inline-block; padding: 2px 9px; border-radius: 11px;
+          font-size: .8em; font-weight: 600; }
+  .flag { display: inline-block; margin-left: 5px; padding: 1px 7px; border-radius: 9px;
+          font-size: .73em; font-weight: 600; cursor: help; }
+  .flag.rien  { background: #ede7f6; color: #5b2d8e; }
+  .flag.inter { background: #e3f0fb; color: #0a4d8c; }
+  .age-moyen { color: #8a5a00; font-weight: 600; }
+  .age-vieux { color: #9b1c1c; font-weight: 700; }
+  .barre { background: #fff; border-radius: 6px; padding: 11px 15px; margin-bottom: 12px;
+           box-shadow: 0 1px 2px rgba(0,0,0,.08); font-size: .84em; }
+  .barre button { border: 1px solid #c5cdd6; background: #f6f8fa; border-radius: 14px;
+                  padding: 4px 13px; margin-right: 6px; cursor: pointer; font-size: .95em;
+                  font-family: inherit; }
+  .barre button.on { background: #003366; color: #fff; border-color: #003366; }
+  .barre input { border: 1px solid #c5cdd6; border-radius: 4px; padding: 5px 9px;
+                 width: 250px; font-family: inherit; font-size: .95em; margin-left: 10px; }
+  #compteur { color: #57606a; margin-left: 12px; }
+  .footer { font-size: .76em; color: #8b949e; margin-top: 30px; text-align: center; }
+  @media print {
+    .barre { display: none; }
+    body { background: #fff; padding: 0; }
+    th { position: static; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+<h1>Controle Folio Rose &mdash; reconciliation des factures</h1>
+<div class="meta"><span><strong>Genere le :</strong> 13/08/2026 07:47:09</span><span><strong>Fichier :</strong> ExportCSV-13-08-2026.csv (UTF-8 (BOM))</span><span><strong>Base :</strong> aroux@prdscanc1pdb03.dalkia.net:1521/ebs_PDBFINP1</span><span><strong>Interrogations Oracle :</strong> 31</span><span><strong>Duree :</strong> 6.7s</span></div>
+<div class="bandeau ko"><strong>34 ligne(s) en ecart</strong>Montant cumule en ecart : -220 551,69.</div>
+<div class="note"><strong>9 ligne(s) sans aucune donnee Oracle</strong> &mdash; ni definitif, ni interface. Le flux n'est pas arrive, ou le couple folio / nom de fichier ne correspond a rien en base.</div>
+<div class="tiles"><div class="tile"><div class="tv" style="color:#003366">35</div><div class="tn">Lignes controlees</div></div><div class="tile"><div class="tv" style="color:#0b6b3a">1</div><div class="tn">Concordantes</div></div><div class="tile"><div class="tv" style="color:#9b1c1c">34</div><div class="tn">En ecart</div></div><div class="tile"><div class="tv" style="color:#8a5a00">0</div><div class="tn">Indeterminees</div></div><div class="tile"><div class="tv" style="color:#9b1c1c">-220 551,69</div><div class="tn">Montant en ecart</div></div><div class="tile"><div class="tv" style="color:#5b2d8e">41 j</div><div class="tn">Ecart le plus ancien</div></div><div class="tile"><div class="tv" style="color:#8a5a00">0</div><div class="tn">En interface, non integre</div></div><div class="tile"><div class="tv" style="color:#8a5a00">9</div><div class="tn">Sans reponse Oracle</div></div></div>
+
+<h2>Synthese</h2>
+<div class="cols">
+<div><h3>Par nature de flux</h3><table class="synth"><thead><tr><th>Type</th><th>Lignes</th><th>En ecart</th><th>Indet.</th><th>Montant en ecart</th></tr></thead><tbody><tr class="warn"><td>FOURNISSEURS</td><td class="num">27</td><td class="num">26</td><td class="num">0</td><td class="num strong">-226 294,59</td></tr><tr class="warn"><td>CLIENTS</td><td class="num">6</td><td class="num">6</td><td class="num">0</td><td class="num strong">31 225,04</td></tr><tr class="warn"><td>GL</td><td class="num">2</td><td class="num">2</td><td class="num">0</td><td class="num strong">-25 482,14</td></tr></tbody></table></div><div><h3>Par folio (15 premiers)</h3><table class="synth"><thead><tr><th>Folio</th><th>Lignes</th><th>En ecart</th><th>Indet.</th><th>Montant en ecart</th></tr></thead><tbody><tr class="warn"><td>HAF</td><td class="num">5</td><td class="num">5</td><td class="num">0</td><td class="num strong">-233 824,39</td></tr><tr class="warn"><td>ING</td><td class="num">1</td><td class="num">1</td><td class="num">0</td><td class="num strong">79 818,82</td></tr><tr class="warn"><td>CEC</td><td class="num">5</td><td class="num">5</td><td class="num">0</td><td class="num strong">-68 178,41</td></tr><tr class="warn"><td>CEG</td><td class="num">3</td><td class="num">3</td><td class="num">0</td><td class="num strong">-44 115,07</td></tr><tr class="warn"><td>VFF</td><td class="num">8</td><td class="num">8</td><td class="num">0</td><td class="num strong">42 960,87</td></tr><tr class="warn"><td>THO</td><td class="num">1</td><td class="num">1</td><td class="num">0</td><td class="num strong">-27 150,34</td></tr><tr class="warn"><td>GCA</td><td class="num">2</td><td class="num">2</td><td class="num">0</td><td class="num strong">20 456,06</td></tr><tr class="warn"><td>CYC</td><td class="num">2</td><td class="num">2</td><td class="num">0</td><td class="num strong">10 988,58</td></tr><tr class="warn"><td>CEE</td><td class="num">2</td><td class="num">2</td><td class="num">0</td><td class="num strong">-5 419,19</td></tr><tr class="warn"><td>CYF</td><td class="num">1</td><td class="num">1</td><td class="num">0</td><td class="num strong">3 774,80</td></tr><tr class="warn"><td>GER</td><td class="num">1</td><td class="num">1</td><td class="num">0</td><td class="num strong">1 668,20</td></tr><tr class="warn"><td>NOT</td><td class="num">2</td><td class="num">1</td><td class="num">0</td><td class="num strong">-1 312,02</td></tr><tr class="warn"><td>IGP</td><td class="num">1</td><td class="num">1</td><td class="num">0</td><td class="num strong">-219,60</td></tr><tr class="warn"><td>FAS</td><td class="num">1</td><td class="num">1</td><td class="num">0</td><td class="num strong">0,00</td></tr></tbody></table></div>
+</div>
+
+<h2>Detail des lignes</h2>
+<div class="barre">
+  <button class="on" data-f="TOUS">Toutes</button>
+  <button data-f="KO">En ecart</button>
+  <button data-f="INDETERMINE">Indeterminees</button>
+  <button data-f="OK">Concordantes</button>
+  <input type="text" id="q" placeholder="Rechercher un folio, un fichier...">
+  <span id="compteur"></span>
+</div>
+<div class="tablewrap">
+<table id="detail">
+<thead><tr>
+  <th>Folio</th><th>Type</th><th>Date</th><th>Age</th><th>Fichier transmis</th>
+  <th>Ecart Nb<br>(fichier)</th><th>Ecart Debit<br>(fichier)</th>
+  <th class="sep">Nb Oracle</th><th>Montant Oracle</th><th>Montant Interface</th>
+  <th class="sep">Ecart Nb<br>(calcule)</th><th>Ecart Montant<br>(calcule)</th>
+  <th>Commentaire</th><th>Statut</th>
+</tr></thead>
+<tbody>
+<tr data-statut="KO"><td class="mono">HAF</td><td>FOURNISSEURS</td><td class="ctr">11/08/2026</td><td class="ctr">2 j</td><td class="mono fic" title="PRN01_SRC_FACTURESFOURNISSEURS_20260807_205356">PRN01_SRC_FACTURESFOURNISSEURS_20260807_205356</td><td class="num">-1</td><td class="num">-5 323,05</td><td class="num sep">29</td><td class="num">617 302,45</td><td class="num">617 302,45</td><td class="num sep">-29</td><td class="num strong">-617 302,45</td><td class="com"></td><td><span class="pill" style="color:#9b1c1c;background:#fbdcdc">KO</span> </td></tr>
+<tr data-statut="KO"><td class="mono">CEE</td><td>FOURNISSEURS</td><td class="ctr">10/08/2026</td><td class="ctr">3 j</td><td class="mono fic" title="CEL01_SRC_FACTURESFOURNISSEURS_070826-200415_ST_CEL01_639217298557851444_001">CEL01_SRC_FACTURESFOURNISSEURS_070826-200415_…</td><td class="num">-61</td><td class="num">-214 032,42</td><td class="num sep">61</td><td class="num">214 032,42</td><td class="num">214 032,42</td><td class="num sep">-61</td><td class="num strong">-214 032,42</td><td class="com"></td><td><span class="pill" style="color:#9b1c1c;background:#fbdcdc">KO</span> </td></tr>
+<tr data-statut="KO"><td class="mono">CEE</td><td>FOURNISSEURS</td><td class="ctr">12/08/2026</td><td class="ctr">1 j</td><td class="mono fic" title="CEL01_SRC_FACTURESFOURNISSEURS_120826-200807_ST_CEL01_639221620870236028_001">CEL01_SRC_FACTURESFOURNISSEURS_120826-200807_…</td><td class="num">159</td><td class="num">208 613,23</td><td class="num sep">0</td><td class="num">0,00</td><td class="num">0,00</td><td class="num sep">159</td><td class="num strong">208 613,23</td><td class="com"></td><td><span class="pill" style="color:#9b1c1c;background:#fbdcdc">KO</span> <span class="flag rien" title="Aucune donnee Oracle : ni definitif, ni interface. Le flux n'est pas arrive.">rien en base</span></td></tr>
+<tr data-statut="KO"><td class="mono">HAF</td><td>FOURNISSEURS</td><td class="ctr">12/08/2026</td><td class="ctr">1 j</td><td class="mono fic" title="PRN01_SRC_FACTURESFOURNISSEURS_20260812_205432">PRN01_SRC_FACTURESFOURNISSEURS_20260812_205432</td><td class="num">32</td><td class="num">204 041,95</td><td class="num sep">0</td><td class="num">0,00</td><td class="num">0,00</td><td class="num sep">32</td><td class="num strong">204 041,95</td><td class="com"></td><td><span class="pill" style="color:#9b1c1c;background:#fbdcdc">KO</span> <span class="flag rien" title="Aucune donnee Oracle : ni definitif, ni interface. Le flux n'est pas arrive.">rien en base</span></td></tr>
+<tr data-statut="KO"><td class="mono">CEC</td><td>FOURNISSEURS</td><td class="ctr">11/08/2026</td><td class="ctr">2 j</td><td class="mono fic" title="CEL01_SRC_FACTURESFOURNISSEURS_070826-200415_ST_CEL01_639217298557851444_001">CEL01_SRC_FACTURESFOURNISSEURS_070826-200415_…</td><td class="num">-1</td><td class="num">-38 503,83</td><td class="num sep">3</td><td class="num">108 529,85</td><td class="num">108 529,85</td><td class="num sep">-3</td><td class="num strong">-108 529,85</td><td class="com"></td><td><span class="pill" style="color:#9b1c1c;background:#fbdcdc">KO</span> </td></tr>
+<tr data-statut="KO"><td class="mono">CEC</td><td>FOURNISSEURS</td><td class="ctr">10/08/2026</td><td class="ctr">3 j</td><td class="mono fic" title="CEL01_SRC_FACTURESFOURNISSEURS_070826-200415_ST_CEL01_639217298557851444_001">CEL01_SRC_FACTURESFOURNISSEURS_070826-200415_…</td><td class="num">-2</td><td class="num">-70 026,02</td><td class="num sep">3</td><td class="num">108 529,85</td><td class="num">108 529,85</td><td class="num sep">-3</td><td class="num strong">-108 529,85</td><td class="com"></td><td><span class="pill" style="color:#9b1c1c;background:#fbdcdc">KO</span> </td></tr>
+<tr data-statut="KO"><td class="mono">CEC</td><td>FOURNISSEURS</td><td class="ctr">12/08/2026</td><td class="ctr">1 j</td><td class="mono fic" title="CEL01_SRC_FACTURESFOURNISSEURS_120826-200807_ST_CEL01_639221620870236028_001">CEL01_SRC_FACTURESFOURNISSEURS_120826-200807_…</td><td class="num">11</td><td class="num">104 432,82</td><td class="num sep">0</td><td class="num">0,00</td><td class="num">0,00</td><td class="num sep">11</td><td class="num strong">104 432,82</td><td class="com"></td><td><span class="pill" style="color:#9b1c1c;background:#fbdcdc">KO</span> <span class="flag rien" title="Aucune donnee Oracle : ni definitif, ni interface. Le flux n'est pas arrive.">rien en base</span></td></tr>
+<tr data-statut="KO"><td class="mono">HAF</td><td>FOURNISSEURS</td><td class="ctr">12/08/2026</td><td class="ctr">1 j</td><td class="mono fic" title="PRN01_SRC_FACTURESFOURNISSEURS_20260806_205339">PRN01_SRC_FACTURESFOURNISSEURS_20260806_205339</td><td class="num">3</td><td class="num">93 403,65</td><td class="num sep">22</td><td class="num">153 220,95</td><td class="num">154 347,13</td><td class="num sep">4</td><td class="num strong">94 529,83</td><td class="com"></td><td><span class="pill" style="color:#9b1c1c;background:#fbdcdc">KO</span> </td></tr>
+<tr data-statut="KO"><td class="mono">CEG</td><td>FOURNISSEURS</td><td class="ctr">12/08/2026</td><td class="ctr">1 j</td><td class="mono fic" title="CEL01_SRC_FACTURESFOURNISSEURS_120826-200807_ST_CEL01_639221620870236028_001">CEL01_SRC_FACTURESFOURNISSEURS_120826-200807_…</td><td class="num">32</td><td class="num">93 967,55</td><td class="num sep">0</td><td class="num">0,00</td><td class="num">0,00</td><td class="num sep">32</td><td class="num strong">93 967,55</td><td class="com"></td><td><span class="pill" style="color:#9b1c1c;background:#fbdcdc">KO</span> <span class="flag rien" title="Aucune donnee Oracle : ni definitif, ni interface. Le flux n'est pas arrive.">rien en base</span></td></tr>
+<tr data-statut="KO"><td class="mono">ING</td><td>FOURNISSEURS</td><td class="ctr">03/07/2026</td><td class="ctr age-vieux">41 j</td><td class="mono fic" title="FAC02_SRC_FACTURESFOURNISSEURS_020726-060434_ST_FAC02_639185690741033341_001">FAC02_SRC_FACTURESFOURNISSEURS_020726-060434_…</td><td class="num">1</td><td class="num">79 818,82</td><td class="num sep">325</td><td class="num">3 669 141,80</td><td class="num">3 669 141,80</td><td class="num sep">1</td><td class="num strong">79 818,82</td><td class="com">1 facture 0001R2607SRY8 en erreur format, flux 06297d30-75ec-11f1-9034-005056850e47</td><td><span class="pill" style="color:#9b1c1c;background:#fbdcdc">KO</span> </td></tr>
+<tr data-statut="KO"><td class="mono">CEG</td><td>FOURNISSEURS</td><td class="ctr">11/08/2026</td><td class="ctr">2 j</td><td class="mono fic" title="CEL01_SRC_FACTURESFOURNISSEURS_070826-200415_ST_CEL01_639217298557851444_001">CEL01_SRC_FACTURESFOURNISSEURS_070826-200415_…</td><td class="num">-1</td><td class="num">-2 646,71</td><td class="num sep">33</td><td class="num">69 041,31</td><td class="num">69 041,31</td><td class="num sep">-33</td><td class="num strong">-69 041,31</td><td class="com"></td><td><span class="pill" style="color:#9b1c1c;background:#fbdcdc">KO</span> </td></tr>
+<tr data-statut="KO"><td class="mono">CEG</td><td>FOURNISSEURS</td><td class="ctr">10/08/2026</td><td class="ctr">3 j</td><td class="mono fic" title="CEL01_SRC_FACTURESFOURNISSEURS_070826-200415_ST_CEL01_639217298557851444_001">CEL01_SRC_FACTURESFOURNISSEURS_070826-200415_…</td><td class="num">-32</td><td class="num">-66 394,60</td><td class="num sep">33</td><td class="num">69 041,31</td><td class="num">69 041,31</td><td class="num sep">-33</td><td class="num strong">-69 041,31</td><td class="com"></td><td><span class="pill" style="color:#9b1c1c;background:#fbdcdc">KO</span> </td></tr>
+<tr data-statut="KO"><td class="mono">HAF</td><td>FOURNISSEURS</td><td class="ctr">12/08/2026</td><td class="ctr">1 j</td><td class="mono fic" title="PRN01_SRC_FACTURESFOURNISSEURS_20260812_210158">PRN01_SRC_FACTURESFOURNISSEURS_20260812_210158</td><td class="num">18</td><td class="num">63 080,98</td><td class="num sep">0</td><td class="num">0,00</td><td class="num">0,00</td><td class="num sep">18</td><td class="num strong">63 080,98</td><td class="com"></td><td><span class="pill" style="color:#9b1c1c;background:#fbdcdc">KO</span> <span class="flag rien" title="Aucune donnee Oracle : ni definitif, ni interface. Le flux n'est pas arrive.">rien en base</span></td></tr>
+<tr data-statut="KO"><td class="mono">CEC</td><td>FOURNISSEURS</td><td class="ctr">12/08/2026</td><td class="ctr">1 j</td><td class="mono fic" title="CEL01_SRC_FACTURESFOURNISSEURS_100826-201628_ST_CEL01_639219897886958648_001">CEL01_SRC_FACTURESFOURNISSEURS_100826-201628_…</td><td class="num">2</td><td class="num">27 628,42</td><td class="num sep">12</td><td class="num">231 798,20</td><td class="num">231 798,20</td><td class="num sep">2</td><td class="num strong">27 628,42</td><td class="com"></td><td><span class="pill" style="color:#9b1c1c;background:#fbdcdc">KO</span> </td></tr>
+<tr data-statut="KO"><td class="mono">THO</td><td>GL</td><td class="ctr">28/07/2026</td><td class="ctr age-moyen">16 j</td><td class="mono fic" title="VCH01_SRC_ECRITURESGL_270726-160000">VCH01_SRC_ECRITURESGL_270726-160000</td><td class="num">1</td><td class="num">11 177,07</td><td class="num sep">24 355</td><td class="num">57 281 527,31</td><td class="num">0,00</td><td class="num sep">-3</td><td class="num strong">-27 150,34</td><td class="com">1 pièce dans la GDR : n° 0000007836</td><td><span class="pill" style="color:#9b1c1c;background:#fbdcdc">KO</span> </td></tr>
+<tr data-statut="KO"><td class="mono">HAF</td><td>FOURNISSEURS</td><td class="ctr">11/08/2026</td><td class="ctr">2 j</td><td class="mono fic" title="PRN01_SRC_FACTURESFOURNISSEURS_20260810_205410">PRN01_SRC_FACTURESFOURNISSEURS_20260810_205410</td><td class="num">1</td><td class="num">131,09</td><td class="num sep">33</td><td class="num">359 200,89</td><td class="num">377 040,20</td><td class="num sep">5</td><td class="num strong">21 825,30</td><td class="com"></td><td><span class="pill" style="color:#9b1c1c;background:#fbdcdc">KO</span> </td></tr>
+<tr data-statut="KO"><td class="mono">VFF</td><td>FOURNISSEURS</td><td class="ctr">06/08/2026</td><td class="ctr">7 j</td><td class="mono fic" title="VHC03_SRC_FACTURESFOURNISSEURS_060826_150206">VHC03_SRC_FACTURESFOURNISSEURS_060826_150206</td><td class="num">0</td><td class="num">0,94</td><td class="num sep">0</td><td class="num">0,00</td><td class="num">0,00</td><td class="num sep">1</td><td class="num strong">18 521,67</td><td class="com"></td><td><span class="pill" style="color:#9b1c1c;background:#fbdcdc">KO</span> <span class="flag rien" title="Aucune donnee Oracle : ni definitif, ni interface. Le flux n'est pas arrive.">rien en base</span></td></tr>
+<tr data-statut="KO"><td class="mono">VFF</td><td>FOURNISSEURS</td><td class="ctr">07/08/2026</td><td class="ctr">6 j</td><td class="mono fic" title="VHC03_SRC_FACTURESFOURNISSEURS_070826_152413">VHC03_SRC_FACTURESFOURNISSEURS_070826_152413</td><td class="num">7</td><td class="num">18 235,12</td><td class="num sep">1</td><td class="num">127,67</td><td class="num">127,67</td><td class="num sep">6</td><td class="num strong">18 107,45</td><td class="com"></td><td><span class="pill" style="color:#9b1c1c;background:#fbdcdc">KO</span> </td></tr>
+<tr data-statut="KO"><td class="mono">GCA</td><td>CLIENTS</td><td class="ctr">07/08/2026</td><td class="ctr">6 j</td><td class="mono fic" title="FAC02_SRC_FACTURESCLIENTS_070826-015219_ST_FAC02_639216643394100902_001">FAC02_SRC_FACTURESCLIENTS_070826-015219_ST_FA…</td><td class="num">536</td><td class="num">2 657 762,90</td><td class="num sep">528</td><td class="num">2 640 045,24</td><td class="num">17 717,66</td><td class="num sep">8</td><td class="num strong">17 717,66</td><td class="com"></td><td><span class="pill" style="color:#9b1c1c;background:#fbdcdc">KO</span> </td></tr>
+<tr data-statut="KO"><td class="mono">CEC</td><td>FOURNISSEURS</td><td class="ctr">12/08/2026</td><td class="ctr">1 j</td><td class="mono fic" title="CEL01_SRC_FACTURESFOURNISSEURS_110826-200457_ST_CEL01_639220754971423753_001">CEL01_SRC_FACTURESFOURNISSEURS_110826-200457_…</td><td class="num">1</td><td class="num">16 820,05</td><td class="num sep">22</td><td class="num">328 413,36</td><td class="num">324 240,11</td><td class="num sep">1</td><td class="num strong">16 820,05</td><td class="com"></td><td><span class="pill" style="color:#9b1c1c;background:#fbdcdc">KO</span> </td></tr>
+<tr data-statut="KO"><td class="mono">CYC</td><td>CLIENTS</td><td class="ctr">07/08/2026</td><td class="ctr">6 j</td><td class="mono fic" title="HEF01_SRC_FACTURESCLIENTS_070826-011057_ST_HEF01_639216618570470716_001">HEF01_SRC_FACTURESCLIENTS_070826-011057_ST_HE…</td><td class="num">394</td><td class="num">3 067 497,68</td><td class="num sep">392</td><td class="num">3 058 274,40</td><td class="num">9 223,28</td><td class="num sep">2</td><td class="num strong">9 223,28</td><td class="com"></td><td><span class="pill" style="color:#9b1c1c;background:#fbdcdc">KO</span> </td></tr>
+<tr data-statut="KO"><td class="mono">CYF</td><td>FOURNISSEURS</td><td class="ctr">10/08/2026</td><td class="ctr">3 j</td><td class="mono fic" title="HEF01_SRC_FACTURESFOURNISSEURS_080826-011025_ST_HEF01_639217482253011173_001">HEF01_SRC_FACTURESFOURNISSEURS_080826-011025_…</td><td class="num">1</td><td class="num">3 774,80</td><td class="num sep">23</td><td class="num">396 662,52</td><td class="num">396 662,52</td><td class="num sep">1</td><td class="num strong">3 774,80</td><td class="com"></td><td><span class="pill" style="color:#9b1c1c;background:#fbdcdc">KO</span> </td></tr>
+<tr data-statut="KO"><td class="mono">VFF</td><td>FOURNISSEURS</td><td class="ctr">07/08/2026</td><td class="ctr">6 j</td><td class="mono fic" title="VHC03_SRC_FACTURESFOURNISSEURS_070826_085535">VHC03_SRC_FACTURESFOURNISSEURS_070826_085535</td><td class="num">9</td><td class="num">16 662,53</td><td class="num sep">7</td><td class="num">13 782,62</td><td class="num">13 782,62</td><td class="num sep">2</td><td class="num strong">2 879,91</td><td class="com"></td><td><span class="pill" style="color:#9b1c1c;background:#fbdcdc">KO</span> </td></tr>
+<tr data-statut="KO"><td class="mono">GCA</td><td>CLIENTS</td><td class="ctr">04/08/2026</td><td class="ctr age-moyen">9 j</td><td class="mono fic" title="FAC02_SRC_FACTURESCLIENTS_040826-015647_ST_FAC02_639214054073299009_001">FAC02_SRC_FACTURESCLIENTS_040826-015647_ST_FA…</td><td class="num">0</td><td class="num">-1 623 614,22</td><td class="num sep">10 774</td><td class="num">47 881 969,11</td><td class="num">2 738,40</td><td class="num sep">1</td><td class="num strong">2 738,40</td><td class="com"></td><td><span class="pill" style="color:#9b1c1c;background:#fbdcdc">KO</span> </td></tr>
+<tr data-statut="KO"><td class="mono">VFF</td><td>FOURNISSEURS</td><td class="ctr">07/08/2026</td><td class="ctr">6 j</td><td class="mono fic" title="VHC03_SRC_FACTURESFOURNISSEURS_070826_155537">VHC03_SRC_FACTURESFOURNISSEURS_070826_155537</td><td class="num">1</td><td class="num">1 785,84</td><td class="num sep">0</td><td class="num">0,00</td><td class="num">0,00</td><td class="num sep">1</td><td class="num strong">1 785,84</td><td class="com"></td><td><span class="pill" style="color:#9b1c1c;background:#fbdcdc">KO</span> <span class="flag rien" title="Aucune donnee Oracle : ni definitif, ni interface. Le flux n'est pas arrive.">rien en base</span></td></tr>
+<tr data-statut="KO"><td class="mono">CYC</td><td>CLIENTS</td><td class="ctr">04/08/2026</td><td class="ctr age-moyen">9 j</td><td class="mono fic" title="HEF01_SRC_FACTURESCLIENTS_040826-011102_ST_HEF01_639214026623455108_001">HEF01_SRC_FACTURESCLIENTS_040826-011102_ST_HE…</td><td class="num">0</td><td class="num">-571 423,46</td><td class="num sep">431</td><td class="num">2 387 618,77</td><td class="num">1 765,30</td><td class="num sep">1</td><td class="num strong">1 765,30</td><td class="com"></td><td><span class="pill" style="color:#9b1c1c;background:#fbdcdc">KO</span> </td></tr>
+<tr data-statut="KO"><td class="mono">GER</td><td>GL</td><td class="ctr">04/07/2026</td><td class="ctr age-vieux">40 j</td><td class="mono fic" title="FAC02_SRC_ECRITURESGL_040726-011149">FAC02_SRC_ECRITURESGL_040726-011149</td><td class="num">36</td><td class="num">11 971,96</td><td class="num sep">35</td><td class="num">10 303,76</td><td class="num">0,00</td><td class="num sep">1</td><td class="num strong">1 668,20</td><td class="com"></td><td><span class="pill" style="color:#9b1c1c;background:#fbdcdc">KO</span> </td></tr>
+<tr data-statut="KO"><td class="mono">NOT</td><td>FOURNISSEURS</td><td class="ctr">12/08/2026</td><td class="ctr">1 j</td><td class="mono fic" title="NOT01_SRC_FACTURESFOURNISSEURS_20260810232157">NOT01_SRC_FACTURESFOURNISSEURS_20260810232157</td><td class="num">-1</td><td class="num">-34,70</td><td class="num sep">51</td><td class="num">1 312,02</td><td class="num">1 312,02</td><td class="num sep">-51</td><td class="num strong">-1 312,02</td><td class="com"></td><td><span class="pill" style="color:#9b1c1c;background:#fbdcdc">KO</span> </td></tr>
+<tr data-statut="KO"><td class="mono">VFF</td><td>FOURNISSEURS</td><td class="ctr">10/08/2026</td><td class="ctr">3 j</td><td class="mono fic" title="VHC03_SRC_FACTURESFOURNISSEURS_100826_114541">VHC03_SRC_FACTURESFOURNISSEURS_100826_114541</td><td class="num">1</td><td class="num">672,72</td><td class="num sep">0</td><td class="num">0,00</td><td class="num">0,00</td><td class="num sep">1</td><td class="num strong">672,72</td><td class="com"></td><td><span class="pill" style="color:#9b1c1c;background:#fbdcdc">KO</span> <span class="flag rien" title="Aucune donnee Oracle : ni definitif, ni interface. Le flux n'est pas arrive.">rien en base</span></td></tr>
+<tr data-statut="KO"><td class="mono">VFF</td><td>FOURNISSEURS</td><td class="ctr">10/08/2026</td><td class="ctr">3 j</td><td class="mono fic" title="VHC03_SRC_FACTURESFOURNISSEURS_100826_114541">VHC03_SRC_FACTURESFOURNISSEURS_100826_114541</td><td class="num">1</td><td class="num">672,72</td><td class="num sep">0</td><td class="num">0,00</td><td class="num">0,00</td><td class="num sep">1</td><td class="num strong">672,72</td><td class="com"></td><td><span class="pill" style="color:#9b1c1c;background:#fbdcdc">KO</span> <span class="flag rien" title="Aucune donnee Oracle : ni definitif, ni interface. Le flux n'est pas arrive.">rien en base</span></td></tr>
+<tr data-statut="KO"><td class="mono">VFF</td><td>FOURNISSEURS</td><td class="ctr">07/08/2026</td><td class="ctr">6 j</td><td class="mono fic" title="VHC03_SRC_FACTURESFOURNISSEURS_070826_114606">VHC03_SRC_FACTURESFOURNISSEURS_070826_114606</td><td class="num">12</td><td class="num">90 052,46</td><td class="num sep">10</td><td class="num">89 824,96</td><td class="num">89 824,96</td><td class="num sep">2</td><td class="num strong">227,50</td><td class="com"></td><td><span class="pill" style="color:#9b1c1c;background:#fbdcdc">KO</span> </td></tr>
+<tr data-statut="KO"><td class="mono">IGP</td><td>CLIENTS</td><td class="ctr">03/08/2026</td><td class="ctr age-moyen">10 j</td><td class="mono fic" title="FAC02_SRC_FACTURESCLIENTS_010826-005747_ST_FAC02_639211426673639666_001">FAC02_SRC_FACTURESCLIENTS_010826-005747_ST_FA…</td><td class="num">0</td><td class="num">-439,20</td><td class="num sep">72</td><td class="num">674 273,53</td><td class="num">-219,60</td><td class="num sep">1</td><td class="num strong">-219,60</td><td class="com"></td><td><span class="pill" style="color:#9b1c1c;background:#fbdcdc">KO</span> </td></tr>
+<tr data-statut="KO"><td class="mono">VFF</td><td>FOURNISSEURS</td><td class="ctr">10/08/2026</td><td class="ctr">3 j</td><td class="mono fic" title="VHC03_SRC_FACTURESFOURNISSEURS_070826_144348">VHC03_SRC_FACTURESFOURNISSEURS_070826_144348</td><td class="num">34</td><td class="num">1 156 921,71</td><td class="num sep">33</td><td class="num">1 234 076,69</td><td class="num">1 234 089,52</td><td class="num sep">2</td><td class="num strong">93,06</td><td class="com"></td><td><span class="pill" style="color:#9b1c1c;background:#fbdcdc">KO</span> </td></tr>
+<tr data-statut="KO"><td class="mono">FAS</td><td>CLIENTS</td><td class="ctr">31/07/2026</td><td class="ctr age-moyen">13 j</td><td class="mono fic" title="FAC02_SRC_FACTURESCLIENTS_310726-004858_ST_FAC02_639210557383329919_001">FAC02_SRC_FACTURESCLIENTS_310726-004858_ST_FA…</td><td class="num">8</td><td class="num">0,00</td><td class="num sep">1</td><td class="num">11 040 000,00</td><td class="num">0,00</td><td class="num sep">8</td><td class="num strong">0,00</td><td class="com"></td><td><span class="pill" style="color:#9b1c1c;background:#fbdcdc">KO</span> </td></tr>
+<tr data-statut="OK"><td class="mono">NOT</td><td>FOURNISSEURS</td><td class="ctr">11/08/2026</td><td class="ctr">2 j</td><td class="mono fic" title="NOT01_SRC_FACTURESFOURNISSEURS_20260810232157">NOT01_SRC_FACTURESFOURNISSEURS_20260810232157</td><td class="num">1</td><td class="num">34,70</td><td class="num sep">51</td><td class="num">1 312,02</td><td class="num">1 312,02</td><td class="num sep">0</td><td class="num strong">0,00</td><td class="com"></td><td><span class="pill" style="color:#0b6b3a;background:#d7f2e3">OK</span> </td></tr>
+</tbody>
+</table>
+</div>
+<div class="footer">Genere par Verifier_Factures.ps1 &mdash; donnees detaillees : Rapport_Verification_13082026_074702.csv</div>
+</div>
+<script>
+(function () {
+  var filtreStatut = "TOUS";
+  function appliquer() {
+    var q = document.getElementById("q").value.toLowerCase();
+    var lignes = document.querySelectorAll("#detail tbody tr");
+    var visibles = 0;
+    for (var i = 0; i < lignes.length; i++) {
+      var tr = lignes[i];
+      var okStatut = (filtreStatut === "TOUS") || (tr.getAttribute("data-statut") === filtreStatut);
+      var okTexte  = (q === "") || (tr.textContent.toLowerCase().indexOf(q) >= 0);
+      var visible  = okStatut && okTexte;
+      tr.style.display = visible ? "" : "none";
+      if (visible) { visibles++; }
+    }
+    document.getElementById("compteur").textContent = visibles + " ligne(s) affichee(s)";
+  }
+  var boutons = document.querySelectorAll(".barre button");
+  for (var b = 0; b < boutons.length; b++) {
+    boutons[b].addEventListener("click", function () {
+      for (var k = 0; k < boutons.length; k++) { boutons[k].className = ""; }
+      this.className = "on";
+      filtreStatut = this.getAttribute("data-f");
+      appliquer();
+    });
+  }
+  document.getElementById("q").addEventListener("input", appliquer);
+  appliquer();
+})();
+</script>
+</body>
+</html>
