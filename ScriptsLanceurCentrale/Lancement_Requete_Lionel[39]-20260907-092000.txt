@@ -1,0 +1,659 @@
+09:20:06 [null@localhost 1][NORMAL] bienvenue dans la class GDRIVE :: IdDossier en cours  1bkXK77bOQb8TXG69y_n_Qw9zM-Wru1BO
+09:20:09 [null@localhost 1][NORMAL] oneRowExecution 39 type =  <class 'str'>
+09:20:09 [null@localhost 1][NORMAL] [39]
+09:20:09 [null@localhost 1][NORMAL] CONTROLE 1
+09:20:09 [null@localhost 1][NORMAL] copiedataviz :: 
+09:20:09 [null@localhost 1][NORMAL] >>> On peut lancer la commande
+09:20:09 [null@localhost 1][NORMAL] Lancement de la commande 
+09:20:09 [null@localhost 1][NORMAL]  py ""C:\RPA\CapAppro\04-TestCentral\Scripts\\CapAppro_GENERIQUE_EXECUTION.py""  --idExec "39" --ProjectName "Extraction_Lionel" --DownloadDossier_drive_id "1L-5F_16qjMZ4Q-Qv7MfEdY3iA_N_LkjZ" --filenameLanceur "Config_Export_ctrl_Lionel.xlsx" --UploadDossier_drive_id "1L-5F_16qjMZ4Q-Qv7MfEdY3iA_N_LkjZ" --ListeDeDiffusion "david.de-barros@dalkia.fr" --requestExpirationDate "31/12/2026" --configBDD "config_oracle_finance" --copiedataviz ""
+09:21:00 [null@localhost 1][NORMAL] output:Rentrée dans la fonction main
+09:21:00 [null@localhost 1][NORMAL] ===============
+09:21:00 [null@localhost 1][NORMAL] Affichage des valeurs passées en paramètres
+09:21:00 [null@localhost 1][NORMAL] =============== 
+09:21:00 [null@localhost 1][NORMAL] 
+09:21:00 [null@localhost 1][NORMAL] PASSAGE DANS LA FONCTION DE RECUPERATION DES PARAMETRES
+09:21:00 [null@localhost 1][NORMAL] ProjectName Extraction_Lionel
+09:21:00 [null@localhost 1][NORMAL] DownloadDossier_drive_id 1L-5F_16qjMZ4Q-Qv7MfEdY3iA_N_LkjZ
+09:21:00 [null@localhost 1][NORMAL] filenameLanceur Config_Export_ctrl_Lionel.xlsx
+09:21:00 [null@localhost 1][NORMAL] UploadDossier_drive_id 1L-5F_16qjMZ4Q-Qv7MfEdY3iA_N_LkjZ
+09:21:00 [null@localhost 1][NORMAL] copiedataviz 
+09:21:00 [null@localhost 1][NORMAL] ListeDeDiffusion david.de-barros@dalkia.fr
+09:21:00 [null@localhost 1][NORMAL] requestExpirationDate 31/12/2026
+09:21:00 [null@localhost 1][NORMAL] configBDD config_oracle_finance
+09:21:00 [null@localhost 1][NORMAL] {'idExec': 39, 'ProjectName': 'Extraction_Lionel', 'DownloadDossier_drive_id': '1L-5F_16qjMZ4Q-Qv7MfEdY3iA_N_LkjZ', 'filenameLanceur': 'Config_Export_ctrl_Lionel.xlsx', 'UploadDossier_drive_id': '1L-5F_16qjMZ4Q-Qv7MfEdY3iA_N_LkjZ', 'copiedataviz': '', 'ListeDeDiffusion': 'david.de-barros@dalkia.fr', 'requestExpirationDate': '31/12/2026', 'configBDD': 'config_oracle_finance', 'MSG_TO_PROJET': 'david.de-barros@dalkia.fr', 'MSG_TO_CC_PROJET': 'david.de-barros@dalkia.fr'}
+09:21:00 [null@localhost 1][NORMAL] {'idExec': 39, 'ProjectName': 'Extraction_Lionel', 'DownloadDossier_drive_id': '1L-5F_16qjMZ4Q-Qv7MfEdY3iA_N_LkjZ', 'filenameLanceur': 'Config_Export_ctrl_Lionel.xlsx', 'UploadDossier_drive_id': '1L-5F_16qjMZ4Q-Qv7MfEdY3iA_N_LkjZ', 'copiedataviz': '', 'ListeDeDiffusion': 'david.de-barros@dalkia.fr', 'requestExpirationDate': '31/12/2026', 'configBDD': 'config_oracle_finance', 'MSG_TO_PROJET': 'david.de-barros@dalkia.fr', 'MSG_TO_CC_PROJET': 'david.de-barros@dalkia.fr'}
+09:21:00 [null@localhost 1][NORMAL] ----------------------------------------------------------------------
+09:21:00 [null@localhost 1][NORMAL]  EXECUTION GENERIQUE REQUETES POUR Extraction_Lionel
+09:21:00 [null@localhost 1][NORMAL]  ----------------------------------------------------------------------
+09:21:00 [null@localhost 1][NORMAL] 
+09:21:00 [null@localhost 1][NORMAL] en dehors du main
+09:21:00 [null@localhost 1][NORMAL] ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ 
+09:21:00 [null@localhost 1][NORMAL]  DATA POUR LE PROJET Extraction_Lionel
+09:21:00 [null@localhost 1][NORMAL]  ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ 
+09:21:00 [null@localhost 1][NORMAL] 
+09:21:00 [null@localhost 1][NORMAL] idExec = '39'
+09:21:00 [null@localhost 1][NORMAL] ProjectName = 'Extraction_Lionel'
+09:21:00 [null@localhost 1][NORMAL] DownloadDossier_drive_id = '1L-5F_16qjMZ4Q-Qv7MfEdY3iA_N_LkjZ'
+09:21:00 [null@localhost 1][NORMAL] filenameLanceur = 'Config_Export_ctrl_Lionel.xlsx'
+09:21:00 [null@localhost 1][NORMAL] UploadDossier_drive_id = '1L-5F_16qjMZ4Q-Qv7MfEdY3iA_N_LkjZ'
+09:21:00 [null@localhost 1][NORMAL] copiedataviz = ''
+09:21:00 [null@localhost 1][NORMAL] ListeDeDiffusion = 'david.de-barros@dalkia.fr'
+09:21:00 [null@localhost 1][NORMAL] requestExpirationDate = '31/12/2026'
+09:21:00 [null@localhost 1][NORMAL] configBDD = 'config_oracle_finance'
+09:21:00 [null@localhost 1][NORMAL] MSG_TO_CC_PROJET = 'dsin-rpa-run@dalkia.fr'
+09:21:00 [null@localhost 1][NORMAL]  ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+09:21:00 [null@localhost 1][NORMAL] 
+09:21:00 [null@localhost 1][NORMAL] Success! Created the 'C:\RPA\CapAppro\04-TestCentral\downloadFolder\2026-09-07\tmprsfzoy66\batProcedure' directory path.
+09:21:00 [null@localhost 1][NORMAL] Success! Created the 'C:\RPA\CapAppro\04-TestCentral\downloadFolder\2026-09-07\tmprsfzoy66\extractFiles' directory path.
+09:21:00 [null@localhost 1][NORMAL] Success! Created the 'C:\RPA\CapAppro\04-TestCentral\downloadFolder\2026-09-07\tmprsfzoy66\requetes' directory path.
+09:21:00 [null@localhost 1][NORMAL] connexion à la base de données
+09:21:00 [null@localhost 1][NORMAL] DB_USER=DKA_JMETER_ST 
+09:21:00 [null@localhost 1][NORMAL] DB_PASSWORD = SupervisionDk
+09:21:00 [null@localhost 1][NORMAL] bienvenue dans la class GDRIVE :: IdDossier en cours  1L-5F_16qjMZ4Q-Qv7MfEdY3iA_N_LkjZ
+09:21:00 [null@localhost 1][NORMAL] bienvenue dans la class GDRIVE :: IdDossier en cours  1L-5F_16qjMZ4Q-Qv7MfEdY3iA_N_LkjZ
+09:21:00 [null@localhost 1][NORMAL] file  CSP_Gestion_Litige_oracle.xlsx  in  Config_Export_ctrl_Lionel.xlsx
+09:21:00 [null@localhost 1][NORMAL] file  employe-oracle.csv  in  Config_Export_ctrl_Lionel.xlsx
+09:21:00 [null@localhost 1][NORMAL] file  Pièces_PF_TF_fermés.xlsx  in  Config_Export_ctrl_Lionel.xlsx
+09:21:00 [null@localhost 1][NORMAL] file  Oracle_TF.csv  in  Config_Export_ctrl_Lionel.xlsx
+09:21:00 [null@localhost 1][NORMAL] file  Oracle_CF.xlsx  in  Config_Export_ctrl_Lionel.xlsx
+09:21:00 [null@localhost 1][NORMAL] file  Export_Litiges_injustifies.xlsx  in  Config_Export_ctrl_Lionel.xlsx
+09:21:00 [null@localhost 1][NORMAL] file  CSP2 - Commandes et réception des factures en litige.xlsx  in  Config_Export_ctrl_Lionel.xlsx
+09:21:00 [null@localhost 1][NORMAL] file  Export_02_ctrl_Lionel.xlsx  in  Config_Export_ctrl_Lionel.xlsx
+09:21:00 [null@localhost 1][NORMAL] file  Export_01_ctrl_Lionel.xlsx  in  Config_Export_ctrl_Lionel.xlsx
+09:21:00 [null@localhost 1][NORMAL] file  Oracle_PF.csv  in  Config_Export_ctrl_Lionel.xlsx
+09:21:00 [null@localhost 1][NORMAL] file  Envoi_fichier_drive  in  Config_Export_ctrl_Lionel.xlsx
+09:21:00 [null@localhost 1][NORMAL] file  Export_02_ctrl_Lionel.csv  in  Config_Export_ctrl_Lionel.xlsx
+09:21:00 [null@localhost 1][NORMAL] file  Export_01_ctrl_Lionel.csv  in  Config_Export_ctrl_Lionel.xlsx
+09:21:00 [null@localhost 1][NORMAL] file  Config_Export_ctrl_Lionel.xlsx  in  Config_Export_ctrl_Lionel.xlsx
+09:21:00 [null@localhost 1][NORMAL] GetElementId : correspondance trouvée pour > Config_Export_ctrl_Lionel.xlsx <|>id> 1ZwK9_AkJVWuLN6D27rIxTVrt-CU8QnzZ <
+09:21:00 [null@localhost 1][NORMAL] L id du fichier lanceur est Config_Export_ctrl_Lionel.xlsx 
+09:21:00 [null@localhost 1][NORMAL] Download Complete! - ' Config_Export_ctrl_Lionel.xlsx '
+09:21:00 [null@localhost 1][NORMAL] Download Complete! - ' 01_ctrl_Lionel.sql '
+09:21:00 [null@localhost 1][NORMAL] Download Complete! - ' 02_ctrl_Lionel.sql '
+09:21:00 [null@localhost 1][NORMAL] --
+09:21:00 [null@localhost 1][NORMAL] 0
+09:21:00 [null@localhost 1][NORMAL] On commence la phase de remplacement des ';'
+09:21:00 [null@localhost 1][NORMAL] Remplacement pour le fichier 01_ctrl_Lionel.sql
+09:21:00 [null@localhost 1][NORMAL] replacetext pour le fichier C:\RPA\CapAppro\04-TestCentral\downloadFolder\2026-09-07\tmprsfzoy66\requetes\01_ctrl_Lionel.sql
+09:21:00 [null@localhost 1][NORMAL] File copied and renamed successfully!
+09:21:00 [null@localhost 1][NORMAL] encodedFile : us-ascii
+09:21:00 [null@localhost 1][NORMAL] File removed successfully!
+09:21:00 [null@localhost 1][NORMAL] Encoding trouvé us-ascii
+09:21:00 [null@localhost 1][NORMAL] Remplacement pour le fichier 02_ctrl_Lionel.sql
+09:21:00 [null@localhost 1][NORMAL] replacetext pour le fichier C:\RPA\CapAppro\04-TestCentral\downloadFolder\2026-09-07\tmprsfzoy66\requetes\02_ctrl_Lionel.sql
+09:21:00 [null@localhost 1][NORMAL] File copied and renamed successfully!
+09:21:00 [null@localhost 1][NORMAL] encodedFile : us-ascii
+09:21:00 [null@localhost 1][NORMAL] File removed successfully!
+09:21:00 [null@localhost 1][NORMAL] Encoding trouvé us-ascii
+09:21:00 [null@localhost 1][NORMAL] Fin de la phase de remplacement des ';'
+09:21:00 [null@localhost 1][NORMAL] Lancement de l'exécution
+09:21:00 [null@localhost 1][NORMAL] formatHorodatage :   <class 'str'>
+09:21:00 [null@localhost 1][NORMAL] le format d'horodatage n'est pas renseigné
+09:21:00 [null@localhost 1][NORMAL] --> Exécution de la requête  01_ctrl_Lionel.sql
+09:21:00 [null@localhost 1][NORMAL] File copied and renamed successfully!
+09:21:00 [null@localhost 1][NORMAL] encodedFile : us-ascii
+09:21:00 [null@localhost 1][NORMAL] File removed successfully!
+09:21:00 [null@localhost 1][NORMAL] Lancement requête :: [ 1 / 2 ] - Requête   01_ctrl_Lionel.sql  A enregister dans le fichier ->  Export_01_ctrl_Lionel.xlsx
+09:21:00 [null@localhost 1][NORMAL]       * Temps Exécution requete : [ 00:00:03 ]
+09:21:00 [null@localhost 1][NORMAL] Dimensions Enregistrement du fichier '{filePath}'
+09:21:00 [null@localhost 1][NORMAL] nbRows={nbRows}  | nbCols= {nbCols} 
+09:21:00 [null@localhost 1][NORMAL] Fin de copie de fichier en local [ 00:00:00 ]
+09:21:00 [null@localhost 1][NORMAL] --> Upload du fichier sur le drive
+09:21:00 [null@localhost 1][NORMAL] => Upload du fichier vers le Drive : {nomFichierSortie} ( 0.006 MB)
+09:21:00 [null@localhost 1][NORMAL] Tentative d'upload N° 1
+09:21:00 [null@localhost 1][NORMAL] =========================================================
+09:21:00 [null@localhost 1][NORMAL] file  CSP_Gestion_Litige_oracle.xlsx  in  Export_01_ctrl_Lionel.xlsx
+09:21:00 [null@localhost 1][NORMAL] file  employe-oracle.csv  in  Export_01_ctrl_Lionel.xlsx
+09:21:00 [null@localhost 1][NORMAL] file  Pièces_PF_TF_fermés.xlsx  in  Export_01_ctrl_Lionel.xlsx
+09:21:00 [null@localhost 1][NORMAL] file  Oracle_TF.csv  in  Export_01_ctrl_Lionel.xlsx
+09:21:00 [null@localhost 1][NORMAL] file  Oracle_CF.xlsx  in  Export_01_ctrl_Lionel.xlsx
+09:21:00 [null@localhost 1][NORMAL] file  Export_Litiges_injustifies.xlsx  in  Export_01_ctrl_Lionel.xlsx
+09:21:00 [null@localhost 1][NORMAL] file  CSP2 - Commandes et réception des factures en litige.xlsx  in  Export_01_ctrl_Lionel.xlsx
+09:21:00 [null@localhost 1][NORMAL] file  Export_02_ctrl_Lionel.xlsx  in  Export_01_ctrl_Lionel.xlsx
+09:21:00 [null@localhost 1][NORMAL] file  Export_01_ctrl_Lionel.xlsx  in  Export_01_ctrl_Lionel.xlsx
+09:21:00 [null@localhost 1][NORMAL] GetElementId : correspondance trouvée pour > Export_01_ctrl_Lionel.xlsx <|>id> 1GmhrRrN7gz5B-cHhofAlx9Shg5x4DFvL <
+09:21:00 [null@localhost 1][NORMAL] On écrase le fichier existant 1GmhrRrN7gz5B-cHhofAlx9Shg5x4DFvL
+09:21:00 [null@localhost 1][NORMAL] Le fichier a correctement était uploadé.
+09:21:00 [null@localhost 1][NORMAL] Fin de copie de local vers le drive :  Export_01_ctrl_Lionel.xlsx [ 00:00:04 ]
+09:21:00 [null@localhost 1][NORMAL] 
+09:21:00 [null@localhost 1][NORMAL] Temps de traitement de l'EXPORT =>  [ 00:00:08 ]
+09:21:00 [null@localhost 1][NORMAL] 
+09:21:00 [null@localhost 1][NORMAL] 
+09:21:00 [null@localhost 1][NORMAL] ====================================
+09:21:00 [null@localhost 1][NORMAL] FIN Lancement de la requête ::  01_ctrl_Lionel.sql 
+09:21:00 [null@localhost 1][NORMAL] ====================================
+09:21:00 [null@localhost 1][NORMAL] formatHorodatage :   <class 'str'>
+09:21:00 [null@localhost 1][NORMAL] le format d'horodatage n'est pas renseigné
+09:21:00 [null@localhost 1][NORMAL] --> Exécution de la requête  02_ctrl_Lionel.sql
+09:21:00 [null@localhost 1][NORMAL] File copied and renamed successfully!
+09:21:00 [null@localhost 1][NORMAL] encodedFile : us-ascii
+09:21:00 [null@localhost 1][NORMAL] File removed successfully!
+09:21:00 [null@localhost 1][NORMAL] Lancement requête :: [ 2 / 2 ] - Requête   02_ctrl_Lionel.sql  A enregister dans le fichier ->  Export_02_ctrl_Lionel.xlsx
+09:21:00 [null@localhost 1][NORMAL]       * Temps Exécution requete : [ 00:00:00 ]
+09:21:00 [null@localhost 1][NORMAL] Dimensions Enregistrement du fichier '{filePath}'
+09:21:00 [null@localhost 1][NORMAL] nbRows={nbRows}  | nbCols= {nbCols} 
+09:21:00 [null@localhost 1][NORMAL] Fin de copie de fichier en local [ 00:00:00 ]
+09:21:00 [null@localhost 1][NORMAL] --> Upload du fichier sur le drive
+09:21:00 [null@localhost 1][NORMAL] => Upload du fichier vers le Drive : {nomFichierSortie} ( 0.005 MB)
+09:21:00 [null@localhost 1][NORMAL] Tentative d'upload N° 1
+09:21:00 [null@localhost 1][NORMAL] =========================================================
+09:21:00 [null@localhost 1][NORMAL] file  Export_01_ctrl_Lionel.xlsx  in  Export_02_ctrl_Lionel.xlsx
+09:21:00 [null@localhost 1][NORMAL] file  CSP_Gestion_Litige_oracle.xlsx  in  Export_02_ctrl_Lionel.xlsx
+09:21:00 [null@localhost 1][NORMAL] file  employe-oracle.csv  in  Export_02_ctrl_Lionel.xlsx
+09:21:00 [null@localhost 1][NORMAL] file  Pièces_PF_TF_fermés.xlsx  in  Export_02_ctrl_Lionel.xlsx
+09:21:00 [null@localhost 1][NORMAL] file  Oracle_TF.csv  in  Export_02_ctrl_Lionel.xlsx
+09:21:00 [null@localhost 1][NORMAL] file  Oracle_CF.xlsx  in  Export_02_ctrl_Lionel.xlsx
+09:21:00 [null@localhost 1][NORMAL] file  Export_Litiges_injustifies.xlsx  in  Export_02_ctrl_Lionel.xlsx
+09:21:00 [null@localhost 1][NORMAL] file  CSP2 - Commandes et réception des factures en litige.xlsx  in  Export_02_ctrl_Lionel.xlsx
+09:21:00 [null@localhost 1][NORMAL] file  Export_02_ctrl_Lionel.xlsx  in  Export_02_ctrl_Lionel.xlsx
+09:21:00 [null@localhost 1][NORMAL] GetElementId : correspondance trouvée pour > Export_02_ctrl_Lionel.xlsx <|>id> 1BS6Bl-Fb6D7c244UwpUnkG2EQtcsBato <
+09:21:00 [null@localhost 1][NORMAL] On écrase le fichier existant 1BS6Bl-Fb6D7c244UwpUnkG2EQtcsBato
+09:21:00 [null@localhost 1][NORMAL] Le fichier a correctement était uploadé.
+09:21:00 [null@localhost 1][NORMAL] Fin de copie de local vers le drive :  Export_02_ctrl_Lionel.xlsx [ 00:00:04 ]
+09:21:00 [null@localhost 1][NORMAL] 
+09:21:00 [null@localhost 1][NORMAL] Temps de traitement de l'EXPORT =>  [ 00:00:04 ]
+09:21:00 [null@localhost 1][NORMAL] 
+09:21:00 [null@localhost 1][NORMAL] 
+09:21:00 [null@localhost 1][NORMAL] ====================================
+09:21:00 [null@localhost 1][NORMAL] FIN Lancement de la requête ::  02_ctrl_Lionel.sql 
+09:21:00 [null@localhost 1][NORMAL] ====================================
+09:21:00 [null@localhost 1][NORMAL] 
+09:21:00 [null@localhost 1][NORMAL]  ----- Temps de traitement des différents EXPORTS ----- [ 00:00:21 ]
+09:21:00 [null@localhost 1][NORMAL] 
+09:21:00 [null@localhost 1][NORMAL] 
+09:21:00 [null@localhost 1][NORMAL] 2026-12-31 00:00:00
+09:21:00 [null@localhost 1][NORMAL] bienvenue dans la class GDRIVE :: IdDossier en cours  1bkXK77bOQb8TXG69y_n_Qw9zM-Wru1BO
+09:21:00 [null@localhost 1][NORMAL] [39, 'Extraction_Lionel', '07/09/2026 09:20:14', '00:00:21', 'OK', 'Extraction_Lionel_2026-09-07_09-20-14.log']
+09:21:00 [null@localhost 1][NORMAL] row_Index : {row_Index}
+09:21:00 [null@localhost 1][NORMAL] Recherche dans le fichier de data le dossier drive id correspondant à la configuration en cours.
+09:21:00 [null@localhost 1][NORMAL] le drive récupéré pour l'upload est driveLogs=1_cZoOJbE5swtIxiHFda7WOTkhz258KiM avec la configuration config_oracle_finance
+09:21:00 [null@localhost 1][NORMAL] le fichier de log a uploadé est logFile=C:\RPA\CapAppro\04-TestCentral\downloadFolder\2026-09-07\Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] =========================================================
+09:21:00 [null@localhost 1][NORMAL] file  ExportOralceLaPosteImmo_2026-09-07_09-00-11.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Export Oracle Gestion_Litiges_2026-09-07_07-10-11.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Oracle-employé_2026-09-07_07-03-19.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  SQL Pièces PF TF Fermés_2026-09-07_07-02-46.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Oracle Liste TF_2026-09-07_07-01-31.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Oracle Liste PF_2026-09-07_07-00-52.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Oracle Liste CF_2026-09-07_07-00-11.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  SQL Litiges injustifiés_2026-09-07_06-55-11.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  SQL CSP2 - Commandes et réception des factures en litige_2026-09-07_06-50-20.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Export CSP quotidien (sensible)_2026-09-07_05-00-13.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Etats du jour_2026-09-07_04-00-44.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Facture payees_2026-09-05_08-30-31.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Extraction_Lionel_2026-09-04_09-20-13.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  ExportOralceLaPosteImmo_2026-09-04_09-00-13.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Facture payees_2026-09-04_08-30-14.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Export Oracle Gestion_Litiges_2026-09-04_07-10-12.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Oracle-employé_2026-09-04_07-03-53.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  SQL Pièces PF TF Fermés_2026-09-04_07-03-16.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Oracle Liste TF_2026-09-04_07-01-53.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Oracle Liste PF_2026-09-04_07-01-06.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Oracle Liste CF_2026-09-04_07-00-11.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  SQL Litiges injustifiés_2026-09-04_06-55-12.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  SQL CSP2 - Commandes et réception des factures en litige_2026-09-04_06-50-19.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Export CSP quotidien (sensible)_2026-09-04_05-00-13.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Etats du jour_2026-09-04_04-00-47.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Extraction_Lionel_2026-09-03_09-20-12.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  ExportOralceLaPosteImmo_2026-09-03_09-00-13.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Facture payees_2026-09-03_08-30-13.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Export Oracle Gestion_Litiges_2026-09-03_07-10-13.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Oracle-employé_2026-09-03_07-03-15.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  SQL Pièces PF TF Fermés_2026-09-03_07-02-42.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Oracle Liste TF_2026-09-03_07-01-29.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Oracle Liste PF_2026-09-03_07-00-52.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Oracle Liste CF_2026-09-03_07-00-16.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  SQL Litiges injustifiés_2026-09-03_06-55-13.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  SQL CSP2 - Commandes et réception des factures en litige_2026-09-03_06-50-22.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Export CSP quotidien (sensible)_2026-09-03_05-00-13.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Etats du jour_2026-09-03_04-00-45.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Extraction_Lionel_2026-09-02_09-20-11.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  ExportOralceLaPosteImmo_2026-09-02_09-00-13.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Facture payees_2026-09-02_08-30-11.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Reporting Cash prelevement auto_2026-09-02_08-15-16.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Export Oracle Gestion_Litiges_2026-09-02_07-10-11.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Oracle-employé_2026-09-02_07-03-22.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  SQL Pièces PF TF Fermés_2026-09-02_07-02-49.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Oracle Liste TF_2026-09-02_07-01-34.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Oracle Liste PF_2026-09-02_07-00-57.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Oracle Liste CF_2026-09-02_07-00-11.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  SQL Litiges injustifiés_2026-09-02_06-55-12.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  SQL CSP2 - Commandes et réception des factures en litige_2026-09-02_06-50-18.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Export CSP quotidien (sensible)_2026-09-02_05-00-13.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Etats du jour_2026-09-02_04-00-33.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Extractions Clôtures RH_2026-09-01_18-40-50.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Extractions Clôtures CAP_2026-09-01_18-43-11.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Extractions Clôtures SSTR_2026-09-01_18-42-30.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Extractions Clôtures CAP_2026-09-01_18-37-12.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Extractions Clôtures SSTR_2026-09-01_18-36-47.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Extractions Clôtures CAP_2026-09-01_18-29-53.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Extractions Clôtures SSTR_2026-09-01_18-29-25.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Extractions Clôtures FRN_2026-09-01_16-56-49.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Extractions Clôtures RH_2026-09-01_16-39-26.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Extractions Clôtures CAP_2026-09-01_16-34-51.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Extractions Clôtures SSTR_2026-09-01_16-28-36.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Extractions Clôtures FRN_2026-09-01_15-37-41.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Extractions Clôtures RH_2026-09-01_15-19-36.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Extractions Clôtures CAP_2026-09-01_15-14-50.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Extractions Clôtures SSTR_2026-09-01_15-09-20.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Extraction_Lionel_2026-09-01_09-20-15.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  ExportOralceLaPosteImmo_2026-09-01_09-00-19.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Facture payees_2026-09-01_08-30-14.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Extractions Clôtures FRN_2026-09-01_07-23-14.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Extractions Clôtures RH_2026-09-01_07-06-16.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Export Oracle Gestion_Litiges_2026-09-01_07-10-11.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Extractions Clôtures CAP_2026-09-01_07-03-23.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Oracle-employé_2026-09-01_07-03-22.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Extractions Clôtures SSTR_2026-09-01_07-00-12.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  SQL Pièces PF TF Fermés_2026-09-01_07-02-48.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Oracle Liste TF_2026-09-01_07-01-32.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Oracle Liste PF_2026-09-01_07-00-48.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Oracle Liste CF_2026-09-01_07-00-12.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  SQL Litiges injustifiés_2026-09-01_06-55-12.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  SQL CSP2 - Commandes et réception des factures en litige_2026-09-01_06-50-19.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Export CSP quotidien (sensible)_2026-09-01_05-00-15.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Etats du jour_2026-09-01_04-00-39.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Extraction_Lionel_2026-08-31_09-20-12.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  ExportOralceLaPosteImmo_2026-08-31_09-00-12.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Export Oracle Gestion_Litiges_2026-08-31_07-10-11.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Oracle-employé_2026-08-31_07-03-21.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  SQL Pièces PF TF Fermés_2026-08-31_07-02-46.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Oracle Liste TF_2026-08-31_07-01-26.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Oracle Liste PF_2026-08-31_07-00-48.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Oracle Liste CF_2026-08-31_07-00-11.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  SQL Litiges injustifiés_2026-08-31_06-55-11.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  SQL CSP2 - Commandes et réception des factures en litige_2026-08-31_06-50-21.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Export CSP quotidien (sensible)_2026-08-31_05-00-15.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Etats du jour_2026-08-31_04-00-35.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  CapAppro hebdo_2026-08-30_12-00-17.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Facture payees_2026-08-29_08-30-16.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Extraction_Lionel_2026-08-28_09-20-13.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  ExportOralceLaPosteImmo_2026-08-28_09-00-13.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Facture payees_2026-08-28_08-30-13.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Export Oracle Gestion_Litiges_2026-08-28_07-10-11.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Oracle-employé_2026-08-28_07-03-15.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  SQL Pièces PF TF Fermés_2026-08-28_07-02-41.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Oracle Liste TF_2026-08-28_07-01-26.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Oracle Liste PF_2026-08-28_07-00-46.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Oracle Liste CF_2026-08-28_07-00-11.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  SQL Litiges injustifiés_2026-08-28_06-55-12.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  SQL CSP2 - Commandes et réception des factures en litige_2026-08-28_06-50-19.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Export CSP quotidien (sensible)_2026-08-28_05-00-14.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Etats du jour_2026-08-28_04-00-43.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Extraction_Lionel_2026-08-27_09-20-13.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  ExportOralceLaPosteImmo_2026-08-27_09-00-13.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Facture payees_2026-08-27_08-30-14.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Export Oracle Gestion_Litiges_2026-08-27_07-10-10.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Oracle-employé_2026-08-27_07-03-14.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  SQL Pièces PF TF Fermés_2026-08-27_07-02-40.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Oracle Liste TF_2026-08-27_07-01-24.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Oracle Liste PF_2026-08-27_07-00-46.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Oracle Liste CF_2026-08-27_07-00-11.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  SQL Litiges injustifiés_2026-08-27_06-55-12.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  SQL CSP2 - Commandes et réception des factures en litige_2026-08-27_06-50-18.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Export CSP quotidien (sensible)_2026-08-27_05-00-13.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Etats du jour_2026-08-27_04-00-29.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Extraction_Lionel_2026-08-26_09-20-12.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  ExportOralceLaPosteImmo_2026-08-26_09-00-12.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Facture payees_2026-08-26_08-30-12.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Export Oracle Gestion_Litiges_2026-08-26_07-10-10.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Oracle-employé_2026-08-26_07-03-43.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  SQL Pièces PF TF Fermés_2026-08-26_07-03-08.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Oracle Liste TF_2026-08-26_07-01-42.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Oracle Liste PF_2026-08-26_07-00-58.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Oracle Liste CF_2026-08-26_07-00-12.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  SQL Litiges injustifiés_2026-08-26_06-55-11.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  SQL CSP2 - Commandes et réception des factures en litige_2026-08-26_06-50-18.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Export CSP quotidien (sensible)_2026-08-26_05-00-15.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Etats du jour_2026-08-26_04-00-40.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Extraction_Lionel_2026-08-25_09-20-14.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  ExportOralceLaPosteImmo_2026-08-25_09-00-16.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Facture payees_2026-08-25_08-30-15.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Export Oracle Gestion_Litiges_2026-08-25_07-10-11.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Oracle-employé_2026-08-25_07-03-15.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  SQL Pièces PF TF Fermés_2026-08-25_07-02-41.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Oracle Liste TF_2026-08-25_07-01-26.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Oracle Liste PF_2026-08-25_07-00-48.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Oracle Liste CF_2026-08-25_07-00-12.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  SQL Litiges injustifiés_2026-08-25_06-55-11.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  SQL CSP2 - Commandes et réception des factures en litige_2026-08-25_06-50-25.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Export CSP quotidien (sensible)_2026-08-25_05-00-13.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Etats du jour_2026-08-25_04-00-46.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Extraction_Lionel_2026-08-24_09-20-12.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  ExportOralceLaPosteImmo_2026-08-24_09-00-14.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Export Oracle Gestion_Litiges_2026-08-24_07-10-11.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Oracle-employé_2026-08-24_07-04-27.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  SQL Pièces PF TF Fermés_2026-08-24_07-03-27.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Oracle Liste TF_2026-08-24_07-01-58.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Oracle Liste PF_2026-08-24_07-01-05.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Oracle Liste CF_2026-08-24_07-00-12.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  SQL Litiges injustifiés_2026-08-24_06-55-11.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  SQL CSP2 - Commandes et réception des factures en litige_2026-08-24_06-50-19.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Export CSP quotidien (sensible)_2026-08-24_05-00-18.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Etats du jour_2026-08-24_04-00-39.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  CapAppro hebdo_2026-08-23_12-00-17.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Facture payees_2026-08-22_08-30-18.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Extraction_Lionel_2026-08-21_09-20-11.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  ExportOralceLaPosteImmo_2026-08-21_09-00-12.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Facture payees_2026-08-21_08-30-12.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Export Oracle Gestion_Litiges_2026-08-21_07-10-10.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Oracle-employé_2026-08-21_07-03-39.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  SQL Pièces PF TF Fermés_2026-08-21_07-02-47.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Oracle Liste TF_2026-08-21_07-01-25.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Oracle Liste PF_2026-08-21_07-00-47.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Oracle Liste CF_2026-08-21_07-00-11.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  SQL Litiges injustifiés_2026-08-21_06-55-12.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  SQL CSP2 - Commandes et réception des factures en litige_2026-08-21_06-50-22.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Export CSP quotidien (sensible)_2026-08-21_05-00-13.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Etats du jour_2026-08-21_04-00-49.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Extraction_Lionel_2026-08-20_09-20-13.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  ExportOralceLaPosteImmo_2026-08-20_09-00-13.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Fermeture auto Commandes_2026-08-20_09-00-13.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Facture payees_2026-08-20_08-30-11.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Export Oracle Gestion_Litiges_2026-08-20_07-10-10.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Oracle-employé_2026-08-20_07-03-17.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  SQL Pièces PF TF Fermés_2026-08-20_07-02-43.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Oracle Liste TF_2026-08-20_07-01-24.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Oracle Liste PF_2026-08-20_07-00-46.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Oracle Liste CF_2026-08-20_07-00-10.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  SQL Litiges injustifiés_2026-08-20_06-55-11.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  SQL CSP2 - Commandes et réception des factures en litige_2026-08-20_06-50-23.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Export CSP quotidien (sensible)_2026-08-20_05-00-15.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Etats du jour_2026-08-20_04-00-44.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Extraction_Lionel_2026-08-19_09-20-13.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  ExportOralceLaPosteImmo_2026-08-19_09-00-15.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Facture payees_2026-08-19_08-30-17.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Export Oracle Gestion_Litiges_2026-08-19_07-10-10.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Oracle-employé_2026-08-19_07-03-14.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  SQL Pièces PF TF Fermés_2026-08-19_07-02-41.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Oracle Liste TF_2026-08-19_07-01-26.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Oracle Liste PF_2026-08-19_07-00-47.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Oracle Liste CF_2026-08-19_07-00-11.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  SQL Litiges injustifiés_2026-08-19_06-55-12.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  SQL CSP2 - Commandes et réception des factures en litige_2026-08-19_06-50-25.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Export CSP quotidien (sensible)_2026-08-19_05-00-16.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Etats du jour_2026-08-19_04-00-47.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Oracle-employé_2026-08-18_10-59-00.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  ExportOralceLaPosteImmo_2026-08-18_10-55-42.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  SQL Pièces PF TF Fermés_2026-08-18_10-58-25.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Oracle Liste TF_2026-08-18_10-56-58.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Oracle Liste PF_2026-08-18_10-56-18.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Oracle Liste CF_2026-08-18_10-55-39.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Extraction_Lionel_2026-08-17_09-20-12.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  ExportOralceLaPosteImmo_2026-08-17_09-00-14.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Export Oracle Gestion_Litiges_2026-08-17_07-10-11.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Oracle-employé_2026-08-17_07-03-20.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  SQL Pièces PF TF Fermés_2026-08-17_07-02-45.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Oracle Liste TF_2026-08-17_07-01-28.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Oracle Liste PF_2026-08-17_07-00-49.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  SQL Litiges injustifiés_2026-08-17_06-55-12.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  SQL CSP2 - Commandes et réception des factures en litige_2026-08-17_06-50-20.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Export CSP quotidien (sensible)_2026-08-17_05-00-12.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Etats du jour_2026-08-17_04-00-38.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  CapAppro hebdo_2026-08-16_12-00-26.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Facture payees_2026-08-15_08-30-57.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Extraction_Lionel_2026-08-14_09-20-13.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  ExportOralceLaPosteImmo_2026-08-14_09-00-13.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Facture payees_2026-08-14_08-30-14.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Export Oracle Gestion_Litiges_2026-08-14_07-10-10.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Oracle-employé_2026-08-14_07-03-14.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  SQL Pièces PF TF Fermés_2026-08-14_07-02-40.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Oracle Liste TF_2026-08-14_07-01-25.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Oracle Liste PF_2026-08-14_07-00-48.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Oracle Liste CF_2026-08-14_07-00-11.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  SQL Litiges injustifiés_2026-08-14_06-55-11.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  SQL CSP2 - Commandes et réception des factures en litige_2026-08-14_06-50-25.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Export CSP quotidien (sensible)_2026-08-14_05-00-14.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Etats du jour_2026-08-14_04-00-55.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Extraction_Lionel_2026-08-13_09-20-12.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  ExportOralceLaPosteImmo_2026-08-13_09-00-15.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Facture payees_2026-08-13_08-30-14.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Export Oracle Gestion_Litiges_2026-08-13_07-10-11.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Oracle-employé_2026-08-13_07-03-14.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  SQL Pièces PF TF Fermés_2026-08-13_07-02-40.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Oracle Liste TF_2026-08-13_07-01-26.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Oracle Liste PF_2026-08-13_07-00-48.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Oracle Liste CF_2026-08-13_07-00-12.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  SQL Litiges injustifiés_2026-08-13_06-55-12.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  SQL CSP2 - Commandes et réception des factures en litige_2026-08-13_06-50-19.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Export CSP quotidien (sensible)_2026-08-13_05-00-12.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Etats du jour_2026-08-13_04-00-38.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Extraction_Lionel_2026-08-12_09-20-13.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  ExportOralceLaPosteImmo_2026-08-12_09-00-14.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Facture payees_2026-08-12_08-30-13.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Export Oracle Gestion_Litiges_2026-08-12_07-10-10.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Oracle-employé_2026-08-12_07-03-13.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  SQL Pièces PF TF Fermés_2026-08-12_07-02-40.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Oracle Liste TF_2026-08-12_07-01-22.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Oracle Liste PF_2026-08-12_07-00-45.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Oracle Liste CF_2026-08-12_07-00-10.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  SQL Litiges injustifiés_2026-08-12_06-56-56.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  SQL CSP2 - Commandes et réception des factures en litige_2026-08-12_06-50-14.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Export CSP quotidien (sensible)_2026-08-12_05-00-22.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Etats du jour_2026-08-12_04-00-39.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Extraction_Lionel_2026-08-11_09-20-12.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  ExportOralceLaPosteImmo_2026-08-11_09-00-14.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Facture payees_2026-08-11_08-30-14.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Export Oracle Gestion_Litiges_2026-08-11_07-10-10.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Oracle-employé_2026-08-11_07-03-11.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  SQL Pièces PF TF Fermés_2026-08-11_07-02-37.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Oracle Liste TF_2026-08-11_07-01-22.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Oracle Liste PF_2026-08-11_07-00-46.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Oracle Liste CF_2026-08-11_07-00-11.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  SQL Litiges injustifiés_2026-08-11_06-55-10.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  SQL CSP2 - Commandes et réception des factures en litige_2026-08-11_06-50-14.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Export CSP quotidien (sensible)_2026-08-11_05-00-13.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Etats du jour_2026-08-11_04-00-44.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Extraction_Lionel_2026-08-10_09-20-13.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  ExportOralceLaPosteImmo_2026-08-10_09-00-14.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Export Oracle Gestion_Litiges_2026-08-10_07-10-10.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Oracle-employé_2026-08-10_07-03-14.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  SQL Pièces PF TF Fermés_2026-08-10_07-02-40.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Oracle Liste TF_2026-08-10_07-01-25.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Oracle Liste PF_2026-08-10_07-00-48.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Oracle Liste CF_2026-08-10_07-00-11.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  SQL Litiges injustifiés_2026-08-10_06-55-11.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  SQL CSP2 - Commandes et réception des factures en litige_2026-08-10_06-50-14.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Export CSP quotidien (sensible)_2026-08-10_05-00-13.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Etats du jour_2026-08-10_04-00-42.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  CapAppro hebdo_2026-08-09_12-00-28.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Facture payees_2026-08-08_08-31-03.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Extraction_Lionel_2026-08-07_09-20-13.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  ExportOralceLaPosteImmo_2026-08-07_09-00-13.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Facture payees_2026-08-07_08-30-14.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Export Oracle Gestion_Litiges_2026-08-07_07-10-10.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Oracle-employé_2026-08-07_07-03-14.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  SQL Pièces PF TF Fermés_2026-08-07_07-02-40.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Oracle Liste TF_2026-08-07_07-01-23.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Oracle Liste PF_2026-08-07_07-00-46.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Oracle Liste CF_2026-08-07_07-00-12.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  SQL Litiges injustifiés_2026-08-07_06-55-11.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  SQL CSP2 - Commandes et réception des factures en litige_2026-08-07_06-50-24.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Export CSP quotidien (sensible)_2026-08-07_05-00-14.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Etats du jour_2026-08-07_04-00-44.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Extraction_Lionel_2026-08-06_09-20-12.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  ExportOralceLaPosteImmo_2026-08-06_09-00-13.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Facture payees_2026-08-06_08-30-13.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Export Oracle Gestion_Litiges_2026-08-06_07-10-10.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Oracle-employé_2026-08-06_07-03-48.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  SQL Pièces PF TF Fermés_2026-08-06_07-02-59.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Oracle Liste TF_2026-08-06_07-01-26.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Oracle Liste PF_2026-08-06_07-00-47.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Oracle Liste CF_2026-08-06_07-00-11.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  SQL Litiges injustifiés_2026-08-06_06-55-11.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  SQL CSP2 - Commandes et réception des factures en litige_2026-08-06_06-50-12.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Export Doublons Factures_2026-08-06_05-42-01.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Export CSP quotidien (sensible)_2026-08-06_05-00-15.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Etats du jour_2026-08-06_04-01-00.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Extraction_Lionel_2026-08-05_09-20-12.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  ExportOralceLaPosteImmo_2026-08-05_09-00-13.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Facture payees_2026-08-05_08-30-12.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Export Oracle Gestion_Litiges_2026-08-05_07-10-10.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Oracle-employé_2026-08-05_07-03-31.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  SQL Pièces PF TF Fermés_2026-08-05_07-02-58.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Oracle Liste TF_2026-08-05_07-01-38.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Oracle Liste PF_2026-08-05_07-01-01.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Oracle Liste CF_2026-08-05_07-00-11.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  SQL Litiges injustifiés_2026-08-05_06-55-10.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  SQL CSP2 - Commandes et réception des factures en litige_2026-08-05_06-50-12.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Export Doublons Factures_2026-08-05_05-42-08.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Export CSP quotidien (sensible)_2026-08-05_05-00-13.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Etats du jour_2026-08-05_04-00-36.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Export Doublons Factures_2026-08-04_14-26-44.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Export CSP quotidien (sensible)_2026-08-04_13-50-16.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Etats du jour_2026-08-04_09-28-54.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Extraction_Lionel_2026-08-04_09-20-12.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  ExportOralceLaPosteImmo_2026-08-04_09-00-10.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Export Oracle Gestion_Litiges_2026-08-04_08-59-40.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Facture payees_2026-08-04_08-30-12.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Reporting Cash prelevement auto_2026-08-04_08-15-16.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Export Oracle Gestion_Litiges_2026-08-04_07-10-10.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Oracle-employé_2026-08-04_07-03-12.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  SQL Pièces PF TF Fermés_2026-08-04_07-02-39.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Oracle Liste TF_2026-08-04_07-01-23.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Oracle Liste PF_2026-08-04_07-00-45.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Oracle Liste CF_2026-08-04_07-00-10.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  SQL Litiges injustifiés_2026-08-04_06-55-11.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  SQL CSP2 - Commandes et réception des factures en litige_2026-08-04_06-50-13.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Export Doublons Factures_2026-08-04_05-50-21.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Export CSP quotidien (sensible)_2026-08-04_05-00-13.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Etats du jour_2026-08-04_04-00-41.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  ExportOralceLaPosteImmo_2026-08-03_16-14-33.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Extraction_Lionel_2026-08-03_09-20-12.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  ExportOralceLaPosteImmo_2026-08-03_09-00-13.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Export Oracle Gestion_Litiges_2026-08-03_07-10-11.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Oracle-employé_2026-08-03_07-03-23.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  SQL Pièces PF TF Fermés_2026-08-03_07-02-49.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Oracle Liste TF_2026-08-03_07-01-31.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Oracle Liste PF_2026-08-03_07-00-51.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Oracle Liste CF_2026-08-03_07-00-12.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  SQL Litiges injustifiés_2026-08-03_06-55-10.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  SQL CSP2 - Commandes et réception des factures en litige_2026-08-03_06-50-13.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Export Doublons Factures_2026-08-03_05-33-33.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Export CSP quotidien (sensible)_2026-08-03_05-00-13.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Etats du jour_2026-08-03_04-00-41.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  CapAppro hebdo_2026-08-02_12-00-27.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Facture payees_2026-08-01_08-30-12.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Extractions Clôtures FRN_2026-08-01_07-26-24.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Extractions Clôtures RH_2026-08-01_07-09-38.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Extractions Clôtures CAP_2026-08-01_07-06-01.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Extractions Clôtures SSTR_2026-08-01_07-01-02.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Fermeture auto Commandes_2026-07-31_15-34-11.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Extraction_Lionel_2026-07-31_09-20-12.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  ExportOralceLaPosteImmo_2026-07-31_09-00-13.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Facture payees_2026-07-31_08-30-12.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Export Oracle Gestion_Litiges_2026-07-31_07-10-10.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Oracle-employé_2026-07-31_07-03-12.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  SQL Pièces PF TF Fermés_2026-07-31_07-02-40.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Oracle Liste TF_2026-07-31_07-01-24.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Oracle Liste PF_2026-07-31_07-00-46.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Oracle Liste CF_2026-07-31_07-00-11.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  SQL Litiges injustifiés_2026-07-31_06-55-11.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  SQL CSP2 - Commandes et réception des factures en litige_2026-07-31_06-50-13.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Export Doublons Factures_2026-07-31_05-33-04.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Export CSP quotidien (sensible)_2026-07-31_05-00-13.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Etats du jour_2026-07-31_04-00-42.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Facture payees_2026-07-30_15-27-17.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Oracle-employé_2026-07-30_14-24-54.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  SQL Pièces PF TF Fermés_2026-07-30_14-24-21.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Oracle Liste TF_2026-07-30_14-23-07.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Oracle Liste PF_2026-07-30_14-22-29.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Oracle Liste CF_2026-07-30_14-21-48.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Export Doublons Factures_2026-07-29_14-45-19.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Export CSP quotidien (sensible)_2026-07-29_14-11-03.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  ExportOralceLaPosteImmo_2026-07-29_14-15-49.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  CapAppro hebdo_2026-07-29_10-56-22.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  ExportOralceLaPosteImmo_2026-07-29_09-00-12.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Facture payees_2026-07-29_08-30-11.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Export Oracle Gestion_Litiges_2026-07-29_07-10-10.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Oracle-employé_2026-07-29_07-03-17.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  SQL Pièces PF TF Fermés_2026-07-29_07-02-42.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Oracle Liste TF_2026-07-29_07-01-25.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Oracle Liste PF_2026-07-29_07-00-47.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Oracle Liste CF_2026-07-29_07-00-11.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  SQL Litiges injustifiés_2026-07-29_06-55-11.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  SQL CSP2 - Commandes et réception des factures en litige_2026-07-29_06-50-12.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Export Doublons Factures_2026-07-29_05-33-39.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Export CSP quotidien (sensible)_2026-07-29_05-00-14.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Etats du jour_2026-07-29_04-00-29.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  CapAppro hebdo_2026-07-28_17-58-28.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Extraction_Lionel_2026-07-28_09-20-12.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  ExportOralceLaPosteImmo_2026-07-28_09-00-13.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Facture payees_2026-07-28_08-30-13.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Export Oracle Gestion_Litiges_2026-07-28_07-10-11.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Oracle-employé_2026-07-28_07-03-28.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  SQL Pièces PF TF Fermés_2026-07-28_07-02-52.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Oracle Liste TF_2026-07-28_07-01-31.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Oracle Liste PF_2026-07-28_07-00-50.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Oracle Liste CF_2026-07-28_07-00-12.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  SQL Litiges injustifiés_2026-07-28_06-55-12.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  SQL CSP2 - Commandes et réception des factures en litige_2026-07-28_06-50-19.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Export Doublons Factures_2026-07-28_05-41-23.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Export CSP quotidien (sensible)_2026-07-28_05-00-13.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Etats du jour_2026-07-28_04-00-32.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Export Doublons Factures_2026-07-27_17-07-46.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Export CSP quotidien (sensible)_2026-07-27_16-33-32.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Export Doublons Factures_2026-07-27_12-08-49.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Export CSP quotidien (sensible)_2026-07-27_11-27-29.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Facture payees_2026-07-25_08-30-17.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Extraction_Lionel_2026-07-24_09-20-13.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  ExportOralceLaPosteImmo_2026-07-24_09-00-13.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Facture payees_2026-07-24_08-30-14.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Export Oracle Gestion_Litiges_2026-07-24_07-10-11.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Oracle-employé_2026-07-24_07-03-16.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  SQL Pièces PF TF Fermés_2026-07-24_07-02-42.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Oracle Liste TF_2026-07-24_07-01-28.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Oracle Liste PF_2026-07-24_07-00-50.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Oracle Liste CF_2026-07-24_07-00-14.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  SQL Litiges injustifiés_2026-07-24_06-55-15.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  SQL CSP2 - Commandes et réception des factures en litige_2026-07-24_06-50-16.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Export Doublons Factures_2026-07-24_05-36-47.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Export CSP quotidien (sensible)_2026-07-24_05-00-15.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Etats du jour_2026-07-24_04-00-46.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Export Doublons Factures_2026-07-23_12-42-15.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Export CSP quotidien (sensible)_2026-07-23_12-04-01.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Extraction_Lionel_2026-07-22_09-20-16.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  ExportOralceLaPosteImmo_2026-07-22_09-00-14.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Facture payees_2026-07-22_08-30-14.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Export Oracle Gestion_Litiges_2026-07-22_07-10-11.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Oracle-employé_2026-07-22_07-03-26.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  SQL Pièces PF TF Fermés_2026-07-22_07-02-50.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Oracle Liste TF_2026-07-22_07-01-31.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Oracle Liste PF_2026-07-22_07-00-49.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Oracle Liste CF_2026-07-22_07-00-11.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  SQL Litiges injustifiés_2026-07-22_06-55-11.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  SQL CSP2 - Commandes et réception des factures en litige_2026-07-22_06-50-14.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Export Doublons Factures_2026-07-22_05-39-58.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Export CSP quotidien (sensible)_2026-07-22_05-00-13.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Etats du jour_2026-07-22_04-00-35.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Extraction_Lionel_2026-07-21_09-20-12.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  ExportOralceLaPosteImmo_2026-07-21_09-00-12.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] file  Facture payees_2026-07-21_08-30-15.log  in  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] On créé un nouveau fichier avec le même nom  Extraction_Lionel_2026-09-07_09-20-14.log
+09:21:00 [null@localhost 1][NORMAL] 
+09:21:00 [null@localhost 1][NORMAL]  outputErr:
+09:21:00 [null@localhost 1][NORMAL]  process.returncode: 0
+09:21:00 [null@localhost 1][NORMAL] Le traitement de la commande s'est bien déroulée.
+09:21:31 [null@localhost 2][NORMAL] ==============================================================================
+09:21:31 [null@localhost 2][NORMAL] Export-Drive-Envoi-Mail-From-Sheet :: Export des fichiers depuis Drive et e...
+09:21:31 [null@localhost 2][NORMAL] ==============================================================================
+09:21:43 [null@localhost 2][NORMAL] Export du fichier depuis le Drive et Envoi par mail selon le fichi... | PASS |
+09:21:43 [null@localhost 2][NORMAL] ------------------------------------------------------------------------------
+09:21:43 [null@localhost 2][NORMAL] Export-Drive-Envoi-Mail-From-Sheet :: Export des fichiers depuis D... | PASS |
+09:21:43 [null@localhost 2][NORMAL] 1 task, 1 passed, 0 failed
+09:21:43 [null@localhost 2][NORMAL] ==============================================================================
+09:21:43 [null@localhost 2][NORMAL] Output:  C:\uft\mail-export-drive\reports\output.xml
+09:21:43 [null@localhost 2][NORMAL] Log:     C:\uft\mail-export-drive\reports\log.html
+09:21:43 [null@localhost 2][NORMAL] Report:  C:\uft\mail-export-drive\reports\report.html
+09:21:43 [null@localhost 2][NORMAL] c:\users\ddebarros\appdata\local\programs\python\python37\lib\site-packages\google\cloud\language_v1\__init__.py:82: FutureWarning: You are using a non-supported Python version (3.7.9).  Google will not post any further updates to google.cloud.language_v1 supporting this Python version. Please upgrade to the latest Python version, or at least to Python 3.9, and then update google.cloud.language_v1.
+09:21:43 [null@localhost 2][NORMAL]   FutureWarning,
+09:21:43 [null@localhost 2][NORMAL] c:\users\ddebarros\appdata\local\programs\python\python37\lib\site-packages\google\cloud\videointelligence_v1\__init__.py:105: FutureWarning: You are using a non-supported Python version (3.7.9).  Google will not post any further updates to google.cloud.videointelligence_v1 supporting this Python version. Please upgrade to the latest Python version, or at least to Python 3.9, and then update google.cloud.videointelligence_v1.
+09:21:43 [null@localhost 2][NORMAL]   FutureWarning,
+09:21:43 [null@localhost 2][NORMAL] c:\users\ddebarros\appdata\local\programs\python\python37\lib\site-packages\google\cloud\speech_v1\__init__.py:97: FutureWarning: You are using a non-supported Python version (3.7.9).  Google will not post any further updates to google.cloud.speech_v1 supporting this Python version. Please upgrade to the latest Python version, or at least to Python 3.9, and then update google.cloud.speech_v1.
+09:21:43 [null@localhost 2][NORMAL]   FutureWarning,
+09:21:43 [null@localhost 2][NORMAL] c:\users\ddebarros\appdata\local\programs\python\python37\lib\site-packages\google\cloud\texttospeech_v1\__init__.py:88: FutureWarning: You are using a non-supported Python version (3.7.9).  Google will not post any further updates to google.cloud.texttospeech_v1 supporting this Python version. Please upgrade to the latest Python version, or at least to Python 3.9, and then update google.cloud.texttospeech_v1.
+09:21:43 [null@localhost 2][NORMAL]   FutureWarning,
+09:21:43 [null@localhost 2][NORMAL] c:\users\ddebarros\appdata\local\programs\python\python37\lib\site-packages\google\cloud\translate_v3\__init__.py:165: FutureWarning: You are using a non-supported Python version (3.7.9).  Google will not post any further updates to google.cloud.translate_v3 supporting this Python version. Please upgrade to the latest Python version, or at least to Python 3.9, and then update google.cloud.translate_v3.
+09:21:43 [null@localhost 2][NORMAL]   FutureWarning,
+09:21:43 [null@localhost 2][NORMAL] c:\users\ddebarros\appdata\local\programs\python\python37\lib\site-packages\google\cloud\vision_v1\__init__.py:138: FutureWarning: You are using a non-supported Python version (3.7.9).  Google will not post any further updates to google.cloud.vision_v1 supporting this Python version. Please upgrade to the latest Python version, or at least to Python 3.9, and then update google.cloud.vision_v1.
+09:21:43 [null@localhost 2][NORMAL]   FutureWarning,

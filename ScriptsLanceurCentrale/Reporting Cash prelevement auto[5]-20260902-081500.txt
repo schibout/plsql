@@ -1,0 +1,652 @@
+08:15:03 [null@localhost 1][NORMAL] 2026-09-02
+08:15:03 [null@localhost 1][NORMAL] On continue l'exécution pour la suite
+08:15:09 [null@localhost 2/1][NORMAL] bienvenue dans la class GDRIVE :: IdDossier en cours  1bkXK77bOQb8TXG69y_n_Qw9zM-Wru1BO
+08:15:11 [null@localhost 2/1][NORMAL] oneRowExecution 5 type =  <class 'str'>
+08:15:11 [null@localhost 2/1][NORMAL] [5]
+08:15:11 [null@localhost 2/1][NORMAL] CONTROLE 1
+08:15:11 [null@localhost 2/1][NORMAL] copiedataviz :: 
+08:15:11 [null@localhost 2/1][NORMAL] >>> On peut lancer la commande
+08:15:11 [null@localhost 2/1][NORMAL] Lancement de la commande 
+08:15:11 [null@localhost 2/1][NORMAL]  py ""C:\RPA\CapAppro\04-TestCentral\Scripts\\CapAppro_GENERIQUE_EXECUTION.py""  --idExec "5" --ProjectName "Reporting Cash prelevement auto" --DownloadDossier_drive_id "1DPBftNwaAdLQ3GUvn0_EfRJ2YYgwu1z4" --filenameLanceur "EXTRACTIONS_AUTOMATISEES_ORACLE.xlsx" --UploadDossier_drive_id "1r_Qqj9CNEOXFpfzB8ZUOQD9G9PCbjGnW" --ListeDeDiffusion "dsin-finance-support@dalkia.fr" --requestExpirationDate "31/12/2026" --configBDD "config_oracle_finance" --copiedataviz ""
+08:27:40 [null@localhost 2/1][NORMAL] output:Rentrée dans la fonction main
+08:27:40 [null@localhost 2/1][NORMAL] ===============
+08:27:40 [null@localhost 2/1][NORMAL] Affichage des valeurs passées en paramètres
+08:27:40 [null@localhost 2/1][NORMAL] =============== 
+08:27:40 [null@localhost 2/1][NORMAL] 
+08:27:40 [null@localhost 2/1][NORMAL] PASSAGE DANS LA FONCTION DE RECUPERATION DES PARAMETRES
+08:27:40 [null@localhost 2/1][NORMAL] ProjectName Reporting Cash prelevement auto
+08:27:40 [null@localhost 2/1][NORMAL] DownloadDossier_drive_id 1DPBftNwaAdLQ3GUvn0_EfRJ2YYgwu1z4
+08:27:40 [null@localhost 2/1][NORMAL] filenameLanceur EXTRACTIONS_AUTOMATISEES_ORACLE.xlsx
+08:27:40 [null@localhost 2/1][NORMAL] UploadDossier_drive_id 1r_Qqj9CNEOXFpfzB8ZUOQD9G9PCbjGnW
+08:27:40 [null@localhost 2/1][NORMAL] copiedataviz 
+08:27:40 [null@localhost 2/1][NORMAL] ListeDeDiffusion dsin-finance-support@dalkia.fr
+08:27:40 [null@localhost 2/1][NORMAL] requestExpirationDate 31/12/2026
+08:27:40 [null@localhost 2/1][NORMAL] configBDD config_oracle_finance
+08:27:40 [null@localhost 2/1][NORMAL] {'idExec': 5, 'ProjectName': 'Reporting Cash prelevement auto', 'DownloadDossier_drive_id': '1DPBftNwaAdLQ3GUvn0_EfRJ2YYgwu1z4', 'filenameLanceur': 'EXTRACTIONS_AUTOMATISEES_ORACLE.xlsx', 'UploadDossier_drive_id': '1r_Qqj9CNEOXFpfzB8ZUOQD9G9PCbjGnW', 'copiedataviz': '', 'ListeDeDiffusion': 'dsin-finance-support@dalkia.fr', 'requestExpirationDate': '31/12/2026', 'configBDD': 'config_oracle_finance', 'MSG_TO_PROJET': 'dsin-finance-support@dalkia.fr', 'MSG_TO_CC_PROJET': 'dsin-finance-support@dalkia.fr'}
+08:27:40 [null@localhost 2/1][NORMAL] {'idExec': 5, 'ProjectName': 'Reporting Cash prelevement auto', 'DownloadDossier_drive_id': '1DPBftNwaAdLQ3GUvn0_EfRJ2YYgwu1z4', 'filenameLanceur': 'EXTRACTIONS_AUTOMATISEES_ORACLE.xlsx', 'UploadDossier_drive_id': '1r_Qqj9CNEOXFpfzB8ZUOQD9G9PCbjGnW', 'copiedataviz': '', 'ListeDeDiffusion': 'dsin-finance-support@dalkia.fr', 'requestExpirationDate': '31/12/2026', 'configBDD': 'config_oracle_finance', 'MSG_TO_PROJET': 'dsin-finance-support@dalkia.fr', 'MSG_TO_CC_PROJET': 'dsin-finance-support@dalkia.fr'}
+08:27:40 [null@localhost 2/1][NORMAL] ----------------------------------------------------------------------
+08:27:40 [null@localhost 2/1][NORMAL]  EXECUTION GENERIQUE REQUETES POUR Reporting Cash prelevement auto
+08:27:40 [null@localhost 2/1][NORMAL]  ----------------------------------------------------------------------
+08:27:40 [null@localhost 2/1][NORMAL] 
+08:27:40 [null@localhost 2/1][NORMAL] en dehors du main
+08:27:40 [null@localhost 2/1][NORMAL] ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ 
+08:27:40 [null@localhost 2/1][NORMAL]  DATA POUR LE PROJET Reporting Cash prelevement auto
+08:27:40 [null@localhost 2/1][NORMAL]  ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ 
+08:27:40 [null@localhost 2/1][NORMAL] 
+08:27:40 [null@localhost 2/1][NORMAL] idExec = '5'
+08:27:40 [null@localhost 2/1][NORMAL] ProjectName = 'Reporting Cash prelevement auto'
+08:27:40 [null@localhost 2/1][NORMAL] DownloadDossier_drive_id = '1DPBftNwaAdLQ3GUvn0_EfRJ2YYgwu1z4'
+08:27:40 [null@localhost 2/1][NORMAL] filenameLanceur = 'EXTRACTIONS_AUTOMATISEES_ORACLE.xlsx'
+08:27:40 [null@localhost 2/1][NORMAL] UploadDossier_drive_id = '1r_Qqj9CNEOXFpfzB8ZUOQD9G9PCbjGnW'
+08:27:40 [null@localhost 2/1][NORMAL] copiedataviz = ''
+08:27:40 [null@localhost 2/1][NORMAL] ListeDeDiffusion = 'dsin-finance-support@dalkia.fr'
+08:27:40 [null@localhost 2/1][NORMAL] requestExpirationDate = '31/12/2026'
+08:27:40 [null@localhost 2/1][NORMAL] configBDD = 'config_oracle_finance'
+08:27:40 [null@localhost 2/1][NORMAL] MSG_TO_CC_PROJET = 'dsin-rpa-run@dalkia.fr'
+08:27:40 [null@localhost 2/1][NORMAL]  ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+08:27:40 [null@localhost 2/1][NORMAL] 
+08:27:40 [null@localhost 2/1][NORMAL] Success! Created the 'C:\RPA\CapAppro\04-TestCentral\downloadFolder\2026-09-02\tmpronivs_3\batProcedure' directory path.
+08:27:40 [null@localhost 2/1][NORMAL] Success! Created the 'C:\RPA\CapAppro\04-TestCentral\downloadFolder\2026-09-02\tmpronivs_3\extractFiles' directory path.
+08:27:40 [null@localhost 2/1][NORMAL] Success! Created the 'C:\RPA\CapAppro\04-TestCentral\downloadFolder\2026-09-02\tmpronivs_3\requetes' directory path.
+08:27:40 [null@localhost 2/1][NORMAL] connexion à la base de données
+08:27:40 [null@localhost 2/1][NORMAL] DB_USER=DKA_JMETER_ST 
+08:27:40 [null@localhost 2/1][NORMAL] DB_PASSWORD = SupervisionDk
+08:27:40 [null@localhost 2/1][NORMAL] bienvenue dans la class GDRIVE :: IdDossier en cours  1r_Qqj9CNEOXFpfzB8ZUOQD9G9PCbjGnW
+08:27:40 [null@localhost 2/1][NORMAL] bienvenue dans la class GDRIVE :: IdDossier en cours  1DPBftNwaAdLQ3GUvn0_EfRJ2YYgwu1z4
+08:27:40 [null@localhost 2/1][NORMAL] file  CA_global_concat_V0.sql  in  EXTRACTIONS_AUTOMATISEES_ORACLE.xlsx
+08:27:40 [null@localhost 2/1][NORMAL] file  CA_global_concat.sql  in  EXTRACTIONS_AUTOMATISEES_ORACLE.xlsx
+08:27:40 [null@localhost 2/1][NORMAL] file  CA_global.sql  in  EXTRACTIONS_AUTOMATISEES_ORACLE.xlsx
+08:27:40 [null@localhost 2/1][NORMAL] file  EXTRACTIONS_AUTOMATISEES_ORACLE.xlsx  in  EXTRACTIONS_AUTOMATISEES_ORACLE.xlsx
+08:27:40 [null@localhost 2/1][NORMAL] GetElementId : correspondance trouvée pour > EXTRACTIONS_AUTOMATISEES_ORACLE.xlsx <|>id> 1ZmaRXPRyrqQgPrJlOKbi4GfO_u6vB54b <
+08:27:40 [null@localhost 2/1][NORMAL] L id du fichier lanceur est EXTRACTIONS_AUTOMATISEES_ORACLE.xlsx 
+08:27:40 [null@localhost 2/1][NORMAL] Download Complete! - ' EXTRACTIONS_AUTOMATISEES_ORACLE.xlsx '
+08:27:40 [null@localhost 2/1][NORMAL] Download Complete! - ' CA_global.sql '
+08:27:40 [null@localhost 2/1][NORMAL] Download Complete! - ' CA_V2.sql '
+08:27:40 [null@localhost 2/1][NORMAL] Download Complete! - ' CA_global_concat.sql '
+08:27:40 [null@localhost 2/1][NORMAL] --
+08:27:40 [null@localhost 2/1][NORMAL] 0
+08:27:40 [null@localhost 2/1][NORMAL] On commence la phase de remplacement des ';'
+08:27:40 [null@localhost 2/1][NORMAL] Remplacement pour le fichier CA_global.sql
+08:27:40 [null@localhost 2/1][NORMAL] replacetext pour le fichier C:\RPA\CapAppro\04-TestCentral\downloadFolder\2026-09-02\tmpronivs_3\requetes\CA_global.sql
+08:27:40 [null@localhost 2/1][NORMAL] File copied and renamed successfully!
+08:27:40 [null@localhost 2/1][NORMAL] encodedFile : utf-8
+08:27:40 [null@localhost 2/1][NORMAL] File removed successfully!
+08:27:40 [null@localhost 2/1][NORMAL] Encoding trouvé utf-8
+08:27:40 [null@localhost 2/1][NORMAL] Remplacement pour le fichier CA_V2.sql
+08:27:40 [null@localhost 2/1][NORMAL] replacetext pour le fichier C:\RPA\CapAppro\04-TestCentral\downloadFolder\2026-09-02\tmpronivs_3\requetes\CA_V2.sql
+08:27:40 [null@localhost 2/1][NORMAL] File copied and renamed successfully!
+08:27:40 [null@localhost 2/1][NORMAL] encodedFile : utf-8
+08:27:40 [null@localhost 2/1][NORMAL] File removed successfully!
+08:27:40 [null@localhost 2/1][NORMAL] Encoding trouvé utf-8
+08:27:40 [null@localhost 2/1][NORMAL] Remplacement pour le fichier CA_global_concat.sql
+08:27:40 [null@localhost 2/1][NORMAL] replacetext pour le fichier C:\RPA\CapAppro\04-TestCentral\downloadFolder\2026-09-02\tmpronivs_3\requetes\CA_global_concat.sql
+08:27:40 [null@localhost 2/1][NORMAL] File copied and renamed successfully!
+08:27:40 [null@localhost 2/1][NORMAL] encodedFile : us-ascii
+08:27:40 [null@localhost 2/1][NORMAL] File removed successfully!
+08:27:40 [null@localhost 2/1][NORMAL] Encoding trouvé us-ascii
+08:27:40 [null@localhost 2/1][NORMAL] Fin de la phase de remplacement des ';'
+08:27:40 [null@localhost 2/1][NORMAL] Lancement de l'exécution
+08:27:40 [null@localhost 2/1][NORMAL] formatHorodatage :   <class 'str'>
+08:27:40 [null@localhost 2/1][NORMAL] le format d'horodatage n'est pas renseigné
+08:27:40 [null@localhost 2/1][NORMAL] --> Exécution de la requête  CA_global.sql
+08:27:40 [null@localhost 2/1][NORMAL] File copied and renamed successfully!
+08:27:40 [null@localhost 2/1][NORMAL] encodedFile : utf-8
+08:27:40 [null@localhost 2/1][NORMAL] File removed successfully!
+08:27:40 [null@localhost 2/1][NORMAL] Lancement requête :: [ 1 / 3 ] - Requête   CA_global.sql  A enregister dans le fichier ->  CA_détails.xlsx
+08:27:40 [null@localhost 2/1][NORMAL]       * Temps Exécution requete : [ 00:01:02 ]
+08:27:40 [null@localhost 2/1][NORMAL] Dimensions Enregistrement du fichier '{filePath}'
+08:27:40 [null@localhost 2/1][NORMAL] nbRows={nbRows}  | nbCols= {nbCols} 
+08:27:40 [null@localhost 2/1][NORMAL] Fin de copie de fichier en local [ 00:06:48 ]
+08:27:40 [null@localhost 2/1][NORMAL] --> Upload du fichier sur le drive
+08:27:40 [null@localhost 2/1][NORMAL] => Upload du fichier vers le Drive : {nomFichierSortie} ( 47.242 MB)
+08:27:40 [null@localhost 2/1][NORMAL] Tentative d'upload N° 1
+08:27:40 [null@localhost 2/1][NORMAL] =========================================================
+08:27:40 [null@localhost 2/1][NORMAL] file  CA_agrege.xlsx  in  CA_détails.xlsx
+08:27:40 [null@localhost 2/1][NORMAL] file  PA.xlsx  in  CA_détails.xlsx
+08:27:40 [null@localhost 2/1][NORMAL] file  CA_détails.xlsx  in  CA_détails.xlsx
+08:27:40 [null@localhost 2/1][NORMAL] GetElementId : correspondance trouvée pour > CA_détails.xlsx <|>id> 1rvXtpZ-IRee6RlQ5pXFwazm3xrHo175t <
+08:27:40 [null@localhost 2/1][NORMAL] On écrase le fichier existant 1rvXtpZ-IRee6RlQ5pXFwazm3xrHo175t
+08:27:40 [null@localhost 2/1][NORMAL] Le fichier a correctement était uploadé.
+08:27:40 [null@localhost 2/1][NORMAL] Fin de copie de local vers le drive :  CA_détails.xlsx [ 00:00:06 ]
+08:27:40 [null@localhost 2/1][NORMAL] 
+08:27:40 [null@localhost 2/1][NORMAL] Temps de traitement de l'EXPORT =>  [ 00:07:57 ]
+08:27:40 [null@localhost 2/1][NORMAL] 
+08:27:40 [null@localhost 2/1][NORMAL] 
+08:27:40 [null@localhost 2/1][NORMAL] ====================================
+08:27:40 [null@localhost 2/1][NORMAL] FIN Lancement de la requête ::  CA_global.sql 
+08:27:40 [null@localhost 2/1][NORMAL] ====================================
+08:27:40 [null@localhost 2/1][NORMAL] formatHorodatage :   <class 'str'>
+08:27:40 [null@localhost 2/1][NORMAL] le format d'horodatage n'est pas renseigné
+08:27:40 [null@localhost 2/1][NORMAL] --> Exécution de la requête  CA_V2.sql
+08:27:40 [null@localhost 2/1][NORMAL] File copied and renamed successfully!
+08:27:40 [null@localhost 2/1][NORMAL] encodedFile : utf-8
+08:27:40 [null@localhost 2/1][NORMAL] File removed successfully!
+08:27:40 [null@localhost 2/1][NORMAL] Lancement requête :: [ 2 / 3 ] - Requête   CA_V2.sql  A enregister dans le fichier ->  PA.xlsx
+08:27:40 [null@localhost 2/1][NORMAL]       * Temps Exécution requete : [ 00:00:33 ]
+08:27:40 [null@localhost 2/1][NORMAL] Dimensions Enregistrement du fichier '{filePath}'
+08:27:40 [null@localhost 2/1][NORMAL] nbRows={nbRows}  | nbCols= {nbCols} 
+08:27:40 [null@localhost 2/1][NORMAL] Fin de copie de fichier en local [ 00:02:29 ]
+08:27:40 [null@localhost 2/1][NORMAL] --> Upload du fichier sur le drive
+08:27:40 [null@localhost 2/1][NORMAL] => Upload du fichier vers le Drive : {nomFichierSortie} ( 22.322 MB)
+08:27:40 [null@localhost 2/1][NORMAL] Tentative d'upload N° 1
+08:27:40 [null@localhost 2/1][NORMAL] =========================================================
+08:27:40 [null@localhost 2/1][NORMAL] file  CA_détails.xlsx  in  PA.xlsx
+08:27:40 [null@localhost 2/1][NORMAL] file  CA_agrege.xlsx  in  PA.xlsx
+08:27:40 [null@localhost 2/1][NORMAL] file  PA.xlsx  in  PA.xlsx
+08:27:40 [null@localhost 2/1][NORMAL] GetElementId : correspondance trouvée pour > PA.xlsx <|>id> 1nLrYOZoeVNQl76Lhz9_2GN7YSqP0byzW <
+08:27:40 [null@localhost 2/1][NORMAL] On écrase le fichier existant 1nLrYOZoeVNQl76Lhz9_2GN7YSqP0byzW
+08:27:40 [null@localhost 2/1][NORMAL] Le fichier a correctement était uploadé.
+08:27:40 [null@localhost 2/1][NORMAL] Fin de copie de local vers le drive :  PA.xlsx [ 00:00:13 ]
+08:27:40 [null@localhost 2/1][NORMAL] 
+08:27:40 [null@localhost 2/1][NORMAL] Temps de traitement de l'EXPORT =>  [ 00:03:16 ]
+08:27:40 [null@localhost 2/1][NORMAL] 
+08:27:40 [null@localhost 2/1][NORMAL] 
+08:27:40 [null@localhost 2/1][NORMAL] ====================================
+08:27:40 [null@localhost 2/1][NORMAL] FIN Lancement de la requête ::  CA_V2.sql 
+08:27:40 [null@localhost 2/1][NORMAL] ====================================
+08:27:40 [null@localhost 2/1][NORMAL] formatHorodatage :   <class 'str'>
+08:27:40 [null@localhost 2/1][NORMAL] le format d'horodatage n'est pas renseigné
+08:27:40 [null@localhost 2/1][NORMAL] --> Exécution de la requête  CA_global_concat.sql
+08:27:40 [null@localhost 2/1][NORMAL] File copied and renamed successfully!
+08:27:40 [null@localhost 2/1][NORMAL] encodedFile : us-ascii
+08:27:40 [null@localhost 2/1][NORMAL] File removed successfully!
+08:27:40 [null@localhost 2/1][NORMAL] Lancement requête :: [ 3 / 3 ] - Requête   CA_global_concat.sql  A enregister dans le fichier ->  CA_agrege.xlsx
+08:27:40 [null@localhost 2/1][NORMAL]       * Temps Exécution requete : [ 00:00:39 ]
+08:27:40 [null@localhost 2/1][NORMAL] Dimensions Enregistrement du fichier '{filePath}'
+08:27:40 [null@localhost 2/1][NORMAL] nbRows={nbRows}  | nbCols= {nbCols} 
+08:27:40 [null@localhost 2/1][NORMAL] Fin de copie de fichier en local [ 00:00:00 ]
+08:27:40 [null@localhost 2/1][NORMAL] --> Upload du fichier sur le drive
+08:27:40 [null@localhost 2/1][NORMAL] => Upload du fichier vers le Drive : {nomFichierSortie} ( 0.006 MB)
+08:27:40 [null@localhost 2/1][NORMAL] Tentative d'upload N° 1
+08:27:40 [null@localhost 2/1][NORMAL] =========================================================
+08:27:40 [null@localhost 2/1][NORMAL] file  PA.xlsx  in  CA_agrege.xlsx
+08:27:40 [null@localhost 2/1][NORMAL] file  CA_détails.xlsx  in  CA_agrege.xlsx
+08:27:40 [null@localhost 2/1][NORMAL] file  CA_agrege.xlsx  in  CA_agrege.xlsx
+08:27:40 [null@localhost 2/1][NORMAL] GetElementId : correspondance trouvée pour > CA_agrege.xlsx <|>id> 11eAgR42IF-q2zvJVKopHdCu2fHDk58m0 <
+08:27:40 [null@localhost 2/1][NORMAL] On écrase le fichier existant 11eAgR42IF-q2zvJVKopHdCu2fHDk58m0
+08:27:40 [null@localhost 2/1][NORMAL] Le fichier a correctement était uploadé.
+08:27:40 [null@localhost 2/1][NORMAL] Fin de copie de local vers le drive :  CA_agrege.xlsx [ 00:00:03 ]
+08:27:40 [null@localhost 2/1][NORMAL] 
+08:27:40 [null@localhost 2/1][NORMAL] Temps de traitement de l'EXPORT =>  [ 00:00:42 ]
+08:27:40 [null@localhost 2/1][NORMAL] 
+08:27:40 [null@localhost 2/1][NORMAL] 
+08:27:40 [null@localhost 2/1][NORMAL] ====================================
+08:27:40 [null@localhost 2/1][NORMAL] FIN Lancement de la requête ::  CA_global_concat.sql 
+08:27:40 [null@localhost 2/1][NORMAL] ====================================
+08:27:40 [null@localhost 2/1][NORMAL] 
+08:27:40 [null@localhost 2/1][NORMAL]  ----- Temps de traitement des différents EXPORTS ----- [ 00:12:00 ]
+08:27:40 [null@localhost 2/1][NORMAL] 
+08:27:40 [null@localhost 2/1][NORMAL] 
+08:27:40 [null@localhost 2/1][NORMAL] 2026-12-31 00:00:00
+08:27:40 [null@localhost 2/1][NORMAL] bienvenue dans la class GDRIVE :: IdDossier en cours  1bkXK77bOQb8TXG69y_n_Qw9zM-Wru1BO
+08:27:40 [null@localhost 2/1][NORMAL] [5, 'Reporting Cash prelevement auto', '02/09/2026 08:15:16', '00:12:00', 'OK', 'Reporting Cash prelevement auto_2026-09-02_08-15-16.log']
+08:27:40 [null@localhost 2/1][NORMAL] row_Index : {row_Index}
+08:27:40 [null@localhost 2/1][NORMAL] Recherche dans le fichier de data le dossier drive id correspondant à la configuration en cours.
+08:27:40 [null@localhost 2/1][NORMAL] le drive récupéré pour l'upload est driveLogs=1_cZoOJbE5swtIxiHFda7WOTkhz258KiM avec la configuration config_oracle_finance
+08:27:40 [null@localhost 2/1][NORMAL] le fichier de log a uploadé est logFile=C:\RPA\CapAppro\04-TestCentral\downloadFolder\2026-09-02\Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] =========================================================
+08:27:40 [null@localhost 2/1][NORMAL] file  Export Oracle Gestion_Litiges_2026-09-02_07-10-11.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Oracle-employé_2026-09-02_07-03-22.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  SQL Pièces PF TF Fermés_2026-09-02_07-02-49.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Oracle Liste TF_2026-09-02_07-01-34.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Oracle Liste PF_2026-09-02_07-00-57.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Oracle Liste CF_2026-09-02_07-00-11.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  SQL Litiges injustifiés_2026-09-02_06-55-12.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  SQL CSP2 - Commandes et réception des factures en litige_2026-09-02_06-50-18.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Export CSP quotidien (sensible)_2026-09-02_05-00-13.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Etats du jour_2026-09-02_04-00-33.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Extractions Clôtures RH_2026-09-01_18-40-50.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Extractions Clôtures CAP_2026-09-01_18-43-11.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Extractions Clôtures SSTR_2026-09-01_18-42-30.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Extractions Clôtures CAP_2026-09-01_18-37-12.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Extractions Clôtures SSTR_2026-09-01_18-36-47.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Extractions Clôtures CAP_2026-09-01_18-29-53.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Extractions Clôtures SSTR_2026-09-01_18-29-25.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Extractions Clôtures FRN_2026-09-01_16-56-49.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Extractions Clôtures RH_2026-09-01_16-39-26.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Extractions Clôtures CAP_2026-09-01_16-34-51.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Extractions Clôtures SSTR_2026-09-01_16-28-36.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Extractions Clôtures FRN_2026-09-01_15-37-41.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Extractions Clôtures RH_2026-09-01_15-19-36.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Extractions Clôtures CAP_2026-09-01_15-14-50.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Extractions Clôtures SSTR_2026-09-01_15-09-20.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Extraction_Lionel_2026-09-01_09-20-15.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  ExportOralceLaPosteImmo_2026-09-01_09-00-19.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Facture payees_2026-09-01_08-30-14.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Extractions Clôtures FRN_2026-09-01_07-23-14.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Extractions Clôtures RH_2026-09-01_07-06-16.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Export Oracle Gestion_Litiges_2026-09-01_07-10-11.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Extractions Clôtures CAP_2026-09-01_07-03-23.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Oracle-employé_2026-09-01_07-03-22.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Extractions Clôtures SSTR_2026-09-01_07-00-12.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  SQL Pièces PF TF Fermés_2026-09-01_07-02-48.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Oracle Liste TF_2026-09-01_07-01-32.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Oracle Liste PF_2026-09-01_07-00-48.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Oracle Liste CF_2026-09-01_07-00-12.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  SQL Litiges injustifiés_2026-09-01_06-55-12.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  SQL CSP2 - Commandes et réception des factures en litige_2026-09-01_06-50-19.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Export CSP quotidien (sensible)_2026-09-01_05-00-15.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Etats du jour_2026-09-01_04-00-39.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Extraction_Lionel_2026-08-31_09-20-12.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  ExportOralceLaPosteImmo_2026-08-31_09-00-12.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Export Oracle Gestion_Litiges_2026-08-31_07-10-11.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Oracle-employé_2026-08-31_07-03-21.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  SQL Pièces PF TF Fermés_2026-08-31_07-02-46.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Oracle Liste TF_2026-08-31_07-01-26.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Oracle Liste PF_2026-08-31_07-00-48.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Oracle Liste CF_2026-08-31_07-00-11.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  SQL Litiges injustifiés_2026-08-31_06-55-11.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  SQL CSP2 - Commandes et réception des factures en litige_2026-08-31_06-50-21.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Export CSP quotidien (sensible)_2026-08-31_05-00-15.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Etats du jour_2026-08-31_04-00-35.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  CapAppro hebdo_2026-08-30_12-00-17.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Facture payees_2026-08-29_08-30-16.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Extraction_Lionel_2026-08-28_09-20-13.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  ExportOralceLaPosteImmo_2026-08-28_09-00-13.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Facture payees_2026-08-28_08-30-13.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Export Oracle Gestion_Litiges_2026-08-28_07-10-11.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Oracle-employé_2026-08-28_07-03-15.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  SQL Pièces PF TF Fermés_2026-08-28_07-02-41.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Oracle Liste TF_2026-08-28_07-01-26.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Oracle Liste PF_2026-08-28_07-00-46.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Oracle Liste CF_2026-08-28_07-00-11.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  SQL Litiges injustifiés_2026-08-28_06-55-12.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  SQL CSP2 - Commandes et réception des factures en litige_2026-08-28_06-50-19.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Export CSP quotidien (sensible)_2026-08-28_05-00-14.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Etats du jour_2026-08-28_04-00-43.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Extraction_Lionel_2026-08-27_09-20-13.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  ExportOralceLaPosteImmo_2026-08-27_09-00-13.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Facture payees_2026-08-27_08-30-14.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Export Oracle Gestion_Litiges_2026-08-27_07-10-10.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Oracle-employé_2026-08-27_07-03-14.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  SQL Pièces PF TF Fermés_2026-08-27_07-02-40.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Oracle Liste TF_2026-08-27_07-01-24.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Oracle Liste PF_2026-08-27_07-00-46.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Oracle Liste CF_2026-08-27_07-00-11.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  SQL Litiges injustifiés_2026-08-27_06-55-12.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  SQL CSP2 - Commandes et réception des factures en litige_2026-08-27_06-50-18.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Export CSP quotidien (sensible)_2026-08-27_05-00-13.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Etats du jour_2026-08-27_04-00-29.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Extraction_Lionel_2026-08-26_09-20-12.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  ExportOralceLaPosteImmo_2026-08-26_09-00-12.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Facture payees_2026-08-26_08-30-12.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Export Oracle Gestion_Litiges_2026-08-26_07-10-10.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Oracle-employé_2026-08-26_07-03-43.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  SQL Pièces PF TF Fermés_2026-08-26_07-03-08.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Oracle Liste TF_2026-08-26_07-01-42.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Oracle Liste PF_2026-08-26_07-00-58.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Oracle Liste CF_2026-08-26_07-00-12.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  SQL Litiges injustifiés_2026-08-26_06-55-11.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  SQL CSP2 - Commandes et réception des factures en litige_2026-08-26_06-50-18.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Export CSP quotidien (sensible)_2026-08-26_05-00-15.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Etats du jour_2026-08-26_04-00-40.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Extraction_Lionel_2026-08-25_09-20-14.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  ExportOralceLaPosteImmo_2026-08-25_09-00-16.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Facture payees_2026-08-25_08-30-15.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Export Oracle Gestion_Litiges_2026-08-25_07-10-11.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Oracle-employé_2026-08-25_07-03-15.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  SQL Pièces PF TF Fermés_2026-08-25_07-02-41.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Oracle Liste TF_2026-08-25_07-01-26.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Oracle Liste PF_2026-08-25_07-00-48.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Oracle Liste CF_2026-08-25_07-00-12.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  SQL Litiges injustifiés_2026-08-25_06-55-11.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  SQL CSP2 - Commandes et réception des factures en litige_2026-08-25_06-50-25.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Export CSP quotidien (sensible)_2026-08-25_05-00-13.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Etats du jour_2026-08-25_04-00-46.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Extraction_Lionel_2026-08-24_09-20-12.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  ExportOralceLaPosteImmo_2026-08-24_09-00-14.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Export Oracle Gestion_Litiges_2026-08-24_07-10-11.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Oracle-employé_2026-08-24_07-04-27.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  SQL Pièces PF TF Fermés_2026-08-24_07-03-27.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Oracle Liste TF_2026-08-24_07-01-58.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Oracle Liste PF_2026-08-24_07-01-05.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Oracle Liste CF_2026-08-24_07-00-12.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  SQL Litiges injustifiés_2026-08-24_06-55-11.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  SQL CSP2 - Commandes et réception des factures en litige_2026-08-24_06-50-19.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Export CSP quotidien (sensible)_2026-08-24_05-00-18.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Etats du jour_2026-08-24_04-00-39.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  CapAppro hebdo_2026-08-23_12-00-17.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Facture payees_2026-08-22_08-30-18.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Extraction_Lionel_2026-08-21_09-20-11.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  ExportOralceLaPosteImmo_2026-08-21_09-00-12.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Facture payees_2026-08-21_08-30-12.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Export Oracle Gestion_Litiges_2026-08-21_07-10-10.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Oracle-employé_2026-08-21_07-03-39.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  SQL Pièces PF TF Fermés_2026-08-21_07-02-47.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Oracle Liste TF_2026-08-21_07-01-25.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Oracle Liste PF_2026-08-21_07-00-47.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Oracle Liste CF_2026-08-21_07-00-11.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  SQL Litiges injustifiés_2026-08-21_06-55-12.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  SQL CSP2 - Commandes et réception des factures en litige_2026-08-21_06-50-22.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Export CSP quotidien (sensible)_2026-08-21_05-00-13.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Etats du jour_2026-08-21_04-00-49.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Extraction_Lionel_2026-08-20_09-20-13.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  ExportOralceLaPosteImmo_2026-08-20_09-00-13.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Fermeture auto Commandes_2026-08-20_09-00-13.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Facture payees_2026-08-20_08-30-11.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Export Oracle Gestion_Litiges_2026-08-20_07-10-10.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Oracle-employé_2026-08-20_07-03-17.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  SQL Pièces PF TF Fermés_2026-08-20_07-02-43.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Oracle Liste TF_2026-08-20_07-01-24.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Oracle Liste PF_2026-08-20_07-00-46.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Oracle Liste CF_2026-08-20_07-00-10.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  SQL Litiges injustifiés_2026-08-20_06-55-11.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  SQL CSP2 - Commandes et réception des factures en litige_2026-08-20_06-50-23.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Export CSP quotidien (sensible)_2026-08-20_05-00-15.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Etats du jour_2026-08-20_04-00-44.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Extraction_Lionel_2026-08-19_09-20-13.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  ExportOralceLaPosteImmo_2026-08-19_09-00-15.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Facture payees_2026-08-19_08-30-17.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Export Oracle Gestion_Litiges_2026-08-19_07-10-10.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Oracle-employé_2026-08-19_07-03-14.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  SQL Pièces PF TF Fermés_2026-08-19_07-02-41.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Oracle Liste TF_2026-08-19_07-01-26.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Oracle Liste PF_2026-08-19_07-00-47.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Oracle Liste CF_2026-08-19_07-00-11.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  SQL Litiges injustifiés_2026-08-19_06-55-12.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  SQL CSP2 - Commandes et réception des factures en litige_2026-08-19_06-50-25.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Export CSP quotidien (sensible)_2026-08-19_05-00-16.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Etats du jour_2026-08-19_04-00-47.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Oracle-employé_2026-08-18_10-59-00.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  ExportOralceLaPosteImmo_2026-08-18_10-55-42.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  SQL Pièces PF TF Fermés_2026-08-18_10-58-25.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Oracle Liste TF_2026-08-18_10-56-58.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Oracle Liste PF_2026-08-18_10-56-18.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Oracle Liste CF_2026-08-18_10-55-39.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Extraction_Lionel_2026-08-17_09-20-12.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  ExportOralceLaPosteImmo_2026-08-17_09-00-14.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Export Oracle Gestion_Litiges_2026-08-17_07-10-11.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Oracle-employé_2026-08-17_07-03-20.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  SQL Pièces PF TF Fermés_2026-08-17_07-02-45.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Oracle Liste TF_2026-08-17_07-01-28.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Oracle Liste PF_2026-08-17_07-00-49.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  SQL Litiges injustifiés_2026-08-17_06-55-12.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  SQL CSP2 - Commandes et réception des factures en litige_2026-08-17_06-50-20.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Export CSP quotidien (sensible)_2026-08-17_05-00-12.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Etats du jour_2026-08-17_04-00-38.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  CapAppro hebdo_2026-08-16_12-00-26.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Facture payees_2026-08-15_08-30-57.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Extraction_Lionel_2026-08-14_09-20-13.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  ExportOralceLaPosteImmo_2026-08-14_09-00-13.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Facture payees_2026-08-14_08-30-14.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Export Oracle Gestion_Litiges_2026-08-14_07-10-10.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Oracle-employé_2026-08-14_07-03-14.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  SQL Pièces PF TF Fermés_2026-08-14_07-02-40.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Oracle Liste TF_2026-08-14_07-01-25.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Oracle Liste PF_2026-08-14_07-00-48.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Oracle Liste CF_2026-08-14_07-00-11.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  SQL Litiges injustifiés_2026-08-14_06-55-11.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  SQL CSP2 - Commandes et réception des factures en litige_2026-08-14_06-50-25.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Export CSP quotidien (sensible)_2026-08-14_05-00-14.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Etats du jour_2026-08-14_04-00-55.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Extraction_Lionel_2026-08-13_09-20-12.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  ExportOralceLaPosteImmo_2026-08-13_09-00-15.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Facture payees_2026-08-13_08-30-14.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Export Oracle Gestion_Litiges_2026-08-13_07-10-11.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Oracle-employé_2026-08-13_07-03-14.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  SQL Pièces PF TF Fermés_2026-08-13_07-02-40.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Oracle Liste TF_2026-08-13_07-01-26.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Oracle Liste PF_2026-08-13_07-00-48.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Oracle Liste CF_2026-08-13_07-00-12.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  SQL Litiges injustifiés_2026-08-13_06-55-12.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  SQL CSP2 - Commandes et réception des factures en litige_2026-08-13_06-50-19.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Export CSP quotidien (sensible)_2026-08-13_05-00-12.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Etats du jour_2026-08-13_04-00-38.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Extraction_Lionel_2026-08-12_09-20-13.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  ExportOralceLaPosteImmo_2026-08-12_09-00-14.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Facture payees_2026-08-12_08-30-13.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Export Oracle Gestion_Litiges_2026-08-12_07-10-10.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Oracle-employé_2026-08-12_07-03-13.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  SQL Pièces PF TF Fermés_2026-08-12_07-02-40.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Oracle Liste TF_2026-08-12_07-01-22.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Oracle Liste PF_2026-08-12_07-00-45.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Oracle Liste CF_2026-08-12_07-00-10.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  SQL Litiges injustifiés_2026-08-12_06-56-56.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  SQL CSP2 - Commandes et réception des factures en litige_2026-08-12_06-50-14.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Export CSP quotidien (sensible)_2026-08-12_05-00-22.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Etats du jour_2026-08-12_04-00-39.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Extraction_Lionel_2026-08-11_09-20-12.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  ExportOralceLaPosteImmo_2026-08-11_09-00-14.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Facture payees_2026-08-11_08-30-14.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Export Oracle Gestion_Litiges_2026-08-11_07-10-10.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Oracle-employé_2026-08-11_07-03-11.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  SQL Pièces PF TF Fermés_2026-08-11_07-02-37.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Oracle Liste TF_2026-08-11_07-01-22.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Oracle Liste PF_2026-08-11_07-00-46.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Oracle Liste CF_2026-08-11_07-00-11.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  SQL Litiges injustifiés_2026-08-11_06-55-10.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  SQL CSP2 - Commandes et réception des factures en litige_2026-08-11_06-50-14.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Export CSP quotidien (sensible)_2026-08-11_05-00-13.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Etats du jour_2026-08-11_04-00-44.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Extraction_Lionel_2026-08-10_09-20-13.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  ExportOralceLaPosteImmo_2026-08-10_09-00-14.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Export Oracle Gestion_Litiges_2026-08-10_07-10-10.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Oracle-employé_2026-08-10_07-03-14.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  SQL Pièces PF TF Fermés_2026-08-10_07-02-40.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Oracle Liste TF_2026-08-10_07-01-25.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Oracle Liste PF_2026-08-10_07-00-48.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Oracle Liste CF_2026-08-10_07-00-11.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  SQL Litiges injustifiés_2026-08-10_06-55-11.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  SQL CSP2 - Commandes et réception des factures en litige_2026-08-10_06-50-14.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Export CSP quotidien (sensible)_2026-08-10_05-00-13.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Etats du jour_2026-08-10_04-00-42.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  CapAppro hebdo_2026-08-09_12-00-28.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Facture payees_2026-08-08_08-31-03.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Extraction_Lionel_2026-08-07_09-20-13.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  ExportOralceLaPosteImmo_2026-08-07_09-00-13.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Facture payees_2026-08-07_08-30-14.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Export Oracle Gestion_Litiges_2026-08-07_07-10-10.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Oracle-employé_2026-08-07_07-03-14.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  SQL Pièces PF TF Fermés_2026-08-07_07-02-40.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Oracle Liste TF_2026-08-07_07-01-23.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Oracle Liste PF_2026-08-07_07-00-46.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Oracle Liste CF_2026-08-07_07-00-12.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  SQL Litiges injustifiés_2026-08-07_06-55-11.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  SQL CSP2 - Commandes et réception des factures en litige_2026-08-07_06-50-24.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Export CSP quotidien (sensible)_2026-08-07_05-00-14.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Etats du jour_2026-08-07_04-00-44.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Extraction_Lionel_2026-08-06_09-20-12.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  ExportOralceLaPosteImmo_2026-08-06_09-00-13.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Facture payees_2026-08-06_08-30-13.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Export Oracle Gestion_Litiges_2026-08-06_07-10-10.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Oracle-employé_2026-08-06_07-03-48.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  SQL Pièces PF TF Fermés_2026-08-06_07-02-59.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Oracle Liste TF_2026-08-06_07-01-26.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Oracle Liste PF_2026-08-06_07-00-47.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Oracle Liste CF_2026-08-06_07-00-11.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  SQL Litiges injustifiés_2026-08-06_06-55-11.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  SQL CSP2 - Commandes et réception des factures en litige_2026-08-06_06-50-12.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Export Doublons Factures_2026-08-06_05-42-01.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Export CSP quotidien (sensible)_2026-08-06_05-00-15.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Etats du jour_2026-08-06_04-01-00.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Extraction_Lionel_2026-08-05_09-20-12.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  ExportOralceLaPosteImmo_2026-08-05_09-00-13.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Facture payees_2026-08-05_08-30-12.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Export Oracle Gestion_Litiges_2026-08-05_07-10-10.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Oracle-employé_2026-08-05_07-03-31.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  SQL Pièces PF TF Fermés_2026-08-05_07-02-58.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Oracle Liste TF_2026-08-05_07-01-38.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Oracle Liste PF_2026-08-05_07-01-01.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Oracle Liste CF_2026-08-05_07-00-11.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  SQL Litiges injustifiés_2026-08-05_06-55-10.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  SQL CSP2 - Commandes et réception des factures en litige_2026-08-05_06-50-12.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Export Doublons Factures_2026-08-05_05-42-08.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Export CSP quotidien (sensible)_2026-08-05_05-00-13.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Etats du jour_2026-08-05_04-00-36.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Export Doublons Factures_2026-08-04_14-26-44.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Export CSP quotidien (sensible)_2026-08-04_13-50-16.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Etats du jour_2026-08-04_09-28-54.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Extraction_Lionel_2026-08-04_09-20-12.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  ExportOralceLaPosteImmo_2026-08-04_09-00-10.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Export Oracle Gestion_Litiges_2026-08-04_08-59-40.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Facture payees_2026-08-04_08-30-12.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Reporting Cash prelevement auto_2026-08-04_08-15-16.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Export Oracle Gestion_Litiges_2026-08-04_07-10-10.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Oracle-employé_2026-08-04_07-03-12.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  SQL Pièces PF TF Fermés_2026-08-04_07-02-39.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Oracle Liste TF_2026-08-04_07-01-23.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Oracle Liste PF_2026-08-04_07-00-45.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Oracle Liste CF_2026-08-04_07-00-10.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  SQL Litiges injustifiés_2026-08-04_06-55-11.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  SQL CSP2 - Commandes et réception des factures en litige_2026-08-04_06-50-13.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Export Doublons Factures_2026-08-04_05-50-21.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Export CSP quotidien (sensible)_2026-08-04_05-00-13.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Etats du jour_2026-08-04_04-00-41.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  ExportOralceLaPosteImmo_2026-08-03_16-14-33.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Extraction_Lionel_2026-08-03_09-20-12.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  ExportOralceLaPosteImmo_2026-08-03_09-00-13.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Export Oracle Gestion_Litiges_2026-08-03_07-10-11.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Oracle-employé_2026-08-03_07-03-23.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  SQL Pièces PF TF Fermés_2026-08-03_07-02-49.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Oracle Liste TF_2026-08-03_07-01-31.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Oracle Liste PF_2026-08-03_07-00-51.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Oracle Liste CF_2026-08-03_07-00-12.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  SQL Litiges injustifiés_2026-08-03_06-55-10.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  SQL CSP2 - Commandes et réception des factures en litige_2026-08-03_06-50-13.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Export Doublons Factures_2026-08-03_05-33-33.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Export CSP quotidien (sensible)_2026-08-03_05-00-13.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Etats du jour_2026-08-03_04-00-41.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  CapAppro hebdo_2026-08-02_12-00-27.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Facture payees_2026-08-01_08-30-12.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Extractions Clôtures FRN_2026-08-01_07-26-24.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Extractions Clôtures RH_2026-08-01_07-09-38.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Extractions Clôtures CAP_2026-08-01_07-06-01.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Extractions Clôtures SSTR_2026-08-01_07-01-02.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Fermeture auto Commandes_2026-07-31_15-34-11.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Extraction_Lionel_2026-07-31_09-20-12.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  ExportOralceLaPosteImmo_2026-07-31_09-00-13.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Facture payees_2026-07-31_08-30-12.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Export Oracle Gestion_Litiges_2026-07-31_07-10-10.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Oracle-employé_2026-07-31_07-03-12.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  SQL Pièces PF TF Fermés_2026-07-31_07-02-40.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Oracle Liste TF_2026-07-31_07-01-24.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Oracle Liste PF_2026-07-31_07-00-46.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Oracle Liste CF_2026-07-31_07-00-11.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  SQL Litiges injustifiés_2026-07-31_06-55-11.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  SQL CSP2 - Commandes et réception des factures en litige_2026-07-31_06-50-13.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Export Doublons Factures_2026-07-31_05-33-04.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Export CSP quotidien (sensible)_2026-07-31_05-00-13.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Etats du jour_2026-07-31_04-00-42.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Facture payees_2026-07-30_15-27-17.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Oracle-employé_2026-07-30_14-24-54.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  SQL Pièces PF TF Fermés_2026-07-30_14-24-21.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Oracle Liste TF_2026-07-30_14-23-07.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Oracle Liste PF_2026-07-30_14-22-29.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Oracle Liste CF_2026-07-30_14-21-48.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Export Doublons Factures_2026-07-29_14-45-19.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Export CSP quotidien (sensible)_2026-07-29_14-11-03.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  ExportOralceLaPosteImmo_2026-07-29_14-15-49.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  CapAppro hebdo_2026-07-29_10-56-22.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  ExportOralceLaPosteImmo_2026-07-29_09-00-12.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Facture payees_2026-07-29_08-30-11.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Export Oracle Gestion_Litiges_2026-07-29_07-10-10.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Oracle-employé_2026-07-29_07-03-17.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  SQL Pièces PF TF Fermés_2026-07-29_07-02-42.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Oracle Liste TF_2026-07-29_07-01-25.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Oracle Liste PF_2026-07-29_07-00-47.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Oracle Liste CF_2026-07-29_07-00-11.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  SQL Litiges injustifiés_2026-07-29_06-55-11.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  SQL CSP2 - Commandes et réception des factures en litige_2026-07-29_06-50-12.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Export Doublons Factures_2026-07-29_05-33-39.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Export CSP quotidien (sensible)_2026-07-29_05-00-14.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Etats du jour_2026-07-29_04-00-29.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  CapAppro hebdo_2026-07-28_17-58-28.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Extraction_Lionel_2026-07-28_09-20-12.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  ExportOralceLaPosteImmo_2026-07-28_09-00-13.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Facture payees_2026-07-28_08-30-13.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Export Oracle Gestion_Litiges_2026-07-28_07-10-11.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Oracle-employé_2026-07-28_07-03-28.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  SQL Pièces PF TF Fermés_2026-07-28_07-02-52.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Oracle Liste TF_2026-07-28_07-01-31.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Oracle Liste PF_2026-07-28_07-00-50.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Oracle Liste CF_2026-07-28_07-00-12.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  SQL Litiges injustifiés_2026-07-28_06-55-12.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  SQL CSP2 - Commandes et réception des factures en litige_2026-07-28_06-50-19.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Export Doublons Factures_2026-07-28_05-41-23.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Export CSP quotidien (sensible)_2026-07-28_05-00-13.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Etats du jour_2026-07-28_04-00-32.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Export Doublons Factures_2026-07-27_17-07-46.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Export CSP quotidien (sensible)_2026-07-27_16-33-32.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Export Doublons Factures_2026-07-27_12-08-49.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Export CSP quotidien (sensible)_2026-07-27_11-27-29.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Facture payees_2026-07-25_08-30-17.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Extraction_Lionel_2026-07-24_09-20-13.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  ExportOralceLaPosteImmo_2026-07-24_09-00-13.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Facture payees_2026-07-24_08-30-14.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Export Oracle Gestion_Litiges_2026-07-24_07-10-11.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Oracle-employé_2026-07-24_07-03-16.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  SQL Pièces PF TF Fermés_2026-07-24_07-02-42.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Oracle Liste TF_2026-07-24_07-01-28.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Oracle Liste PF_2026-07-24_07-00-50.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Oracle Liste CF_2026-07-24_07-00-14.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  SQL Litiges injustifiés_2026-07-24_06-55-15.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  SQL CSP2 - Commandes et réception des factures en litige_2026-07-24_06-50-16.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Export Doublons Factures_2026-07-24_05-36-47.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Export CSP quotidien (sensible)_2026-07-24_05-00-15.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Etats du jour_2026-07-24_04-00-46.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Export Doublons Factures_2026-07-23_12-42-15.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Export CSP quotidien (sensible)_2026-07-23_12-04-01.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Extraction_Lionel_2026-07-22_09-20-16.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  ExportOralceLaPosteImmo_2026-07-22_09-00-14.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Facture payees_2026-07-22_08-30-14.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Export Oracle Gestion_Litiges_2026-07-22_07-10-11.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Oracle-employé_2026-07-22_07-03-26.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  SQL Pièces PF TF Fermés_2026-07-22_07-02-50.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Oracle Liste TF_2026-07-22_07-01-31.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Oracle Liste PF_2026-07-22_07-00-49.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Oracle Liste CF_2026-07-22_07-00-11.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  SQL Litiges injustifiés_2026-07-22_06-55-11.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  SQL CSP2 - Commandes et réception des factures en litige_2026-07-22_06-50-14.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Export Doublons Factures_2026-07-22_05-39-58.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Export CSP quotidien (sensible)_2026-07-22_05-00-13.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Etats du jour_2026-07-22_04-00-35.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Extraction_Lionel_2026-07-21_09-20-12.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  ExportOralceLaPosteImmo_2026-07-21_09-00-12.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Facture payees_2026-07-21_08-30-15.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Export Oracle Gestion_Litiges_2026-07-21_07-10-11.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Oracle-employé_2026-07-21_07-03-30.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  SQL Pièces PF TF Fermés_2026-07-21_07-02-52.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Oracle Liste TF_2026-07-21_07-01-32.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Oracle Liste PF_2026-07-21_07-00-49.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Oracle Liste CF_2026-07-21_07-00-12.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  SQL Litiges injustifiés_2026-07-21_06-55-11.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  SQL CSP2 - Commandes et réception des factures en litige_2026-07-21_06-50-13.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Export Doublons Factures_2026-07-21_05-40-51.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Export CSP quotidien (sensible)_2026-07-21_05-00-14.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Etats du jour_2026-07-21_04-00-37.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Fermeture auto Commandes_2026-07-20_11-15-56.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Extraction_Lionel_2026-07-20_09-20-12.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  ExportOralceLaPosteImmo_2026-07-20_09-00-15.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Fermeture auto Commandes_2026-07-20_09-00-15.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Export Oracle Gestion_Litiges_2026-07-20_07-10-12.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Oracle-employé_2026-07-20_07-03-31.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  SQL Pièces PF TF Fermés_2026-07-20_07-02-55.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Oracle Liste TF_2026-07-20_07-01-36.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Oracle Liste PF_2026-07-20_07-00-55.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Oracle Liste CF_2026-07-20_07-00-12.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  SQL Litiges injustifiés_2026-07-20_06-55-11.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  SQL CSP2 - Commandes et réception des factures en litige_2026-07-20_06-50-12.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Export Doublons Factures_2026-07-20_05-33-58.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Export CSP quotidien (sensible)_2026-07-20_05-00-14.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Etats du jour_2026-07-20_04-00-33.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  CapAppro hebdo_2026-07-19_12-00-23.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Facture payees_2026-07-18_08-30-55.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Extraction_Lionel_2026-07-17_09-20-13.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  ExportOralceLaPosteImmo_2026-07-17_09-00-13.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Facture payees_2026-07-17_08-30-14.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Export Oracle Gestion_Litiges_2026-07-17_07-10-11.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Oracle-employé_2026-07-17_07-03-28.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  SQL Pièces PF TF Fermés_2026-07-17_07-02-50.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Oracle Liste TF_2026-07-17_07-01-32.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Oracle Liste PF_2026-07-17_07-00-50.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Oracle Liste CF_2026-07-17_07-00-11.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  SQL Litiges injustifiés_2026-07-17_06-55-11.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  SQL CSP2 - Commandes et réception des factures en litige_2026-07-17_06-50-13.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Export Doublons Factures_2026-07-17_05-38-57.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Export CSP quotidien (sensible)_2026-07-17_05-00-15.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] file  Etats du jour_2026-07-17_04-00-41.log  in  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] On créé un nouveau fichier avec le même nom  Reporting Cash prelevement auto_2026-09-02_08-15-16.log
+08:27:40 [null@localhost 2/1][NORMAL] 
+08:27:40 [null@localhost 2/1][NORMAL]  outputErr:
+08:27:40 [null@localhost 2/1][NORMAL]  process.returncode: 0
+08:27:40 [null@localhost 2/1][NORMAL] Le traitement de la commande s'est bien déroulée.
