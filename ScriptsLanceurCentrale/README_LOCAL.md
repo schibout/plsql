@@ -1,28 +1,115 @@
 # Lanceur CapAppro — mode d'emploi en local
 
-Deux façons de rejouer une extraction depuis un poste de développement.
+**Le mode de référence est `CapAppro_LOCAL.py`, qui lit les classeurs Excel
+sur le Google Drive** — exactement comme l'ordonnanceur de production.
 
-| | **Mode natif PowerShell** | **Mode Python** |
+Un extracteur natif PowerShell existe en secours, pour un poste où Python
+n'est pas exploitable. Il ne remplace pas le mode Python : il n'accède pas au
+Drive et exige que les fichiers soient copiés à la main.
+
+| | **Mode Python (référence)** | **Mode natif PowerShell (secours)** |
 |---|---|---|
-| Point d'entrée | `CapAppro_Local.ps1` / `.bat` | `CapAppro_LOCAL.py` |
-| Python requis | non | oui |
+| Point d'entrée | `CapAppro_LOCAL.py` | `CapAppro_Local.ps1` / `.bat` |
+| Classeurs lus **sur le Drive** | **oui** | non — copie manuelle |
+| Téléchargement des `.sql` | oui | non — copie manuelle |
 | Requêtes Oracle | oui | oui |
-| Export CSV / XLSX | oui (en local) | oui |
-| Scripts PL/SQL | oui (sqlplus) | oui |
-| Téléchargement Drive | **non** | oui |
-| Upload Drive | **non** | oui |
-| Envoi des mails | **non** | oui |
-| Mise à jour `HistoExec` | **non** | oui |
-| Iso-production | non | **oui** |
+| Export CSV / XLSX | oui | oui (en local) |
+| Scripts PL/SQL | oui | oui (sqlplus) |
+| Upload Drive / mails / `HistoExec` | oui | non |
+| Iso-production | **oui** | non |
+| Python requis | oui | non |
 
-Le mode natif est un outil de **mise au point de requêtes**. Le mode Python
-reste la seule reproduction fidèle de la production.
+Commencer par un diagnostic de l'environnement :
+
+```bash
+py CapAppro_LOCAL.py --check
+```
+
+Il liste précisément ce qui est présent et ce qui manque.
 
 ---
 
-# PARTIE A — Mode natif PowerShell (sans Python)
+# PARTIE A — Mode Python, classeurs lus sur le Drive
 
-## A.1 Fichiers
+## A.1 Prérequis
+
+```bash
+py -m pip install -r requirements.txt
+```
+
+Trois éléments ne s'installent pas avec pip et doivent être récupérés sur la
+machine RPA :
+
+1. **Les librairies maison** — copier le dossier
+   `C:\RPA\python-libraries\` (`gdrive`, `pylibrary`, `gmail`), puis
+   renseigner son emplacement dans `[paths] LIBRARY_PATH`.
+   **Sans elles, aucun accès au Drive n'est possible.**
+2. **Le jeton OAuth** utilisé par `gdrive(token="générique")`, sans quoi
+   l'authentification Google échouera.
+3. **Le client Oracle**, sans quoi `cx_Oracle.init_oracle_client()` échoue.
+
+⚠️ `cx_Oracle` ne se compile pas sous Python 3.13 : sa dernière version
+(8.3.0) ne fournit pas de wheel au-delà de Python 3.11. Utiliser un
+interpréteur plus ancien, par exemple `py -3.10 CapAppro_LOCAL.py 39`.
+
+## A.2 Utilisation
+
+```bash
+py CapAppro_LOCAL.py --check         # diagnostic de l'environnement
+py CapAppro_LOCAL.py --list          # lister les IdExec (lus sur le Drive)
+py CapAppro_LOCAL.py 39 --dry-run    # afficher la commande, sans exécuter
+py CapAppro_LOCAL.py 39              # lancer
+py CapAppro_LOCAL.py 39,40           # plusieurs lignes
+```
+
+Codes retour : `0` succès, `1` échec d'exécution, `2` argument invalide ou
+plan d'exécution illisible.
+
+## A.3 Le Drive est la source de référence
+
+Le plan d'exécution est lu **sur le Drive**. Si celui-ci est injoignable, le
+script **s'arrête** au lieu de basculer silencieusement sur une copie locale
+qui pourrait être périmée :
+
+```
+[ERROR] Les librairies maison sont introuvables : le Drive n'est pas accessible.
+[ERROR] Arrêt : le plan d'exécution doit être lu sur le Drive.
+```
+
+Le repli sur une copie locale doit être demandé explicitement, et n'est utile
+que pour dépanner hors ligne :
+
+```bash
+py CapAppro_LOCAL.py 39 --local      # ponctuel
+```
+```ini
+[local]
+AUTORISER_REPLI_LOCAL = oui          # ou durablement, dans le .ini
+```
+
+## A.4 ⚠️ Ce qu'une exécution modifie vraiment
+
+`CapAppro_LOCAL.py` lance **le vrai worker**. Même depuis ton poste :
+
+- connexion à la base de `configBDD` — `config_oracle_finance` **est la production** ;
+- écriture des fichiers **sur le Drive du projet**, en écrasant les homonymes ;
+- copie vers le partage DataViz si `Copiedataviz` est renseigné ;
+- **envoi de mails** à la `ListeDeDiffusion`, donc à des destinataires métier réels ;
+- ajout d'une ligne dans `HistoExec` et upload du log.
+
+Pour tester sans risque : `--dry-run` d'abord, puis la ligne `IdExec 40`
+(« TEST »), ou une surcharge d'environnement vers la base de test :
+
+```powershell
+$env:CAPAPPRO_CONFIG_ORACLE_FINANCE_BASE_URL = "etiscandb03.eti.dalkia.net"
+$env:CAPAPPRO_CONFIG_ORACLE_FINANCE_BASE_SERVICE_NAME = "ebs_PDBFINI2"
+```
+
+---
+
+# PARTIE B — Mode natif PowerShell (secours, sans Python)
+
+## B.1 Fichiers
 
 | Fichier | Rôle |
 |---|---|
@@ -32,7 +119,7 @@ reste la seule reproduction fidèle de la production.
 | `Get-OracleDriver.ps1` | Télécharge le pilote Oracle managé dans `.\lib\` |
 | `config_lanceur_central.ini` | Configuration, section `[powershell]` |
 
-## A.2 Installation
+## B.2 Installation
 
 Une seule étape, à faire une fois :
 
@@ -56,7 +143,7 @@ manuellement, l'ouvrir comme une archive ZIP et copier
 À défaut de pilote managé, le script bascule sur OLE DB (`OraOLEDB.Oracle`)
 puis ODBC — mais ces deux modes exigent un client Oracle installé.
 
-## A.3 Préparer le dossier de travail
+## B.3 Préparer le dossier de travail
 
 Le mode natif n'accède pas au Drive. Les fichiers du projet doivent donc être
 déposés à la main, dans `DOSSIER_TRAVAIL\<ProjectName>\` :
@@ -74,7 +161,7 @@ Le nom du sous-dossier doit correspondre au `ProjectName` du classeur
 d'ordonnancement, et le classeur lanceur porter le nom indiqué par
 `filenameLanceur`.
 
-## A.4 Configuration
+## B.4 Configuration
 
 ```ini
 [powershell]
@@ -96,7 +183,7 @@ $env:CAPAPPRO_CONFIG_ORACLE_FINANCE_BASE_URL = "etiscandb03.eti.dalkia.net"
 $env:CAPAPPRO_CONFIG_ORACLE_FINANCE_BASE_SERVICE_NAME = "ebs_PDBFINI2"
 ```
 
-## A.5 Utilisation
+## B.5 Utilisation
 
 ```powershell
 .\CapAppro_Local.ps1 -List           # lister les IdExec disponibles
@@ -118,7 +205,7 @@ Un double-clic sur le `.bat` liste les projets et laisse la fenêtre ouverte.
 Codes retour : `0` succès, `1` échec d'exécution, `2` argument invalide,
 `3` PowerShell introuvable, `4` script introuvable.
 
-## A.6 Sortie
+## B.6 Sortie
 
 ```
 17:54:36 [INFO] >>> DEBUT  PROJET [1/1] IdExec 1 - CapAppro hebdo
@@ -138,7 +225,7 @@ Le format CSV reproduit celui de la production : séparateur `;`, encodage
 UTF-8 avec BOM, tout champ non numérique entre guillemets, dates en
 `JJ/MM/AAAA HH:MM:SS`, décimaux à 5 chiffres.
 
-## A.7 Différences de comportement assumées
+## B.7 Différences de comportement assumées
 
 | Point | Production (Python) | Mode natif |
 |---|---|---|
@@ -146,7 +233,7 @@ UTF-8 avec BOM, tout champ non numérique entre guillemets, dates en
 | Typage des nombres | déduit par pandas | issu du pilote Oracle ; un `NUMBER` sans échelle peut différer d'une colonne |
 | Fichier XLSX | xlsxwriter | générateur OpenXML minimal, une feuille, sans mise en forme |
 
-## A.8 Problèmes courants
+## B.8 Problèmes courants
 
 | Symptôme | Cause | Correctif |
 |---|---|---|
@@ -155,54 +242,9 @@ UTF-8 avec BOM, tout champ non numérique entre guillemets, dates en
 | `ORA-12545 : impossible de résoudre le nom de l'hôte` | serveur non joignable | se connecter au réseau Dalkia / VPN |
 | `ORA-12154` | chaîne de connexion non résolue | vérifier `BASE_URL`, `BASE_PORT`, `BASE_SERVICE_NAME` |
 | `ORA-01017` | identifiants refusés | vérifier `DB_USER` / `DB_PASSWORD` |
-| `Classeur lanceur introuvable` | dossier de travail incomplet | voir §A.3 |
+| `Classeur lanceur introuvable` | dossier de travail incomplet | voir §B.3 |
 | Accents illisibles dans la console | fichier `.ps1` sans BOM UTF-8 | les fichiers livrés en ont un : ne pas les réenregistrer en ANSI |
 | `l'exécution de scripts est désactivée` | ExecutionPolicy | passer par `CapAppro_Local.bat`, ou `-ExecutionPolicy Bypass` |
-
----
-
-# PARTIE B — Mode Python (iso-production)
-
-À utiliser dès que le poste dispose d'un environnement Python complet : c'est
-la seule façon de reproduire fidèlement la chaîne, Drive et mails compris.
-
-## B.1 Installation
-
-```bash
-py -m pip install -r requirements.txt
-```
-
-Il faut en plus, et pip ne peut pas les fournir :
-
-- les librairies maison `gdrive`, `pylibrary`, `gmail` (`C:\RPA\python-libraries\`) ;
-- le client Oracle, sans quoi `cx_Oracle.init_oracle_client()` échoue ;
-- le dossier `[paths] TEMP_FOLDER` (par défaut `C:\Temp\`).
-
-## B.2 Utilisation
-
-```bash
-py CapAppro_LOCAL.py --list          # lister les IdExec
-py CapAppro_LOCAL.py 39 --dry-run    # afficher la commande, sans exécuter
-py CapAppro_LOCAL.py 39              # lancer
-py CapAppro_LOCAL.py 39,40           # plusieurs lignes
-py CapAppro_LOCAL.py 39 --local      # forcer la copie locale du classeur
-```
-
-Le plan d'exécution est lu **sur le Drive par défaut**, avec repli automatique
-sur la copie locale si le Drive est injoignable.
-
-## B.3 ⚠️ Ce qu'une exécution modifie vraiment
-
-`CapAppro_LOCAL.py` lance **le vrai worker**. Même depuis ton poste :
-
-- connexion à la base de `configBDD` — `config_oracle_finance` **est la production** ;
-- écriture des fichiers **sur le Drive du projet**, en écrasant les homonymes ;
-- copie vers le partage DataViz si `Copiedataviz` est renseigné ;
-- **envoi de mails** à la `ListeDeDiffusion`, donc à des destinataires métier réels ;
-- ajout d'une ligne dans `HistoExec` et upload du log.
-
-Pour tester sans risque : `--dry-run` d'abord, puis la ligne `IdExec 40`
-(« TEST »), ou une surcharge d'environnement vers la base de test.
 
 ---
 

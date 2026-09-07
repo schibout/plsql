@@ -17,11 +17,14 @@ Utilisation :
     py CapAppro_LOCAL.py 39,40
     py CapAppro_LOCAL.py 39 --dry-run     (affiche la commande sans l'exécuter)
     py CapAppro_LOCAL.py --list           (liste les IdExec disponibles)
+    py CapAppro_LOCAL.py --check          (diagnostic de l'environnement)
     py CapAppro_LOCAL.py 39 --local       (force la copie locale du classeur)
 
-Le plan d'execution est lu par defaut sur le Drive, comme le fait
-l'ordonnanceur central : les valeurs sont donc toujours a jour. Une copie
-locale peut servir de repli hors ligne ([local] FICHIER_ORDONNANCEUR).
+Le plan d'execution est lu SUR LE DRIVE, comme le fait l'ordonnanceur
+central : c'est la source de reference. Si le Drive est injoignable, le
+script s'arrete au lieu de basculer silencieusement sur une copie locale
+qui pourrait etre perimee. Le repli doit etre demande explicitement, avec
+--local ou [local] AUTORISER_REPLI_LOCAL = oui.
 
 ATTENTION : le worker exécuté est le vrai worker. Il se connecte à la base,
 écrit sur le Drive, envoie les mails de la ListeDeDiffusion et ajoute une
@@ -53,6 +56,8 @@ FICHIER_ORDONNANCEUR = config.get("local", "FICHIER_ORDONNANCEUR", "")
 ONGLET_ORDONNANCEUR = config.get("local", "ONGLET_ORDONNANCEUR")
 RESPECTER_COLONNE_EXECUTION = config.get(
     "local", "RESPECTER_COLONNE_EXECUTION", "non").strip().lower() == "oui"
+AUTORISER_REPLI_LOCAL = config.get(
+    "local", "AUTORISER_REPLI_LOCAL", "non").strip().lower() == "oui"
 TIMEOUT_PROJET = config.getInt("execution", "TIMEOUT_PROJET_SECONDES", 0)
 
 DRIVE_ROOT_ID = config.get("ordonnanceur", "DRIVE_ROOT_ID")
@@ -86,6 +91,7 @@ def lireArguments(argv):
     dryRun = False
     lister = False
     source = None
+    verifier = False
     for element in argv:
         if element in ("--dry-run", "--dryrun", "-n"):
             dryRun = True
@@ -95,6 +101,8 @@ def lireArguments(argv):
             source = "local"
         elif element == "--drive":
             source = "drive"
+        elif element in ("--check", "--diag"):
+            verifier = True
         elif element.startswith("--idExec="):
             element = element.split("=", 1)[1]
             ids.extend(p.strip() for p in element.split(",") if p.strip())
@@ -102,7 +110,26 @@ def lireArguments(argv):
             log("Option inconnue ignorée : %s" % element, niveau="WARN")
         else:
             ids.extend(p.strip() for p in element.split(",") if p.strip())
-    return ids, dryRun, lister, source
+    return ids, dryRun, lister, source, verifier
+
+
+MESSAGE_LIB_MANQUANTE = """
+Les librairies maison sont introuvables : le Drive n'est pas accessible.
+
+  Dossier attendu : {dossier}
+  Module manquant : {module}
+
+Le classeur d'ordonnancement doit être lu sur le Drive. Pour cela, copier
+depuis la machine RPA le dossier complet des librairies maison :
+
+    C:\\RPA\\python-libraries\\      (gdrive, pylibrary, gmail)
+
+ainsi que le fichier de jeton OAuth utilisé par gdrive(token="{token}"),
+puis renseigner son emplacement dans [paths] LIBRARY_PATH du fichier
+config_lanceur_central.ini.
+
+Diagnostic complet de l'environnement : py CapAppro_LOCAL.py --check
+"""
 
 
 def chargerDepuisDrive():
@@ -110,13 +137,17 @@ def chargerDepuisDrive():
 
     C'est la meme source que l'ordonnanceur central : les valeurs sont donc
     a jour et arrivent sous la meme forme (des chaines de caracteres).
-    L'import de gdrive est fait ici pour que le script reste utilisable sur
-    un poste ou la librairie maison n'est pas installee.
     """
     libraryPath = config.getDossier("paths", "LIBRARY_PATH")
     if libraryPath and libraryPath not in sys.path:
         sys.path.append(libraryPath)
-    from gdrive import gdrive
+    try:
+        from gdrive import gdrive
+    except ImportError as Err:
+        raise RuntimeError(MESSAGE_LIB_MANQUANTE.format(
+            dossier=libraryPath or "(non renseigné)",
+            module=Err.name or "gdrive",
+            token=GDRIVE_TOKEN))
 
     log("Lecture du plan d'exécution sur le Drive : classeur %s (onglet '%s')"
         % (SPREADSHEET_ID, ONGLET_ORDONNANCEUR))
@@ -145,15 +176,27 @@ def chargerOrdonnanceur(source=None):
     source = (source or SOURCE_PLAN).lower()
 
     if source == "local":
+        log("Source forcée : copie locale du classeur (option --local).",
+            niveau="WARN")
         df = chargerDepuisFichier()
     else:
         try:
             df = chargerDepuisDrive()
         except Exception as Err:
-            log("Lecture du Drive impossible (%s)" % Err, niveau="WARN")
-            if not FICHIER_ORDONNANCEUR:
-                raise
-            log("Repli sur la copie locale.", niveau="WARN")
+            # Le classeur du Drive est la source de reference : on ne bascule
+            # pas silencieusement sur une copie locale, qui serait peut-etre
+            # perimee. Le repli doit etre demande explicitement.
+            log("Lecture du Drive impossible.", niveau="ERROR")
+            for ligne in str(Err).strip().splitlines():
+                log("  " + ligne, niveau="ERROR")
+            if not AUTORISER_REPLI_LOCAL:
+                raise RuntimeError(
+                    "Arrêt : le plan d'exécution doit être lu sur le Drive.\n"
+                    "Pour travailler malgré tout sur une copie locale "
+                    "(données potentiellement périmées), relancer avec "
+                    "--local, ou passer [local] AUTORISER_REPLI_LOCAL à 'oui'.")
+            log("Repli sur la copie locale (AUTORISER_REPLI_LOCAL=oui). "
+                "Les données peuvent être périmées.", niveau="WARN")
             df = chargerDepuisFichier()
 
     absentes = [c for c in COLONNES_ATTENDUES if c not in df.columns]
@@ -224,9 +267,95 @@ def afficherListe(df):
             row["config"]))
 
 
+def verifierEnvironnement():
+    """Inventaire de ce qui est present ou manquant sur le poste."""
+    logSection("DIAGNOSTIC DE L'ENVIRONNEMENT LOCAL")
+    manquants = []
+
+    log("Python  : %s" % sys.version.split()[0])
+    log("Exécutable : %s" % sys.executable)
+    log("")
+
+    log("--- Paquets nécessaires au lanceur local ---")
+    for module in ("pandas", "numpy"):
+        try:
+            __import__(module)
+            log("  OK       %s" % module)
+        except ImportError:
+            log("  MANQUANT %s" % module, niveau="ERROR")
+            manquants.append("pip install " + module)
+
+    log("")
+    log("--- Paquets nécessaires au worker (l'extraction elle-même) ---")
+    for module, paquet in (("fire", "fire"),
+                           ("magic", "python-magic-bin"),
+                           ("dateutil", "python-dateutil"),
+                           ("openpyxl", "openpyxl"),
+                           ("xlsxwriter", "XlsxWriter"),
+                           ("sqlalchemy", "SQLAlchemy"),
+                           ("cx_Oracle", "cx_Oracle")):
+        try:
+            __import__(module)
+            log("  OK       %s" % module)
+        except ImportError:
+            log("  MANQUANT %s   ->  pip install %s" % (module, paquet),
+                niveau="ERROR")
+            manquants.append("pip install " + paquet)
+
+    log("")
+    log("--- Librairies maison (indispensables pour le Drive) ---")
+    libraryPath = config.getDossier("paths", "LIBRARY_PATH")
+    log("  LIBRARY_PATH configuré : %s" % (libraryPath or "(vide)"))
+    if libraryPath and os.path.isdir(libraryPath):
+        log("  OK       le dossier existe")
+        if libraryPath not in sys.path:
+            sys.path.append(libraryPath)
+    else:
+        log("  MANQUANT le dossier n'existe pas", niveau="ERROR")
+        manquants.append(r"copier C:\RPA\python-libraries\ depuis la machine RPA")
+
+    for module in ("gdrive", "pylibrary", "gmail"):
+        try:
+            __import__(module)
+            log("  OK       %s" % module)
+        except ImportError:
+            log("  MANQUANT %s" % module, niveau="ERROR")
+
+    log("")
+    log("--- Client Oracle ---")
+    oracleHome = config.get("paths", "ORACLE_CLIENT_HOME", "")
+    log("  ORACLE_CLIENT_HOME : %s" % (oracleHome or "(vide)"))
+    if oracleHome and os.path.isdir(oracleHome):
+        log("  OK       le dossier existe")
+    else:
+        log("  MANQUANT le dossier n'existe pas", niveau="ERROR")
+        manquants.append("installer le client Oracle (ou Instant Client)")
+
+    log("")
+    logSection("RÉSULTAT")
+    if not manquants:
+        log("Environnement complet : le lanceur local peut fonctionner.")
+        return 0
+    log("%d élément(s) à régler :" % len(manquants), niveau="ERROR")
+    for element in manquants:
+        log("  - %s" % element, niveau="ERROR")
+    return 1
+
+
 def main():
-    ids, dryRun, lister, source = lireArguments(sys.argv[1:])
-    df = chargerOrdonnanceur(source)
+    ids, dryRun, lister, source, verifier = lireArguments(sys.argv[1:])
+
+    if verifier:
+        return verifierEnvironnement()
+
+    try:
+        df = chargerOrdonnanceur(source)
+    except Exception as Err:
+        # Message lisible plutot qu'une trace d'exception : l'utilisateur a
+        # besoin de savoir quoi faire, pas ou le code s'est arrete.
+        for ligne in str(Err).strip().splitlines():
+            log(ligne, niveau="ERROR")
+        return 2
 
     if lister or not ids:
         afficherListe(df)
