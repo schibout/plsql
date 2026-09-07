@@ -1,0 +1,302 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Tue Dec  5 12:08:13 2023
+@author: jguedes
+V1.2
+"""
+# =============================================================================
+# TODO mettre en place des vérifications sur les éléments avabt de lancer le script
+# TODO voir le script bat pour le dossier dans lequel il doit se trouver
+# TODO voir les exceptions si des drives / fichiers / requêtes n'existent pas.
+# TODO voir les espaces dans le passage des arguments. / a voir dans le script en amont
+#           qui va appeler celui-ci.
+# =============================================================================
+
+import sys
+import os
+import pandas as pd
+import subprocess
+import numpy as np
+from subprocess import PIPE, Popen
+import logging
+
+try:
+    from gdrive import gdrive
+    from pylibrary import libraries
+    from gmail import Mail
+except Exception:
+    pass
+
+libraryPath = "C:\\RPA\\python-libraries\\"
+if(libraryPath not in sys.path):
+    sys.path.append(libraryPath)
+    from pylibrary import libraries
+    from gmail import Mail
+    from gdrive import gdrive
+
+
+utils = libraries()
+mail = Mail()
+msgTo = "dsin-rpa-robot1@dalkia.fr"
+
+def is_NaN(txt):
+    try:
+        res = np.isnan(txt)
+    except Exception:
+        res = False
+
+    # print(f"check Nan for {txt} is {res}")
+    return res
+
+def saveToExcel(df, filePath, sheetName, setIndex=False):
+    writer = pd.ExcelWriter(filePath, engine="xlsxwriter",
+                            date_format="DD/MM/YYYY", datetime_format="DD/MM/YYYY")
+    df.to_excel(writer, sheet_name=sheetName, index=setIndex)
+    # worksheet = writer.sheets[sheetName]
+    writer.close()
+
+
+def launchCmd(cmd, args=None, logInfo=None):
+    outputList = []
+    try:
+        if args is None:
+            commande = "py \"" + cmd + "\""
+        else:
+            commande = "py \"" + cmd + "\" " + args
+
+        output = ""
+        print("Lancement de la commande \n", commande)
+        if logInfo is not None:
+            print(utils.cptStart(logInfo))
+            logging.info(utils.cptStart(logInfo))
+
+        with Popen(commande, stdout=PIPE, stderr=PIPE, shell=True) as process:
+            # output = process.communicate()[0].decode("utf-8")
+            output = process.communicate()[0].decode("latin-1")
+            outputErr = process.communicate()[1].decode("latin-1")
+            
+            outputList.append(process.returncode)
+            outputList.append(output)
+            outputList.append(outputErr)
+            print(
+                f"output:{output}\n outputErr:{outputErr}\n process.returncode:", process.returncode)
+            if process.returncode > 0:
+                print("Erreur détectée")
+                # sendErrorMail(outputErr)
+                # files = utils.getFileList(folderErros)
+                # files = list(map(lambda file: folderErros + file, files))
+                # # mail.ErreurRobot(nomRobot,msgError="Etape::<b>" + logInfo + "</b><br><br>" + outputErr,attachments=files)
+                # #print(utils.tempDirs)
+                # utils.cleanScreenShotFolder()
+            return outputList
+    except Exception as Err:
+        print(f"Erreur lancement de commande \n{cmd}", Err)
+        return None
+
+# ==========================================================================================================================================================
+oneRowExecution = None
+errorMessage = ""
+nomRobot = "[Lanceur Requêtes]"
+
+# scriptFolder = r"C:\Users\jguedes\Documents\Dev\02-CapAppro\CapAppro\\"
+scriptFolder = r"C:\RPA\CapAppro\04-TestCentral\Scripts\\"
+
+file_GENERIQUE_EXECUTION = scriptFolder + "CapAppro_GENERIQUE_EXECUTION.py"
+
+# =============================================================================
+# Récupération du fichier excel pour le lancement des scripts
+# =============================================================================
+# fileLanceurCentral = r"C:\Users\jguedes\Documents\Dev\02-CapAppro\CapAppro\03-CENTRAL\OrdonnanceurCentral.xlsx"
+# dfRequestLists = pd.read_excel(fileLanceurCentral)
+#        ---   OU   --- 
+Dossier_drive_id = "1bkXK77bOQb8TXG69y_n_Qw9zM-Wru1BO"
+spreadsheet_id = "1QNJUUM8lJcHkVOQTNguInGvmI5xZX69EwUqxYL0al1Q"
+range_name = "Feuil1"
+gdriveLanceur = gdrive(Dossier_drive_id, token="générique")
+dfRequestLists = gdriveLanceur.exportGsheetToDataFrame(spreadsheet_id, range_name)
+dfRequestLists['IdExec'] = dfRequestLists['IdExec'].astype('int')
+
+# print(dfRequestLists)    
+# filePath = r"C:\Users\jguedes\Documents\Dev\02-CapAppro\CapAppro\Temp\\"
+# saveToExcel(dfRequestLists, filePath + "dfRequestLists.xlsx", "sheetName")
+
+try:
+    if os.environ['RD_OPTION_IDEXEC']:
+        oneRowExecution = os.environ['RD_OPTION_IDEXEC']
+except Exception:
+    print("Pas d'exécution par lancement de job")
+    pass
+
+print("oneRowExecution", oneRowExecution, "type = ", type(oneRowExecution))
+
+if oneRowExecution:
+    try:
+        myExecutions = oneRowExecution.split(",")
+        myExecutionsList = [s.strip() for s in myExecutions]
+        myExecutionsList = [int(i) for i in myExecutionsList]
+        print(myExecutionsList)
+    except Exception:
+        print("Erreur lors de la récupération des id d'exécutions")
+        raise Exception("Arrêt du script")
+
+if oneRowExecution:
+    dfRequestsFolders = dfRequestLists.loc[(
+        dfRequestLists["Exécution"].str.lower() == "oui")]
+    mask = dfRequestsFolders['IdExec'].isin(myExecutionsList)
+    dfRequestsFolders = dfRequestsFolders[mask]
+else:
+    dfRequestsFolders = dfRequestLists.loc[(
+        dfRequestLists["Exécution"].str.lower() == "oui")]
+
+dfRequestsFolders.shape
+cmdListToExecute = []
+
+numRow = 0
+for index, row in dfRequestsFolders.iterrows():
+    numRow += 1
+    print(f"CONTROLE {numRow}")
+    cmdLineToExecute = {}
+
+    # OBLIGATOIRES
+    idExec = row['IdExec']
+    projectName = row['ProjectName']
+    execution = row['Exécution']
+    DownloadDossier_drive_id = row['DownloadDossier_drive_id']
+    filenameLanceur = row['filenameLanceur']
+    config = row['config']
+
+    # OPTIONNELS
+    UploadDossier_drive_id = row['UploadDossier_drive_id']
+    copiedataviz = row['Copiedataviz']
+    print(f"copiedataviz :: {copiedataviz}")
+    if copiedataviz != "":
+        if copiedataviz[-1] != "\\":
+            copiedataviz = rf"{copiedataviz}\\"
+
+    ListeDeDiffusion = row['ListeDeDiffusion']
+    DateExpirationRequetes = row['Date_expiration_requête']
+
+    # =============================================================================
+    #  contrôle sur les valeurs nan
+    # =============================================================================
+    if is_NaN(idExec) or is_NaN(projectName) or is_NaN(execution) or is_NaN(DownloadDossier_drive_id) or is_NaN(filenameLanceur) or is_NaN(config):
+        print(">>> La ligne ne peut pas être exécutée.Paramètres obligatoires manquants")
+        errorMessage += f"""
+                    pour la ligne suivante, des données obligatoires sont manquantes : 
+                    "idExec : " {idExec}
+                    "projectName : " {projectName}
+                    "execution : " {execution}
+                    "DownloadDossier_drive_id : " {DownloadDossier_drive_id}
+                    "filenameLanceur : " {filenameLanceur}
+                    """
+        continue
+    elif is_NaN(UploadDossier_drive_id) and is_NaN(copiedataviz):
+        print(">>> La ligne ne peut pas être exécutée. Au moins un des paramètres optionnels doit être présent")
+        errorMessage += f"""
+                    pour la ligne suivante, des données optionnelles sont manquantes : 
+                    "copiedataviz : " {copiedataviz}
+                    "UploadDossier_drive_id : " {UploadDossier_drive_id}
+                    """
+        continue
+    else:
+        print(">>> On peut lancer la commande")
+    # print(f'py "{file_GENERIQUE_EXECUTION}" --ProjectName "{projectName}" --DownloadDossier_drive_id "{DownloadDossier_drive_id}" --filenameLanceur "{filenameLanceur}" --UploadDossier_drive_id "{UploadDossier_drive_id}" --ListeDeDiffusion "{ListeDeDiffusion}" --requestExpirationDate "{DateExpirationRequetes}" --copiedataviz "{copiedataviz}" --configBDD "{config}"')
+    cmdLine = f'"{file_GENERIQUE_EXECUTION}"'
+    args = f' --idExec "{idExec}" --ProjectName "{projectName}" --DownloadDossier_drive_id "{DownloadDossier_drive_id}" --filenameLanceur "{filenameLanceur}" --UploadDossier_drive_id "{UploadDossier_drive_id}" --ListeDeDiffusion "{ListeDeDiffusion}" --requestExpirationDate "{DateExpirationRequetes}" --configBDD "{config}" --copiedataviz "{copiedataviz}"'
+
+    cmdLineToExecute['IdExec'] = row['IdExec']
+    cmdLineToExecute['cmdLine'] = cmdLine
+    cmdLineToExecute['args'] = args
+
+    cmdListToExecute.append(cmdLineToExecute)
+    # print("="*50, "\n")
+    # print(cmdLine)
+    # print("="*50, "\n")
+
+
+hasFailure = False
+
+for cmdLine in cmdListToExecute:
+    # print("="*100, "\nlancement", cmdLine['IdExec'],
+    #       "\n", cmdLine['cmdLine'], "\n", "="*100)
+    pass
+    try:
+        try:
+            outputExec = launchCmd(cmdLine['cmdLine'], cmdLine['args'])
+            if outputExec is None:
+                print("Erreur dans le traitement central de la ligne de commande")
+                errorMessage += "Erreur dans le traitement central de la ligne de commande"
+                hasFailure = True
+                print("outputExec CENTRAL  ==>>>  {outputExec}")
+            elif outputExec[0]==0:
+                print("Le traitement de la commande s'est bien déroulée.")
+            else:
+                print("Le traitement de la commande a rencontrée une erreur.", outputExec[0])
+                print("Sortie de la console : ", outputExec[1])
+                print("Sortie de la console en erreur : ", outputExec[2])
+                errorMessage += outputExec[2]
+        except Exception as Err:
+            hasFailure = True
+            print("Erreur exécution de la commande suivante pour l'id:",
+                  cmdLine['IdExec'], "\nErreur :: \n", "-"*60+"\n", str(Err), "\n", "-"*60, "\n")
+            errorMessage += f"""
+                        Erreur exécution de la ligne suivante : 
+                        "idExec : " {idExec}
+                        "projectName : " {projectName}
+                        
+                        """
+            errorMessage += str(Err)
+
+            raise Exception("Erreur exécution de la commande suivante " +
+                            str(cmdLine['IdExec']) + "\nErreur :: \n" + str(Err))
+    except Exception:
+        continue
+
+
+if errorMessage != "":
+    print("envoie d'un mail avec le message contenu dans la variable errorMessage\n>", errorMessage,"<")
+    mail.ErreurRobot(nomRobot=nomRobot,subjectMail=f"{nomRobot} - Incident(s) rencontré(s)",msgTo=msgTo,msgError=errorMessage)
+    hasFailure = True
+    
+if hasFailure:
+    raise Exception()
+
+sys.exit()
+print("lancement du script python")
+script2 = r"C:\Temp\lancementScript\script2.py"
+script1 = r"C:\Temp\lancementScript\script2.py"
+
+
+def execute_python_file(file_path, args):
+    try:
+        os.system(f'python {file_path} {args}')
+    except FileNotFoundError:
+        print(f"Error: The file '{file_path}' does not exist.")
+
+
+args = "--txt=DAVID"
+
+print("="*40)
+print("Exécution du script 2")
+print("="*40)
+execute_python_file(script2, args)
+print("="*40)
+print("Exécution du script 1")
+print("="*40)
+execute_python_file(script1, args)
+
+# =============================================================================
+# Permet de mettre en place un timeout sur le processus
+# =============================================================================
+try:
+    yourCommand = f'python {script1} {args}'
+    timeoutSeconds = 20
+    text = subprocess.check_output(
+        yourCommand, shell=True, timeout=timeoutSeconds)
+    print(text.decode('utf-8'))
+except Exception as Err:
+    print("une exeption sur le script a eu lieu\n", Err)
+
+yourCommand = f'python {script2} {args}'
+text = subprocess.check_output(yourCommand, shell=True, timeout=timeoutSeconds)
+print(text.decode('utf-8'))
