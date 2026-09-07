@@ -1,26 +1,172 @@
 # Lanceur CapAppro — mode d'emploi en local
 
-Comment rejouer une extraction depuis un poste de développement, sans passer
-par Rundeck.
+Deux façons de rejouer une extraction depuis un poste de développement.
+
+| | **Mode natif PowerShell** | **Mode Python** |
+|---|---|---|
+| Point d'entrée | `CapAppro_Local.ps1` / `.bat` | `CapAppro_LOCAL.py` |
+| Python requis | non | oui |
+| Requêtes Oracle | oui | oui |
+| Export CSV / XLSX | oui (en local) | oui |
+| Scripts PL/SQL | oui (sqlplus) | oui |
+| Téléchargement Drive | **non** | oui |
+| Upload Drive | **non** | oui |
+| Envoi des mails | **non** | oui |
+| Mise à jour `HistoExec` | **non** | oui |
+| Iso-production | non | **oui** |
+
+Le mode natif est un outil de **mise au point de requêtes**. Le mode Python
+reste la seule reproduction fidèle de la production.
 
 ---
 
-## 1. À quoi sert quoi
+# PARTIE A — Mode natif PowerShell (sans Python)
+
+## A.1 Fichiers
 
 | Fichier | Rôle |
 |---|---|
-| `CapAppro_LOCAL.py` | **Point d'entrée en local.** On lui donne un `IdExec`, il retrouve tout le reste. |
-| `CapAppro_CENTRAL.py` | Ordonnanceur de production, lancé par Rundeck. Ne pas utiliser en local. |
-| `CapAppro_GENERIQUE_EXECUTION.py` | Le worker : c'est lui qui fait le travail. Appelé par les deux précédents. |
-| `capappro_config.py` | Config partagée + journalisation horodatée. |
-| `config_lanceur_central.ini` | Tous les paramètres. C'est le seul fichier à adapter. |
+| `CapAppro_Local.ps1` | Extracteur : lit les classeurs, interroge Oracle, écrit les fichiers |
+| `CapAppro_Local.bat` | Lanceur CMD (double-clic possible, contourne l'ExecutionPolicy) |
+| `CapAppro_Xlsx.psm1` | Lecture/écriture `.xlsx` en OpenXML pur — ni Excel, ni module PSGallery |
+| `Get-OracleDriver.ps1` | Télécharge le pilote Oracle managé dans `.\lib\` |
+| `config_lanceur_central.ini` | Configuration, section `[powershell]` |
 
-Le lanceur local et l'ordonnanceur envoient au worker **exactement la même
-commande** : ce que tu testes en local est ce qui tourne en production.
+## A.2 Installation
+
+Une seule étape, à faire une fois :
+
+```powershell
+.\Get-OracleDriver.ps1
+```
+
+Le script récupère `Oracle.ManagedDataAccess.dll` depuis NuGet et le dépose
+dans `.\lib\`. C'est une implémentation 100 % .NET du protocole Oracle :
+**aucun client Oracle n'est nécessaire**.
+
+> La version 19.28.0 est imposée volontairement. Les versions 21.x et 23.x
+> déclarent des dépendances NuGet (`System.Text.Json`, `System.Formats.Asn1`)
+> absentes de .NET Framework, et échouent au chargement sous Windows
+> PowerShell 5.1 avec une `ReflectionTypeLoadException`.
+
+Si `nuget.org` est bloqué, récupérer le paquet `Oracle.ManagedDataAccess`
+manuellement, l'ouvrir comme une archive ZIP et copier
+`lib/net462/Oracle.ManagedDataAccess.dll` dans `.\lib\`.
+
+À défaut de pilote managé, le script bascule sur OLE DB (`OraOLEDB.Oracle`)
+puis ODBC — mais ces deux modes exigent un client Oracle installé.
+
+## A.3 Préparer le dossier de travail
+
+Le mode natif n'accède pas au Drive. Les fichiers du projet doivent donc être
+déposés à la main, dans `DOSSIER_TRAVAIL\<ProjectName>\` :
+
+```
+C:\Temp\CapAppro\
+└── CapAppro hebdo\                          <- exactement le ProjectName
+    ├── EXTRACTIONS_AUTOMATISEES_ORACLE.xlsx <- le classeur lanceur du projet
+    ├── COMMANDES_EN_COURS_V2.sql
+    ├── BLOCAGES_EN_COURS_V3.sql
+    └── extractFiles\                        <- créé automatiquement
+```
+
+Le nom du sous-dossier doit correspondre au `ProjectName` du classeur
+d'ordonnancement, et le classeur lanceur porter le nom indiqué par
+`filenameLanceur`.
+
+## A.4 Configuration
+
+```ini
+[powershell]
+DOSSIER_TRAVAIL = C:\Temp\CapAppro\
+FOURNISSEUR_ORACLE = auto        ; auto | managed | oledb | odbc
+ODP_MANAGED_DLL =                ; vide = recherche automatique
+TIMEOUT_REQUETE_SECONDES = 3600
+
+[local]
+FICHIER_ORDONNANCEUR = OrdonnanceurCentral (1).xlsx
+ONGLET_ORDONNANCEUR  = Feuil1
+```
+
+Comme du côté Python, toute clé se surcharge par variable d'environnement
+`CAPAPPRO_<SECTION>_<CLE>` :
+
+```powershell
+$env:CAPAPPRO_CONFIG_ORACLE_FINANCE_BASE_URL = "etiscandb03.eti.dalkia.net"
+$env:CAPAPPRO_CONFIG_ORACLE_FINANCE_BASE_SERVICE_NAME = "ebs_PDBFINI2"
+```
+
+## A.5 Utilisation
+
+```powershell
+.\CapAppro_Local.ps1 -List           # lister les IdExec disponibles
+.\CapAppro_Local.ps1 1 -DryRun       # afficher le plan, sans toucher la base
+.\CapAppro_Local.ps1 1               # exécuter
+.\CapAppro_Local.ps1 1,5 -DryRun     # plusieurs projets
+```
+
+Équivalents en CMD, sans se soucier de l'ExecutionPolicy :
+
+```
+CapAppro_Local.bat -List
+CapAppro_Local.bat 1 -DryRun
+CapAppro_Local.bat 1
+```
+
+Un double-clic sur le `.bat` liste les projets et laisse la fenêtre ouverte.
+
+Codes retour : `0` succès, `1` échec d'exécution, `2` argument invalide,
+`3` PowerShell introuvable, `4` script introuvable.
+
+## A.6 Sortie
+
+```
+17:54:36 [INFO] >>> DEBUT  PROJET [1/1] IdExec 1 - CapAppro hebdo
+17:54:36 [INFO] Lignes actives dans le classeur lanceur : 7 / 23
+17:54:36 [INFO] Connexion établie via ODP.NET managé (...\lib\Oracle.ManagedDataAccess.dll)
+17:54:36 [INFO] >>> DEBUT  [1/7] EXPORT :: COMMANDES_EN_COURS_V2.sql
+17:54:38 [INFO] Résultat : 15 234 ligne(s) x 22 colonne(s)
+17:54:39 [INFO] Écrit : C:\Temp\CapAppro\CapAppro hebdo\extractFiles\COMMANDES_EN_COURS.csv
+17:54:39 [INFO] <<< FIN    [1/7] EXPORT :: COMMANDES_EN_COURS_V2.sql | statut=OK | duree=00:00:03
+...
+17:54:52 [INFO] SYNTHÈSE
+Requete                     Type   Statut Lignes Duree
+COMMANDES_EN_COURS_V2.sql   export OK      15234 00:00:03
+```
+
+Le format CSV reproduit celui de la production : séparateur `;`, encodage
+UTF-8 avec BOM, tout champ non numérique entre guillemets, dates en
+`JJ/MM/AAAA HH:MM:SS`, décimaux à 5 chiffres.
+
+## A.7 Différences de comportement assumées
+
+| Point | Production (Python) | Mode natif |
+|---|---|---|
+| Retrait des `;` | **tous** les `;` du fichier, y compris dans les littéraux | seul le `;` terminal — comportement corrigé |
+| Typage des nombres | déduit par pandas | issu du pilote Oracle ; un `NUMBER` sans échelle peut différer d'une colonne |
+| Fichier XLSX | xlsxwriter | générateur OpenXML minimal, une feuille, sans mise en forme |
+
+## A.8 Problèmes courants
+
+| Symptôme | Cause | Correctif |
+|---|---|---|
+| `Oracle.ManagedDataAccess.dll introuvable` | pilote non installé | `.\Get-OracleDriver.ps1` |
+| `ReflectionTypeLoadException` au chargement | version 21.x/23.x du pilote | `.\Get-OracleDriver.ps1 -Version 19.28.0` |
+| `ORA-12545 : impossible de résoudre le nom de l'hôte` | serveur non joignable | se connecter au réseau Dalkia / VPN |
+| `ORA-12154` | chaîne de connexion non résolue | vérifier `BASE_URL`, `BASE_PORT`, `BASE_SERVICE_NAME` |
+| `ORA-01017` | identifiants refusés | vérifier `DB_USER` / `DB_PASSWORD` |
+| `Classeur lanceur introuvable` | dossier de travail incomplet | voir §A.3 |
+| Accents illisibles dans la console | fichier `.ps1` sans BOM UTF-8 | les fichiers livrés en ont un : ne pas les réenregistrer en ANSI |
+| `l'exécution de scripts est désactivée` | ExecutionPolicy | passer par `CapAppro_Local.bat`, ou `-ExecutionPolicy Bypass` |
 
 ---
 
-## 2. Installation
+# PARTIE B — Mode Python (iso-production)
+
+À utiliser dès que le poste dispose d'un environnement Python complet : c'est
+la seule façon de reproduire fidèlement la chaîne, Drive et mails compris.
+
+## B.1 Installation
 
 ```bash
 py -m pip install -r requirements.txt
@@ -28,191 +174,67 @@ py -m pip install -r requirements.txt
 
 Il faut en plus, et pip ne peut pas les fournir :
 
-- **les librairies maison** `gdrive`, `pylibrary`, `gmail` — normalement dans
-  `C:\RPA\python-libraries\`. Sans elles, le lanceur local fonctionne encore
-  (repli sur une copie locale du classeur), mais le worker, lui, ne démarre
-  pas ;
-- **le client Oracle** — `cx_Oracle.init_oracle_client()` échoue si le chemin
-  `[paths] ORACLE_CLIENT_HOME` n'existe pas. C'est le blocage le plus fréquent
-  sur un poste de dev ;
-- **le dossier temporaire** `[paths] TEMP_FOLDER` (par défaut `C:\Temp\`), que
-  la détection d'encodage utilise. Le créer s'il n'existe pas.
+- les librairies maison `gdrive`, `pylibrary`, `gmail` (`C:\RPA\python-libraries\`) ;
+- le client Oracle, sans quoi `cx_Oracle.init_oracle_client()` échoue ;
+- le dossier `[paths] TEMP_FOLDER` (par défaut `C:\Temp\`).
 
----
-
-## 3. Configuration
-
-Tout est dans `config_lanceur_central.ini`. Sur un poste de dev, seules ces
-clés changent en général :
-
-```ini
-[paths]
-SCRIPT_FOLDER = C:\Users\<toi>\Documents\Project\plsql\ScriptsLanceurCentrale\
-LIBRARY_PATH  = C:\RPA\python-libraries\
-BASE_DOWNLOAD_FOLDER = C:\Temp\CapAppro\downloadFolder\
-ORACLE_CLIENT_HOME   = C:\app\product\12.2.0\client_1
-
-[local]
-SOURCE = drive          # drive = classeur du Drive (à jour) | local = copie locale
-FICHIER_ORDONNANCEUR = OrdonnanceurCentral (1).xlsx
-RESPECTER_COLONNE_EXECUTION = non
-```
-
-`SCRIPT_FOLDER` peut rester vide : le dossier du script est alors utilisé.
-
-### Ne pas modifier le fichier pour un test ponctuel
-
-Toute clé se surcharge par variable d'environnement, au format
-`CAPAPPRO_<SECTION>_<CLE>` :
-
-```powershell
-$env:CAPAPPRO_EXECUTION_TIMEOUT_PROJET_SECONDES = "600"
-$env:CAPAPPRO_CONFIG_ORACLE_FINANCE_DB_PASSWORD = "..."
-```
-
-Et pour pointer un `.ini` entièrement différent :
-
-```powershell
-$env:CAPAPPRO_CONFIG = "C:\Temp\config_test.ini"
-```
-
----
-
-## 4. Utilisation
+## B.2 Utilisation
 
 ```bash
-py CapAppro_LOCAL.py --list          # lister les IdExec disponibles
-py CapAppro_LOCAL.py 39 --dry-run    # afficher la commande SANS l'exécuter
+py CapAppro_LOCAL.py --list          # lister les IdExec
+py CapAppro_LOCAL.py 39 --dry-run    # afficher la commande, sans exécuter
 py CapAppro_LOCAL.py 39              # lancer
-py CapAppro_LOCAL.py 39,40           # lancer plusieurs lignes
+py CapAppro_LOCAL.py 39,40           # plusieurs lignes
 py CapAppro_LOCAL.py 39 --local      # forcer la copie locale du classeur
-py CapAppro_LOCAL.py 39 --drive      # forcer la lecture du Drive
 ```
 
-Codes retour : `0` succès, `1` échec d'exécution, `2` argument invalide.
+Le plan d'exécution est lu **sur le Drive par défaut**, avec repli automatique
+sur la copie locale si le Drive est injoignable.
 
-### Toujours commencer par `--dry-run`
+## B.3 ⚠️ Ce qu'une exécution modifie vraiment
 
-```
-16:49:34 [INFO] [DRY-RUN] PROJET [1/1] IdExec 39 - Extraction_Lionel
-16:49:34 [INFO] [DRY-RUN] py "...\CapAppro_GENERIQUE_EXECUTION.py"  --idExec "39"
-  --ProjectName "Extraction_Lionel" --DownloadDossier_drive_id "1L-5F_..."
-  --filenameLanceur "Config_Export_ctrl_Lionel.xlsx" ...
-```
+`CapAppro_LOCAL.py` lance **le vrai worker**. Même depuis ton poste :
 
-C'est le seul moyen de vérifier ce qui va réellement partir avant de toucher
-la base de production.
-
----
-
-## 5. ⚠️ Ce qu'une exécution locale modifie vraiment
-
-`CapAppro_LOCAL.py` lance **le vrai worker**. Une exécution, même depuis ton
-poste, produit tous les effets de bord de la production :
-
-- connexion à la base indiquée par `configBDD` — `config_oracle_finance`
-  **est la production** ;
-- écriture des fichiers de sortie **sur le Google Drive du projet**, en
-  écrasant les fichiers existants de même nom ;
+- connexion à la base de `configBDD` — `config_oracle_finance` **est la production** ;
+- écriture des fichiers **sur le Drive du projet**, en écrasant les homonymes ;
 - copie vers le partage DataViz si `Copiedataviz` est renseigné ;
-- **envoi de mails** à la `ListeDeDiffusion` de la ligne — donc à des
-  destinataires métier réels ;
-- ajout d'une ligne dans l'onglet `HistoExec` du classeur d'ordonnancement,
-  et upload du fichier de log sur le Drive.
+- **envoi de mails** à la `ListeDeDiffusion`, donc à des destinataires métier réels ;
+- ajout d'une ligne dans `HistoExec` et upload du log.
 
-### Tester sans rien casser
-
-1. `--dry-run` d'abord, systématiquement.
-2. Utiliser la ligne **`IdExec 40` (« TEST »)**, prévue pour ça.
-3. Pour viser la base de test, surcharger la config sans modifier le
-   classeur :
-   ```powershell
-   $env:CAPAPPRO_CONFIG_ORACLE_FINANCE_BASE_URL = "etiscandb03.eti.dalkia.net"
-   $env:CAPAPPRO_CONFIG_ORACLE_FINANCE_BASE_SERVICE_NAME = "ebs_PDBFINI2"
-   ```
-   Passer la ligne du classeur en `config_oracle_test` fonctionne aussi, mais
-   l'upload du log échouera : cette configuration n'a pas de ligne dans
-   l'onglet `data` (voir §7).
-4. Pour ne pas écrire sur le Drive du projet, changer temporairement
-   `UploadDossier_drive_id` sur une copie locale du classeur et lancer avec
-   `--local`.
+Pour tester sans risque : `--dry-run` d'abord, puis la ligne `IdExec 40`
+(« TEST »), ou une surcharge d'environnement vers la base de test.
 
 ---
 
-## 6. Lire la sortie
-
-Chaque ligne du fichier lanceur est encadrée par deux marqueurs horodatés,
-émis **en direct** — le marqueur de fin apparaît même si la ligne part en
-erreur :
+# Comment le classeur pilote l'exécution
 
 ```
-16:49:34 [INFO] >>> DEBUT  [1/2] EXPORT :: 01_ctrl_Lionel.sql
-    | Lancement requête :: [ 1 / 2 ] - Requête  01_ctrl_Lionel.sql
-    | Temps Exécution requete : [ 00:00:03 ]
-16:49:41 [INFO] <<< FIN    [1/2] EXPORT :: 01_ctrl_Lionel.sql | statut=OK | duree=00:00:07
-```
-
-Les lignes préfixées `    | ` viennent du worker et sont relayées au fil de
-l'eau. Si rien ne s'affiche pendant plusieurs minutes, le traitement est
-réellement bloqué — ce n'est plus un effet de bufferisation.
-
-Le worker écrit en parallèle un fichier `.log` dans
-`BASE_DOWNLOAD_FOLDER\<date>\<Projet>_<horodatage>.log`.
-
----
-
-## 7. Problèmes courants
-
-| Symptôme | Cause | Correctif |
-|---|---|---|
-| `Fichier de configuration introuvable` | `.ini` absent à côté du script | vérifier le dossier, ou définir `CAPAPPRO_CONFIG` |
-| `Lecture du Drive impossible (No module named 'gdrive')` | librairies maison absentes | normal sur un poste de dev : le repli local prend la main, ou utiliser `--local` |
-| `Aucune copie locale configurée` | `SOURCE=drive` en échec **et** `FICHIER_ORDONNANCEUR` vide | renseigner une copie locale du classeur |
-| `IdExec introuvable(s)` | mauvais identifiant | `--list` pour voir les valeurs valides |
-| `Colonnes absentes du fichier d'ordonnancement` | classeur renommé ou modifié | les intitulés sont un contrat métier, ne pas les corriger sans coordination |
-| `Section de base de données absente : [config_cid_celeris]` | `configBDD` du classeur sans section correspondante dans le `.ini` | ajouter la section, ou corriger la ligne du classeur |
-| `DPI-1047` / erreur `init_oracle_client` | client Oracle absent ou mauvais chemin | corriger `[paths] ORACLE_CLIENT_HOME` |
-| `Impossible de récupérer le drive de la configuration utilisée` en fin de run | la `configBDD` n'a pas de ligne dans l'onglet `data` — c'est le cas de `config_oracle_test` | sans effet sur l'extraction : seul l'upload du log échoue |
-| Le traitement dépasse le temps prévu et s'arrête | timeout de 4 h atteint | ajuster `[execution] TIMEOUT_PROJET_SECONDES` (`0` = illimité) |
-
----
-
-## 8. Comment le classeur pilote l'exécution
-
-```
-Classeur d'ordonnancement (Drive) — onglet Feuil1
+Classeur d'ordonnancement — onglet Feuil1
         │  une ligne = un projet, repérée par IdExec
         ▼
-CapAppro_LOCAL.py  ──►  9 arguments  ──►  CapAppro_GENERIQUE_EXECUTION.py
-                                                    │
-                                                    ▼
-                          Classeur lanceur du projet (filenameLanceur),
-                          sur le Drive DownloadDossier_drive_id
-                                                    │
-                          une ligne = une requête :
-                            Type = Script  →  sqlplus (procédure PL/SQL)
-                            Type = Export  →  SELECT → .csv / .xlsx
-                                                    │
-                                                    ▼
-                          Upload Drive + DataViz + mail + HistoExec
+   IdExec 1 -> ProjectName, filenameLanceur, config, Drive...
+        │
+        ▼
+Classeur lanceur du projet (filenameLanceur)
+        │  une ligne = une requête
+        │    Type = Script  ->  sqlplus (procédure PL/SQL)
+        │    Type = Export  ->  SELECT -> .csv / .xlsx
+        ▼
+   Fichiers de sortie
 ```
 
-Retenir : `IdExec` désigne un **projet**, pas une requête. Un projet exécute
-autant de requêtes que son classeur lanceur en contient de lignes marquées
-`Exécution = oui`.
+`IdExec` désigne un **projet**, pas une requête. Un projet exécute autant de
+requêtes que son classeur lanceur compte de lignes `Exécution = oui`.
 
 ---
 
-## 9. Limites connues
+# Limites connues
 
-Elles sont documentées en détail dans [PROMPT_CONTEXTE.md](PROMPT_CONTEXTE.md).
-Les plus utiles à connaître en local :
+Détaillées dans [PROMPT_CONTEXTE.md](PROMPT_CONTEXTE.md). Les plus utiles ici :
 
-- les mots de passe sont encore en clair dans le `.ini` (la surcharge par
-  variable d'environnement est disponible mais pas encore la norme) ;
-- l'écriture XLSX est lente sur les gros volumes : ~7 min pour 47 Mo, contre
-  13 s d'upload. Un export qui « ne rend pas la main » est souvent en train
+- les mots de passe sont encore en clair dans le `.ini` ;
+- côté Python, l'écriture XLSX est lente sur les gros volumes (~7 min pour
+  47 Mo) : un export qui « ne rend pas la main » est souvent en train
   d'écrire son fichier ;
 - `saveToExcel` trace ses erreurs sans les propager : un export peut être
-  compté `OK` alors que le fichier n'a pas été écrit ;
-- les `;` sont retirés de tout le SQL, y compris à l'intérieur des chaînes.
+  compté `OK` alors que le fichier n'a pas été écrit.
