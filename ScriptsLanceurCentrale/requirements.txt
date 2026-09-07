@@ -1,0 +1,59 @@
+# =============================================================================
+#   Lanceur Centralise CapAppro - dependances
+# =============================================================================
+#   Cible : Windows x64 + Python 3.7.9 (version installee sur la machine RPA,
+#   confirmee par les FutureWarning google-cloud presents dans les logs).
+#
+#   Les versions figees ci-dessous sont les dernieres compatibles 3.7.
+#   Ne pas les relever sans avoir d'abord migre l'interpreteur.
+#   Disponibilite verifiee sur PyPI pour cp37 / win_amd64.
+#
+#   Installation :
+#       py -m pip install -r requirements.txt
+#
+#   IMPORTANT - a faire avant toute reinstallation de l'environnement :
+#   ce fichier est une reference reconstruite depuis les imports du code, pas
+#   un releve de l'existant. Capturer d'abord ce qui tourne reellement en
+#   production, puis reconcilier :
+#       py -m pip freeze > requirements-prod.txt
+# =============================================================================
+
+# --- Manipulation de donnees -------------------------------------------------
+pandas==1.3.5                 # derniere version supportant 3.7 (requiert >=3.7.1)
+numpy==1.21.6                 # derniere version supportant 3.7
+
+# --- Acces base de donnees ---------------------------------------------------
+cx_Oracle==8.3.0              # necessite le client Oracle installe localement
+                              # (chemin dans [paths] ORACLE_CLIENT_HOME)
+SQLAlchemy==1.4.54            # NE PAS passer en 2.x : pd.read_sql y change de
+                              # contrat et n'accepte plus une chaine SQL brute
+
+# --- Lecture / ecriture Excel ------------------------------------------------
+openpyxl==3.0.10              # lecture des .xlsx (classeurs lanceurs)
+XlsxWriter==3.0.9             # moteur d'ecriture utilise par saveToExcel
+
+# --- Divers ------------------------------------------------------------------
+# fire n'est publie qu'en archive source (pas de wheel) jusqu'en 0.6 : son
+# installation declenche une compilation, sans consequence car le paquet est
+# en Python pur. Alternative disposant d'un wheel : fire==0.7.1 (>=3.7), mais
+# c'est un changement de version a valider avant mise en production.
+fire==0.5.0                   # analyse des arguments du worker
+python-dateutil==2.8.2        # parsing des dates d'expiration
+
+# --- Detection d'encodage ----------------------------------------------------
+# Sous Windows, python-magic seul ne suffit pas : la DLL libmagic lui manque.
+# python-magic-bin l'embarque (wheel win_amd64 disponible).
+# Sous Linux : remplacer par python-magic==0.4.27 + paquet systeme libmagic1.
+python-magic-bin==0.4.14
+
+# =============================================================================
+#   NON INSTALLABLES PAR PIP - librairies maison
+# =============================================================================
+#   gdrive, pylibrary (libraries) et gmail (Mail) sont fournies par l'equipe
+#   RPA et deployees dans le dossier indique par [paths] LIBRARY_PATH du
+#   fichier config_lanceur_central.ini (par defaut C:\RPA\python-libraries\).
+#
+#   Elles apportent elles-memes leurs dependances Google
+#   (google-api-python-client, google-auth, google-cloud-*) : ne pas les
+#   redeclarer ici, leurs versions sont pilotees par ce depot-la.
+# =============================================================================
