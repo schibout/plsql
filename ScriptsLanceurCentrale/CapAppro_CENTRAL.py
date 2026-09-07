@@ -2,160 +2,143 @@
 """
 Created on Tue Dec  5 12:08:13 2023
 @author: jguedes
-V1.2
+V2.0
+
+O R D O N N A N C E U R   C E N T R A L
+
+Lit le Google Sheet d'ordonnancement, puis lance un worker
+(CapAppro_GENERIQUE_EXECUTION.py) par projet a executer.
+
+Historique V2.0 :
+  - toutes les constantes sont sorties dans config_lanceur_central.ini
+  - la sortie du worker est relayee EN DIRECT (plus de bufferisation)
+  - marqueurs DEBUT / FIN horodates autour de chaque projet
+  - timeout par projet
+  - correction du double appel a communicate() qui perdait stderr
+  - decodage UTF-8 (les accents n'etaient plus lisibles)
+  - suppression du code mort situe apres sys.exit()
 """
-# =============================================================================
-# TODO mettre en place des vérifications sur les éléments avabt de lancer le script
-# TODO voir le script bat pour le dossier dans lequel il doit se trouver
-# TODO voir les exceptions si des drives / fichiers / requêtes n'existent pas.
-# TODO voir les espaces dans le passage des arguments. / a voir dans le script en amont
-#           qui va appeler celui-ci.
-# =============================================================================
 
-import sys
-import os
-import pandas as pd
-import subprocess
-import numpy as np
-from subprocess import PIPE, Popen
 import logging
+import os
+import sys
 
-try:
-    from gdrive import gdrive
-    from pylibrary import libraries
-    from gmail import Mail
-except Exception:
-    pass
+import numpy as np
+import pandas as pd
 
-libraryPath = "C:\\RPA\\python-libraries\\"
-if(libraryPath not in sys.path):
+from capappro_config import (Config, lancerCommande, log, logDebut,
+                             logFin, logSection)
+
+# =============================================================================
+#   CONFIGURATION
+# =============================================================================
+DOSSIER_SCRIPT = os.path.dirname(os.path.abspath(__file__))
+config = Config(DOSSIER_SCRIPT)
+
+# Librairies maison (gdrive / pylibrary / gmail)
+libraryPath = config.getDossier("paths", "LIBRARY_PATH")
+if libraryPath and libraryPath not in sys.path:
     sys.path.append(libraryPath)
-    from pylibrary import libraries
-    from gmail import Mail
-    from gdrive import gdrive
+from pylibrary import libraries
+from gmail import Mail
+from gdrive import gdrive
 
+SCRIPT_FOLDER = config.dossierScripts()
+WORKER_SCRIPT = config.get("paths", "WORKER_SCRIPT")
+
+DRIVE_ROOT_ID = config.get("ordonnanceur", "DRIVE_ROOT_ID")
+SPREADSHEET_ID = config.get("ordonnanceur", "SPREADSHEET_ID")
+ONGLET_LANCEUR = config.get("ordonnanceur", "ONGLET_LANCEUR")
+GDRIVE_TOKEN = config.get("ordonnanceur", "GDRIVE_TOKEN")
+
+MSG_TO = config.get("mail", "MSG_TO_CENTRAL")
+NOM_ROBOT = config.get("mail", "NOM_ROBOT_CENTRAL")
+
+TIMEOUT_PROJET = config.getInt("execution", "TIMEOUT_PROJET_SECONDES", 0)
+ENVIRONNEMENT = config.get("env", "environnement", "run")
 
 utils = libraries()
 mail = Mail()
-msgTo = "dsin-rpa-robot1@dalkia.fr"
 
+errorMessage = ""
+hasFailure = False
+
+
+# =============================================================================
+#   OUTILS
+# =============================================================================
 def is_NaN(txt):
     try:
-        res = np.isnan(txt)
+        return bool(np.isnan(txt))
     except Exception:
-        res = False
-
-    # print(f"check Nan for {txt} is {res}")
-    return res
-
-def saveToExcel(df, filePath, sheetName, setIndex=False):
-    writer = pd.ExcelWriter(filePath, engine="xlsxwriter",
-                            date_format="DD/MM/YYYY", datetime_format="DD/MM/YYYY")
-    df.to_excel(writer, sheet_name=sheetName, index=setIndex)
-    # worksheet = writer.sheets[sheetName]
-    writer.close()
+        return False
 
 
-def launchCmd(cmd, args=None, logInfo=None):
-    outputList = []
-    try:
-        if args is None:
-            commande = "py \"" + cmd + "\""
-        else:
-            commande = "py \"" + cmd + "\" " + args
+def launchCmd(cmd, args=None, logInfo=None, timeoutSeconds=None):
+    """Lance le worker et relaie sa sortie ligne par ligne, en direct.
 
-        output = ""
-        print("Lancement de la commande \n", commande)
-        if logInfo is not None:
-            print(utils.cptStart(logInfo))
-            logging.info(utils.cptStart(logInfo))
+    La commande construite est strictement identique a celle de la version
+    precedente (meme programme, memes arguments, meme quoting) : seule la
+    facon de lire la sortie change.
+    """
+    if args is None:
+        commande = "py \"" + cmd + "\""
+    else:
+        commande = "py \"" + cmd + "\" " + args
 
-        with Popen(commande, stdout=PIPE, stderr=PIPE, shell=True) as process:
-            # output = process.communicate()[0].decode("utf-8")
-            output = process.communicate()[0].decode("latin-1")
-            outputErr = process.communicate()[1].decode("latin-1")
-            
-            outputList.append(process.returncode)
-            outputList.append(output)
-            outputList.append(outputErr)
-            print(
-                f"output:{output}\n outputErr:{outputErr}\n process.returncode:", process.returncode)
-            if process.returncode > 0:
-                print("Erreur détectée")
-                # sendErrorMail(outputErr)
-                # files = utils.getFileList(folderErros)
-                # files = list(map(lambda file: folderErros + file, files))
-                # # mail.ErreurRobot(nomRobot,msgError="Etape::<b>" + logInfo + "</b><br><br>" + outputErr,attachments=files)
-                # #print(utils.tempDirs)
-                # utils.cleanScreenShotFolder()
-            return outputList
-    except Exception as Err:
-        print(f"Erreur lancement de commande \n{cmd}", Err)
-        return None
+    log("Lancement de la commande")
+    log(commande)
+    if logInfo is not None:
+        log(utils.cptStart(logInfo))
+        logging.info(utils.cptStart(logInfo))
 
-# ==========================================================================================================================================================
-oneRowExecution = None
-errorMessage = ""
-nomRobot = "[Lanceur Requêtes]"
+    return lancerCommande(commande, timeoutSeconds=timeoutSeconds)
 
-# scriptFolder = r"C:\Users\jguedes\Documents\Dev\02-CapAppro\CapAppro\\"
-scriptFolder = r"C:\RPA\CapAppro\04-TestCentral\Scripts\\"
-
-file_GENERIQUE_EXECUTION = scriptFolder + "CapAppro_GENERIQUE_EXECUTION.py"
 
 # =============================================================================
-# Récupération du fichier excel pour le lancement des scripts
+#   1 - LECTURE DU PLAN D'EXECUTION
 # =============================================================================
-# fileLanceurCentral = r"C:\Users\jguedes\Documents\Dev\02-CapAppro\CapAppro\03-CENTRAL\OrdonnanceurCentral.xlsx"
-# dfRequestLists = pd.read_excel(fileLanceurCentral)
-#        ---   OU   --- 
-Dossier_drive_id = "1bkXK77bOQb8TXG69y_n_Qw9zM-Wru1BO"
-spreadsheet_id = "1QNJUUM8lJcHkVOQTNguInGvmI5xZX69EwUqxYL0al1Q"
-range_name = "Feuil1"
-gdriveLanceur = gdrive(Dossier_drive_id, token="générique")
-dfRequestLists = gdriveLanceur.exportGsheetToDataFrame(spreadsheet_id, range_name)
-dfRequestLists['IdExec'] = dfRequestLists['IdExec'].astype('int')
+logSection("ORDONNANCEUR CENTRAL - environnement '%s'" % ENVIRONNEMENT)
 
-# print(dfRequestLists)    
-# filePath = r"C:\Users\jguedes\Documents\Dev\02-CapAppro\CapAppro\Temp\\"
-# saveToExcel(dfRequestLists, filePath + "dfRequestLists.xlsx", "sheetName")
+gdriveLanceur = gdrive(DRIVE_ROOT_ID, token=GDRIVE_TOKEN)
+dfRequestLists = gdriveLanceur.exportGsheetToDataFrame(
+    SPREADSHEET_ID, ONGLET_LANCEUR)
+dfRequestLists["IdExec"] = dfRequestLists["IdExec"].astype("int")
+log("Plan d'exécution chargé : %d ligne(s)" % dfRequestLists.shape[0])
 
-try:
-    if os.environ['RD_OPTION_IDEXEC']:
-        oneRowExecution = os.environ['RD_OPTION_IDEXEC']
-except Exception:
-    print("Pas d'exécution par lancement de job")
-    pass
+# Filtre eventuel pose par Rundeck (option IDEXEC)
+oneRowExecution = os.environ.get("RD_OPTION_IDEXEC") or None
+if not oneRowExecution:
+    log("Pas de filtre d'exécution : toutes les lignes actives seront traitées.")
 
-print("oneRowExecution", oneRowExecution, "type = ", type(oneRowExecution))
+dfRequestsFolders = dfRequestLists.loc[
+    dfRequestLists["Exécution"].str.lower() == "oui"]
 
 if oneRowExecution:
     try:
-        myExecutions = oneRowExecution.split(",")
-        myExecutionsList = [s.strip() for s in myExecutions]
-        myExecutionsList = [int(i) for i in myExecutionsList]
-        print(myExecutionsList)
+        myExecutionsList = [int(valeur.strip())
+                            for valeur in oneRowExecution.split(",")
+                            if valeur.strip()]
     except Exception:
-        print("Erreur lors de la récupération des id d'exécutions")
-        raise Exception("Arrêt du script")
+        log("Identifiants d'exécution illisibles : '%s'" % oneRowExecution,
+            niveau="ERROR")
+        raise Exception("Arrêt du script : option IDEXEC invalide")
+    log("Filtre d'exécution demandé : %s" % myExecutionsList)
+    dfRequestsFolders = dfRequestsFolders[
+        dfRequestsFolders["IdExec"].isin(myExecutionsList)]
 
-if oneRowExecution:
-    dfRequestsFolders = dfRequestLists.loc[(
-        dfRequestLists["Exécution"].str.lower() == "oui")]
-    mask = dfRequestsFolders['IdExec'].isin(myExecutionsList)
-    dfRequestsFolders = dfRequestsFolders[mask]
-else:
-    dfRequestsFolders = dfRequestLists.loc[(
-        dfRequestLists["Exécution"].str.lower() == "oui")]
+log("Projets retenus : %d" % dfRequestsFolders.shape[0])
 
-dfRequestsFolders.shape
+# =============================================================================
+#   2 - CONSTRUCTION DES COMMANDES
+# =============================================================================
 cmdListToExecute = []
-
 numRow = 0
+
 for index, row in dfRequestsFolders.iterrows():
     numRow += 1
-    print(f"CONTROLE {numRow}")
-    cmdLineToExecute = {}
+
+    log("CONTROLE %d" % numRow)
 
     # OBLIGATOIRES
     idExec = row['IdExec']
@@ -168,21 +151,28 @@ for index, row in dfRequestsFolders.iterrows():
     # OPTIONNELS
     UploadDossier_drive_id = row['UploadDossier_drive_id']
     copiedataviz = row['Copiedataviz']
-    print(f"copiedataviz :: {copiedataviz}")
-    if copiedataviz != "":
+    log("copiedataviz :: %s" % copiedataviz)
+    # Le test 'not is_NaN' est le seul ajout : sans lui une cellule vide lue
+    # depuis un .xlsx (valeur NaN, un flottant) fait echouer copiedataviz[-1]
+    # avec une TypeError non rattrapee qui interrompt tout l'ordonnanceur.
+    # Comportement inchange pour les valeurs venant du Google Sheet.
+    if copiedataviz != "" and not is_NaN(copiedataviz):
         if copiedataviz[-1] != "\\":
             copiedataviz = rf"{copiedataviz}\\"
 
     ListeDeDiffusion = row['ListeDeDiffusion']
     DateExpirationRequetes = row['Date_expiration_requête']
 
-    # =============================================================================
+    # =========================================================================
     #  contrôle sur les valeurs nan
-    # =============================================================================
-    if is_NaN(idExec) or is_NaN(projectName) or is_NaN(execution) or is_NaN(DownloadDossier_drive_id) or is_NaN(filenameLanceur) or is_NaN(config):
-        print(">>> La ligne ne peut pas être exécutée.Paramètres obligatoires manquants")
+    # =========================================================================
+    if is_NaN(idExec) or is_NaN(projectName) or is_NaN(execution) \
+            or is_NaN(DownloadDossier_drive_id) or is_NaN(filenameLanceur) \
+            or is_NaN(config):
+        log(">>> La ligne ne peut pas être exécutée. "
+            "Paramètres obligatoires manquants", niveau="ERROR")
         errorMessage += f"""
-                    pour la ligne suivante, des données obligatoires sont manquantes : 
+                    pour la ligne suivante, des données obligatoires sont manquantes :
                     "idExec : " {idExec}
                     "projectName : " {projectName}
                     "execution : " {execution}
@@ -191,112 +181,102 @@ for index, row in dfRequestsFolders.iterrows():
                     """
         continue
     elif is_NaN(UploadDossier_drive_id) and is_NaN(copiedataviz):
-        print(">>> La ligne ne peut pas être exécutée. Au moins un des paramètres optionnels doit être présent")
+        log(">>> La ligne ne peut pas être exécutée. Au moins un des "
+            "paramètres optionnels doit être présent", niveau="ERROR")
         errorMessage += f"""
-                    pour la ligne suivante, des données optionnelles sont manquantes : 
+                    pour la ligne suivante, des données optionnelles sont manquantes :
                     "copiedataviz : " {copiedataviz}
                     "UploadDossier_drive_id : " {UploadDossier_drive_id}
                     """
         continue
     else:
-        print(">>> On peut lancer la commande")
-    # print(f'py "{file_GENERIQUE_EXECUTION}" --ProjectName "{projectName}" --DownloadDossier_drive_id "{DownloadDossier_drive_id}" --filenameLanceur "{filenameLanceur}" --UploadDossier_drive_id "{UploadDossier_drive_id}" --ListeDeDiffusion "{ListeDeDiffusion}" --requestExpirationDate "{DateExpirationRequetes}" --copiedataviz "{copiedataviz}" --configBDD "{config}"')
-    cmdLine = f'"{file_GENERIQUE_EXECUTION}"'
+        log(">>> On peut lancer la commande")
+
+    # Commande strictement identique a la version precedente : memes
+    # arguments, memes valeurs brutes, meme quoting.
+    cmdLine = f'"{WORKER_SCRIPT}"'
     args = f' --idExec "{idExec}" --ProjectName "{projectName}" --DownloadDossier_drive_id "{DownloadDossier_drive_id}" --filenameLanceur "{filenameLanceur}" --UploadDossier_drive_id "{UploadDossier_drive_id}" --ListeDeDiffusion "{ListeDeDiffusion}" --requestExpirationDate "{DateExpirationRequetes}" --configBDD "{config}" --copiedataviz "{copiedataviz}"'
 
-    cmdLineToExecute['IdExec'] = row['IdExec']
-    cmdLineToExecute['cmdLine'] = cmdLine
-    cmdLineToExecute['args'] = args
+    cmdListToExecute.append({
+        "IdExec": idExec,
+        "ProjectName": projectName,
+        "cmdLine": cmdLine,
+        "args": args,
+    })
 
-    cmdListToExecute.append(cmdLineToExecute)
-    # print("="*50, "\n")
-    # print(cmdLine)
-    # print("="*50, "\n")
+# =============================================================================
+#   3 - EXECUTION
+# =============================================================================
+log("%d projet(s) à lancer." % len(cmdListToExecute))
+if TIMEOUT_PROJET:
+    log("Timeout par projet : %d s" % TIMEOUT_PROJET)
+else:
+    log("Aucun timeout configuré (execution.TIMEOUT_PROJET_SECONDES = 0)",
+        niveau="WARN")
 
+numProjet = 0
+for commande in cmdListToExecute:
+    numProjet += 1
+    libelle = "PROJET [%d/%d] IdExec %s - %s" % (
+        numProjet, len(cmdListToExecute),
+        commande["IdExec"], commande["ProjectName"])
 
-hasFailure = False
-
-for cmdLine in cmdListToExecute:
-    # print("="*100, "\nlancement", cmdLine['IdExec'],
-    #       "\n", cmdLine['cmdLine'], "\n", "="*100)
-    pass
+    debut = logDebut(libelle)
+    statut = "OK"
     try:
-        try:
-            outputExec = launchCmd(cmdLine['cmdLine'], cmdLine['args'])
-            if outputExec is None:
-                print("Erreur dans le traitement central de la ligne de commande")
-                errorMessage += "Erreur dans le traitement central de la ligne de commande"
-                hasFailure = True
-                print("outputExec CENTRAL  ==>>>  {outputExec}")
-            elif outputExec[0]==0:
-                print("Le traitement de la commande s'est bien déroulée.")
-            else:
-                print("Le traitement de la commande a rencontrée une erreur.", outputExec[0])
-                print("Sortie de la console : ", outputExec[1])
-                print("Sortie de la console en erreur : ", outputExec[2])
-                errorMessage += outputExec[2]
-        except Exception as Err:
+        outputExec = launchCmd(commande["cmdLine"],
+                               commande["args"],
+                               timeoutSeconds=TIMEOUT_PROJET or None)
+
+        if outputExec is None:
+            statut = "KO"
             hasFailure = True
-            print("Erreur exécution de la commande suivante pour l'id:",
-                  cmdLine['IdExec'], "\nErreur :: \n", "-"*60+"\n", str(Err), "\n", "-"*60, "\n")
-            errorMessage += f"""
-                        Erreur exécution de la ligne suivante : 
-                        "idExec : " {idExec}
-                        "projectName : " {projectName}
-                        
-                        """
-            errorMessage += str(Err)
+            log("Le lancement de la commande a échoué.", niveau="ERROR")
+            errorMessage += (
+                "<br><b>Error</b> : le lancement du projet <b>%s</b> "
+                "(IdExec %s) a échoué.<br>"
+                % (commande["ProjectName"], commande["IdExec"]))
+        elif outputExec[0] == 0:
+            log("Traitement terminé sans erreur.")
+        else:
+            statut = "KO"
+            hasFailure = True
+            log("Le traitement s'est terminé en erreur (code %s)"
+                % outputExec[0], niveau="ERROR")
+            if outputExec[2]:
+                log("Sortie d'erreur :\n%s" % outputExec[2], niveau="ERROR")
+            errorMessage += (
+                "<br><b>Error</b> : projet <b>%s</b> (IdExec %s), "
+                "code retour %s.<br><pre>%s</pre><br>"
+                % (commande["ProjectName"], commande["IdExec"],
+                   outputExec[0], outputExec[2] or "(pas de détail)"))
+    except Exception as Err:
+        statut = "KO"
+        hasFailure = True
+        log("Exception pendant l'exécution : %s" % Err, niveau="ERROR")
+        errorMessage += (
+            "<br><b>Error</b> : exception sur le projet <b>%s</b> "
+            "(IdExec %s)<br>%s<br>"
+            % (commande["ProjectName"], commande["IdExec"], Err))
+    finally:
+        logFin(libelle, debut, statut)
 
-            raise Exception("Erreur exécution de la commande suivante " +
-                            str(cmdLine['IdExec']) + "\nErreur :: \n" + str(Err))
-    except Exception:
-        continue
+# =============================================================================
+#   4 - RESTITUTION
+# =============================================================================
+logSection("FIN DE L'ORDONNANCEUR")
 
-
-if errorMessage != "":
-    print("envoie d'un mail avec le message contenu dans la variable errorMessage\n>", errorMessage,"<")
-    mail.ErreurRobot(nomRobot=nomRobot,subjectMail=f"{nomRobot} - Incident(s) rencontré(s)",msgTo=msgTo,msgError=errorMessage)
+if errorMessage:
+    log("Envoi du mail d'incident à %s" % MSG_TO, niveau="ERROR")
+    mail.ErreurRobot(nomRobot=NOM_ROBOT,
+                     subjectMail="%s - Incident(s) rencontré(s)" % NOM_ROBOT,
+                     msgTo=MSG_TO,
+                     msgError=errorMessage)
     hasFailure = True
-    
+
 if hasFailure:
-    raise Exception()
+    # Code retour non nul : Rundeck doit voir le job en echec.
+    raise Exception("Des erreurs ont été rencontrées, voir le détail ci-dessus.")
 
-sys.exit()
-print("lancement du script python")
-script2 = r"C:\Temp\lancementScript\script2.py"
-script1 = r"C:\Temp\lancementScript\script2.py"
-
-
-def execute_python_file(file_path, args):
-    try:
-        os.system(f'python {file_path} {args}')
-    except FileNotFoundError:
-        print(f"Error: The file '{file_path}' does not exist.")
-
-
-args = "--txt=DAVID"
-
-print("="*40)
-print("Exécution du script 2")
-print("="*40)
-execute_python_file(script2, args)
-print("="*40)
-print("Exécution du script 1")
-print("="*40)
-execute_python_file(script1, args)
-
-# =============================================================================
-# Permet de mettre en place un timeout sur le processus
-# =============================================================================
-try:
-    yourCommand = f'python {script1} {args}'
-    timeoutSeconds = 20
-    text = subprocess.check_output(
-        yourCommand, shell=True, timeout=timeoutSeconds)
-    print(text.decode('utf-8'))
-except Exception as Err:
-    print("une exeption sur le script a eu lieu\n", Err)
-
-yourCommand = f'python {script2} {args}'
-text = subprocess.check_output(yourCommand, shell=True, timeout=timeoutSeconds)
-print(text.decode('utf-8'))
+log("Toutes les exécutions se sont terminées correctement.")
+sys.exit(0)

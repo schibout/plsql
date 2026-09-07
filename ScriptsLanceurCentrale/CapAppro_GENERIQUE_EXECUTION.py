@@ -28,21 +28,23 @@ from openpyxl.utils import get_column_letter
 from pathlib import Path
 import magic
 from shutil import copy
-    
-try:
-    from gdrive import gdrive
-    from pylibrary import libraries
-    from gmail import Mail
-except Exception:
-    pass
 
-libraryPath = "C:\\RPA\\python-libraries\\"
-if(libraryPath not in sys.path):
+from capappro_config import Config, log, logDebut, logFin, logSection, masquer
+
+# =============================================================================
+# Chargement de la configuration (constantes, chemins, identifiants)
+# =============================================================================
+DOSSIER_SCRIPT = os.path.dirname(os.path.abspath(__file__))
+config = Config(DOSSIER_SCRIPT)
+
+# Librairies maison (gdrive / pylibrary / gmail)
+libraryPath = config.getDossier("paths", "LIBRARY_PATH")
+if libraryPath and libraryPath not in sys.path:
     sys.path.append(libraryPath)
-    from pylibrary import libraries
-    from gmail import Mail
-    from gdrive import gdrive
-    
+from pylibrary import libraries
+from gmail import Mail
+from gdrive import gdrive
+
 # =============================================================================
 # Récupération des variables passées en paramètres
 # =============================================================================
@@ -51,15 +53,19 @@ args = {}
 def saveToExcel(df, filePath, sheetName, setIndex=False):
     nbRows = df.shape[0]
     nbCols = df.shape[1]
-    print("Dimensions Enregistrement du fichier '{filePath}'")
-    print("nbRows={nbRows}  | nbCols= {nbCols} ")
+    log("Enregistrement du fichier '%s' - %d ligne(s) x %d colonne(s)"
+        % (filePath, nbRows, nbCols))
     try:
         writer = pd.ExcelWriter(filePath, engine="xlsxwriter",
                                 date_format="DD/MM/YYYY", datetime_format="DD/MM/YYYY")
         df.to_excel(writer, sheet_name=sheetName, index=setIndex)
         writer.close()
     except Exception as Err:
-        print("[ERROR-SAVETOEXCEL]-Enregistrement du fichier {filePath}\n" + str(Err))
+        # Comportement d'origine conserve : l'erreur est tracee mais pas
+        # propagee. Consequence connue : l'appelant marque quand meme
+        # statut_EnregistrementLocal = "OK". A revoir separement.
+        log("[ERROR-SAVETOEXCEL] Enregistrement du fichier %s : %s"
+            % (filePath, Err), niveau="ERROR")
         pass
 
 def saveToCsv(df, filePath):
@@ -167,11 +173,11 @@ configBDD = args["configBDD"]
 
 # Attribution des mails pour la réception des résultats ou des incidents.
 if ListeDeDiffusion is None:
-    MSG_TO_PROJET = "dsin-rpa-run@dalkia.fr"
+    MSG_TO_PROJET = config.get("mail", "MSG_TO_DEFAUT")
     MSG_TO_CC_PROJET = None
 else:
     MSG_TO_PROJET = ListeDeDiffusion
-    MSG_TO_CC_PROJET = "dsin-rpa-run@dalkia.fr"
+    MSG_TO_CC_PROJET = config.get("mail", "MSG_TO_CC")
 
 print("-"*70+'\n', f"EXECUTION GENERIQUE REQUETES POUR {ProjectName}\n", "-"*70+'\n')
 print("en dehors du main")
@@ -280,8 +286,8 @@ def lancementScriptProcedure(filepath, DB_USER, DB_PASSWORD):
         # =============================================================================
        #   Vérification de la présence d'erreur suite à l'éxécution de la procédure.
        # =============================================================================
-        msgFR = "Procédure PL/SQL terminée avec succès"
-        msgEN = "PL/SQL procedure successfully completed"
+        msgFR = MSG_PROCEDURE_OK_FR
+        msgEN = MSG_PROCEDURE_OK_EN
         scriptOK = False
         encoding= getFileEncoding(filePathbatFileTxt)
         with open(filePathbatFileTxt, 'r',encoding=encoding) as fp:
@@ -301,14 +307,14 @@ def lancementScriptProcedure(filepath, DB_USER, DB_PASSWORD):
             fileContent = getFileContent(filePathbatFileTxt)
             print("################         Erreur dans la Procédure  " + file_name + "      ################\n",fileContent)
             errorMessage += "<br><b>Error</b> : Exécution Procédure <b>" + file_name + "</b> : <br>" + fileContent + "<br>"
-            logging.ERROR("Error exécution Procédure " + file_name + "\n" + fileContent)
+            logging.error("Error exécution Procédure " + file_name + "\n" + fileContent)
         
         logging.info("temps ecoule exécution Batch '" + file_name + "' " + getElapsedTime(start_time, time.time()))
         print("temps ecoule exécution Batch '",file_name,"' ",
               getElapsedTime(start_time, time.time()))
     except Exception as Err:
         errorMessage += "<br><b>Error</b> : Exécution Procédure <b>" + file_name + "</b><br>"
-        logging.ERROR("Error exécution Procédure " + file_name + "\n" + str(Err))
+        logging.error("Error exécution Procédure " + file_name + "\n" + str(Err))
         pass
 
 def append_horodatage(filename,formatHorodatage):
@@ -335,7 +341,7 @@ def detect(
 
 def getFileEncoding(filePath):
     src_path = filePath
-    destination_path = r'C:\Temp\temp.txt'
+    destination_path = os.path.join(TEMP_FOLDER, 'capappro_encoding.tmp')
     copy(src_path, destination_path)
     print('File copied and renamed successfully!')
     encodedFile = detect(destination_path)
@@ -349,16 +355,37 @@ def getFileEncoding(filePath):
     # =============================================================================
 global errorMessage
 errorMessage = ""
-nomRobot = f"[Lanceur Central][{ProjectName}]"
 
-sqlplusPath = "cd ""C:\\app\\product\\12.2.0\\client_1"""
-sqlplusFolderPath = "C:\\app\\product\\12.2.0\\client_1\\"
+# =============================================================================
+#   CONFIGURATION - toutes les constantes viennent de
+#   config_lanceur_central.ini (surchargeables par CAPAPPRO_<SECTION>_<CLE>)
+# =============================================================================
+nomRobot = "%s[%s]" % (config.get("mail", "NOM_ROBOT_WORKER"), ProjectName)
+
+ORACLE_CLIENT_HOME = config.get("paths", "ORACLE_CLIENT_HOME")
+sqlplusPath = 'cd "%s"' % ORACLE_CLIENT_HOME
+sqlplusFolderPath = os.path.join(ORACLE_CLIENT_HOME, "")
+
+TEMP_FOLDER = config.getDossier("paths", "TEMP_FOLDER", "C:\\Temp\\")
+DEBUG_FOLDER = config.getDossier("paths", "DEBUG_FOLDER", "")
+
+DRIVE_ROOT_ID = config.get("ordonnanceur", "DRIVE_ROOT_ID")
+SPREADSHEET_ID = config.get("ordonnanceur", "SPREADSHEET_ID")
+ONGLET_HISTO = config.get("ordonnanceur", "ONGLET_HISTO")
+ONGLET_DATA = config.get("ordonnanceur", "ONGLET_DATA")
+ONGLET_LANCEUR = config.get("ordonnanceur", "ONGLET_LANCEUR")
+COL_INDEX_LOG = config.get("ordonnanceur", "COL_INDEX_LOG", "5")
+GDRIVE_TOKEN = config.get("ordonnanceur", "GDRIVE_TOKEN")
+
+NB_TENTATIVES_UPLOAD = config.getInt("execution", "NB_TENTATIVES_UPLOAD", 3)
+ARRAYSIZE = config.getInt("execution", "ARRAYSIZE", 1000)
+COLONNES_LANCEUR = config.getListe("execution", "COLONNES_LANCEUR")
+MSG_PROCEDURE_OK_FR = config.get("execution", "MSG_PROCEDURE_OK_FR")
+MSG_PROCEDURE_OK_EN = config.get("execution", "MSG_PROCEDURE_OK_EN")
 
 dateEN = datetime.now().strftime("%Y-%m-%d")
 dateENTime = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-baseFolder = "C:\\RPA\\CapAppro\\04-TestCentral\\downloadFolder\\" + dateEN + "\\"
-
-ONGLET_HISTO = "HistoExec"
+baseFolder = config.getDossier("paths", "BASE_DOWNLOAD_FOLDER") + dateEN + "\\"
 
 mail = Mail()
 mail.demarrageRobot(nomRobot)
@@ -409,11 +436,7 @@ try:
     #     Lecture du fichier de configuration
     # =============================================================================
     try:
-        iniFile = r"C:\RPA\CapAppro\04-TestCentral\Scripts\config_lanceur_central.ini"
-        cfg = ConfigParser(interpolation=ExtendedInterpolation())
-        cfg.read(iniFile, encoding="utf-8")
-        
-        cfg_PROJET = cfg[configBDD]
+        cfg_PROJET = config.sectionBDD(configBDD)
         DB_USER = cfg_PROJET["DB_USER"]
         DB_PASSWORD = cfg_PROJET["DB_PASSWORD"]
 
@@ -431,12 +454,14 @@ try:
     # =============================================================================
     if TYPE_BDD == "ORACLE":
         try:
-            print("connexion à la base de données\nDB_USER=" +
-                  DB_USER+" \nDB_PASSWORD = " + DB_PASSWORD)
-            cx_Oracle.init_oracle_client(lib_dir=sqlplusFolderPath + "\\bin")
+            log("Connexion Oracle : %s/%s@%s service=%s"
+                % (DB_USER, masquer(DB_PASSWORD), BASE_URL, BASE_SERVICE_NAME))
+            cx_Oracle.init_oracle_client(
+                lib_dir=os.path.join(sqlplusFolderPath, "bin"))
             chaineConnexion = "oracle+cx_oracle://" + DB_USER + ":" + \
                 DB_PASSWORD + "@" + BASE_URL + "/?service_name=" + BASE_SERVICE_NAME
-            engine = sqlalchemy.create_engine(chaineConnexion, arraysize=1000)
+            engine = sqlalchemy.create_engine(chaineConnexion,
+                                              arraysize=ARRAYSIZE)
         except Exception as Err:
             errorMessage += "<br>Error Configuration </b> : <br>Erreur dans la préparation de la configuration du script de lancement.<br>" + \
                 str(Err) + "<br>"
@@ -450,8 +475,8 @@ try:
    # TODO mettre en place le cas ou on devra effectuer des requêtes dans le cas de base de données MSSL SERVER
     if TYPE_BDD == "SQLSERVER":
         try:
-            print("connexion à la base de données\nDB_USER=" +
-                  DB_USER+" \nDB_PASSWORD = " + DB_PASSWORD)
+            log("Connexion SQL Server : %s/%s@%s base=%s"
+                % (DB_USER, masquer(DB_PASSWORD), BASE_URL, BASE_SERVICE_NAME))
             chaineConnexion = "mssql+pyodbc://" + DB_USER + ":" + \
                 DB_PASSWORD + "@" + BASE_URL + "/" + BASE_SERVICE_NAME + "?driver=SQL+Server"
             engine = sqlalchemy.create_engine(chaineConnexion)
@@ -470,10 +495,10 @@ try:
 
         if UploadDossier_drive_id:
             gdriveUpload = gdrive(
-                UploadDossier_drive_id, token="générique")
+                UploadDossier_drive_id, token=GDRIVE_TOKEN)
             idFolderUpload = gdriveUpload.getRootFolderId()
 
-        gdriveDownload = gdrive(DownloadDossier_drive_id, token="générique") 
+        gdriveDownload = gdrive(DownloadDossier_drive_id, token=GDRIVE_TOKEN)
 
         # =============================================================================
         # 1 - TELECHARGEMENT DU FICHIER EXCEL DE LANCEMENT DES REQUETES  LOCAL
@@ -503,8 +528,7 @@ try:
             dflistMyElements = pd.DataFrame(listMyElements)
             df_driveFiles = dflistMyElements[["id", "name"]]
 
-            Listcolumns = ['Nom rêquete', 'Type rêquete',
-                           'Exécution', 'Nom fichier sortie','formatHorodatage']
+            Listcolumns = COLONNES_LANCEUR
             dfRequestLists = pd.read_excel(folderRequest + filenameLanceur, usecols=Listcolumns)
             dfRequestLists = dfRequestLists.loc[dfRequestLists["Exécution"].str.lower() == "oui"]
             # On regarde si tous les fichiers sont présents dans le drive pour être téléchargé.
@@ -615,252 +639,297 @@ try:
         dfRequestListsExec = dfTelechargementFiles.copy()
         dfRequestListsExec.fillna("", inplace=True)
         dfRequestListsExec = dfRequestListsExec.sort_index(ascending=True)
-        print("Lancement de l'exécution")
+
+        nbLignes = dfRequestListsExec.shape[0]
+        numLigne = 0
+        logSection("%s - EXECUTION DE %d LIGNE(S)" % (ProjectName, nbLignes))
+
         for i in dfRequestListsExec.index:
             nom_Element = ""
             statut_ExcRequest = ""
             statut_EnregistrementLocal = "-"
             statut_EnregistrementDistant = "-"
 
-            # EXÉCUTION DES SCRIPTS DE PROCÉDURE.
-            if (str(dfRequestListsExec["Type rêquete"][i]).lower() == "script"):
-                try:
-                    print("\n====================================\nLancement du script :: ",
-                          dfRequestListsExec["Nom rêquete"][i], "\n====================================")
-                    logging.info("\n====================================\nLancement du script :: " +
-                                 dfRequestListsExec["Nom rêquete"][i] + "\n====================================")
-                    # =============================================================================
-                    # 5 - LANCEMENT DES SCRIPTS DE PREPARATION
-                    # =============================================================================
-                    tempsExecutionScriptsStart = time.time()
+            # -----------------------------------------------------------------
+            # Marqueur de debut de ligne : permet de savoir a tout instant ou en
+            # est le traitement, y compris pendant une requete tres longue.
+            # Le marqueur de fin est pose dans le 'finally' plus bas, il est
+            # donc emis meme si la ligne part en erreur ou fait un 'continue'.
+            # -----------------------------------------------------------------
+            numLigne += 1
+            typeLigne = str(dfRequestListsExec["Type rêquete"][i]).lower()
+            libelleLigne = "[%d/%d] %s :: %s" % (
+                numLigne, nbLignes, typeLigne.upper(),
+                dfRequestListsExec["Nom rêquete"][i])
+            debutLigne = logDebut(libelleLigne)
+            statutLigne = "OK"
+
+            try:
+
+                # EXÉCUTION DES SCRIPTS DE PROCÉDURE.
+                if (str(dfRequestListsExec["Type rêquete"][i]).lower() == "script"):
+                    try:
+                        print("\n====================================\nLancement du script :: ",
+                              dfRequestListsExec["Nom rêquete"][i], "\n====================================")
+                        logging.info("\n====================================\nLancement du script :: " +
+                                     dfRequestListsExec["Nom rêquete"][i] + "\n====================================")
+                        # =============================================================================
+                        # 5 - LANCEMENT DES SCRIPTS DE PREPARATION
+                        # =============================================================================
+                        tempsExecutionScriptsStart = time.time()
+                        nom_Element = dfRequestListsExec["Nom rêquete"][i]
+                        lancementScriptProcedure(
+                            _DownloadFolder + dfRequestListsExec["Nom rêquete"][i], DB_USER, DB_PASSWORD)
+                        tempsExecutionScriptsEnd = time.time()
+                        statut_ExcRequest = "OK"
+                        listExecution.append(
+                            (nom_Element, statut_ExcRequest, statut_EnregistrementLocal, statut_EnregistrementDistant))
+                        print("\n====================================\nFIN Lancement du script :: ",
+                              dfRequestListsExec["Nom rêquete"][i], "\n====================================")
+                        print("\n\n ----- Temps d'exécution des scripts de préparation ----- [", getElapsedTime(
+                            tempsExecutionScriptsStart, tempsExecutionScriptsEnd), "]")
+                        logging.info("Temps Temps d'exécution des scripts de préparation  : [" + getElapsedTime(
+                            tempsExecutionScriptsStart, tempsExecutionScriptsEnd) + "]")
+                    except Exception as Err:
+                        statut_ExcRequest = "KO"
+                        logging.error("[ERROR] lancement du script : " +
+                                     dfRequestListsExec["Nom rêquete"][i] + "\n" + str(Err))
+                        print("[ERROR] lancement du script : ",
+                              dfRequestListsExec["Nom rêquete"][i] + "\n" + str(Err))
+                        errorMessage += \
+                            "<br>[ERROR] lancement du script : <b>" + \
+                            dfRequestListsExec["Nom rêquete"][i] + "</b><br>" + str(Err)
+                        listExecution.append(
+                            (nom_Element, statut_ExcRequest, statut_EnregistrementLocal, statut_EnregistrementDistant))
+                        if DEBUG_FOLDER:
+                            # Attention : les .bat recopies contiennent les
+                            # identifiants de connexion Oracle.
+                            copyFolder(download_folder, DEBUG_FOLDER)
+                        continue
+                # EXÉCUTION DE LA REQUÊTE
+                elif (str(dfRequestListsExec["Type rêquete"][i]).lower() == "export"):
+                    numRequest += 1
+                    tempsTraitementStart = time.time()
                     nom_Element = dfRequestListsExec["Nom rêquete"][i]
-                    lancementScriptProcedure(
-                        _DownloadFolder + dfRequestListsExec["Nom rêquete"][i], DB_USER, DB_PASSWORD)
-                    tempsExecutionScriptsEnd = time.time()
-                    statut_ExcRequest = "OK"
-                    listExecution.append(
-                        (nom_Element, statut_ExcRequest, statut_EnregistrementLocal, statut_EnregistrementDistant))
-                    print("\n====================================\nFIN Lancement du script :: ",
-                          dfRequestListsExec["Nom rêquete"][i], "\n====================================")
-                    print("\n\n ----- Temps d'exécution des scripts de préparation ----- [", getElapsedTime(
-                        tempsExecutionScriptsStart, tempsExecutionScriptsEnd), "]")
-                    logging.info("Temps Temps d'exécution des scripts de préparation  : [" + getElapsedTime(
-                        tempsExecutionScriptsStart, tempsExecutionScriptsEnd) + "]")
-                except Exception as Err:
-                    statut_ExcRequest = "KO"
-                    logging.error("[ERROR] lancement du script : " +
-                                 dfRequestListsExec["Nom rêquete"][i] + "\n" + str(Err))
-                    print("[ERROR] lancement du script : ",
-                          dfRequestListsExec["Nom rêquete"][i] + "\n" + str(Err))
-                    errorMessage += \
-                        "<br>[ERROR] lancement du script : <b>" + \
-                        dfRequestListsExec["Nom rêquete"][i] + "</b><br>" + str(Err)
-                    listExecution.append(
-                        (nom_Element, statut_ExcRequest, statut_EnregistrementLocal, statut_EnregistrementDistant))
-                    copyFolder(download_folder, r"C:\Temp\debugOracle\\")
-                    continue
-            # EXÉCUTION DE LA REQUÊTE
-            elif (str(dfRequestListsExec["Type rêquete"][i]).lower() == "export"):
-                numRequest += 1
-                tempsTraitementStart = time.time()
-                nom_Element = dfRequestListsExec["Nom rêquete"][i]
-                try:
-# =============================================================================
-#       effectuer le remplacement du nom de fichier si l'horodatage est renseigné.
-# =============================================================================
-                    formatHorodatage = dfRequestListsExec["formatHorodatage"][i]
-                    print(f"formatHorodatage : {formatHorodatage} ", type(formatHorodatage))
-                    if len(formatHorodatage) == 0:
-                        print("le format d'horodatage n'est pas renseigné")
-                        nomFichierSortie = dfRequestListsExec["Nom fichier sortie"][i]
-                    else:
-                        print("le format d'horodatage est renseigné")
-                        nomFichierSortie = append_horodatage(dfRequestListsExec["Nom fichier sortie"][i]
-                                                             ,formatHorodatage)
-                    extensionFichierSortie = utils.getFileExtension(
-                        nomFichierSortie).lower()
-                        
-                    pathFileOut = folderOut + nomFichierSortie
-                    requestName = dfRequestListsExec["Nom rêquete"][i]
-                    print("--> Exécution de la requête ", requestName)
-                    
-                    fileReq = folderRequest + requestName
-                # =============================================================================
-                #      EXECUTION REQUETE
-                # =============================================================================
-                    startRequest = time.time()
-                    query = getFileContent(fileReq)
-                    print("Lancement requête :: [", numRequest.__str__(), "/", nbRequests.__str__(
-                    ), "] - Requête  ", requestName, " A enregister dans le fichier -> ", nomFichierSortie)
-                   
-                    logging.info("\n" + "="*70 + "\nLancement requête :: " + \
-                                 "[" + str(numRequest) + "/" + str(nbRequests) + "] - Requête  " + requestName + " A enregister dans le fichier -> " + str(nomFichierSortie) + \
-                                  "\n" + "="*70
-                                     )
-                    # logging.info("Lancement requête :: [" + str(numRequest) + "/" + str(nbRequests) + "] - Requête  " + requestName + " A enregister dans le fichier -> " + str(nomFichierSortie))
-                    df = pd.read_sql(query, engine)
-                    statut_ExcRequest = "OK"
-                    endRequest = time.time()
-                    print(
-                        "      * Temps Exécution requete : [", getElapsedTime(startRequest, endRequest), "]")
-                    logging.info(
-                        "Temps exécution requête : [" + getElapsedTime(startRequest, endRequest) + "]")
-                except Exception as Err:
-                    statut_ExcRequest = "KO"
-                    errorMessage += "<br>Error  Requête  - <b>" + \
-                        requestName + "</b><br>" + str(Err) + "<br>"
-                    logging.error("Error  Requête  - " + \
-                        requestName + "\n" + str(Err))
-                    print(
-                        "[ERROR] détectée lors de l'exécution de la requête \n", Err)
-                    listExecution.append(
-                        (nom_Element, statut_ExcRequest, statut_EnregistrementLocal, statut_EnregistrementDistant))
-                    continue
-
-                # ENREGISTREMENT DANS L'EXTENSION CIBLE CSV OU XLSX
-                try:
-                    my_type = 'float64'
-                    dtypes = df.dtypes.to_dict()
-
-                    for col_name, typ in dtypes.items():
-                        if (typ == my_type and col_name.startswith('id')):
-                            convert(df, col_name)
-
-                    startToExec = time.time()
-                    # =============================================================================
-                    #         ENREGISTREMENT RESULTATS DANS UN CSV
-                    # =============================================================================
-                    if extensionFichierSortie == 'csv':
-                        logging.info(
-                            "Enregistrement des données vers le fichier CSV")
-                        df.to_csv(pathFileOut, index=None, sep=';', quoting=csv.QUOTE_NONNUMERIC,
-                                  encoding='utf-8-sig', date_format='%d/%m/%Y %H:%M:%S', float_format='%.5f')
-                        statut_EnregistrementLocal = "OK"
-                    # =============================================================================
-                    #         ENREGISTREMENT RESULTATS DANS UN FICHIER EXCEL
-                    # =============================================================================
-                    elif extensionFichierSortie == 'xlsx':
-                        logging.info(
-                            "Enregistrement des données vers le fichier EXCEL")
-                        saveToExcel(df, pathFileOut, "Sheet1")
-                        statut_EnregistrementLocal = "OK"
-                    else:
-                        errorMessage += "<br>Error  Requête  - <b>" + requestName + \
-                            "</b><br>Le fichier de sortie ne correspond à aucun des formats attendus, 'csv|xlsx'.<br>"
-                        print(
-                            "L'extension du fichier de sortie n'est pas reconnu, 'csv' ou 'xlsx'")
-                        logging.info(
-                            "L'extension du fichier de sortie n'est pas reconnu, 'csv' ou 'xlsx'")
-                        statut_EnregistrementLocal = "KO"
-
-                    endToExec = time.time()
-
-                    print("Fin de copie de fichier en local [", getElapsedTime(
-                        startToExec, endToExec), "]")
-                    logging.info("Temps enregistrement des résultats en Local : [" + str(
-                        getElapsedTime(startToExec, endToExec)) + "]")
-                except Exception as Err:
-                    statut_EnregistrementLocal = "KO"
-                    errorMessage += "<br>[ERROR] Enregistrement du fichier  - <b>" + \
-                        requestName + "</b><br>" + str(Err) + "<br>"
-                    logging.error(
-                        "Erreur lors de l'enregistrement du fichier  - " + \
-                            nomFichierSortie + "\n" + str(Err))
-                    print(
-                        "[ERROR] détectée lors de l'enregistrement du fichier de résultats\n", Err)
-                    listExecution.append(
-                        (nom_Element, statut_ExcRequest, statut_EnregistrementLocal, statut_EnregistrementDistant))
-                    continue
-
-                # Upload du fichier sur le drive
-                if UploadDossier_drive_id:
                     try:
-                        print("--> Upload du fichier sur le drive")
-                    # =============================================================================
-                    #           UPLOAD DU FICHIER SUR LE REPERTOIRE DRIVE DU PROJET
-                    # =============================================================================
-                        startToDrive = time.time()
-                        print("=> Upload du fichier vers le Drive : {nomFichierSortie} ( "+ get_size(pathFileOut) + ")")
-                        logging.info(f"=> Upload du fichier vers le Drive : {nomFichierSortie} ( "+ get_size(pathFileOut) + " )")
-                        # print("Nom du fichier sur le drive " , nomFichierSortie, " - " , pathFileOut," - " ,idFolderUpload)
-                        upLoaded = False
-                        msgError = ""
-                        for i in range(0, 3):
-                            try:
-                                print("Tentative d'upload N°", i+1)
-                                gdriveUpload.uploadFileToDrive(
-                                    pathFileOut, nomFichierSortie, idFolderUpload, True)
-                                print("Le fichier a correctement était uploadé.")
-                                upLoaded = True
-                                break
-                            except Exception as Err:
-                                msgError = Err
-                                continue               
-                        
-                        if upLoaded:    
-                            endToDrive = time.time()
-                            print("Fin de copie de local vers le drive : ", nomFichierSortie,
-                                  "[", getElapsedTime(startToDrive, endToDrive), "]")
-                            logging.info("Temps Upload vers le Drive : " + nomFichierSortie +
-                                         "[" + str(getElapsedTime(startToDrive, endToDrive)) + ']')
-                            statut_EnregistrementDistant = "OK"
-                            # listExecution.append((nom_Element,statut_ExcRequest,statut_EnregistrementLocal,statut_EnregistrementDistant))
+    # =============================================================================
+    #       effectuer le remplacement du nom de fichier si l'horodatage est renseigné.
+    # =============================================================================
+                        formatHorodatage = dfRequestListsExec["formatHorodatage"][i]
+                        print(f"formatHorodatage : {formatHorodatage} ", type(formatHorodatage))
+                        if len(formatHorodatage) == 0:
+                            print("le format d'horodatage n'est pas renseigné")
+                            nomFichierSortie = dfRequestListsExec["Nom fichier sortie"][i]
                         else:
-                            raise Exception(msgError)
-                            
+                            print("le format d'horodatage est renseigné")
+                            nomFichierSortie = append_horodatage(dfRequestListsExec["Nom fichier sortie"][i]
+                                                                 ,formatHorodatage)
+                        extensionFichierSortie = utils.getFileExtension(
+                            nomFichierSortie).lower()
+                        
+                        pathFileOut = folderOut + nomFichierSortie
+                        requestName = dfRequestListsExec["Nom rêquete"][i]
+                        print("--> Exécution de la requête ", requestName)
+                    
+                        fileReq = folderRequest + requestName
+                    # =============================================================================
+                    #      EXECUTION REQUETE
+                    # =============================================================================
+                        startRequest = time.time()
+                        query = getFileContent(fileReq)
+                        print("Lancement requête :: [", numRequest.__str__(), "/", nbRequests.__str__(
+                        ), "] - Requête  ", requestName, " A enregister dans le fichier -> ", nomFichierSortie)
+                   
+                        logging.info("\n" + "="*70 + "\nLancement requête :: " + \
+                                     "[" + str(numRequest) + "/" + str(nbRequests) + "] - Requête  " + requestName + " A enregister dans le fichier -> " + str(nomFichierSortie) + \
+                                      "\n" + "="*70
+                                         )
+                        # logging.info("Lancement requête :: [" + str(numRequest) + "/" + str(nbRequests) + "] - Requête  " + requestName + " A enregister dans le fichier -> " + str(nomFichierSortie))
+                        df = pd.read_sql(query, engine)
+                        statut_ExcRequest = "OK"
+                        endRequest = time.time()
+                        print(
+                            "      * Temps Exécution requete : [", getElapsedTime(startRequest, endRequest), "]")
+                        logging.info(
+                            "Temps exécution requête : [" + getElapsedTime(startRequest, endRequest) + "]")
                     except Exception as Err:
-                        statut_EnregistrementDistant = "K0"
+                        statut_ExcRequest = "KO"
+                        errorMessage += "<br>Error  Requête  - <b>" + \
+                            requestName + "</b><br>" + str(Err) + "<br>"
+                        logging.error("Error  Requête  - " + \
+                            requestName + "\n" + str(Err))
+                        print(
+                            "[ERROR] détectée lors de l'exécution de la requête \n", Err)
                         listExecution.append(
                             (nom_Element, statut_ExcRequest, statut_EnregistrementLocal, statut_EnregistrementDistant))
-                        errorMessage += "<br>[ERROR] Upload du fichier sur le drive - <b>" + \
-                            nomFichierSortie + "</b><br>" + str(Err) + "<br>"
-                        logging.error(
-                            "[ERROR] Upload du fichier sur le drive - " + nomFichierSortie + "\n" + str(Err))
-                        print("[ERROR] Upload du fichier sur le drive \n", Err)
                         continue
 
-                # Upload du fichier sur le dataViz
-                if copiedataviz:
+                    # ENREGISTREMENT DANS L'EXTENSION CIBLE CSV OU XLSX
                     try:
-                        print("--> Upload du fichier sur le dataViz")
-                    # =============================================================================
-                    #           UPLOAD DU FICHIER SUR LE REPERTOIRE DRIVE DU PROJET
-                    # =============================================================================
-                        startToDrive = time.time()
-                        print(":::  Copie de Local vers le DataViz :::")
-                        logging.info("=> Upload du fichier vers le DataViz")
-                        print("liste des fichiers présents dans le dossier source :: \n", utils.getFileList(
-                            folderOut))
-                        # On rajoute la fin du / pour effectuer la copie vers le dataViz si manquant
-                        copy(pathFileOut,copiedataviz)
-                        # utils.copyAllFiles(folderOut, copiedataviz)
-                        statut_EnregistrementDistant = "OK"
-                        endToDrive = time.time()
-                        print("Fin de copie de local vers le DataViz : ", nomFichierSortie,
-                              "[", getElapsedTime(startToDrive, endToDrive), "]")
-                        logging.info("Temps Upload vers le DataViz : " + nomFichierSortie +
-                                     "[" + str(getElapsedTime(startToDrive, endToDrive)) + ']')
+                        my_type = 'float64'
+                        dtypes = df.dtypes.to_dict()
+
+                        for col_name, typ in dtypes.items():
+                            if (typ == my_type and col_name.startswith('id')):
+                                convert(df, col_name)
+
+                        startToExec = time.time()
+                        # =============================================================================
+                        #         ENREGISTREMENT RESULTATS DANS UN CSV
+                        # =============================================================================
+                        if extensionFichierSortie == 'csv':
+                            logging.info(
+                                "Enregistrement des données vers le fichier CSV")
+                            df.to_csv(pathFileOut, index=None, sep=';', quoting=csv.QUOTE_NONNUMERIC,
+                                      encoding='utf-8-sig', date_format='%d/%m/%Y %H:%M:%S', float_format='%.5f')
+                            statut_EnregistrementLocal = "OK"
+                        # =============================================================================
+                        #         ENREGISTREMENT RESULTATS DANS UN FICHIER EXCEL
+                        # =============================================================================
+                        elif extensionFichierSortie == 'xlsx':
+                            logging.info(
+                                "Enregistrement des données vers le fichier EXCEL")
+                            saveToExcel(df, pathFileOut, "Sheet1")
+                            statut_EnregistrementLocal = "OK"
+                        else:
+                            errorMessage += "<br>Error  Requête  - <b>" + requestName + \
+                                "</b><br>Le fichier de sortie ne correspond à aucun des formats attendus, 'csv|xlsx'.<br>"
+                            print(
+                                "L'extension du fichier de sortie n'est pas reconnu, 'csv' ou 'xlsx'")
+                            logging.info(
+                                "L'extension du fichier de sortie n'est pas reconnu, 'csv' ou 'xlsx'")
+                            statut_EnregistrementLocal = "KO"
+
+                        endToExec = time.time()
+
+                        print("Fin de copie de fichier en local [", getElapsedTime(
+                            startToExec, endToExec), "]")
+                        logging.info("Temps enregistrement des résultats en Local : [" + str(
+                            getElapsedTime(startToExec, endToExec)) + "]")
                     except Exception as Err:
-                        statut_EnregistrementDistant = "KO"
+                        statut_EnregistrementLocal = "KO"
+                        errorMessage += "<br>[ERROR] Enregistrement du fichier  - <b>" + \
+                            requestName + "</b><br>" + str(Err) + "<br>"
+                        logging.error(
+                            "Erreur lors de l'enregistrement du fichier  - " + \
+                                nomFichierSortie + "\n" + str(Err))
+                        print(
+                            "[ERROR] détectée lors de l'enregistrement du fichier de résultats\n", Err)
                         listExecution.append(
                             (nom_Element, statut_ExcRequest, statut_EnregistrementLocal, statut_EnregistrementDistant))
-                        errorMessage += "4<br>[ERROR] Upload du fichier sur le DataViz - <b>" + \
-                            nomFichierSortie + "</b><br>" + str(Err) + "<br>"
-                        logging.error(
-                            "[ERROR] Upload du fichier sur le DataViz - " + nomFichierSortie + "\n" + str(Err))
-                        print("[ERROR] Upload du fichier sur le DataViz \n", Err)
                         continue
 
-                listExecution.append(
-                    (nom_Element, statut_ExcRequest, statut_EnregistrementLocal, statut_EnregistrementDistant))
-                tempsTraitementEnd = time.time()
+                    # Upload du fichier sur le drive
+                    if UploadDossier_drive_id:
+                        try:
+                            print("--> Upload du fichier sur le drive")
+                        # =============================================================================
+                        #           UPLOAD DU FICHIER SUR LE REPERTOIRE DRIVE DU PROJET
+                        # =============================================================================
+                            startToDrive = time.time()
+                            log("=> Upload du fichier vers le Drive : %s (%s)"
+                                  % (nomFichierSortie, get_size(pathFileOut)))
+                            logging.info(f"=> Upload du fichier vers le Drive : {nomFichierSortie} ( "+ get_size(pathFileOut) + " )")
+                            # print("Nom du fichier sur le drive " , nomFichierSortie, " - " , pathFileOut," - " ,idFolderUpload)
+                            upLoaded = False
+                            msgError = ""
+                            for tentative in range(0, NB_TENTATIVES_UPLOAD):
+                                try:
+                                    log("Tentative d'upload n°%d/%d"
+                                        % (tentative + 1, NB_TENTATIVES_UPLOAD))
+                                    gdriveUpload.uploadFileToDrive(
+                                        pathFileOut, nomFichierSortie, idFolderUpload, True)
+                                    print("Le fichier a correctement était uploadé.")
+                                    upLoaded = True
+                                    break
+                                except Exception as Err:
+                                    msgError = Err
+                                    continue               
+                        
+                            if upLoaded:    
+                                endToDrive = time.time()
+                                print("Fin de copie de local vers le drive : ", nomFichierSortie,
+                                      "[", getElapsedTime(startToDrive, endToDrive), "]")
+                                logging.info("Temps Upload vers le Drive : " + nomFichierSortie +
+                                             "[" + str(getElapsedTime(startToDrive, endToDrive)) + ']')
+                                statut_EnregistrementDistant = "OK"
+                                # listExecution.append((nom_Element,statut_ExcRequest,statut_EnregistrementLocal,statut_EnregistrementDistant))
+                            else:
+                                raise Exception(msgError)
+                            
+                        except Exception as Err:
+                            statut_EnregistrementDistant = "K0"
+                            listExecution.append(
+                                (nom_Element, statut_ExcRequest, statut_EnregistrementLocal, statut_EnregistrementDistant))
+                            errorMessage += "<br>[ERROR] Upload du fichier sur le drive - <b>" + \
+                                nomFichierSortie + "</b><br>" + str(Err) + "<br>"
+                            logging.error(
+                                "[ERROR] Upload du fichier sur le drive - " + nomFichierSortie + "\n" + str(Err))
+                            print("[ERROR] Upload du fichier sur le drive \n", Err)
+                            continue
+
+                    # Upload du fichier sur le dataViz
+                    if copiedataviz:
+                        try:
+                            print("--> Upload du fichier sur le dataViz")
+                        # =============================================================================
+                        #           UPLOAD DU FICHIER SUR LE REPERTOIRE DRIVE DU PROJET
+                        # =============================================================================
+                            startToDrive = time.time()
+                            print(":::  Copie de Local vers le DataViz :::")
+                            logging.info("=> Upload du fichier vers le DataViz")
+                            print("liste des fichiers présents dans le dossier source :: \n", utils.getFileList(
+                                folderOut))
+                            # On rajoute la fin du / pour effectuer la copie vers le dataViz si manquant
+                            copy(pathFileOut,copiedataviz)
+                            # utils.copyAllFiles(folderOut, copiedataviz)
+                            statut_EnregistrementDistant = "OK"
+                            endToDrive = time.time()
+                            print("Fin de copie de local vers le DataViz : ", nomFichierSortie,
+                                  "[", getElapsedTime(startToDrive, endToDrive), "]")
+                            logging.info("Temps Upload vers le DataViz : " + nomFichierSortie +
+                                         "[" + str(getElapsedTime(startToDrive, endToDrive)) + ']')
+                        except Exception as Err:
+                            statut_EnregistrementDistant = "KO"
+                            listExecution.append(
+                                (nom_Element, statut_ExcRequest, statut_EnregistrementLocal, statut_EnregistrementDistant))
+                            errorMessage += "4<br>[ERROR] Upload du fichier sur le DataViz - <b>" + \
+                                nomFichierSortie + "</b><br>" + str(Err) + "<br>"
+                            logging.error(
+                                "[ERROR] Upload du fichier sur le DataViz - " + nomFichierSortie + "\n" + str(Err))
+                            print("[ERROR] Upload du fichier sur le DataViz \n", Err)
+                            continue
+
+                    listExecution.append(
+                        (nom_Element, statut_ExcRequest, statut_EnregistrementLocal, statut_EnregistrementDistant))
+                    tempsTraitementEnd = time.time()
                 
-                print("\nTemps de traitement de l'EXPORT =>  [", getElapsedTime(
-                    tempsTraitementStart, tempsTraitementEnd), "]\n")
-                logging.info("=> Temps traitement de la requête =>  [" + getElapsedTime(
-                    tempsTraitementStart, tempsTraitementEnd) + "]")
-                print("\n====================================\nFIN Lancement de la requête :: ",
-                      requestName, "\n====================================")
+                    print("\nTemps de traitement de l'EXPORT =>  [", getElapsedTime(
+                        tempsTraitementStart, tempsTraitementEnd), "]\n")
+                    logging.info("=> Temps traitement de la requête =>  [" + getElapsedTime(
+                        tempsTraitementStart, tempsTraitementEnd) + "]")
+                    print("\n====================================\nFIN Lancement de la requête :: ",
+                          requestName, "\n====================================")
+            except Exception as Err:
+                # Filet de securite : aucune ligne ne doit pouvoir interrompre
+                # le traitement des lignes suivantes sans laisser de trace.
+                statutLigne = "KO"
+                log("Erreur non gérée sur %s : %s" % (libelleLigne, Err),
+                    niveau="ERROR")
+                logging.error("Erreur non gérée sur %s : %s"
+                              % (libelleLigne, Err))
+                errorMessage += ("<br>[ERROR] %s<br>%s<br>"
+                                 % (libelleLigne, Err))
+            finally:
+                # Marqueur de fin toujours emis, y compris apres un 'continue'
+                # ou une exception : la progression reste lisible en direct.
+                statuts = (statut_ExcRequest, statut_EnregistrementLocal,
+                           statut_EnregistrementDistant)
+                # "K0" (zero) est une coquille presente dans le code d'origine
+                # sur la branche upload : on la traite comme un KO.
+                if "KO" in statuts or "K0" in statuts:
+                    statutLigne = "KO"
+                logFin(libelleLigne, debutLigne, statutLigne)
 
     except Exception as Err:
         # errorMessage += "<br>[ERROR] phase d'exécution des requêtes<br>" + str(Err) + "<br>"
@@ -1014,14 +1083,13 @@ except Exception as Err:
 # Mise à jour vers le googleSheet du statut général d'exécution
 # =============================================================================
 # emplacement de l'ordonnanceur central
-dossier_drive_id_root = "1bkXK77bOQb8TXG69y_n_Qw9zM-Wru1BO"
-gdriveExec = gdrive(dossier_drive_id_root,token='générique')
+gdriveExec = gdrive(DRIVE_ROOT_ID, token=GDRIVE_TOKEN)
 
 # =============================================================================
 #                   MISE A JOUR DE L EXECUTION 
 # =============================================================================
 # Informations sur le fichier d'ordonnancement central 
-spreadsheet_id = "1QNJUUM8lJcHkVOQTNguInGvmI5xZX69EwUqxYL0al1Q"
+spreadsheet_id = SPREADSHEET_ID
 
 if errorMessage != "":  
     statut_Traitement = "KO"
@@ -1060,15 +1128,15 @@ updatedRange = result['updates']['updatedRange']
 regexp = "\w(\d+):\w\d+"      
 text = re.search(rf'{regexp}', updatedRange, re.IGNORECASE)
 row_Index = str(int(text.group(1)) - 1)
-print("row_Index : {row_Index}")    
+log("row_Index : %s" % row_Index)    
 
 # =============================================================================
 # Récupération des données des onglets de l'ordonnanceur
 dfHistoExec = gdriveExec.SetValuesGsheetToDataFrame(spreadsheet_id, ONGLET_HISTO)
 # saveToExcel(dfHistoExec, r"C:\Temp\dfHistoExec.xlsx", "sheetName")
-dfData = gdriveExec.SetValuesGsheetToDataFrame(spreadsheet_id, "data")
+dfData = gdriveExec.SetValuesGsheetToDataFrame(spreadsheet_id, ONGLET_DATA)
 # saveToExcel(dfData, r"C:\Temp\dfData.xlsx", "sheetName")
-dfLanceur = gdriveExec.SetValuesGsheetToDataFrame(spreadsheet_id, "Feuil1")
+dfLanceur = gdriveExec.SetValuesGsheetToDataFrame(spreadsheet_id, ONGLET_LANCEUR)
 # saveToExcel(dfLanceur, r"C:\Temp\dfLanceur.xlsx", "sheetName")
 # Upload du fichier de log dans le drive adéquat
 # Récupération dans feuil1 de la config utilisée
@@ -1091,7 +1159,7 @@ try:
     text = logFileName
     sheetId = gdriveExec.get_SheetId(spreadsheet_id, ONGLET_HISTO)
     rowIndex = row_Index
-    colIndex = "5"
+    colIndex = COL_INDEX_LOG
     requests = []
     requests.append({
         "updateCells": {
