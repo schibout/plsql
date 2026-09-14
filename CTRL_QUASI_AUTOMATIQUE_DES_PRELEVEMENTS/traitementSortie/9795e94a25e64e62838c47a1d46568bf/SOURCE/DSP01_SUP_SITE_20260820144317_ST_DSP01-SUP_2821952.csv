@@ -1,0 +1,35 @@
+Numero de fournisseur|Nom adresse|ID iValua du site fournisseur|Pays|Adresse ligne 1|Adresse ligne 2|Adresse ligne 3|Ville|Region|Code postal|Statut site fournisseur|Fonction du site - Achats|Fonction du site - Reglements|Carte Achat|CUF - Complement SIRET|CUF - Code INSEE Commune|CUF - Bureau distributeur|Telephone|Email HA|Email FI|Echeance|Siége Social
+100000|FRA94700PROB|130429|FR|Av. du Général Leclerc 27-31|||Maisons-Alfort|Ile-de-France|94700|ACTIF|N|Y|N|01075|||||facturation@bpi-group.com|60 jours net date de facture|N
+100009|FRA92400POMPSGR|130428|FR|17 B Pl. des Reflets||TOUR D2|Courbevoie|Ile-de-France|92400|ACTIF|N|Y|N|00118|||||fact-recouvrement@cmfactoring.fr|60 jours net date de facture|Y
+100010|FRA92548EBTT|130422|FR|12 Pl. des États Unis|CS 20001||Montrouge|Ile-de-France|92120|ACTIF|N|Y|N|01126|||||reglement@ca-if.com|60 jours net date de facture|Y
+100488|FRA35770|122149|FR|20 RUE DE LA MOTTE|||VERN SUR SEICHE|Bretagne|35770|ACTIF|Y|Y|N|00040|||0679068224|mlebihan@scr-soudure.fr|mgallerne@scr-soudure.fr|60 jours net date de facture|Y
+100668|FRA06200|130442|FR|146 Rte de Canta Galet|||Nice|Provence-Alpes-Cote d'Azur|06200|ACTIF|N|Y|N|00031|||||info@hectron.com|60 jours net date de facture|Y
+100835|FRA13400|130400|FR|77 Rue de la Maire|||Aubagne|Provence-Alpes-Cote d'Azur|13400|ACTIF|Y|Y|N|00327|||0442713131|commande.ccf.marseille@sonepar.fr|ccf-compta-clients@sonepar.fr|60 jours net date de facture|N
+102012|FRA80480|22653|FR|1 ALLEE DE LA PEPINIERE|||DURY|Hauts-de-France|80480|ACTIF|Y|N|N|00210|80261||0322804310|corinne.bocage@socotec.com||60 jours net date de facture|N
+107334|FRA92060|23890|FR|34 Cr Michelet|||Puteaux|Ile-de-France|92800|ACTIF|Y|Y|N|00048|92062||0147767234|Samy.GUEDJALI@accor.com|Samy.GUEDJALI@accor.com|60 jours net date de facture|N
+109770|FRA29590|12790|FR|RUE DE DOMBLANS||ZONE DE QUIELLA|LE FAOU|Bretagne|29590|INACTIF|Y|Y|N|00037|||0244840804|compta@coolroof-france.com||60 jours net date de facture|N
+111449|FRA06800|87613|FR|5 Chem. des Presses|IMMEUBLE TECHNOPOLIS - BATIMENT P||Cagnes-sur-Mer|Provence-Alpes-Cote d'Azur|06800|ACTIF|Y|Y|N|00067|||0489418625|elodie.solazzo@iothink-solutions.com|elodie.solazzo@iothink-solutions.com|60 jours net date de facture|Y
+17390|FRA57430|104040|FR|Le Haras, 57430 Sarralbe, France|||Sarralbe|Grand-Est|57430|INACTIF|Y|Y|N|00177|||0387977551|contact.grandest@sia-service.fr|ctousch@sia-service.fr|60 jours net date de facture|N
+23560|FRA95943|24503|FR|229 RUE DE LA BELLE ETOILE||BP 50387|ROISSY-EN-FRANCE|Ile-de-France|95700|ACTIF|Y|Y|N|00495|95527||0148175808|dl.fr_sa_dalkia@computacenter.com||45 j NET|N
+25570|FRA75013|28789|FR|13-17 rue de Pouy|||PARIS|Ile-de-France|75013|ACTIF|Y|Y|N|00031|||0102030405|v.menez@heral-pub.fr|v.menez@heral-pub.fr|60 jours net date de facture|Y
+44147|FRA01600TRE|91688|FR|605 All. des Filieristes|||Trévoux|Auvergne-Rhone-Alpes|01600|ACTIF|Y|Y|N|00086|||0474084446|contact@dessica.fr|comptabilite@dessica.fr|60 jours net date de facture|Y
+44801|FRA91300|33375|FR|11 RUE DU SAULE TRAPU|||MASSY|Ile-de-France|91300|ACTIF|Y|Y|N|00402|91377||0630742228|ftilliette@groupecham.fr|tpigeon@groupecham.fr|60 jours net date de facture|Y
+50694|FRA66350|20093|FR|3 RUE GUSTAVE EIFFEL|||TOULOUGES|Occitanie|66350|ACTIF|Y|Y|N|00022|66213||0623319178|cgalte@pyretec.fr||60 jours net date de facture|Y
+56514|FRA92000A|128451|FR|14/24 rue des Agglomérés|||NANTERRE||92000|ACTIF|Y|Y|N|06966|||0147242172|crcenanterre@rexel.fr|villeurbanne-virement@rexel.fr|60 jours net date de facture|N
+61118|FRA92300LEV|70010|FR|22 RUE DU PDT WILSON|||LEVALLOIS PERRET|Ile-de-France|92300|ACTIF|Y|Y|N|00021|||0637541591|oacquaviva@greenoffice.fr|comptabilite@greenoffice.fr|60 jours net date de facture|Y
+87872|FRA40400|16771|FR|1850 ROUTE DE LALANDE|||CARCARES-SAINTE-CROIX|Nouvelle-Aquitaine|40400|ACTIF|Y|Y|N|00015|40066||0558733945|n-boye@rollin-levage.fr||60 jours net date de facture|Y
+87872|FRA40990|30813|FR|286 ROUTE DU CLEDON|||MEES|Nouvelle-Aquitaine|40990|INACTIF|N|Y|N|00023|40179||||n-boye@rollin-levage.fr|60 jours net date de facture|N
+S00053962|FRA38200|120243|FR|30 RTE de la Gravière|||Vienne||38200|INACTIF|Y|Y|N|00073|||||contact@ftira.fr|60 jours net date de facture|Y
+S00060416|FRA66240|60413|FR|11 BOULEVARD DE L’ATELIER|ZAE LA MIRANDE||Saint Estève|Occitanie|66240|ACTIF|Y|Y|N|00032|||0468542680|asc@asc66.fr|s.sanchez@asc66.fr|60 jours net date de facture|Y
+S00068289|FRA88700|130375|FR|7 rue Colonel Jean Mueth|||RAMBERVILLERS||88700|ACTIF|Y|Y|N|00028|||0329386363|hdj88700@huissier-justice.fr|hdj88700@huissier-justice.fr|60 jours net date de facture|Y
+S00068289|FRA88700CAR|69294|FR|53 Rue Carnot|||Rambervillers|Grand-Est|88700|INACTIF|N|Y|N|00010||||||30 jours net date de facture|N
+S00083079|FRA27320|83075|FR|44 Rue de la Mairie|||Courdemanche|Normandie|27320|ACTIF|Y|Y|N|00012|||0320000000|gazXpert@gmail.com|gazXpert@gmail.com|60 jours net date de facture|Y
+S00092819|FRA69100|93426|FR|72, AVENUE ROGER SALENGRO|||VILLEURBANNE||69100|INACTIF|Y|Y|N|00023|||0478939177|Concept3p@wanadoo.fr||60 jours net date de facture|N
+S00114543|FRA14520|114528|FR|ZONE PORTUAIRE|||PORT EN BESSIN HUPPAIN||14520|ACTIF|Y|Y|N|00015|||0231217053|commercial@md-naval.fr|compta@md-naval.fr|60 jours net date de facture|Y
+S00125721|FRA84110|125683|FR|915 CHEMIN DES BOIS||Saint-Romain-En-Viennois|SAINT-ROMAIN-EN-VIENNOIS|Provence-Alpes-Cote d'Azur|84110|ACTIF|Y|Y|N|00014|||0610350716|cmcplancherchauffant@gmail.com|cmcplancherchauffant@gmail.com|60 jours net date de facture|Y
+S00129718|FRA53000|129180|FR|11 Rue Emile Brault|||Laval|Pays-de-la-Loire|53000|ACTIF|Y|Y|N|00019|||0490895078|ergos.avignon@actualgroup.com|ergos.avignon@actualgroup.com|60 jours net date de facture|Y
+S00130345|FRA91630|130415|FR|3 Rue Thomas Edison|||Guibeville|Ile-de-France|91630|ACTIF|N|Y|N|00035|||||fjoanlanne@arbresetpaysages.fr|60 jours net date de facture|Y
+S00130345|FRA91700|128581|FR|Rue de la Fossé aux Leux 3B|||Sainte-Geneviève-des-Bois|Ile-de-France|91700|ACTIF|Y|Y|N|00043|||0160153587|ojourdan@pellegrin-fils.fr|ojourdan@pellegrin-fils.fr|60 jours net date de facture|N
+S00130418|FRA84800|130366|FR|1 Chem. de Cheval Blanc|||L'Isle-sur-la-Sorgue|Provence-Alpes-Cote d'Azur|84800|ACTIF|Y|Y|N|00049|||0661210626|jeanpaul.coignard@lcpinternational.fr|sandrine.beckcoignard@lcpinternational.fr|60 jours net date de facture|Y
+S00130420|FRA38120|130417|FR|Rue du Lac 3|||Saint-Égrève|Auvergne-Rhone-Alpes|38120|ACTIF|Y|Y|N|00014|||0476751429|m2egc@orange.fr|m2egc@orange.fr|60 jours net date de facture|Y
+S00130434|FRA65500|130435|FR|Place Combattants de Guerres|||Vic-en-Bigorre|Occitanie|65500|ACTIF|N|Y|N|00017|||||mairie@vic-bigorre.fr|60 jours net date de facture|Y

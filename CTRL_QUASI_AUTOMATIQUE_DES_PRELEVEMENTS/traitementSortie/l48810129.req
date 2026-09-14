@@ -1,0 +1,258 @@
++---------------------------------------------------------------------------+
+Application Specifique DKA: Version : 12.2
+
+Copyright (c) 1998, 2013, Oracle and/or its affiliates. All rights reserved.
+
+DKA_IPOFRS_IVALUA_LOADER: DKA : Import des données Fournisseurs depuis iValua - Chargement des fichiers
+Request id: 48810129
++---------------------------------------------------------------------------+
+
+Date et heure système : 20-AOU-2026 12:00:32
+
++---------------------------------------------------------------------------+
+
+/u01/application/V12/fs2/EBSapps/appl/dka/12.0.0/bin/DKA_IPOFRS_IVALUA_LOADER
+
+
+header ctl
+header file
+ligne ctl
+homo ctl
+homo file ,ligne file et header file
+\nChargement des données ...
+\t. Traitement du fichier DSP01_SUP_ENTETE_20260820092316_ST_DSP01-SUP_2821440.csv ...
+
+
+
+SQL*Loader: Release 10.1.0.5.0 - Production on Je Aou 20 12:00:33 2026
+
+Copyright (c) 1982, 2005, Oracle.  All rights reserved.
+
+Fichier de contrôle :   /u01/application/V12/fs2/inst/apps/PDBFINP1_ldkfinp01/appltmp/48810129_HEAD.ctl
+Fichier de données :      /data/flf/files/PDBFINP1/data/in/DSP01_SUP_ENTETE_20260820092316_ST_DSP01-SUP_2821440.csv
+  Fichier BAD :     /data/flf/files/PDBFINP1/data/log/48810129.bad
+  Fichier DISCARD : /data/flf/files/PDBFINP1/data/log/48810129.dis
+ (Allouer tous les rebuts)
+
+Nombre à charger : ALL
+Nombre à sauter: 1
+Erreurs permises: 100
+Tableau de liens :     64 lignes, maximum de 256000 octets
+Continuation :    aucune spécification
+Chemin utilisé:      Classique
+
+Table "DKA"."DKA_IPOFRS_ENTETES#", chargé à partir de chaque enregistrement physique.
+Option d'insertion en vigueur pour cette table : APPEND
+option TRAILING NULLCOLS effective
+
+   Nom de colonne               Position   Long.  Séparat. Encadrem. Type de données
+------------------------------ ---------- ----- ---- ---- ---------------------
+NUM_FOURNISSEUR                     FIRST     *   |       CHARACTER            
+    chaîne SQL pour la colonne : "TRIM(:NUM_FOURNISSEUR)"
+NOM_FOURNISSEUR                      NEXT     *   |       CHARACTER            
+    chaîne SQL pour la colonne : "TRIM(:NOM_FOURNISSEUR)"
+AUTRE_NOM_FOURNISSEUR                NEXT     *   |       CHARACTER            
+    chaîne SQL pour la colonne : "TRIM(:AUTRE_NOM_FOURNISSEUR)"
+ID_FISCALE                           NEXT     *   |       CHARACTER            
+    chaîne SQL pour la colonne : "TRIM(:ID_FISCALE)"
+NUM_ID_INTRACOMMUNAUTAIRE            NEXT     *   |       CHARACTER            
+    chaîne SQL pour la colonne : "TRIM(:NUM_ID_INTRACOMMUNAUTAIRE)"
+CODE_DAS2                            NEXT     *   |       CHARACTER            
+    chaîne SQL pour la colonne : "TRIM(:CODE_DAS2)"
+CODE_NAF                             NEXT     *   |       CHARACTER            
+    chaîne SQL pour la colonne : "TRIM(:CODE_NAF)"
+NUM_SOCIETE_MERE                     NEXT     *   |       CHARACTER            
+    chaîne SQL pour la colonne : "TRIM(:NUM_SOCIETE_MERE)"
+OCCASIONNEL                          NEXT     *   |       CHARACTER            
+    chaîne SQL pour la colonne : "TRIM(:OCCASIONNEL)"
+TYPE                                 NEXT     *   |       CHARACTER            
+    chaîne SQL pour la colonne : "TRIM(:TYPE)"
+SOUS_TYPE                            NEXT     *   |       CHARACTER            
+    chaîne SQL pour la colonne : "TRIM(:SOUS_TYPE)"
+FOURNISSEUR_SERVICES                 NEXT     *   |       CHARACTER            
+    chaîne SQL pour la colonne : "TRIM(:FOURNISSEUR_SERVICES)"
+FOURNISSEUR_COMBUSTIBLES             NEXT     *   |       CHARACTER            
+    chaîne SQL pour la colonne : "TRIM(:FOURNISSEUR_COMBUSTIBLES)"
+FOURNISSEUR_VEHICULES                NEXT     *   |       CHARACTER            
+    chaîne SQL pour la colonne : "TRIM(:FOURNISSEUR_VEHICULES)"
+CODE_ACCORD                          NEXT     *   |       CHARACTER            
+    chaîne SQL pour la colonne : "TRIM(:CODE_ACCORD)"
+CODE_SURTAXE_COM                     NEXT     *   |       CHARACTER            
+    chaîne SQL pour la colonne : "TRIM(:CODE_SURTAXE_COM)"
+CODE_PARTENAIRE                      NEXT     *   |       CHARACTER            
+    chaîne SQL pour la colonne : "REPLACE( :CODE_PARTENAIRE,CHR(13),'')"
+END_DATE_ACTIVE                      NEXT     *   |       CHARACTER            
+    chaîne SQL pour la colonne : "to_date(trim(:END_DATE_ACTIVE),'DD/MM/YYYY')"
+CREATION_DATE                                             SYSDATE
+CREATED_BY                                                CONSTANT
+    La valeur est '1205'
+LAST_UPDATE_DATE                                          SYSDATE
+LAST_UPDATED_BY                                           CONSTANT
+    La valeur est '1205'
+STATUT                                                    CONSTANT
+    La valeur est 'NEW'
+FILE_NAME                                                 CONSTANT
+    La valeur est 'DSP01_SUP_ENTETE_20260820092316_ST_DSP01-SUP_2821440.csv'
+LINE_NUM                                                  RECNUM
+RECORD_ID                            NEXT     *   |       CHARACTER            
+    chaîne SQL pour la colonne : "DKA_IPOFRS_ENTETES_S.NEXTVAL"
+REQUEST_ID                                                CONSTANT
+    La valeur est '-1'
+LOADER_REQUEST_ID                                         CONSTANT
+    La valeur est '48810129'
+
+la valeur utilisée pour le paramètre ROWS est passée de 64 à 51
+
+Table "DKA"."DKA_IPOFRS_ENTETES#" :
+  Chargement réussi de 20 Lignes.
+  0 Lignes chargement impossible dû à des erreurs de données.
+  0 Lignes chargement impossible car échec de toutes les clauses WHEN.
+  0 Lignes chargement impossible car tous les champs étaient non renseignés.
+
+
+Espace affecté au tableau de liens :                 255408 octets(51 lignes)
+Octets de tampon de lecture : 1048576
+
+Nombre total d'enregistrements logiques ignorés :          1
+Nombre total d'enregistrements logiques lus :            20
+Nombre total d'enregistrements logiques rejetés :         0
+Nombre total d'enregistrements logiques mis au rebut :        0
+
+Le début de l'exécution a été effectué sur Je Aou 20 12:00:33 2026
+La fin de l'exécution a été effectuée sur Je Aou 20 12:00:44 2026
+
+Temps écoulé (ELAPSED) :     00:00:11.45
+Temps processeur (CPU) :    00:00:00.04
+\nChargement des données ...
+\t. Traitement du fichier DSP01_SUP_SITE_20260820092317_ST_DSP01-SUP_2821440.csv ...
+
+
+
+SQL*Loader: Release 10.1.0.5.0 - Production on Je Aou 20 12:00:44 2026
+
+Copyright (c) 1982, 2005, Oracle.  All rights reserved.
+
+Fichier de contrôle :   /u01/application/V12/fs2/inst/apps/PDBFINP1_ldkfinp01/appltmp/48810129_LINES.ctl
+Fichier de données :      /data/flf/files/PDBFINP1/data/in/DSP01_SUP_SITE_20260820092317_ST_DSP01-SUP_2821440.csv
+  Fichier BAD :     /data/flf/files/PDBFINP1/data/log/48810129.bad
+  Fichier DISCARD : /data/flf/files/PDBFINP1/data/log/48810129.dis
+ (Allouer tous les rebuts)
+
+Nombre à charger : ALL
+Nombre à sauter: 1
+Erreurs permises: 100
+Tableau de liens :     64 lignes, maximum de 256000 octets
+Continuation :    aucune spécification
+Chemin utilisé:      Classique
+
+Table "DKA"."DKA_IPOFRS_LIGNES#", chargé à partir de chaque enregistrement physique.
+Option d'insertion en vigueur pour cette table : APPEND
+option TRAILING NULLCOLS effective
+
+   Nom de colonne               Position   Long.  Séparat. Encadrem. Type de données
+------------------------------ ---------- ----- ---- ---- ---------------------
+NUM_FOURNISSEUR                     FIRST     *   |       CHARACTER            
+    chaîne SQL pour la colonne : "TRIM(:NUM_FOURNISSEUR)"
+NOM_ADRESSE_SITE                     NEXT     *   |       CHARACTER            
+    chaîne SQL pour la colonne : "TRIM(:NOM_ADRESSE_SITE)"
+ID_IVALUA_SITE_FOURNISSEUR           NEXT     *   |       CHARACTER            
+    chaîne SQL pour la colonne : "TRIM(:ID_IVALUA_SITE_FOURNISSEUR)"
+PAYS                                 NEXT     *   |       CHARACTER            
+    chaîne SQL pour la colonne : "TRIM(:PAYS)"
+ADRESSE_LIGNE1                       NEXT     *   |       CHARACTER            
+    chaîne SQL pour la colonne : "TRIM(:ADRESSE_LIGNE1)"
+ADRESSE_LIGNE2                       NEXT     *   |       CHARACTER            
+    chaîne SQL pour la colonne : "TRIM(:ADRESSE_LIGNE2)"
+ADRESSE_LIGNE3                       NEXT     *   |       CHARACTER            
+    chaîne SQL pour la colonne : "TRIM(:ADRESSE_LIGNE3)"
+VILLE                                NEXT     *   |       CHARACTER            
+    chaîne SQL pour la colonne : "TRIM(:VILLE)"
+REGION                               NEXT     *   |       CHARACTER            
+    chaîne SQL pour la colonne : "TRIM(:REGION)"
+CODE_POSTAL                          NEXT     *   |       CHARACTER            
+    chaîne SQL pour la colonne : "TRIM(:CODE_POSTAL)"
+STATUT_SITE_FOURNISSEUR              NEXT     *   |       CHARACTER            
+    chaîne SQL pour la colonne : "TRIM(:STATUT_SITE_FOURNISSEUR)"
+FONCTION_ACHATS                      NEXT     *   |       CHARACTER            
+    chaîne SQL pour la colonne : "TRIM(:FONCTION_ACHATS)"
+FONCTION_REGLEMENT                   NEXT     *   |       CHARACTER            
+    chaîne SQL pour la colonne : "TRIM(:FONCTION_REGLEMENT)"
+FONCTION_CARTE_ACHAT                 NEXT     *   |       CHARACTER            
+    chaîne SQL pour la colonne : "TRIM(:FONCTION_CARTE_ACHAT)"
+COMPLEMENT_SIRET                     NEXT     *   |       CHARACTER            
+    chaîne SQL pour la colonne : "TRIM(:COMPLEMENT_SIRET)"
+CODE_INSEE_COMMUNE                   NEXT     *   |       CHARACTER            
+    chaîne SQL pour la colonne : "TRIM(:CODE_INSEE_COMMUNE)"
+BUREAU_DISTRIBUTEUR                  NEXT     *   |       CHARACTER            
+    chaîne SQL pour la colonne : "TRIM(:BUREAU_DISTRIBUTEUR)"
+TELEPHONE                            NEXT     *   |       CHARACTER            
+    chaîne SQL pour la colonne : "TRIM(:TELEPHONE)"
+EMAIL_ACHAT                          NEXT     *   |       CHARACTER            
+    chaîne SQL pour la colonne : "TRIM(:EMAIL_ACHAT)"
+EMAIL_FINANCE                        NEXT     *   |       CHARACTER            
+    chaîne SQL pour la colonne : "REPLACE( :EMAIL_FINANCE,CHR(13),'')"
+ECHEANCE                             NEXT     *   |       CHARACTER            
+    chaîne SQL pour la colonne : "TRIM(:ECHEANCE)"
+NOTION_SIEGE                         NEXT     *   |       CHARACTER            
+    NULL (non renseigné) si NOTION_SIEGE = BLANKS
+    chaîne SQL pour la colonne : "REPLACE(REPLACE(REPLACE(:NOTION_SIEGE,CHR(13)),CHR(10)),',','.')"
+CREATION_DATE                                             SYSDATE
+CREATED_BY                                                CONSTANT
+    La valeur est '1205'
+LAST_UPDATE_DATE                                          SYSDATE
+LAST_UPDATED_BY                                           CONSTANT
+    La valeur est '1205'
+STATUT                                                    CONSTANT
+    La valeur est 'NEW'
+FILE_NAME                                                 CONSTANT
+    La valeur est 'DSP01_SUP_SITE_20260820092317_ST_DSP01-SUP_2821440.csv'
+LINE_NUM                                                  RECNUM
+RECORD_ID                            NEXT     *   |       CHARACTER            
+    chaîne SQL pour la colonne : "DKA_IPOFRS_LIGNES_S.NEXTVAL"
+REQUEST_ID                                                CONSTANT
+    La valeur est '-1'
+LOADER_REQUEST_ID                                         CONSTANT
+    La valeur est '48810129'
+
+la valeur utilisée pour le paramètre ROWS est passée de 64 à 42
+
+Table "DKA"."DKA_IPOFRS_LIGNES#" :
+  Chargement réussi de 25 Lignes.
+  0 Lignes chargement impossible dû à des erreurs de données.
+  0 Lignes chargement impossible car échec de toutes les clauses WHEN.
+  0 Lignes chargement impossible car tous les champs étaient non renseignés.
+
+
+Espace affecté au tableau de liens :                 253596 octets(42 lignes)
+Octets de tampon de lecture : 1048576
+
+Nombre total d'enregistrements logiques ignorés :          1
+Nombre total d'enregistrements logiques lus :            25
+Nombre total d'enregistrements logiques rejetés :         0
+Nombre total d'enregistrements logiques mis au rebut :        0
+
+Le début de l'exécution a été effectué sur Je Aou 20 12:00:44 2026
+La fin de l'exécution a été effectuée sur Je Aou 20 12:00:55 2026
+
+Temps écoulé (ELAPSED) :     00:00:10.34
+Temps processeur (CPU) :    00:00:00.04
+
+\nChargement réussi
+\n===> Le chargement des fichiers s'est déroulé avec succès.
+recuperation du repertoire archive
+move DSP01_SUP_ENTETE_20260820092316_ST_DSP01-SUP_2821440.csv in /data/flf/files/PDBFINP1/data/traite/in/images_in
+move DSP01_SUP_SITE_20260820092317_ST_DSP01-SUP_2821440.csv
+
+
+
++---------------------------------------------------------------------------+
+Aucune option de fin demandée.
+
+Output file size: 
+333
+
++---------------------------------------------------------------------------+
+Le traitement simultané a réussi
+Date et heure système : 20-AOU-2026 12:00:55
+
++---------------------------------------------------------------------------+

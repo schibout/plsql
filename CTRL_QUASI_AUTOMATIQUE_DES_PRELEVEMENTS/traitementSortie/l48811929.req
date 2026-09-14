@@ -1,0 +1,190 @@
++---------------------------------------------------------------------------+
+Application Specifique DKA: Version : 12.2
+
+Copyright (c) 1998, 2013, Oracle and/or its affiliates. All rights reserved.
+
+DKA_IPOFRS_IVALUA_LOADER: DKA : Import des données Fournisseurs depuis iValua - Chargement des fichiers
+Request id: 48811929
++---------------------------------------------------------------------------+
+
+Date et heure système : 20-AOU-2026 19:10:51
+
++---------------------------------------------------------------------------+
+
+/u01/application/V12/fs2/EBSapps/appl/dka/12.0.0/bin/DKA_IPOFRS_IVALUA_LOADER
+
+header ctl
+header file
+ligne ctl
+homo ctl
+homo file ,ligne file et header file
+
+
+\nChargement des données ...
+\t. Traitement du fichier DSP01_SUP_HOMOLOGATION_20260820162842_ST_DSP01-SUP_2822036.csv ...
+
+
+
+SQL*Loader: Release 10.1.0.5.0 - Production on Je Aou 20 19:10:52 2026
+
+Copyright (c) 1982, 2005, Oracle.  All rights reserved.
+
+Fichier de contrôle :   /u01/application/V12/fs2/inst/apps/PDBFINP1_ldkfinp01/appltmp/48811929_HOMO.ctl
+Fichier de données :      /data/flf/files/PDBFINP1/data/in/DSP01_SUP_HOMOLOGATION_20260820162842_ST_DSP01-SUP_2822036.csv
+  Fichier BAD :     /data/flf/files/PDBFINP1/data/log/48811929.bad
+  Fichier DISCARD : /data/flf/files/PDBFINP1/data/log/48811929.dis
+ (Allouer tous les rebuts)
+
+Nombre à charger : ALL
+Nombre à sauter: 1
+Erreurs permises: 100
+Tableau de liens :     64 lignes, maximum de 256000 octets
+Continuation :    aucune spécification
+Chemin utilisé:      Classique
+
+Table "DKA"."DKA_IPOFRS_HOMOLOGATIONS#", chargé à partir de chaque enregistrement physique.
+Option d'insertion en vigueur pour cette table : APPEND
+option TRAILING NULLCOLS effective
+
+   Nom de colonne               Position   Long.  Séparat. Encadrem. Type de données
+------------------------------ ---------- ----- ---- ---- ---------------------
+NUM_FOURNISSEUR                         1     *   |       CHARACTER            
+    chaîne SQL pour la colonne : "RTRIM(LTRIM(:NUM_FOURNISSEUR))"
+NOM_ADRESSE_SITE                     NEXT     *   |       CHARACTER            
+    chaîne SQL pour la colonne : "RTRIM(LTRIM(:NOM_ADRESSE_SITE))"
+ID_IVALUA_SITE_FOURNISSEUR           NEXT     *   |       CHARACTER            
+    chaîne SQL pour la colonne : "RTRIM(LTRIM(:ID_IVALUA_SITE_FOURNISSEUR))"
+PERIMETRE_HOMOLOGATION               NEXT     *   |       CHARACTER            
+    chaîne SQL pour la colonne : "REPLACE( :PERIMETRE_HOMOLOGATION,CHR(13),'')"
+CREATION_DATE                                             SYSDATE
+CREATED_BY                                                CONSTANT
+    La valeur est '1205'
+LAST_UPDATE_DATE                                          SYSDATE
+LAST_UPDATED_BY                                           CONSTANT
+    La valeur est '1205'
+STATUT                                                    CONSTANT
+    La valeur est 'NEW'
+FILE_NAME                                                 CONSTANT
+    La valeur est 'DSP01_SUP_HOMOLOGATION_20260820162842_ST_DSP01-SUP_2822036.csv'
+LINE_NUM                                                  RECNUM
+RECORD_ID                            NEXT     *   |       CHARACTER            
+    chaîne SQL pour la colonne : "DKA_IPOFRS_HOMOLO_S.NEXTVAL"
+REQUEST_ID                                                CONSTANT
+    La valeur est '-1'
+LOADER_REQUEST_ID                                         CONSTANT
+    La valeur est '48811929'
+
+Table "DKA"."DKA_IPOFRS_REPORTING_HOMOLOG#", chargé à partir de chaque enregistrement physique.
+Option d'insertion en vigueur pour cette table : APPEND
+option TRAILING NULLCOLS effective
+
+   Nom de colonne               Position   Long.  Séparat. Encadrem. Type de données
+------------------------------ ---------- ----- ---- ---- ---------------------
+NUM_FOURNISSEUR                         1     *   |       CHARACTER            
+    chaîne SQL pour la colonne : "RTRIM(LTRIM(:NUM_FOURNISSEUR))"
+NOM_ADRESSE_SITE                     NEXT     *   |       CHARACTER            
+    chaîne SQL pour la colonne : "RTRIM(LTRIM(:NOM_ADRESSE_SITE))"
+ID_IVALUA_SITE_FOURNISSEUR           NEXT     *   |       CHARACTER            
+    chaîne SQL pour la colonne : "RTRIM(LTRIM(:ID_IVALUA_SITE_FOURNISSEUR))"
+PERIMETRE_HOMOLOGATION               NEXT     *   |       CHARACTER            
+    chaîne SQL pour la colonne : "REPLACE( :PERIMETRE_HOMOLOGATION,CHR(13),'')"
+CREATION_DATE                                             SYSDATE
+CREATED_BY                                                CONSTANT
+    La valeur est '1205'
+LAST_UPDATE_DATE                                          SYSDATE
+LAST_UPDATED_BY                                           CONSTANT
+    La valeur est '1205'
+STATUT                                                    CONSTANT
+    La valeur est 'NEW'
+FILE_NAME                                                 CONSTANT
+    La valeur est 'DSP01_SUP_HOMOLOGATION_20260820162842_ST_DSP01-SUP_2822036.csv'
+LINE_NUM                                                  RECNUM
+REQUEST_ID                                                CONSTANT
+    La valeur est '-1'
+LOADER_REQUEST_ID                                         CONSTANT
+    La valeur est '48811929'
+
+Table "DKA"."DKA_IPOFRS_HIST_HOMOLOGATIONS#", chargé à partir de chaque enregistrement physique.
+Option d'insertion en vigueur pour cette table : APPEND
+option TRAILING NULLCOLS effective
+
+   Nom de colonne               Position   Long.  Séparat. Encadrem. Type de données
+------------------------------ ---------- ----- ---- ---- ---------------------
+NUM_FOURNISSEUR                         1     *   |       CHARACTER            
+    chaîne SQL pour la colonne : "RTRIM(LTRIM(:NUM_FOURNISSEUR))"
+NOM_ADRESSE_SITE                     NEXT     *   |       CHARACTER            
+    chaîne SQL pour la colonne : "RTRIM(LTRIM(:NOM_ADRESSE_SITE))"
+ID_IVALUA_SITE_FOURNISSEUR           NEXT     *   |       CHARACTER            
+    chaîne SQL pour la colonne : "RTRIM(LTRIM(:ID_IVALUA_SITE_FOURNISSEUR))"
+PERIMETRE_HOMOLOGATION               NEXT     *   |       CHARACTER            
+    chaîne SQL pour la colonne : "REPLACE( :PERIMETRE_HOMOLOGATION,CHR(13),'')"
+CREATION_DATE                                             SYSDATE
+CREATED_BY                                                CONSTANT
+    La valeur est '1205'
+LAST_UPDATE_DATE                                          SYSDATE
+LAST_UPDATED_BY                                           CONSTANT
+    La valeur est '1205'
+STATUT                                                    CONSTANT
+    La valeur est 'NEW'
+FILE_NAME                                                 CONSTANT
+    La valeur est 'DSP01_SUP_HOMOLOGATION_20260820162842_ST_DSP01-SUP_2822036.csv'
+LINE_NUM                                                  RECNUM
+REQUEST_ID                                                CONSTANT
+    La valeur est '-1'
+LOADER_REQUEST_ID                                         CONSTANT
+    La valeur est '48811929'
+
+
+Table "DKA"."DKA_IPOFRS_HOMOLOGATIONS#" :
+  Chargement réussi de 862 Lignes.
+  0 Lignes chargement impossible dû à des erreurs de données.
+  0 Lignes chargement impossible car échec de toutes les clauses WHEN.
+  0 Lignes chargement impossible car tous les champs étaient non renseignés.
+
+
+Table "DKA"."DKA_IPOFRS_REPORTING_HOMOLOG#" :
+  Chargement réussi de 862 Lignes.
+  0 Lignes chargement impossible dû à des erreurs de données.
+  0 Lignes chargement impossible car échec de toutes les clauses WHEN.
+  0 Lignes chargement impossible car tous les champs étaient non renseignés.
+
+
+Table "DKA"."DKA_IPOFRS_HIST_HOMOLOGATIONS#" :
+  Chargement réussi de 862 Lignes.
+  0 Lignes chargement impossible dû à des erreurs de données.
+  0 Lignes chargement impossible car échec de toutes les clauses WHEN.
+  0 Lignes chargement impossible car tous les champs étaient non renseignés.
+
+
+Espace affecté au tableau de liens :                 236160 octets(64 lignes)
+Octets de tampon de lecture : 1048576
+
+Nombre total d'enregistrements logiques ignorés :          1
+Nombre total d'enregistrements logiques lus :           862
+Nombre total d'enregistrements logiques rejetés :         0
+Nombre total d'enregistrements logiques mis au rebut :        0
+
+Le début de l'exécution a été effectué sur Je Aou 20 19:10:52 2026
+La fin de l'exécution a été effectuée sur Je Aou 20 19:11:33 2026
+
+Temps écoulé (ELAPSED) :     00:00:41.23
+Temps processeur (CPU) :    00:00:00.05
+/u01/application/V12/fs2/EBSapps/appl/dka/12.0.0/bin/DKA_IPOFRS_IVALUA_LOADER: line 730: [: !=: unary operator expected
+\nChargement réussi
+\n===> Le chargement des fichiers s'est déroulé avec succès.
+recuperation du repertoire archive
+move DSP01_SUP_HOMOLOGATION_20260820162842_ST_DSP01-SUP_2822036.csv
+
+
+
++---------------------------------------------------------------------------+
+Aucune option de fin demandée.
+
+Output file size: 
+333
+
++---------------------------------------------------------------------------+
+Le traitement simultané a réussi
+Date et heure système : 20-AOU-2026 19:11:33
+
++---------------------------------------------------------------------------+
