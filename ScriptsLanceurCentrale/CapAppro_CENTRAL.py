@@ -35,8 +35,11 @@ from capappro_config import (Config, lancerCommande, log, logDebut,
 DOSSIER_SCRIPT = os.path.dirname(os.path.abspath(__file__))
 config = Config(DOSSIER_SCRIPT)
 
-# Librairies maison (gdrive / pylibrary / gmail)
-libraryPath = config.getDossier("paths", "LIBRARY_PATH")
+# Librairies maison (gdrive / pylibrary / gmail).
+# Elles sont deployees dans le meme dossier que les scripts : Python place
+# deja ce dossier en tete de sys.path, l'import fonctionne sans reglage.
+# LIBRARY_PATH ne sert qu'a designer un emplacement different.
+libraryPath = config.dossierLibrairies()
 if libraryPath and libraryPath not in sys.path:
     sys.path.append(libraryPath)
 from pylibrary import libraries
@@ -44,7 +47,7 @@ from gmail import Mail
 from gdrive import gdrive
 
 SCRIPT_FOLDER = config.dossierScripts()
-WORKER_SCRIPT = config.get("paths", "WORKER_SCRIPT")
+WORKER_SCRIPT = config.cheminWorker()
 
 DRIVE_ROOT_ID = config.get("ordonnanceur", "DRIVE_ROOT_ID")
 SPREADSHEET_ID = config.get("ordonnanceur", "SPREADSHEET_ID")

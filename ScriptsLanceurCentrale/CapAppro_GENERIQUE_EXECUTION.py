@@ -37,8 +37,11 @@ from capappro_config import Config, log, logDebut, logFin, logSection, masquer
 DOSSIER_SCRIPT = os.path.dirname(os.path.abspath(__file__))
 config = Config(DOSSIER_SCRIPT)
 
-# Librairies maison (gdrive / pylibrary / gmail)
-libraryPath = config.getDossier("paths", "LIBRARY_PATH")
+# Librairies maison (gdrive / pylibrary / gmail).
+# Elles sont deployees dans le meme dossier que les scripts : Python place
+# deja ce dossier en tete de sys.path, l'import fonctionne sans reglage.
+# LIBRARY_PATH ne sert qu'a designer un emplacement different.
+libraryPath = config.dossierLibrairies()
 if libraryPath and libraryPath not in sys.path:
     sys.path.append(libraryPath)
 from pylibrary import libraries

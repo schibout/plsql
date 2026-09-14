@@ -170,6 +170,37 @@ class Config(object):
             return self.getDossier("paths", "SCRIPT_FOLDER")
         return os.path.join(self.dossierScript, "")
 
+    def resoudreChemin(self, chemin):
+        """Rend un chemin absolu, relativement au dossier du script.
+
+        Tous les scripts et les librairies maison sont deployes dans un meme
+        dossier : un chemin relatif dans le .ini se resout donc naturellement
+        a cote du script en cours d'execution, sans configuration.
+        """
+        if not chemin:
+            return chemin
+        chemin = chemin.strip()
+        if os.path.isabs(chemin):
+            return chemin
+        return os.path.join(self.dossierScript, chemin)
+
+    def cheminWorker(self):
+        """Chemin du script worker, resolu par rapport au dossier courant."""
+        return self.resoudreChemin(self.get("paths", "WORKER_SCRIPT",
+                                            "CapAppro_GENERIQUE_EXECUTION.py"))
+
+    def dossierLibrairies(self):
+        """Dossier des librairies maison.
+
+        Vide = elles sont a cote des scripts, ce qui est le cas par defaut :
+        Python place deja ce dossier en tete de sys.path, aucun ajout n'est
+        alors necessaire.
+        """
+        valeur = self.get("paths", "LIBRARY_PATH", "")
+        if not valeur or not valeur.strip():
+            return ""
+        return self.getDossier("paths", "LIBRARY_PATH")
+
 
 # =============================================================================
 #   Lancement d'un sous-processus avec sortie relayee en direct

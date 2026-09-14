@@ -50,7 +50,7 @@ from capappro_config import (Config, lancerCommande, log, logDebut,
 DOSSIER_SCRIPT = os.path.dirname(os.path.abspath(__file__))
 config = Config(DOSSIER_SCRIPT)
 
-WORKER_SCRIPT = config.get("paths", "WORKER_SCRIPT")
+WORKER_SCRIPT = config.cheminWorker()
 SOURCE_PLAN = config.get("local", "SOURCE", "drive").strip().lower()
 FICHIER_ORDONNANCEUR = config.get("local", "FICHIER_ORDONNANCEUR", "")
 ONGLET_ORDONNANCEUR = config.get("local", "ONGLET_ORDONNANCEUR")
@@ -138,7 +138,7 @@ def chargerDepuisDrive():
     C'est la meme source que l'ordonnanceur central : les valeurs sont donc
     a jour et arrivent sous la meme forme (des chaines de caracteres).
     """
-    libraryPath = config.getDossier("paths", "LIBRARY_PATH")
+    libraryPath = config.dossierLibrairies()
     if libraryPath and libraryPath not in sys.path:
         sys.path.append(libraryPath)
     try:
@@ -304,22 +304,31 @@ def verifierEnvironnement():
 
     log("")
     log("--- Librairies maison (indispensables pour le Drive) ---")
-    libraryPath = config.getDossier("paths", "LIBRARY_PATH")
-    log("  LIBRARY_PATH configuré : %s" % (libraryPath or "(vide)"))
-    if libraryPath and os.path.isdir(libraryPath):
-        log("  OK       le dossier existe")
-        if libraryPath not in sys.path:
-            sys.path.append(libraryPath)
+    libraryPath = config.dossierLibrairies()
+    if libraryPath:
+        log("  LIBRARY_PATH : %s" % libraryPath)
+        if os.path.isdir(libraryPath):
+            log("  OK       le dossier existe")
+            if libraryPath not in sys.path:
+                sys.path.append(libraryPath)
+        else:
+            log("  MANQUANT le dossier n'existe pas", niveau="ERROR")
     else:
-        log("  MANQUANT le dossier n'existe pas", niveau="ERROR")
-        manquants.append(r"copier C:\RPA\python-libraries\ depuis la machine RPA")
+        log("  LIBRARY_PATH vide : recherche à côté des scripts")
+        log("  Dossier : %s" % DOSSIER_SCRIPT)
 
+    absentes = []
     for module in ("gdrive", "pylibrary", "gmail"):
         try:
-            __import__(module)
-            log("  OK       %s" % module)
+            trouve = __import__(module)
+            log("  OK       %-10s %s" % (module, getattr(trouve, "__file__", "")))
         except ImportError:
             log("  MANQUANT %s" % module, niveau="ERROR")
+            absentes.append(module + ".py")
+    if absentes:
+        manquants.append(
+            "déposer %s dans %s (ou renseigner [paths] LIBRARY_PATH)"
+            % (", ".join(absentes), DOSSIER_SCRIPT))
 
     log("")
     log("--- Client Oracle ---")
