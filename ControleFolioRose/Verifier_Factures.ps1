@@ -139,7 +139,7 @@ function Get-RequeteOracle {
     switch ($Type) {
         'CLIENTS' {
             return @"
-SELECT '##RES##$Cle|' || NVL(q1.nb_trx, 0) || '|' || NVL(q1.sum_amt, 0) || '|' || NVL(q2.sum_int, 0)
+SELECT '##RES##$Cle|' || NVL(q1.nb_trx, 0) || '|' || NVL(q1.sum_amt, 0) || '|' || NVL(q2.nb_int, 0) || '|' || NVL(q2.sum_int, 0)
 FROM
   (SELECT COUNT(DISTINCT racta.CUSTOMER_TRX_ID) AS nb_trx,
           SUM(rctl.EXTENDED_AMOUNT)             AS sum_amt
@@ -149,7 +149,8 @@ FROM
      AND  rctl.attribute10 LIKE TRIM('$b') || '%'
      AND  rctl.attribute9 = TRIM('$f')) q1
 CROSS JOIN
- (SELECT SUM(CASE
+ (SELECT    COUNT(*) AS nb_int,
+			SUM(CASE
                 WHEN TYPMVT = 'SI_AMT_FACTURE' THEN FMT_AMOUNT
                 ELSE -1 * FMT_AMOUNT
             END) AS sum_int
@@ -162,7 +163,7 @@ CROSS JOIN
         }
         'FOURNISSEURS' {
             return @"
-SELECT '##RES##$Cle|' || NVL(q_def.nb_trx, 0) || '|' || NVL(q_def.sum_amt, 0) || '|' || NVL(q_int.sum_int, 0)
+SELECT '##RES##$Cle|' || NVL(q_def.nb_trx, 0) || '|' || NVL(q_def.sum_amt, 0) || '|' || NVL(q_int.nb_int, 0) || '|' || NVL(q_int.sum_int, 0)
 FROM
   (SELECT COUNT(DISTINCT aia.invoice_id) AS nb_trx,
           SUM(aia.invoice_amount)         AS sum_amt
@@ -170,7 +171,8 @@ FROM
    WHERE  aia.attribute10 LIKE TRIM('$b') || '%'
      AND  aia.attribute9 = TRIM('$f')) q_def
 CROSS JOIN
- (SELECT SUM(aili.amount) AS sum_int
+ (SELECT COUNT(DISTINCT aii.invoice_id) AS nb_int,
+          SUM(aili.amount) AS sum_int
   FROM   APPS.AP_INVOICES_INTERFACE aii
   JOIN   APPS.AP_INVOICE_LINES_INTERFACE aili ON aii.invoice_id = aili.invoice_id
   WHERE  aii.attribute10 LIKE TRIM('$b') || '%'
@@ -186,7 +188,7 @@ CROSS JOIN
         }
         'GL' {
             return @"
-SELECT '##RES##$Cle|' || NVL(q_def.nb_trx, 0) || '|' || NVL(q_def.sum_amt, 0) || '|' || NVL(q_int.sum_int, 0)
+SELECT '##RES##$Cle|' || NVL(q_def.nb_trx, 0) || '|' || NVL(q_def.sum_amt, 0) || '|' || NVL(q_int.nb_int, 0) || '|' || NVL(q_int.sum_int, 0)
 FROM
   (SELECT COUNT(DISTINCT gjh.je_header_id) AS nb_trx,
           SUM(gjl.entered_dr)              AS sum_amt
@@ -195,7 +197,8 @@ FROM
    WHERE  gjl.attribute10 LIKE TRIM('$b') || '%'
      AND  gjl.attribute9 = TRIM('$f')) q_def
 CROSS JOIN
- (SELECT SUM(entered_dr) AS sum_int
+ (SELECT COUNT(*) AS nb_int,
+		 SUM(entered_dr) AS sum_int
   FROM   APPS.GL_INTERFACE
   WHERE  attribute10 LIKE TRIM('$b') || '%'
     AND  attribute9 = TRIM('$f')) q_int;
@@ -344,7 +347,7 @@ foreach ($ligne in $Lignes) {
     $type = ''
     if     ($fichier -match 'CLIENTS')      { $type = 'CLIENTS' }
     elseif ($fichier -match 'FOURNISSEURS') { $type = 'FOURNISSEURS' }
-    elseif ($fichier -match 'GL' -or $fichier -match 'GRAND LIVRE') { $type = 'GL' }
+    elseif ($fichier -match 'GL' -or $fichier -match 'GRAND LIVRE' -or $fichier -match 'CDPG') { $type = 'GL' }
     else { $type = 'AUTRE' }
 
     # Sans folio ou sans nom de fichier, aucune requete n'est possible.
@@ -454,13 +457,14 @@ if ($erreursOra.Count -gt 0) {
 
 $resultats = @{}
 foreach ($l in $sortie) {
-    if ("$l" -match '##RES##(\d+)\|([^|]*)\|([^|]*)\|(.*)$') {
-        $resultats[[int]$Matches[1]] = @{
-            Nb        = $Matches[2].Trim()
-            Mt        = $Matches[3].Trim()
-            Interface = $Matches[4].Trim()
-        }
+    if ("$l" -match '##RES##(\d+)\|([^|]*)\|([^|]*)\|([^|]*)\|(.*)$') {
+    $resultats[[int]$Matches[1]] = @{
+        Nb          = $Matches[2].Trim()
+        Mt          = $Matches[3].Trim()
+        NbInterface = $Matches[4].Trim()
+        Interface   = $Matches[5].Trim()
     }
+ }
 }
 
 if (-not $GarderTempSQL) { Remove-Item $FichierSqlTmp -ErrorAction SilentlyContinue }
@@ -508,9 +512,9 @@ foreach ($u in $lignesUtiles) {
     $ora = if ($u.IdxOracle -ge 0) { $resultats[$u.IdxOracle] } else { $null }
     $repondu = ($null -ne $ora)
     if ($repondu) {
-        $txtNbOra = $ora.Nb; $txtMtOra = $ora.Mt; $txtMtInterface = $ora.Interface
+        $txtNbOra = $ora.Nb; $txtMtOra = $ora.Mt; $txtNbInterface = $ora.NbInterface; $txtMtInterface = $ora.Interface
     } else {
-        $txtNbOra = ''; $txtMtOra = ''; $txtMtInterface = ''
+        $txtNbOra = ''; $txtMtOra = ''; $txtNbInterface = ''; $txtMtInterface = ''
     }
 
     $mt_app_amont = Parse-Montant $txtAppAmontDebit
@@ -585,14 +589,15 @@ foreach ($u in $lignesUtiles) {
         # Repris tel quel du fichier d'entree, a la meme position que dans
         # celui-ci : c'est la justification saisie par le gestionnaire, sans
         # laquelle un ecart deja explique ressort comme une anomalie neuve.
-        'Commentaire'            = $txtCommentaire
         'Somme Amont Fichier'    = $somme_amont_fichier
         'Somme Ecart Fichier'    = $somme_ecart_debit_fichier
+		'Nb Pieces Interface OA' = $txtNbInterface
         'Montant Interface OA'   = $txtMtInterface
         'Nb Pieces OA'           = $txtNbOra
         'Montant OA '            = $txtMtOra
         'Ecart Nb Piece Calcule' = $ecart_nb_calcule
         'Ecart Mt Calcule'       = $ecart_mt_calcule
+		'Commentaire'            = $txtCommentaire
         'Statut Verification'    = $statut
     })
 }

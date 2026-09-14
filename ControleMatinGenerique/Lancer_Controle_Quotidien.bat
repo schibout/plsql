@@ -8,7 +8,7 @@ cd /d "%~dp0"
 :: Parametres par defaut (modifier ici si besoin)
 set NB_JOURS=3
 set HEURE_FERMETURE=19
-set HEURE_OUVERTURE=7
+set HEURE_OUVERTURE=19
 
 :: Options : ajouter -GarderTempSQL a la fin de la ligne powershell pour debug
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File "%~dp0Lancer_Controle_Quotidien.ps1" -NbJoursHisto %NB_JOURS% -HeureFermeture %HEURE_FERMETURE% -HeureOuverture %HEURE_OUVERTURE%
