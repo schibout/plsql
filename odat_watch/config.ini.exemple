@@ -2,11 +2,11 @@
 [database]
 ; Compte Oracle (nominatif ou APPS). Les vues FND doivent etre accessibles sans prefixe,
 ; sinon renseigner schema = APPS.
-user = mon_compte
-password = XXXXXXXX
+user = aroux
+password = GAERFTXF
 ; Format host:port/service_name
 dsn = prdscanc1pdb03.dalkia.net:1521/ebs_PDBFINP1
-schema =
+schema =APPS
 
 [oracle]
 ; Fenetre d'historique recuperee a chaque rafraichissement (heures)
