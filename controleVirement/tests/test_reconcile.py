@@ -168,3 +168,71 @@ def test_controle_quartz_nom_different():
     quartz = [_v("", 100, "AUTRE BENEFICIAIRE")]
     totaux, ecarts = controle_quartz(cible, quartz)
     assert any(e["type_ecart"] == "NOM_DIFFERENT" for e in ecarts)
+
+
+from cv.reconcile import controle_doublons_ack
+
+
+def _ack(virements, payeur="FR76PAYEUR"):
+    return LotAck(iban_payeur=payeur, virements=virements,
+                  footer_count=len(virements), footer_total_cts=sum(v.montant_cts for v in virements))
+
+
+def test_controle_doublons_ack_aucun_doublon():
+    acks = [
+        ("g1", "ACK_A", _ack([_v("FR1", 100, "ALLAUCH"), _v("FR2", 200, "ISTRES")])),
+        ("g1", "ACK_B", _ack([_v("FR1", 100, "ALLAUCH")])),
+    ]
+    assert controle_doublons_ack(acks) == []
+
+
+def test_controle_doublons_ack_envoi_identique_meme_instance():
+    virs = [_v("FR1", 100, "ALLAUCH"), _v("FR2", 200, "ISTRES")]
+    acks = [
+        ("g1", "ACK_A", _ack(list(virs))),
+        ("g1", "ACK_B", _ack(list(virs))),
+    ]
+    doublons = controle_doublons_ack(acks)
+    assert len(doublons) == 1
+    d = doublons[0]
+    assert d["guid"] == "g1" and d["fichier"] == "ACK_B"
+    assert d["guid_original"] == "g1" and d["fichier_original"] == "ACK_A"
+    assert d["nb_virements"] == 2 and d["montant_cts"] == 300
+
+
+def test_controle_doublons_ack_envoi_identique_entre_instances():
+    virs = [_v("FR1", 100, "ALLAUCH")]
+    acks = [
+        ("g1", "ACK_A", _ack(list(virs))),
+        ("g2", "ACK_Z", _ack(list(virs))),
+    ]
+    doublons = controle_doublons_ack(acks)
+    assert [(d["guid"], d["fichier"], d["fichier_original"]) for d in doublons] == [("g2", "ACK_Z", "ACK_A")]
+
+
+def test_controle_doublons_ack_payeur_different_pas_doublon():
+    virs = [_v("FR1", 100, "ALLAUCH")]
+    acks = [
+        ("g1", "ACK_A", _ack(list(virs), payeur="FR76PAYEUR1")),
+        ("g1", "ACK_B", _ack(list(virs), payeur="FR76PAYEUR2")),
+    ]
+    assert controle_doublons_ack(acks) == []
+
+
+def test_controle_doublons_ack_triple_envoi():
+    virs = [_v("FR1", 100, "ALLAUCH")]
+    acks = [("g1", f"ACK_{i}", _ack(list(virs))) for i in range(3)]
+    doublons = controle_doublons_ack(acks)
+    assert [d["fichier"] for d in doublons] == ["ACK_1", "ACK_2"]
+    assert all(d["fichier_original"] == "ACK_0" for d in doublons)
+
+
+def test_controle_doublons_ack_original_est_celui_connu_d_oracle():
+    virs = [_v("FR1", 100, "ALLAUCH")]
+    acks = [
+        ("g1", "ACK_0001_orphelin", _ack(list(virs))),   # trie avant, mais inconnu d'Oracle
+        ("g1", "ACK_0002_oracle", _ack(list(virs))),
+    ]
+    doublons = controle_doublons_ack(acks, references={("g1", "ACK_0002_oracle")})
+    assert [(d["fichier"], d["fichier_original"]) for d in doublons] == [
+        ("ACK_0001_orphelin", "ACK_0002_oracle")]

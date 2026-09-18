@@ -22,6 +22,8 @@ Le contrôle suit chaque virement tout au long de son parcours et s'assure qu'à
 
 **Troisième temps — la trésorerie a-t-elle bien tout reçu ?** On compare la liste des virements transmis à la banque avec la liste des virements que la trésorerie a importés dans son outil (Quartz) le même jour.
 
+**En parallèle — un même envoi a-t-il été transmis plusieurs fois ?** Tous les fichiers transmis à la banque sur la journée sont comparés entre eux : deux envois portant le même compte payeur et exactement les mêmes virements sont signalés comme un doublon, car les bénéficiaires seraient alors payés deux fois.
+
 ---
 
 ## 2. Résultat détaillé
@@ -32,6 +34,7 @@ Le contrôle suit chaque virement tout au long de son parcours et s'assure qu'à
 | Montants et volumes sur les fichiers d'origine | 59 fichiers | **Conforme** |
 | Montants et volumes sur les envois regroupés vers la banque | 46 envois | **Conforme** |
 | Comparaison virement par virement (bénéficiaire, montant, banque) | 205 virements | **Conforme** |
+| Envois transmis plusieurs fois à la banque | 59 envois | **Conforme** |
 | Rapprochement avec le retour de la trésorerie | — | *Non réalisé : l'export de la trésorerie n'a pas été fourni* |
 
 Montant total transmis à la banque sur la journée : **2 667 877,07 EUR** pour **205 virements**.
@@ -47,3 +50,4 @@ Les fichiers ci-dessous accompagnent cette synthèse et contiennent le détail c
 - **`controle_totaux_edf.csv`** — pour chaque envoi regroupé vers la banque, le nombre de virements et le montant total, comparés à l'accusé de réception bancaire.
 - **`controle_lignes_ecarts.csv`** — les différences relevées virement par virement lors de la préparation. **Un fichier vide signifie qu'aucun écart n'a été détecté**, et constitue donc un bon résultat.
 - **`controle_quartz_ecarts.csv`** — les virements qui n'ont pas pu être appariés avec le retour de la trésorerie. **Un fichier vide signifie que le rapprochement est parfait**.
+- **`controle_doublons_ack.csv`** — les envois vers la banque dont le contenu est identique à un envoi déjà transmis sur la journée. **Un fichier vide signifie qu'aucun envoi n'a été transmis en double**.

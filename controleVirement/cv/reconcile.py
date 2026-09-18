@@ -181,6 +181,42 @@ def controle_lignes(guid, nom_lot, dkfin01_lots, ack):
     return ecarts
 
 
+def _empreinte_ack(ack):
+    """Contenu metier d'un envoi, independant du nom de fichier et de l'ordre des lignes."""
+    return (ack.iban_payeur.strip(),
+            tuple(sorted((v.iban, v.montant_cts, _norm_nom(v.nom), v.bic.strip().upper())
+                         for v in ack.virements)))
+
+
+def controle_doublons_ack(acks, references=frozenset()):
+    """Detecte les envois transmis plusieurs fois a la banque sur la journee.
+
+    acks : liste de (guid, nom_fichier, LotAck), toutes instances confondues.
+    references : ensemble de (guid, nom_fichier) des ACK connus d'Oracle.
+    Deux ACK sont des doublons s'ils portent le meme payeur et exactement les memes
+    virements. L'original est l'ACK reference par Oracle (celui rapproche aux niveaux
+    1 et 2), sinon le premier rencontre ; les autres sont signales.
+    """
+    doublons = []
+    vus = {}
+    ordonnes = sorted(acks, key=lambda t: (t[0], t[1]) not in references)
+    for guid, nom, ack in ordonnes:
+        if not ack.virements:
+            continue
+        cle = _empreinte_ack(ack)
+        if cle in vus:
+            guid_orig, nom_orig = vus[cle]
+            doublons.append({
+                "guid": guid, "fichier": nom,
+                "guid_original": guid_orig, "fichier_original": nom_orig,
+                "nb_virements": len(ack.virements),
+                "montant_cts": sum(v.montant_cts for v in ack.virements),
+            })
+        else:
+            vus[cle] = (guid, nom)
+    return doublons
+
+
 def controle_quartz(cible_virements, quartz_virements):
     """Niveau 3 : rapproche l'import Quartz (tresorerie) contre les virements cible envoyes.
 

@@ -80,8 +80,9 @@ def _ecrit_csv(chemin, lignes):
 
 
 def write_reports(dossier, fichiers, totaux_source, totaux_edf, ecarts,
-                  quartz_totaux=None, quartz_ecarts=None):
+                  quartz_totaux=None, quartz_ecarts=None, doublons=None):
     quartz_ecarts = quartz_ecarts or []
+    doublons = doublons or []
     dossier = Path(dossier)
     dossier.mkdir(parents=True, exist_ok=True)
 
@@ -90,16 +91,22 @@ def write_reports(dossier, fichiers, totaux_source, totaux_edf, ecarts,
     _ecrit_csv(dossier / "controle_totaux_edf.csv", totaux_edf)
     _ecrit_csv(dossier / "controle_lignes_ecarts.csv", ecarts)
     _ecrit_csv(dossier / "controle_quartz_ecarts.csv", quartz_ecarts)
+    _ecrit_csv(dossier / "controle_doublons_ack.csv", doublons)
 
-    fichiers_ko = [f for f in fichiers if f["statut"] != "OK"]
+    # Les doublons ont leur propre section : on ne les presente pas comme des fichiers manquants
+    fichiers_ko = [f for f in fichiers if f["statut"] not in ("OK", "DOUBLON")]
     src_ko = [t for t in totaux_source if t["statut_lignes"] != "OK" or t["statut_montant"] != "OK"]
     edf_ko = [t for t in totaux_edf if t["statut_lignes"] != "OK" or t["statut_montant"] != "OK"]
     quartz_ko = bool(quartz_totaux) and (
         quartz_totaux["statut_lignes"] != "OK" or quartz_totaux["statut_montant"] != "OK"
         or bool(quartz_ecarts))
-    tout_ok = (not fichiers_ko and not src_ko and not edf_ko and not ecarts and not quartz_ko)
+    tout_ok = (not fichiers_ko and not src_ko and not edf_ko and not ecarts and not quartz_ko
+               and not doublons)
+    nb_doublons_vir = sum(int(d["nb_virements"]) for d in doublons)
+    montant_doublons = sum(int(d["montant_cts"]) for d in doublons)
 
     anomalies_euro = [t for t in totaux_source if t.get("euro_lines") not in (None, 1)]
+    fichiers_ack = [f for f in fichiers if f["categorie"] == "ACK"]
     montant_envoye = _somme(totaux_edf, "montant_ack_footer")
     nb_envoye = _somme(totaux_edf, "nb_ack_footer")
 
@@ -159,6 +166,11 @@ def write_reports(dossier, fichiers, totaux_source, totaux_edf, ecarts,
         "virements transmis à la banque avec la liste des virements que la trésorerie a "
         "importés dans son outil (Quartz) le même jour.",
         "",
+        "**En parallèle — un même envoi a-t-il été transmis plusieurs fois ?** Tous les "
+        "fichiers transmis à la banque sur la journée sont comparés entre eux : deux envois "
+        "portant le même compte payeur et exactement les mêmes virements sont signalés comme "
+        "un doublon, car les bénéficiaires seraient alors payés deux fois.",
+        "",
         "---",
         "",
         "## 2. Résultat détaillé",
@@ -170,6 +182,7 @@ def write_reports(dossier, fichiers, totaux_source, totaux_edf, ecarts,
         f"| Montants et volumes sur les envois regroupés vers la banque | {len(totaux_edf)} envois | {statut(len(edf_ko))} |",
         f"| Comparaison virement par virement (bénéficiaire, montant, banque) | "
         f"{nb_envoye if nb_envoye is not None else len(totaux_edf)} virements | {statut(len(ecarts))} |",
+        f"| Envois transmis plusieurs fois à la banque | {len(fichiers_ack)} envois | {statut(len(doublons))} |",
     ]
     if quartz_totaux:
         lignes_md.append(
@@ -182,9 +195,13 @@ def write_reports(dossier, fichiers, totaux_source, totaux_edf, ecarts,
             "*Non réalisé : l'export de la trésorerie n'a pas été fourni* |")
     lignes_md.append("")
     if montant_envoye is not None:
+        complement = ""
+        if doublons:
+            complement = (f", auxquels s'ajoutent **{nb_doublons_vir} virements** pour "
+                          f"**{_euros(montant_doublons)}** transmis en double (voir ci-dessous)")
         lignes_md += [
             f"Montant total transmis à la banque sur la journée : **{_euros(montant_envoye)}** "
-            f"pour **{nb_envoye} virements**.",
+            f"pour **{nb_envoye} virements**{complement}.",
             "",
         ]
     if quartz_totaux:
@@ -213,6 +230,26 @@ def write_reports(dossier, fichiers, totaux_source, totaux_edf, ecarts,
     if not tout_ok:
         lignes_md += ["---", "", "## 3. Points d'attention", ""]
 
+    if doublons:
+        lignes_md += [
+            "### Envois transmis en double à la banque",
+            "",
+            f"**{len(doublons)} envoi(s)** ont été transmis à la banque alors qu'un envoi "
+            "strictement identique (même compte payeur, mêmes bénéficiaires, mêmes montants) "
+            f"avait déjà été transmis sur la journée. Cela représente **{nb_doublons_vir} "
+            f"virements** pour **{_euros(montant_doublons)}** susceptibles d'avoir été payés "
+            "deux fois. Il faut vérifier sans délai avec la banque si le second envoi a été "
+            "exécuté et, le cas échéant, engager les demandes de retour de fonds.",
+            "",
+            "| Envoi en double | Identique à l'envoi | Nombre de virements | Montant |",
+            "|---|---|---|---|",
+        ]
+        lignes_md += [
+            f"| `{d['fichier']}` | `{d['fichier_original']}` | {d['nb_virements']} | "
+            f"{_euros(int(d['montant_cts']))} |"
+            for d in doublons
+        ]
+        lignes_md.append("")
     if fichiers_ko:
         lignes_md += [
             "### Fichiers manquants ou incomplets",
@@ -373,6 +410,9 @@ def write_reports(dossier, fichiers, totaux_source, totaux_edf, ecarts,
         "- **`controle_quartz_ecarts.csv`** — les virements qui n'ont pas pu être appariés "
         "avec le retour de la trésorerie. **Un fichier vide signifie que le rapprochement est "
         "parfait**.",
+        "- **`controle_doublons_ack.csv`** — les envois vers la banque dont le contenu est "
+        "identique à un envoi déjà transmis sur la journée. **Un fichier vide signifie "
+        "qu'aucun envoi n'a été transmis en double**.",
         "",
     ]
 

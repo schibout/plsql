@@ -38,3 +38,19 @@ def test_write_reports_quartz_ecart_rend_ko(tmp_path):
     assert ok is False
     synth = (tmp_path / "rapport" / "synthese.md").read_text(encoding="utf-8")
     assert "Quartz" in synth
+
+
+def test_write_reports_doublons_rend_ko(tmp_path):
+    fichiers = [{"guid": "g1", "categorie": "ACK", "fichier": "ACK_B", "statut": "DOUBLON",
+                 "detail": "envoi identique a ACK_A"}]
+    doublons = [{"guid": "g1", "fichier": "ACK_B", "guid_original": "g1", "fichier_original": "ACK_A",
+                 "nb_virements": 2, "montant_cts": 30000}]
+    ok = write_reports(tmp_path / "rapport", fichiers, [], [], [], None, [], doublons)
+    assert ok is False
+    assert (tmp_path / "rapport" / "controle_doublons_ack.csv").exists()
+    synth = (tmp_path / "rapport" / "synthese.md").read_text(encoding="utf-8")
+    assert "en double" in synth
+    assert "ACK_B" in synth and "ACK_A" in synth
+    assert "300,00 EUR" in synth
+    # Un doublon n'est pas un fichier manquant : il ne doit pas figurer dans cette section
+    assert "Fichiers manquants ou incomplets" not in synth

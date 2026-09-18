@@ -21,7 +21,7 @@ def test_e2e_totaux_concordent():
     instances = discover_instances(RACINE, "26062026")
     assert instances, "instances 26062026 introuvables"
     for inst in instances:
-        _, totaux_source, totaux_edf, ecarts, _ = collecter_instance(inst)
+        _, totaux_source, totaux_edf, ecarts, _, _ = collecter_instance(inst)
         for t in totaux_source:
             assert t["statut_lignes"] == "OK", t
             assert t["statut_montant"] == "OK", t
@@ -42,7 +42,7 @@ def test_e2e_quartz_concorde():
     assert quartz is not None, "fichier Quartz introuvable"
     cible = []
     for inst in discover_instances(RACINE, "26062026"):
-        *_, cv = collecter_instance(inst)
+        *_, cv, _ = collecter_instance(inst)
         cible += cv
     totaux, ecarts = controle_quartz(cible, parse_quartz_xls(quartz))
     assert totaux["nb_cible"] == totaux["nb_quartz"] == 66, totaux

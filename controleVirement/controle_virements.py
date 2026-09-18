@@ -11,7 +11,7 @@ from pathlib import Path
 from cv.discovery import discover_instances
 from cv.parsers import parse_dk, parse_dk_fin01, parse_ack, parse_oracle_csv, parse_quartz_xls
 from cv.reconcile import (
-    nom_dk_depuis_fin01, controle_fichiers,
+    nom_dk_depuis_fin01, controle_fichiers, controle_doublons_ack,
     controle_totaux_source, controle_totaux_edf, controle_lignes, controle_quartz,
 )
 from cv.report import write_reports
@@ -42,15 +42,20 @@ def _dkfin01_lot(row, dkfin01_cible_map, dkfin01_source_map):
 
 
 def collecter_instance(instance):
+    """Retourne (fichiers, totaux_source, totaux_edf, ecarts, cible_virements, acks).
+
+    cible_virements : tous les virements reellement transmis a la banque (tous les ACK
+    presents, references ou non par Oracle). acks : liste de (guid, nom, LotAck).
+    """
     fichiers, totaux_source, totaux_edf, ecarts = [], [], [], []
-    cible_virements = []
+    cible_virements, acks = [], []
     cible = instance.cible_dir
     source = instance.source_dir
     if cible is None or source is None:
         cote = "cible" if cible is None else "source"
         fichiers.append({"guid": instance.guid, "categorie": "INSTANCE", "fichier": instance.guid,
                          "statut": "MANQUANT", "detail": f"cote {cote} absent"})
-        return fichiers, totaux_source, totaux_edf, ecarts, cible_virements
+        return fichiers, totaux_source, totaux_edf, ecarts, cible_virements, acks
 
     dk_map = _noms(source / "SOURCE", "DK_*.txt")
     dkfin01_source_map = _noms(source / "TARGET", "DK_FIN01_*.txt")
@@ -59,6 +64,12 @@ def collecter_instance(instance):
                if not n.endswith(".asc")}
     csv_files = list((cible / "TARGET").glob("ORACLE_VIREMENTS_REGROUPEMENTS_REALISES*.csv"))
     oracle_rows = parse_oracle_csv(csv_files[0]) if csv_files else []
+
+    # Tout ACK present dans TARGET a ete transmis a la banque, qu'Oracle le reference ou non
+    acks_parses = {nom: parse_ack(path) for nom, path in sorted(ack_map.items())}
+    for nom, ack in acks_parses.items():
+        acks.append((instance.guid, nom, ack))
+        cible_virements += ack.virements
 
     fichiers += controle_fichiers(
         guid=instance.guid,
@@ -83,16 +94,25 @@ def collecter_instance(instance):
         groupes[row.nom_fichier_edf].append(row)
 
     for nom_edf, rows_groupe in groupes.items():
-        ack = parse_ack(ack_map[nom_edf]) if nom_edf in ack_map else None
+        ack = acks_parses.get(nom_edf)
         totaux_edf.append(controle_totaux_edf(instance.guid, nom_edf, ack, rows_groupe))
 
         if ack is not None:
-            cible_virements += ack.virements
             lots = [lot for lot in (_dkfin01_lot(r, dkfin01_cible_map, dkfin01_source_map)
                                     for r in rows_groupe) if lot is not None]
             ecarts += controle_lignes(instance.guid, nom_edf, lots, ack)
 
-    return fichiers, totaux_source, totaux_edf, ecarts, cible_virements
+    return fichiers, totaux_source, totaux_edf, ecarts, cible_virements, acks
+
+
+def qualifier_doublons(fichiers, doublons):
+    """Requalifie en DOUBLON les lignes de controle_fichiers des ACK envoyes en double."""
+    par_fichier = {(d["guid"], d["fichier"]): d for d in doublons}
+    for ligne in fichiers:
+        d = par_fichier.get((ligne["guid"], ligne["fichier"]))
+        if d is not None and ligne["categorie"] == "ACK":
+            ligne["statut"] = "DOUBLON"
+            ligne["detail"] = f"envoi identique a {d['fichier_original']}"
 
 
 def main(argv=None) -> int:
@@ -110,14 +130,20 @@ def main(argv=None) -> int:
         return 1
 
     tous_fichiers, tous_totaux_src, tous_totaux_edf, tous_ecarts = [], [], [], []
-    tous_cible_virements = []
+    tous_cible_virements, tous_acks = [], []
     for inst in instances:
-        f, ts, te, e, cv = collecter_instance(inst)
+        f, ts, te, e, cv, acks = collecter_instance(inst)
         tous_fichiers += f
         tous_totaux_src += ts
         tous_totaux_edf += te
         tous_ecarts += e
         tous_cible_virements += cv
+        tous_acks += acks
+
+    # Envois en double vers la banque (toutes instances confondues)
+    references = {(t["guid"], t["fichier_edf"]) for t in tous_totaux_edf}
+    doublons = controle_doublons_ack(tous_acks, references)
+    qualifier_doublons(tous_fichiers, doublons)
 
     # Niveau 3 : rapprochement du retour Quartz (jour entier) contre les virements envoyes
     quartz_path = Path(args.quartz) if args.quartz else trouver_fichier_quartz(racine, args.date)
@@ -130,7 +156,7 @@ def main(argv=None) -> int:
 
     dossier = racine / f"rapport_{args.date}"
     ok = write_reports(dossier, tous_fichiers, tous_totaux_src, tous_totaux_edf, tous_ecarts,
-                       quartz_totaux, quartz_ecarts)
+                       quartz_totaux, quartz_ecarts, doublons)
     print(f"Rapports ecrits dans {dossier}. Resultat global : {'OK' if ok else 'KO'}")
     return 0 if ok else 1
 

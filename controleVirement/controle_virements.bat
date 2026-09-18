@@ -1,7 +1,7 @@
 @echo off
 REM ============================================================
 REM Lancement du controle des virements pour une date donnee.
-REM Usage : controle_virements.bat 26062026
+REM Usage : controle_virements.bat 15
 REM Sans argument : la date du jour au format DDMMYYYY est utilisee.
 REM ============================================================
 setlocal
