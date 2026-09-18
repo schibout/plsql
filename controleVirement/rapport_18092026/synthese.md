@@ -51,3 +51,4 @@ Les fichiers ci-dessous accompagnent cette synthèse et contiennent le détail c
 - **`controle_lignes_ecarts.csv`** — les différences relevées virement par virement lors de la préparation. **Un fichier vide signifie qu'aucun écart n'a été détecté**, et constitue donc un bon résultat.
 - **`controle_quartz_ecarts.csv`** — les virements qui n'ont pas pu être appariés avec le retour de la trésorerie. **Un fichier vide signifie que le rapprochement est parfait**.
 - **`controle_doublons_ack.csv`** — les envois vers la banque dont le contenu est identique à un envoi déjà transmis sur la journée. **Un fichier vide signifie qu'aucun envoi n'a été transmis en double**.
+- **`controle_doublons_virements.csv`** — le détail, virement par virement (bénéficiaire, IBAN, BIC, montant), des envois transmis en double : la liste à communiquer à la banque pour les demandes de retour de fonds.
