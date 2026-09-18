@@ -1,0 +1,105 @@
+- generic:
+  - generic [ref=f2e6]:
+    - log [ref=f2e7]:
+      - generic [ref=f2e8]: 22 options available.
+    - log
+  - generic [ref=f2e2]:
+    - generic [ref=f2e10]:
+      - button [ref=f2e13] [cursor=pointer]:
+        - generic [ref=f2e14]: keyboard_double_arrow_left
+      - generic [ref=f2e18]:
+        - heading [level=1] [ref=f2e22]: 🕓 ODAT Watch
+        - generic [ref=f2e24]:
+          - paragraph [ref=f2e28]: Application
+          - group [ref=f2e30]:
+            - combobox "Application" [expanded] [active] [ref=f2e31]: FIN-FINANCE
+            - button [expanded] [aria-hidden] [ref=f2e32] [cursor=pointer]
+        - generic [ref=f2e37]:
+          - paragraph [ref=f2e41]: Filtre (job, description, script)
+          - textbox [ref=f2e44]
+        - separator [ref=f2e49]
+        - button [ref=f2e52] [cursor=pointer]:
+          - paragraph [ref=f2e57]: 📥 Importer les nouveaux fichiers ODAT
+        - paragraph [ref=f2e62]: "Sources scannées : dossier ODAT du dépôt et Téléchargements."
+    - generic [aria-hidden] [ref=f2e3]:
+      - banner [ref=f2e65]:
+        - generic [ref=f2e68]:
+          - button [ref=f2e70] [cursor=pointer]:
+            - generic [ref=f2e71]: Deploy
+          - button [ref=f2e74] [cursor=pointer]
+      - generic [ref=f2e78]:
+        - generic [ref=f2e80]:
+          - heading [level=3] [ref=f2e87]:
+            - generic [ref=f2e88]: FIN-FINANCE · vendredi 18/09/2026 21:57
+            - generic [ref=f2e89]:
+              - link:
+                - /url: "#fin-finance-vendredi-18-09-2026-21-57"
+          - paragraph [ref=f2e96]:
+            - text: "Dernière photo Control-M :"
+            - strong [ref=f2e97]: 17/09 16:45
+            - text: (odate 2026-09-17), il y a 29 h 12 min · 9 photos, 3 jours d'historique
+        - generic [ref=f2e99]:
+          - tablist [ref=f2e100]:
+            - tab [ref=f2e101] [cursor=pointer]:
+              - paragraph [ref=f2e103]: 🌙 Ce soir
+            - tab [ref=f2e104] [cursor=pointer]:
+              - paragraph [ref=f2e106]: 📅 Demain
+            - tab [selected] [ref=f2e107] [cursor=pointer]:
+              - paragraph [ref=f2e109]: 🔴 Maintenant
+            - tab [ref=f2e111] [cursor=pointer]:
+              - paragraph [ref=f2e113]: 🔎 Historique
+            - tab [ref=f2e114] [cursor=pointer]:
+              - paragraph [ref=f2e116]: 📈 Profils
+            - tab [ref=f2e117] [cursor=pointer]:
+              - paragraph [ref=f2e119]: 🗂 Données
+          - tabpanel [ref=f2e120]:
+            - generic [ref=f2e121]:
+              - generic [ref=f2e123]:
+                - generic [ref=f2e130]:
+                  - generic [ref=f2e131]: "8"
+                  - generic [ref=f2e132]: ✔ Ended OK
+                - generic [ref=f2e139]:
+                  - generic [ref=f2e140]: "0"
+                  - generic [ref=f2e141]: ✖ Ended Not OK
+                - generic [ref=f2e148]:
+                  - generic [ref=f2e149]: "13"
+                  - generic [ref=f2e150]: ▶ Executing
+                - generic [ref=f2e157]:
+                  - generic [ref=f2e158]: "219"
+                  - generic [ref=f2e159]: ⏸ Wait for Event
+                - generic [ref=f2e166]:
+                  - generic [ref=f2e167]: "0"
+                  - generic [ref=f2e168]: ⚠ anomalies détectées
+              - heading [level=4] [ref=f2e174]:
+                - text: Anomalies sur la dernière photo
+                - generic [ref=f2e175]:
+                  - link:
+                    - /url: "#anomalies-sur-la-derniere-photo"
+              - status [ref=f2e178]:
+                - paragraph [ref=f2e182]: "Rien à signaler : pas d'erreur, pas de retard, pas de relance anormale."
+              - heading [level=4] [ref=f2e188]:
+                - text: Toute la photo
+                - generic [ref=f2e189]:
+                  - link:
+                    - /url: "#toute-la-photo"
+              - generic [ref=f2e194]:
+                - button [ref=f2e198] [cursor=pointer]
+                - button [ref=f2e204] [cursor=pointer]
+                - button [ref=f2e210] [cursor=pointer]
+                - button [ref=f2e216] [cursor=pointer]
+  - generic [ref=f2e231]:
+    - listbox "Application Open" [ref=f2e232]:
+      - option "CEL-CELERIS"
+      - option "CID-CONTRACTUAL INVO"
+      - option "CIT-CITY"
+      - option "CRT-CRT"
+      - option "CTM-CONTROL-M"
+      - option "DTR-DECISIONNEL TRAN"
+      - option "EAI-EAI"
+      - option "ETR-ETRM"
+      - option "FIN-FINANCE" [selected]
+      - option "GDC-GESTION CONSIGNE"
+      - option "GDR-GESTION DES REJETS"
+      - option "HEC-HERCULE CHIFFRAG"
+      - option "KDR-KADOR"
+    - button "Dismiss" [ref=f2e234] [cursor=pointer]

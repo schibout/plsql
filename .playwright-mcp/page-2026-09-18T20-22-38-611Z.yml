@@ -1,0 +1,150 @@
+- generic [ref=f6e2]:
+  - generic [ref=f6e11]:
+    - heading "🕓 ODAT Watch" [level=1] [ref=f6e15]
+    - generic [ref=f6e17]:
+      - paragraph [ref=f6e21]: Application
+      - group [ref=f6e23]:
+        - combobox "Application" [ref=f6e24]: FIN-FINANCE
+        - button "Open" [ref=f6e25] [cursor=pointer]
+    - generic [ref=f6e30]:
+      - paragraph [ref=f6e34]: Filtre (job, description, script)
+      - textbox "Filtre (job, description, script)" [ref=f6e37]:
+        - /placeholder: ""
+    - separator [ref=f6e42]
+    - button [ref=f6e45] [cursor=pointer]:
+      - paragraph [ref=f6e50]: 📥 Importer les nouveaux fichiers ODAT
+    - paragraph [ref=f6e55]: "Sources scannées : dossier ODAT du dépôt et Téléchargements."
+    - separator [ref=f6e60]
+    - paragraph [ref=f6e65]:
+      - strong [ref=f6e66]: Oracle Apps
+    - generic [ref=f6e68]:
+      - button [ref=f6e76] [cursor=pointer]:
+        - paragraph [ref=f6e81]: 🔄 Demandes
+      - button [ref=f6e89] [cursor=pointer]:
+        - paragraph [ref=f6e94]: 📚 Programmes
+    - button [ref=f6e97] [cursor=pointer]:
+      - paragraph [ref=f6e102]: 🧾 Analyser les logs .req / .out
+  - generic [ref=f6e3]:
+    - banner [ref=f6e105]:
+      - generic [ref=f6e108]:
+        - button "Deploy" [ref=f6e110] [cursor=pointer]
+        - button "Main menu" [ref=f6e114] [cursor=pointer]
+    - generic [ref=f6e118]:
+      - generic [ref=f6e120]:
+        - heading "FIN-FINANCE · vendredi 18/09/2026 22:22" [level=3] [ref=f6e127]:
+          - generic [ref=f6e129]:
+            - link "Link to heading":
+              - /url: "#fin-finance-vendredi-18-09-2026-22-22"
+        - paragraph [ref=f6e136]:
+          - text: "Dernière photo Control-M :"
+          - strong [ref=f6e137]: 17/09 16:45
+          - text: (odate 2026-09-17), il y a 29 h 37 min · 9 photos, 3 jours d'historique
+      - generic [ref=f6e139]:
+        - tablist [ref=f6e140]:
+          - tab [ref=f6e141] [cursor=pointer]:
+            - paragraph [ref=f6e143]: 🌙 Ce soir
+          - tab [ref=f6e144] [cursor=pointer]:
+            - paragraph [ref=f6e146]: 📅 Demain
+          - tab [ref=f6e147] [cursor=pointer]:
+            - paragraph [ref=f6e149]: 🔴 Maintenant
+          - tab [active] [selected] [ref=f6e150] [cursor=pointer]:
+            - paragraph [ref=f6e152]: 🅾 Oracle
+          - tab [ref=f6e154] [cursor=pointer]:
+            - paragraph [ref=f6e156]: 🔎 Historique
+          - tab [ref=f6e157] [cursor=pointer]:
+            - paragraph [ref=f6e159]: 📈 Profils
+          - tab [ref=f6e160] [cursor=pointer]:
+            - paragraph [ref=f6e162]: 🗂 Données
+        - tabpanel "🅾 Oracle" [ref=f6e163]:
+          - generic [ref=f6e164]:
+            - generic [ref=f6e166]:
+              - generic [ref=f6e173]:
+                - generic [ref=f6e174]: "0"
+                - generic [ref=f6e175]: ▶ en cours
+              - generic [ref=f6e182]:
+                - generic [ref=f6e183]: "0"
+                - generic [ref=f6e184]: ⏳ en attente / planifiées
+              - generic [ref=f6e191]:
+                - generic [ref=f6e192]: "0"
+                - generic [ref=f6e193]: ✖ en erreur / avertissement
+              - generic [ref=f6e200]:
+                - generic [ref=f6e201]: "0"
+                - generic [ref=f6e202]: liées à un job Control-M
+              - generic [ref=f6e209]:
+                - generic [ref=f6e210]: "68"
+                - generic [ref=f6e211]: logs analysés
+              - generic [ref=f6e218]:
+                - generic [ref=f6e219]: —
+                - generic [ref=f6e220]: dernier rafraîchissement
+            - generic [ref=f6e222]:
+              - tablist [ref=f6e223]:
+                - tab [selected] [ref=f6e224] [cursor=pointer]:
+                  - paragraph [ref=f6e226]: ✖ Erreurs et logs
+                - tab [ref=f6e228] [cursor=pointer]:
+                  - paragraph [ref=f6e230]: ⏳ Ce soir / demain côté Oracle
+                - tab [ref=f6e231] [cursor=pointer]:
+                  - paragraph [ref=f6e233]: 📋 Toutes les demandes
+                - tab [ref=f6e234] [cursor=pointer]:
+                  - paragraph [ref=f6e236]: 🧾 Logs chargés
+                - tab [ref=f6e237] [cursor=pointer]:
+                  - paragraph [ref=f6e239]: 📚 Programmes
+              - tabpanel "✖ Erreurs et logs" [ref=f6e240]:
+                - generic [ref=f6e241]:
+                  - heading "Diagnostic d'une demande" [level=4] [ref=f6e247]:
+                    - text: Diagnostic d'une demande
+                    - generic [ref=f6e248]:
+                      - link "Link to heading":
+                        - /url: "#diagnostic-d-une-demande"
+                  - generic [ref=f6e250]:
+                    - paragraph [ref=f6e254]: Request id
+                    - group [ref=f6e256]:
+                      - combobox "Request id" [ref=f6e257]: 49069912 — RBAFBIMP — XXRB - Import fichier des banques
+                      - button "Open" [ref=f6e258] [cursor=pointer]
+                  - group [ref=f6e264]:
+                    - generic "keyboard_arrow_down Journal (.req) — ..\\ControleReleveBancaire\\import\\l49069912.req" [ref=f6e265] [cursor=pointer]:
+                      - generic [ref=f6e266]:
+                        - generic [ref=f6e267]: keyboard_arrow_down
+                        - paragraph [ref=f6e271]: Journal (.req) — ..\ControleReleveBancaire\import\l49069912.req
+                    - generic [ref=f6e273]:
+                      - status [ref=f6e276]:
+                        - paragraph [ref=f6e280]: Aucune erreur détectée dans ce fichier.
+                      - table [ref=f6e284]:
+                        - rowgroup [ref=f6e285]:
+                          - row [ref=f6e286]:
+                            - columnheader [ref=f6e287]:
+                              - paragraph [ref=f6e289]
+                            - columnheader [ref=f6e290]:
+                              - paragraph [ref=f6e292]: valeur
+                        - rowgroup [ref=f6e293]:
+                          - row [ref=f6e294]:
+                            - rowheader [ref=f6e295]:
+                              - paragraph [ref=f6e297]: Nombre d'enregistrements lus
+                            - cell [ref=f6e298]:
+                              - paragraph [ref=f6e300]: "00011060"
+                          - row [ref=f6e301]:
+                            - rowheader [ref=f6e302]:
+                              - paragraph [ref=f6e304]: Nombre de lignes écrites
+                            - cell [ref=f6e305]:
+                              - paragraph [ref=f6e307]: "00000000"
+                          - row [ref=f6e308]:
+                            - rowheader [ref=f6e309]:
+                              - paragraph [ref=f6e311]: Fichier des relevés
+                            - cell [ref=f6e312]:
+                              - paragraph [ref=f6e314]: /data/flf/files/PDBFINP1/data/in/AFB120.txt
+                          - row [ref=f6e315]:
+                            - rowheader [ref=f6e316]:
+                              - paragraph [ref=f6e318]: Répertoire fichier archivé
+                            - cell [ref=f6e319]:
+                              - paragraph [ref=f6e321]: /data/flf/files/PDBFINP1/data/traite
+                  - group [ref=f6e324]:
+                    - generic "keyboard_arrow_right Sortie (.out) — ..\\ControleReleveBancaire\\import\\o49069912.out" [ref=f6e325] [cursor=pointer]:
+                      - generic [ref=f6e326]:
+                        - generic [ref=f6e327]: keyboard_arrow_right
+                        - paragraph [ref=f6e331]: Sortie (.out) — ..\ControleReleveBancaire\import\o49069912.out
+                  - separator [ref=f6e336]
+                  - paragraph [ref=f6e341]:
+                    - text: Logs absents en local ? Générez la liste des chemins pour
+                    - code [ref=f6e342]: copy_ebs_logs.sh
+                    - text: ":"
+                  - button [ref=f6e345] [cursor=pointer]:
+                    - paragraph [ref=f6e350]: 📝 Générer list.txt des logs manquants
