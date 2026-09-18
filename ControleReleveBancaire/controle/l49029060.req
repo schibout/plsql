@@ -1,0 +1,86 @@
++---------------------------------------------------------------------------+
+Application Specifique DKA: Version : 12.2
+
+Copyright (c) 1998, 2013, Oracle and/or its affiliates. All rights reserved.
+
+DKA_SRBCTRLRB: DKA : Contrôle des relevés bancaires
+Request id: 49029060
++---------------------------------------------------------------------------+
+
+Date et heure système : 14-SEP-2026 07:21:48
+
++---------------------------------------------------------------------------+
+
+[14-SEP-2026 07:21:49]: **Starts**
+[14-SEP-2026 07:21:55]: **Ends**
++---------------------------------------------------------------------------+
+Début des messages de journalisation à partir du fichier FND_FILE.
++---------------------------------------------------------------------------+
+14/09/2026 07:21:49 - +-------------------------------------------------------------------------+
+14/09/2026 07:21:49 - Recuperation des parametres
+14/09/2026 07:21:49 - +-------------------------------------------------------------------------+
+14/09/2026 07:21:49 - Debut : 14/09/2026 07:21:49
+14/09/2026 07:21:49 - Recuperation des parametres OK...
+14/09/2026 07:21:49 - Fin   : 14/09/2026 07:21:49
+14/09/2026 07:21:49 - +-------------------------------------------------------------------------+
+14/09/2026 07:21:49 - Affichage dans le fichier de sortie
+14/09/2026 07:21:49 - +-------------------------------------------------------------------------+
+14/09/2026 07:21:49 - Debut : 14/09/2026 07:21:49
+14/09/2026 07:21:49 - Affichage dans le fichier de sortie OK...
+14/09/2026 07:21:49 - Fin   : 14/09/2026 07:21:49
+14/09/2026 07:21:49 - +-------------------------------------------------------------------------+
+14/09/2026 07:21:49 - Détermination du jour ouvré précédent
+14/09/2026 07:21:49 - +-------------------------------------------------------------------------+
+14/09/2026 07:21:49 - Debut : 14/09/2026 07:21:49
+14/09/2026 07:21:49 - 13-SEP-26 est un jour non ouvré
+14/09/2026 07:21:49 - appel récursif de get_prev_working_day avec comme paramètre 12-SEP-26
+14/09/2026 07:21:49 - 12-SEP-26 est un jour non ouvré
+14/09/2026 07:21:49 - appel récursif de get_prev_working_day avec comme paramètre 11-SEP-26
+14/09/2026 07:21:49 - Détermination du jour ouvré précédent OK...
+14/09/2026 07:21:49 - Fin   : 14/09/2026 07:21:49
+14/09/2026 07:21:49 - +-------------------------------------------------------------------------+
+14/09/2026 07:21:49 - Ecriture du fichier de sortie
+14/09/2026 07:21:49 - +-------------------------------------------------------------------------+
+14/09/2026 07:21:49 - Debut : 14/09/2026 07:21:49
+14/09/2026 07:21:55 - Ecriture du fichier de sortie OK...
+14/09/2026 07:21:55 - Fin   : 14/09/2026 07:21:55
+14/09/2026 07:21:55 - +-------------------------------------------------------------------------+
+14/09/2026 07:21:55 - envoi du mail
+14/09/2026 07:21:55 - +-------------------------------------------------------------------------+
+14/09/2026 07:21:55 - Debut : 14/09/2026 07:21:55
+SEND_MAIL 000 : INIT
+SEND_MAIL 001 : Connexion
+SEND_MAIL 002 : EHLO
+SEND_MAIL 002 : MAIL
+SEND_MAIL 003 : LISTE DESTINATAIRE
+REPLY RCPT : 250 - 2.1.5 Ok
+REPLY RCPT : 250 - 2.1.5 Ok
+REPLY RCPT : 250 - 2.1.5 Ok
+Adresse(s) destinataire(s)  : support-metier-cashmanagement@dalkia.fr;wss-tresorerie@dalkia.fr;fr.dalkia.liste-support-finance@dalkia.fr
+SEND_MAIL 004 : OPEN_DATA
+SEND_MAIL 005 : Insertion du corps du message
+SEND_MAIL 006 : Insertion des fichiers
+SEND_MAIL 007 : Recherche du chemin de la directory
+SEND_MAIL 008 : Parcours des fichiers
+SEND_MAIL 009 : fichier : Controle_RB_20260911.csv
+SEND_MAIL 010 : Piece jointe
+ENVOI_MAIL 010 : Fermeture des attachements
+SEND_MAIL 011 : Envoi du mail
+14/09/2026 07:21:55 - envoi du mail OK...
+14/09/2026 07:21:55 - Fin   : 14/09/2026 07:21:55
++---------------------------------------------------------------------------+
+Fin des messages de journalisation à partir du fichier FND_FILE.
++---------------------------------------------------------------------------+
+
+
++---------------------------------------------------------------------------+
+Aucune option de fin demandée.
+
+Output file size: 
+26153
+
++---------------------------------------------------------------------------+
+Le traitement simultané a réussi
+Date et heure système : 14-SEP-2026 07:21:55
+
++---------------------------------------------------------------------------+

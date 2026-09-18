@@ -1,0 +1,425 @@
+                        Enregistrements erronés lors du chargement de relevés                    Date :10-SEP-2026  Page : 1
+
+  N°     Contenu   
+-------------------------------------------------------------------------------------------------------------------------------
+00302 >  0130004    00828AED2 00010181873  080926                                                  0000000471292D                
+ Erreur 001 : Compte bancaire erroné                                                                              
+        001 - 002 code enregistrement  = 01                                                                              
+        003 - 005 code banque          = 30004                                                                           
+        012 - 005 code guichet         = 00828                                                                           
+        017 - 003 devise               = AED                                                                             
+        020 - 001 nombre de décimales  = 2                                                                               
+        022 - 011 numéro de compte     = 00010181873                                                                     
+        033 - 002 code opération AFB   =                                                                                 
+        035 - 006 date d'opération     = 080926                                                                          
+        091 - 014 ancien solde         = 0000000471292D                                                                  
+00569 >  0130004    00819USD2 00010120847  080926                                                  0000001325291{                
+ Erreur 001 : Compte bancaire erroné                                                                              
+        001 - 002 code enregistrement  = 01                                                                              
+        003 - 005 code banque          = 30004                                                                           
+        012 - 005 code guichet         = 00819                                                                           
+        017 - 003 devise               = USD                                                                             
+        020 - 001 nombre de décimales  = 2                                                                               
+        022 - 011 numéro de compte     = 00010120847                                                                     
+        033 - 002 code opération AFB   =                                                                                 
+        035 - 006 date d'opération     = 080926                                                                          
+        091 - 014 ancien solde         = 0000001325291{                                                                  
+00605 >  0130004    00828USD2 00010169770  080926                                                  0000000147315G                
+ Erreur 001 : Compte bancaire erroné                                                                              
+        001 - 002 code enregistrement  = 01                                                                              
+        003 - 005 code banque          = 30004                                                                           
+        012 - 005 code guichet         = 00828                                                                           
+        017 - 003 devise               = USD                                                                             
+        020 - 001 nombre de décimales  = 2                                                                               
+        022 - 011 numéro de compte     = 00010169770                                                                     
+        033 - 002 code opération AFB   =                                                                                 
+        035 - 006 date d'opération     = 080926                                                                          
+        091 - 014 ancien solde         = 0000000147315G                                                                  
+00607 >  0113825RLV 00200EUR2 08016346445  080926PAYS DE GEX ENERGIES          COMPTE COURANT      0000069110873I50016593        
+ Erreur 001 : Compte bancaire erroné                                                                              
+        001 - 002 code enregistrement  = 01                                                                              
+        003 - 005 code banque          = 13825                                                                           
+        012 - 005 code guichet         = 00200                                                                           
+        017 - 003 devise               = EUR                                                                             
+        020 - 001 nombre de décimales  = 2                                                                               
+        022 - 011 numéro de compte     = 08016346445                                                                     
+        033 - 002 code opération AFB   =                                                                                 
+        035 - 006 date d'opération     = 080926                                                                          
+        091 - 014 ancien solde         = 0000069110873I                                                                  
+                        Enregistrements erronés lors du chargement de relevés                    Date :10-SEP-2026  Page : 2
+
+  N°     Contenu   
+-------------------------------------------------------------------------------------------------------------------------------
+00613 >  0130004    00828QAR2 00010181747  080926                                                  0000000037708G                
+ Erreur 001 : Compte bancaire erroné                                                                              
+        001 - 002 code enregistrement  = 01                                                                              
+        003 - 005 code banque          = 30004                                                                           
+        012 - 005 code guichet         = 00828                                                                           
+        017 - 003 devise               = QAR                                                                             
+        020 - 001 nombre de décimales  = 2                                                                               
+        022 - 011 numéro de compte     = 00010181747                                                                     
+        033 - 002 code opération AFB   =                                                                                 
+        035 - 006 date d'opération     = 080926                                                                          
+        091 - 014 ancien solde         = 0000000037708G                                                                  
+01528 >  0130004    00819GBP2 00010118761  080926                                                  0000000454605{                
+ Erreur 001 : Compte bancaire erroné                                                                              
+        001 - 002 code enregistrement  = 01                                                                              
+        003 - 005 code banque          = 30004                                                                           
+        012 - 005 code guichet         = 00819                                                                           
+        017 - 003 devise               = GBP                                                                             
+        020 - 001 nombre de décimales  = 2                                                                               
+        022 - 011 numéro de compte     = 00010118761                                                                     
+        033 - 002 code opération AFB   =                                                                                 
+        035 - 006 date d'opération     = 080926                                                                          
+        091 - 014 ancien solde         = 0000000454605{                                                                  
+01576 >  0130004    00828SAR2 00010181961  080926                                                  0000002251854A                
+ Erreur 001 : Compte bancaire erroné                                                                              
+        001 - 002 code enregistrement  = 01                                                                              
+        003 - 005 code banque          = 30004                                                                           
+        012 - 005 code guichet         = 00828                                                                           
+        017 - 003 devise               = SAR                                                                             
+        020 - 001 nombre de décimales  = 2                                                                               
+        022 - 011 numéro de compte     = 00010181961                                                                     
+        033 - 002 code opération AFB   =                                                                                 
+        035 - 006 date d'opération     = 080926                                                                          
+        091 - 014 ancien solde         = 0000002251854A                                                                  
+01610 >  0130004    00828AED2 00010158205  080926                                                  0000001311097A                
+ Erreur 001 : Compte bancaire erroné                                                                              
+        001 - 002 code enregistrement  = 01                                                                              
+        003 - 005 code banque          = 30004                                                                           
+        012 - 005 code guichet         = 00828                                                                           
+        017 - 003 devise               = AED                                                                             
+        020 - 001 nombre de décimales  = 2                                                                               
+        022 - 011 numéro de compte     = 00010158205                                                                     
+        033 - 002 code opération AFB   =                                                                                 
+        035 - 006 date d'opération     = 080926                                                                          
+        091 - 014 ancien solde         = 0000001311097A                                                                  
+                        Enregistrements erronés lors du chargement de relevés                    Date :10-SEP-2026  Page : 3
+
+  N°     Contenu   
+-------------------------------------------------------------------------------------------------------------------------------
+01616 >  0130004    00113EUR2 00021686449  080926                                                  0000000000000{                
+ Erreur 001 : Compte bancaire erroné                                                                              
+        001 - 002 code enregistrement  = 01                                                                              
+        003 - 005 code banque          = 30004                                                                           
+        012 - 005 code guichet         = 00113                                                                           
+        017 - 003 devise               = EUR                                                                             
+        020 - 001 nombre de décimales  = 2                                                                               
+        022 - 011 numéro de compte     = 00021686449                                                                     
+        033 - 002 code opération AFB   =                                                                                 
+        035 - 006 date d'opération     = 080926                                                                          
+        091 - 014 ancien solde         = 0000000000000{                                                                  
+02073 >  0199375    99999EUR2 87786070000  080926                                                  0000001130439D                
+ Erreur 001 : Compte bancaire erroné                                                                              
+        001 - 002 code enregistrement  = 01                                                                              
+        003 - 005 code banque          = 99375                                                                           
+        012 - 005 code guichet         = 99999                                                                           
+        017 - 003 devise               = EUR                                                                             
+        020 - 001 nombre de décimales  = 2                                                                               
+        022 - 011 numéro de compte     = 87786070000                                                                     
+        033 - 002 code opération AFB   =                                                                                 
+        035 - 006 date d'opération     = 080926                                                                          
+        091 - 014 ancien solde         = 0000001130439D                                                                  
+02156 >  0130004    00828USD2 00010148139  080926                                                  0000000136103G                
+ Erreur 001 : Compte bancaire erroné                                                                              
+        001 - 002 code enregistrement  = 01                                                                              
+        003 - 005 code banque          = 30004                                                                           
+        012 - 005 code guichet         = 00828                                                                           
+        017 - 003 devise               = USD                                                                             
+        020 - 001 nombre de décimales  = 2                                                                               
+        022 - 011 numéro de compte     = 00010148139                                                                     
+        033 - 002 code opération AFB   =                                                                                 
+        035 - 006 date d'opération     = 080926                                                                          
+        091 - 014 ancien solde         = 0000000136103G                                                                  
+02975 >  0130003    03175SAR2 05520506116  080926                                                  0000000707197A                
+ Erreur 001 : Compte bancaire erroné                                                                              
+        001 - 002 code enregistrement  = 01                                                                              
+        003 - 005 code banque          = 30003                                                                           
+        012 - 005 code guichet         = 03175                                                                           
+        017 - 003 devise               = SAR                                                                             
+        020 - 001 nombre de décimales  = 2                                                                               
+        022 - 011 numéro de compte     = 05520506116                                                                     
+        033 - 002 code opération AFB   =                                                                                 
+        035 - 006 date d'opération     = 080926                                                                          
+        091 - 014 ancien solde         = 0000000707197A                                                                  
+                        Enregistrements erronés lors du chargement de relevés                    Date :10-SEP-2026  Page : 4
+
+  N°     Contenu   
+-------------------------------------------------------------------------------------------------------------------------------
+03070 >  01CH260    87050EUR2 00003064302  080926SGABCHZZ   08705000003064302                      0000000520119HM000000008116568
+ Erreur 001 : Compte bancaire erroné                                                                              
+        001 - 002 code enregistrement  = 01                                                                              
+        003 - 005 code banque          = CH260                                                                           
+        012 - 005 code guichet         = 87050                                                                           
+        017 - 003 devise               = EUR                                                                             
+        020 - 001 nombre de décimales  = 2                                                                               
+        022 - 011 numéro de compte     = 00003064302                                                                     
+        033 - 002 code opération AFB   =                                                                                 
+        035 - 006 date d'opération     = 080926                                                                          
+        091 - 014 ancien solde         = 0000000520119H                                                                  
+03072 >  0130004    00819USD2 00010116773  080926                                                  0000000078473I                
+ Erreur 001 : Compte bancaire erroné                                                                              
+        001 - 002 code enregistrement  = 01                                                                              
+        003 - 005 code banque          = 30004                                                                           
+        012 - 005 code guichet         = 00819                                                                           
+        017 - 003 devise               = USD                                                                             
+        020 - 001 nombre de décimales  = 2                                                                               
+        022 - 011 numéro de compte     = 00010116773                                                                     
+        033 - 002 code opération AFB   =                                                                                 
+        035 - 006 date d'opération     = 080926                                                                          
+        091 - 014 ancien solde         = 0000000078473I                                                                  
+03084 >  0130004    00819PLN2 00010130370  080926                                                  0000020196981E                
+ Erreur 001 : Compte bancaire erroné                                                                              
+        001 - 002 code enregistrement  = 01                                                                              
+        003 - 005 code banque          = 30004                                                                           
+        012 - 005 code guichet         = 00819                                                                           
+        017 - 003 devise               = PLN                                                                             
+        020 - 001 nombre de décimales  = 2                                                                               
+        022 - 011 numéro de compte     = 00010130370                                                                     
+        033 - 002 code opération AFB   =                                                                                 
+        035 - 006 date d'opération     = 080926                                                                          
+        091 - 014 ancien solde         = 0000020196981E                                                                  
+03086 >  0130004    00819EUR2 00011828480  080926                                                  0000000000000{                
+ Erreur 001 : Compte bancaire erroné                                                                              
+        001 - 002 code enregistrement  = 01                                                                              
+        003 - 005 code banque          = 30004                                                                           
+        012 - 005 code guichet         = 00819                                                                           
+        017 - 003 devise               = EUR                                                                             
+        020 - 001 nombre de décimales  = 2                                                                               
+        022 - 011 numéro de compte     = 00011828480                                                                     
+        033 - 002 code opération AFB   =                                                                                 
+        035 - 006 date d'opération     = 080926                                                                          
+        091 - 014 ancien solde         = 0000000000000{                                                                  
+                        Enregistrements erronés lors du chargement de relevés                    Date :10-SEP-2026  Page : 5
+
+  N°     Contenu   
+-------------------------------------------------------------------------------------------------------------------------------
+03659 >  0130004    00828CHF2 00010128133  080926                                                  0000000131422G                
+ Erreur 001 : Compte bancaire erroné                                                                              
+        001 - 002 code enregistrement  = 01                                                                              
+        003 - 005 code banque          = 30004                                                                           
+        012 - 005 code guichet         = 00828                                                                           
+        017 - 003 devise               = CHF                                                                             
+        020 - 001 nombre de décimales  = 2                                                                               
+        022 - 011 numéro de compte     = 00010128133                                                                     
+        033 - 002 code opération AFB   =                                                                                 
+        035 - 006 date d'opération     = 080926                                                                          
+        091 - 014 ancien solde         = 0000000131422G                                                                  
+03663 >  0130004    00819GBP2 00010120701  080926                                                  0000001273134C                
+ Erreur 001 : Compte bancaire erroné                                                                              
+        001 - 002 code enregistrement  = 01                                                                              
+        003 - 005 code banque          = 30004                                                                           
+        012 - 005 code guichet         = 00819                                                                           
+        017 - 003 devise               = GBP                                                                             
+        020 - 001 nombre de décimales  = 2                                                                               
+        022 - 011 numéro de compte     = 00010120701                                                                     
+        033 - 002 code opération AFB   =                                                                                 
+        035 - 006 date d'opération     = 080926                                                                          
+        091 - 014 ancien solde         = 0000001273134C                                                                  
+03828 >  0130003    03620EUR2 00020131908  080926                                                  0000007869192H                
+ Erreur 001 : Compte bancaire erroné                                                                              
+        001 - 002 code enregistrement  = 01                                                                              
+        003 - 005 code banque          = 30003                                                                           
+        012 - 005 code guichet         = 03620                                                                           
+        017 - 003 devise               = EUR                                                                             
+        020 - 001 nombre de décimales  = 2                                                                               
+        022 - 011 numéro de compte     = 00020131908                                                                     
+        033 - 002 code opération AFB   =                                                                                 
+        035 - 006 date d'opération     = 080926                                                                          
+        091 - 014 ancien solde         = 0000007869192H                                                                  
+                        Synthèse des relevés, chargement N° 1010036                                   Date :10-SEP-2026  Page : 1
+
+Fichier : /data/flf/files/PDBFINP1/data/in/AFB120.txt
+Archivé : /data/flf/files/PDBFINP1/data/traite/AFB120.txt
+Recyclé : /data/flf/files/PDBFINP1/data/log/AFB120.txt.err
+
+Err. Relevé   Compte                         Dev Date début      Ancien solde  Date fin       Nouveau solde   Mouvements Debut-Fin
+-----------------------------------------------------------------------------------------------------------------------------------
+0    1        30004.00819.00011848268        EUR 08-SEP-2026             0.00  09-SEP-2026             0.00       3          1-14   
+0    2        30004.00819.00012031792        EUR 08-SEP-2026             0.00  09-SEP-2026             0.00       0         15-16   
+0    3        30004.00819.00012063026        EUR 08-SEP-2026             0.00  09-SEP-2026             0.00       24        17-162  
+0    4        30004.00819.00011903364        EUR 08-SEP-2026             0.00  09-SEP-2026             0.00       3        163-173  
+0    5        30004.00828.00013338526        EUR 08-SEP-2026             0.00  09-SEP-2026             0.00       0        174-175  
+0    6        30004.00819.00011852245        EUR 08-SEP-2026             0.00  09-SEP-2026             0.00       6        176-208  
+0    7        30004.00828.00012487933        EUR 08-SEP-2026             0.00  09-SEP-2026             0.00       2        209-214  
+0    8        30004.00828.00013338817        EUR 08-SEP-2026             0.00  09-SEP-2026             0.00       0        215-216  
+0    9        30003.03175.00020172521        EUR 08-SEP-2026          9684.30  09-SEP-2026          9684.30       0        217-218  
+0    10       30004.00828.00013298174        EUR 08-SEP-2026             0.00  09-SEP-2026             0.00       0        219-220  
+0    11       30004.00828.00012517712        EUR 08-SEP-2026             0.00  09-SEP-2026             0.00       13       221-301  
+1    12       30004.00828.00010181873        AED 08-SEP-2026         47129.24  09-SEP-2026         47129.24       0        302-303  
+0    13       30004.00819.00012031986        EUR 08-SEP-2026             0.00  09-SEP-2026             0.00       5        304-328  
+0    14       30004.00819.00011842933        EUR 08-SEP-2026             0.00  09-SEP-2026             0.00       3        329-339  
+0    15       30004.01328.00010554866        EUR 08-SEP-2026             0.00  09-SEP-2026             0.00       0        340-341  
+0    16       30004.00819.00011848462        EUR 08-SEP-2026             0.00  09-SEP-2026             0.00       26       342-473  
+0    17       30003.04250.00020626936        EUR 08-SEP-2026             0.00  09-SEP-2026             0.00       0        474-475  
+0    18       30004.00819.00012032180        EUR 08-SEP-2026             0.00  09-SEP-2026             0.00       9        476-522  
+0    19       30004.00819.00011903170        EUR 08-SEP-2026             0.00  09-SEP-2026             0.00       6        523-551  
+0    20       30004.00515.00022556860        EUR 08-SEP-2026             0.00  09-SEP-2026             0.00       3        552-568  
+1    21       30004.00819.00010120847        USD 08-SEP-2026        132529.10  09-SEP-2026        132529.10       0        569-570  
+0    22       30004.00828.00013134632        EUR 08-SEP-2026             0.00  09-SEP-2026             0.00       0        571-572  
+0    23       30004.01328.00010555157        EUR 08-SEP-2026             0.00  09-SEP-2026             0.00       4        573-582  
+0    24       30004.00819.00012032471        EUR 08-SEP-2026             0.00  09-SEP-2026             0.00       0        583-584  
+0    25       30004.00819.00011903558        EUR 08-SEP-2026             0.00  09-SEP-2026             0.00       0        585-586  
+0    26       30004.00828.00013338429        EUR 08-SEP-2026             0.00  09-SEP-2026             0.00       0        587-588  
+0    27       30004.00828.00013530974        EUR 08-SEP-2026             0.00  09-SEP-2026             0.00       0        589-590  
+0    28       30004.00828.00012646334        EUR 08-SEP-2026             0.00  09-SEP-2026             0.00       3        591-598  
+0    29       30004.00828.00012504617        EUR 08-SEP-2026             0.00  09-SEP-2026             0.00       0        599-600  
+0    30       30004.00828.00013177603        EUR 08-SEP-2026         29198.96  09-SEP-2026         28855.78       1        601-604  
+1    31       30004.00828.00010169770        USD 08-SEP-2026         14731.57  09-SEP-2026         14731.57       0        605-606  
+1    32       13825.00200.08016346445        EUR 08-SEP-2026       6911087.39  09-SEP-2026       6911087.39       0        607-608  
+0    33       30004.00819.00011962049        EUR 08-SEP-2026             0.00  09-SEP-2026             0.00       0        609-610  
+0    34       30004.00283.00022327235        EUR 08-SEP-2026             0.00  09-SEP-2026             0.00       0        611-612  
+1    35       30004.00828.00010181747        QAR 08-SEP-2026          3770.87  09-SEP-2026          3770.87       0        613-614  
+0    36       30004.00828.00013335131        EUR 08-SEP-2026             0.00  09-SEP-2026             0.00       141      615-1452 
+0    37       30004.00819.00012033053        EUR 08-SEP-2026             0.00  09-SEP-2026             0.00       9       1453-1496 
+0    38       30004.00819.00011980188        EUR 08-SEP-2026             0.00  09-SEP-2026             0.00       4       1497-1510 
+0    39       30004.00819.00011912773        EUR 08-SEP-2026             0.00  09-SEP-2026             0.00       4       1511-1525 
+0    40       30003.04250.00020626951        EUR 08-SEP-2026             0.00  09-SEP-2026             0.00       0       1526-1527 
+1    41       30004.00819.00010118761        GBP 08-SEP-2026         45460.50  09-SEP-2026         45460.50       0       1528-1529 
+0    42       30004.00828.00013171880        EUR 08-SEP-2026             0.00  09-SEP-2026             0.00       3       1530-1541 
+0    43       30004.00828.00013171977        EUR 08-SEP-2026             0.00  09-SEP-2026             0.00       2       1542-1551 
+0    44       30004.00828.00013508858        EUR 08-SEP-2026             0.00  09-SEP-2026             0.00       0       1552-1553 
+0    45       30004.00819.00011852148        EUR 08-SEP-2026             0.00  09-SEP-2026             0.00       0       1554-1555 
+0    46       30004.00828.00013530780        EUR 08-SEP-2026             0.00  09-SEP-2026             0.00       0       1556-1557 
+                        Synthèse des relevés, chargement N° 1010036                                   Date :10-SEP-2026  Page : 2
+
+Fichier : /data/flf/files/PDBFINP1/data/in/AFB120.txt
+Archivé : /data/flf/files/PDBFINP1/data/traite/AFB120.txt
+Recyclé : /data/flf/files/PDBFINP1/data/log/AFB120.txt.err
+
+Err. Relevé   Compte                         Dev Date début      Ancien solde  Date fin       Nouveau solde   Mouvements Debut-Fin
+-----------------------------------------------------------------------------------------------------------------------------------
+0    47       30004.00828.00013323006        EUR 08-SEP-2026             0.00  09-SEP-2026             0.00       0       1558-1559 
+0    48       30004.00819.00011834203        EUR 08-SEP-2026             0.00  09-SEP-2026             0.00       0       1560-1561 
+0    49       30004.00828.00013338332        EUR 08-SEP-2026             0.00  09-SEP-2026             0.00       0       1562-1563 
+0    50       30003.04250.00020626944        EUR 08-SEP-2026             0.00  09-SEP-2026             0.00       0       1564-1565 
+0    51       30004.00819.00011912579        EUR 08-SEP-2026             0.00  09-SEP-2026             0.00       2       1566-1571 
+0    52       30004.00828.00013338041        EUR 08-SEP-2026             0.00  09-SEP-2026             0.00       0       1572-1573 
+0    53       30004.00828.00013338235        EUR 08-SEP-2026             0.00  09-SEP-2026             0.00       0       1574-1575 
+1    54       30004.00828.00010181961        SAR 08-SEP-2026        225185.41  09-SEP-2026        225185.41       0       1576-1577 
+0    55       30004.02811.00010490615        EUR 08-SEP-2026             0.00  09-SEP-2026             0.00       6       1578-1607 
+0    56       30004.00828.00013530586        EUR 08-SEP-2026             0.00  09-SEP-2026             0.00       0       1608-1609 
+1    57       30004.00828.00010158205        AED 08-SEP-2026        131109.71  09-SEP-2026        131109.71       0       1610-1611 
+0    58       30004.00819.00011834494        EUR 08-SEP-2026             0.00  09-SEP-2026             0.00       0       1612-1613 
+0    59       30003.03175.00050178205        EUR 08-SEP-2026           118.54  09-SEP-2026           118.54       0       1614-1615 
+1    60       30004.00113.00021686449        EUR 08-SEP-2026             0.00  09-SEP-2026             0.00       82      1616-2072 
+1    61       99375.99999.87786070000        EUR 08-SEP-2026        113043.94  09-SEP-2026        113043.94       0       2073-2074 
+0    62       30004.01328.00010554672        EUR 08-SEP-2026             0.00  09-SEP-2026             0.00       14      2075-2129 
+0    63       30004.00828.00012846542        EUR 08-SEP-2026             0.00  09-SEP-2026             0.00       4       2130-2142 
+0    64       30004.00828.00013508082        EUR 08-SEP-2026             0.00  09-SEP-2026             0.00       0       2143-2144 
+0    65       30004.00819.00011944589        EUR 08-SEP-2026             0.00  09-SEP-2026             0.00       2       2145-2150 
+0    66       CH530.87050.00003064301        CHF 08-SEP-2026       1437668.82  09-SEP-2026       1436736.57       1       2151-2155 
+1    67       30004.00828.00010148139        USD 08-SEP-2026         13610.37  09-SEP-2026         13610.37       0       2156-2157 
+0    68       30004.00819.00011974368        EUR 08-SEP-2026             0.00  09-SEP-2026             0.00       0       2158-2159 
+0    69       30003.04250.00020626910        EUR 08-SEP-2026             0.00  09-SEP-2026             0.00       0       2160-2161 
+0    70       30004.00819.00012032762        EUR 08-SEP-2026             0.00  09-SEP-2026             0.00       10      2162-2202 
+0    71       30004.02532.00010095338        EUR 08-SEP-2026             0.00  09-SEP-2026             0.00       0       2203-2204 
+0    72       30004.00828.00012607146        EUR 08-SEP-2026             0.00  09-SEP-2026             0.00       7       2205-2233 
+0    73       30003.04250.00020626902        EUR 08-SEP-2026             0.00  09-SEP-2026             0.00       0       2234-2235 
+0    74       30004.01328.00010937531        EUR 08-SEP-2026             0.00  09-SEP-2026             0.00       2       2236-2242 
+0    75       30004.00828.00013172171        EUR 08-SEP-2026             0.00  09-SEP-2026             0.00       0       2243-2244 
+0    76       30004.00819.00011852051        EUR 08-SEP-2026             0.00  09-SEP-2026             0.00       0       2245-2246 
+0    77       30004.00819.00012032083        EUR 08-SEP-2026             0.00  09-SEP-2026             0.00       2       2247-2252 
+0    78       30004.00828.00012498409        EUR 08-SEP-2026             0.00  09-SEP-2026             0.00       0       2253-2254 
+0    79       30004.00819.00011828771        EUR 08-SEP-2026             0.00  09-SEP-2026             0.00       10      2255-2310 
+0    80       30003.01504.00020107938        EUR 08-SEP-2026        156588.72  09-SEP-2026        162852.61       2       2311-2322 
+0    81       30003.03620.00020169577        EUR 08-SEP-2026          -324.46  09-SEP-2026         -1190.82       1       2323-2327 
+0    82       30004.00828.00013171589        EUR 08-SEP-2026             0.00  09-SEP-2026             0.00       2       2328-2338 
+0    83       30004.00819.00011940127        EUR 08-SEP-2026             0.00  09-SEP-2026             0.00       2       2339-2348 
+0    84       30004.00828.00012498312        EUR 08-SEP-2026             0.00  09-SEP-2026             0.00       0       2349-2350 
+0    85       30004.00828.00013337944        EUR 08-SEP-2026             0.00  09-SEP-2026             0.00       0       2351-2352 
+0    86       30004.00819.00011833524        EUR 08-SEP-2026             0.00  09-SEP-2026             0.00       4       2353-2366 
+0    87       30004.00828.00012846833        EUR 08-SEP-2026             0.00  09-SEP-2026             0.00       7       2367-2401 
+0    88       30004.00828.00013172365        EUR 08-SEP-2026             0.00  09-SEP-2026             0.00       0       2402-2403 
+0    89       30004.00819.00011842836        EUR 08-SEP-2026             0.00  09-SEP-2026             0.00       0       2404-2405 
+0    90       30004.00819.00011775518        EUR 08-SEP-2026             0.00  09-SEP-2026             0.00       0       2406-2407 
+0    91       30004.00828.00012846639        EUR 08-SEP-2026             0.00  09-SEP-2026             0.00       2       2408-2416 
+0    92       30004.00828.00013531071        EUR 08-SEP-2026             0.00  09-SEP-2026             0.00       0       2417-2418 
+0    93       30004.00819.00011831778        EUR 08-SEP-2026             0.00  09-SEP-2026             0.00       2       2419-2424 
+                        Synthèse des relevés, chargement N° 1010036                                   Date :10-SEP-2026  Page : 3
+
+Fichier : /data/flf/files/PDBFINP1/data/in/AFB120.txt
+Archivé : /data/flf/files/PDBFINP1/data/traite/AFB120.txt
+Recyclé : /data/flf/files/PDBFINP1/data/log/AFB120.txt.err
+
+Err. Relevé   Compte                         Dev Date début      Ancien solde  Date fin       Nouveau solde   Mouvements Debut-Fin
+-----------------------------------------------------------------------------------------------------------------------------------
+0    94       30004.00828.00013329117        EUR 08-SEP-2026             0.00  09-SEP-2026             0.00       2       2425-2430 
+0    95       30004.00819.00011906274        EUR 08-SEP-2026             0.00  09-SEP-2026             0.00       2       2431-2439 
+0    96       30004.00828.00013324170        EUR 08-SEP-2026             0.00  09-SEP-2026             0.00       2       2440-2449 
+0    97       30004.00828.00013508179        EUR 08-SEP-2026             0.00  09-SEP-2026             0.00       0       2450-2451 
+0    98       30004.00819.00011852342        EUR 08-SEP-2026             0.00  09-SEP-2026             0.00       3       2452-2459 
+0    99       30004.00828.00012650893        EUR 08-SEP-2026             0.00  09-SEP-2026             0.00       13      2460-2542 
+0    100      30004.00819.00012032568        EUR 08-SEP-2026             0.00  09-SEP-2026             0.00       5       2543-2567 
+0    101      30004.00819.00011912676        EUR 08-SEP-2026             0.00  09-SEP-2026             0.00       2       2568-2577 
+0    102      30004.00828.00013171686        EUR 08-SEP-2026             0.00  09-SEP-2026             0.00       0       2578-2579 
+0    103      30004.00819.00011903461        EUR 08-SEP-2026             0.00  09-SEP-2026             0.00       11      2580-2632 
+0    104      30004.02532.00010098442        EUR 08-SEP-2026             0.00  09-SEP-2026             0.00       4       2633-2647 
+0    105      30004.00828.00012846930        EUR 08-SEP-2026             0.00  09-SEP-2026             0.00       2       2648-2658 
+0    106      30004.00828.00013171783        EUR 08-SEP-2026             0.00  09-SEP-2026             0.00       0       2659-2660 
+0    107      30004.00828.00013508276        EUR 08-SEP-2026             0.00  09-SEP-2026             0.00       0       2661-2662 
+0    108      30004.00828.00012541768        EUR 08-SEP-2026             0.00  09-SEP-2026             0.00       0       2663-2664 
+0    109      30004.00342.00020107073        EUR 08-SEP-2026             0.00  09-SEP-2026             0.00       57      2665-2974 
+1    110      30003.03175.05520506116        SAR 08-SEP-2026         70719.71  09-SEP-2026         70719.71       0       2975-2976 
+0    111      30004.00819.00011843224        EUR 08-SEP-2026             0.00  09-SEP-2026             0.00       0       2977-2978 
+0    112      30004.00828.00013171492        EUR 08-SEP-2026             0.00  09-SEP-2026             0.00       0       2979-2980 
+0    113      30004.00828.00012632851        EUR 08-SEP-2026             0.00  09-SEP-2026             0.00       4       2981-2996 
+0    114      30004.00819.00011903655        EUR 08-SEP-2026             0.00  09-SEP-2026             0.00       6       2997-3022 
+0    115      30004.00819.00011843127        EUR 08-SEP-2026             0.00  09-SEP-2026             0.00       9       3023-3069 
+1    116      CH260.87050.00003064302        EUR 08-SEP-2026         52011.98  09-SEP-2026         52011.98       0       3070-3071 
+1    117      30004.00819.00010116773        USD 08-SEP-2026          7847.39  09-SEP-2026          7847.39       0       3072-3073 
+0    118      30003.04250.00020626977        EUR 08-SEP-2026      22628424.17  09-SEP-2026      22628424.15       1       3074-3077 
+0    119      30004.00828.00012846445        EUR 08-SEP-2026             0.00  09-SEP-2026             0.00       2       3078-3083 
+1    120      30004.00819.00010130370        PLN 08-SEP-2026       2019698.15  09-SEP-2026       2019698.15       0       3084-3085 
+1    121      30004.00819.00011828480        EUR 08-SEP-2026             0.00  09-SEP-2026             0.00       0       3086-3087 
+0    122      30004.00819.00012004147        EUR 08-SEP-2026             0.00  09-SEP-2026             0.00       0       3088-3089 
+0    123      30004.00828.00013172074        EUR 08-SEP-2026             0.00  09-SEP-2026             0.00       0       3090-3091 
+0    124      30004.00819.00011904916        EUR 08-SEP-2026             0.00  09-SEP-2026             0.00       0       3092-3093 
+0    125      30003.04250.00020626969        EUR 08-SEP-2026             0.00  09-SEP-2026             0.00       0       3094-3095 
+0    126      30004.00819.00011843030        EUR 08-SEP-2026             0.00  09-SEP-2026             0.00       2       3096-3101 
+0    127      30004.01328.00010332736        EUR 08-SEP-2026             0.00  09-SEP-2026             0.00       17      3102-3236 
+0    128      30004.00819.00011851954        EUR 08-SEP-2026             0.00  09-SEP-2026             0.00       0       3237-3238 
+0    129      30004.00819.00011906080        EUR 08-SEP-2026             0.00  09-SEP-2026             0.00       2       3239-3244 
+0    130      30004.00819.00012032956        EUR 08-SEP-2026             0.00  09-SEP-2026             0.00       2       3245-3250 
+0    131      30004.00819.00012032277        EUR 08-SEP-2026             0.00  09-SEP-2026             0.00       33      3251-3463 
+0    132      30004.01328.00010189758        EUR 08-SEP-2026             0.00  09-SEP-2026             0.00       88      3464-3656 
+0    133      30004.02532.00010114738        EUR 08-SEP-2026        308085.95  09-SEP-2026        308085.95       0       3657-3658 
+1    134      30004.00828.00010128133        CHF 08-SEP-2026         13142.27  09-SEP-2026         13142.27       0       3659-3660 
+0    135      30004.00828.00013338623        EUR 08-SEP-2026             0.00  09-SEP-2026             0.00       0       3661-3662 
+1    136      30004.00819.00010120701        GBP 08-SEP-2026        127313.43  09-SEP-2026        127313.43       0       3663-3664 
+0    137      30004.00828.00013530877        EUR 08-SEP-2026             0.00  09-SEP-2026             0.00       0       3665-3666 
+0    138      30004.02532.00010106105        EUR 08-SEP-2026             0.00  09-SEP-2026             0.00       2       3667-3672 
+0    139      30004.00828.00012650214        EUR 08-SEP-2026             0.00  09-SEP-2026             0.00       2       3673-3682 
+0    140      30004.00819.00011831681        EUR 08-SEP-2026             0.00  09-SEP-2026             0.00       2       3683-3688 
+                        Synthèse des relevés, chargement N° 1010036                                   Date :10-SEP-2026  Page : 4
+
+Fichier : /data/flf/files/PDBFINP1/data/in/AFB120.txt
+Archivé : /data/flf/files/PDBFINP1/data/traite/AFB120.txt
+Recyclé : /data/flf/files/PDBFINP1/data/log/AFB120.txt.err
+
+Err. Relevé   Compte                         Dev Date début      Ancien solde  Date fin       Nouveau solde   Mouvements Debut-Fin
+-----------------------------------------------------------------------------------------------------------------------------------
+0    141      30004.00828.00012846736        EUR 08-SEP-2026             0.00  09-SEP-2026             0.00       6       3689-3707 
+0    142      30004.00828.00013338720        EUR 08-SEP-2026             0.00  09-SEP-2026             0.00       5       3708-3732 
+0    143      30004.00819.00012032859        EUR 08-SEP-2026             0.00  09-SEP-2026             0.00       2       3733-3742 
+0    144      30004.00819.00011933143        EUR 08-SEP-2026             0.00  09-SEP-2026             0.00       0       3743-3744 
+0    145      30004.00828.00012541865        EUR 08-SEP-2026             0.00  09-SEP-2026             0.00       0       3745-3746 
+0    146      30004.00819.00012032374        EUR 08-SEP-2026             0.00  09-SEP-2026             0.00       2       3747-3753 
+0    147      30004.02532.00010098345        EUR 08-SEP-2026        748851.57  09-SEP-2026        748851.57       0       3754-3755 
+0    148      30004.01328.00010554478        EUR 08-SEP-2026             0.00  09-SEP-2026             0.00       2       3756-3762 
+0    149      30004.02561.00010596807        EUR 08-SEP-2026       1469780.62  09-SEP-2026       1469780.62       0       3763-3764 
+0    150      30004.00828.00013508955        EUR 08-SEP-2026             0.00  09-SEP-2026             0.00       0       3765-3766 
+0    151      30004.00515.00022604972        EUR 08-SEP-2026             0.00  09-SEP-2026             0.00       0       3767-3768 
+0    152      30004.02532.00010098248        EUR 08-SEP-2026         86932.81  09-SEP-2026         86932.81       0       3769-3770 
+0    153      30004.00828.00013172268        EUR 08-SEP-2026             0.00  09-SEP-2026             0.00       4       3771-3788 
+0    154      30004.00819.00012031695        EUR 08-SEP-2026             0.00  09-SEP-2026             0.00       8       3789-3825 
+0    155      30004.00819.00012033150        EUR 08-SEP-2026             0.00  09-SEP-2026             0.00       0       3826-3827 
+1    156      30003.03620.00020131908        EUR 08-SEP-2026        786919.28  09-SEP-2026        786450.92       6       3828-3847 
+0    157      30004.00819.00011905983        EUR 08-SEP-2026             0.00  09-SEP-2026             0.00       0       3848-3849 
+0    158      30004.00828.00012910950        EUR 08-SEP-2026             0.00  09-SEP-2026             0.00       0       3850-3851 
+0    159      30003.04250.00020626928        EUR 08-SEP-2026             0.00  09-SEP-2026             0.00       0       3852-3853 
+0    160      30004.00828.00012646043        EUR 08-SEP-2026       4741846.91  09-SEP-2026       5826464.73       15      3854-3936 
+-----------------------------------------------------------------------------------------------------------------------------------
+                                             Relevés chargés 141      Lignes chargées 675   
+                                                     erreurs 19               erreurs 88    
+                                                     total   160              total   763   

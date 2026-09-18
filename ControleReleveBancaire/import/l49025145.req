@@ -1,0 +1,37 @@
++---------------------------------------------------------------------------+
+ELSY-RB: Version : 12.2
+
+Copyright (c) 1998, 2013, Oracle and/or its affiliates. All rights reserved.
+
+RBAFBIMP: XXRB - Import fichier des banques
++---------------------------------------------------------------------------+
+
+Date et heure système : 12-SEP-2026 07:49:53
+
++---------------------------------------------------------------------------+
+
+Concurrent Program RBACCGEN not installed 
+Fichier des relevés          : /data/flf/files/PDBFINP1/data/in/AFB120.txt
+Répertoire fichier archivé   : /data/flf/files/PDBFINP1/data/traite
+Répertoire fichier d'erreurs : /data/flf/files/PDBFINP1/data/log
+Nombre d'enregistrements lus    : 00004376
+Nombre de lignes écrites        : 00000744
++---------------------------------------------------------------------------+
+Début des messages de journalisation à partir du fichier FND_FILE.
++---------------------------------------------------------------------------+
++---------------------------------------------------------------------------+
+Fin des messages de journalisation à partir du fichier FND_FILE.
++---------------------------------------------------------------------------+
+
+
++---------------------------------------------------------------------------+
+Aucune option de fin demandée.
+
+Output file size: 
+51275
+
++---------------------------------------------------------------------------+
+Traitement simultané terminé
+Date et heure système : 12-SEP-2026 07:50:01
+
++---------------------------------------------------------------------------+

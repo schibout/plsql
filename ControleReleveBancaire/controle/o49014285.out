@@ -1,0 +1,17 @@
++-------------------------------------------------------------------------+
+
+ELSY-RB
+
+Nom du traitement : DKA : Contrôle des relevés bancaires
+Code du traitement : DKA_SRBCTRLRB
+Numéro du traitement : 49014285
++-------------------------------------------------------------------------+
+
+Date et heure systeme : 11-SEP-26
+
++-------------------------------------------------------------------------+
+
+DATE DE REFERENCE:10/09/2026
++-------------------------------------------------------------------------+
+ID;NOM_BANQUE;BANQUE;GUICHET;COMPTE;NOM_COMPTE;RAPPRO;COMPTE_LOCAL;DATE_DERNIER_IMPORT;DATE_DEBUT_RELEVE;DATE_FIN_RELEVE;SOLDE_INITIAL_RELVE;SOLDE_FINAL_RELEVE
+186831;BANQUE POPULAIRE AUVERGNE RHONE ALPES;16807;00166;31990892212;0431_DEW_513506_31990892212;Y;513506;07-SEP-26;28-AOU-26;31-AOU-26;271841.59;271793.59

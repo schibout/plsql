@@ -1,0 +1,28 @@
+                        Enregistrements erronés lors du chargement de relevés                    Date :14-SEP-2026  Page : 1
+
+  N°     Contenu   
+-------------------------------------------------------------------------------------------------------------------------------
+00001 >  0113825RLV 00200EUR2 08016346445  110926PAYS DE GEX ENERGIES          COMPTE COURANT      0000069363156G50016593        
+ Erreur 001 : Compte bancaire erroné                                                                              
+        001 - 002 code enregistrement  = 01                                                                              
+        003 - 005 code banque          = 13825                                                                           
+        012 - 005 code guichet         = 00200                                                                           
+        017 - 003 devise               = EUR                                                                             
+        020 - 001 nombre de décimales  = 2                                                                               
+        022 - 011 numéro de compte     = 08016346445                                                                     
+        033 - 002 code opération AFB   =                                                                                 
+        035 - 006 date d'opération     = 110926                                                                          
+        091 - 014 ancien solde         = 0000069363156G                                                                  
+                        Synthèse des relevés, chargement N° 1010043                                   Date :14-SEP-2026  Page : 1
+
+Fichier : /data/flf/files/PDBFINP1/data/in/AFB120.txt
+Archivé : /data/flf/files/PDBFINP1/data/traite/AFB120.txt
+Recyclé : /data/flf/files/PDBFINP1/data/log/AFB120.txt.err
+
+Err. Relevé   Compte                         Dev Date début      Ancien solde  Date fin       Nouveau solde   Mouvements Debut-Fin
+-----------------------------------------------------------------------------------------------------------------------------------
+1    1        13825.00200.08016346445        EUR 11-SEP-2026       6936315.67  12-SEP-2026       6936315.67       0          1-2    
+-----------------------------------------------------------------------------------------------------------------------------------
+                                             Relevés chargés 0        Lignes chargées 0     
+                                                     erreurs 1                erreurs 0     
+                                                     total   1                total   0     
