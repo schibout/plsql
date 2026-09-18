@@ -11,7 +11,7 @@ from pathlib import Path
 from cv.discovery import discover_instances
 from cv.parsers import parse_dk, parse_dk_fin01, parse_ack, parse_oracle_csv, parse_quartz_xls
 from cv.reconcile import (
-    nom_dk_depuis_fin01, controle_fichiers, controle_doublons_ack,
+    nom_dk_depuis_fin01, controle_fichiers, controle_doublons_ack, detail_doublons_virements,
     controle_totaux_source, controle_totaux_edf, controle_lignes, controle_quartz,
 )
 from cv.report import write_reports
@@ -143,6 +143,7 @@ def main(argv=None) -> int:
     # Envois en double vers la banque (toutes instances confondues)
     references = {(t["guid"], t["fichier_edf"]) for t in tous_totaux_edf}
     doublons = controle_doublons_ack(tous_acks, references)
+    doublons_detail = detail_doublons_virements(tous_acks, doublons)
     qualifier_doublons(tous_fichiers, doublons)
 
     # Niveau 3 : rapprochement du retour Quartz (jour entier) contre les virements envoyes
@@ -156,7 +157,7 @@ def main(argv=None) -> int:
 
     dossier = racine / f"rapport_{args.date}"
     ok = write_reports(dossier, tous_fichiers, tous_totaux_src, tous_totaux_edf, tous_ecarts,
-                       quartz_totaux, quartz_ecarts, doublons)
+                       quartz_totaux, quartz_ecarts, doublons, doublons_detail)
     print(f"Rapports ecrits dans {dossier}. Resultat global : {'OK' if ok else 'KO'}")
     return 0 if ok else 1
 

@@ -217,6 +217,23 @@ def controle_doublons_ack(acks, references=frozenset()):
     return doublons
 
 
+def detail_doublons_virements(acks, doublons):
+    """Une ligne par virement contenu dans un envoi en double (a transmettre a la banque)."""
+    par_fichier = {(guid, nom): ack for guid, nom, ack in acks}
+    lignes = []
+    for d in doublons:
+        ack = par_fichier.get((d["guid"], d["fichier"]))
+        if ack is None:
+            continue
+        for v in ack.virements:
+            lignes.append({
+                "guid": d["guid"], "fichier": d["fichier"],
+                "fichier_original": d["fichier_original"],
+                "nom": v.nom, "iban": v.iban, "bic": v.bic, "montant_cts": v.montant_cts,
+            })
+    return lignes
+
+
 def controle_quartz(cible_virements, quartz_virements):
     """Niveau 3 : rapproche l'import Quartz (tresorerie) contre les virements cible envoyes.
 

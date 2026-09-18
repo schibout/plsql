@@ -236,3 +236,17 @@ def test_controle_doublons_ack_original_est_celui_connu_d_oracle():
     doublons = controle_doublons_ack(acks, references={("g1", "ACK_0002_oracle")})
     assert [(d["fichier"], d["fichier_original"]) for d in doublons] == [
         ("ACK_0001_orphelin", "ACK_0002_oracle")]
+
+
+from cv.reconcile import detail_doublons_virements
+
+
+def test_detail_doublons_virements_une_ligne_par_virement():
+    virs = [_v("FR1", 100, "ALLAUCH", "BIC1"), _v("FR2", 200, "ISTRES", "BIC2")]
+    acks = [("g1", "ACK_A", _ack(list(virs))), ("g1", "ACK_B", _ack(list(virs)))]
+    doublons = controle_doublons_ack(acks)
+    lignes = detail_doublons_virements(acks, doublons)
+    assert len(lignes) == 2
+    assert lignes[0] == {"guid": "g1", "fichier": "ACK_B", "fichier_original": "ACK_A",
+                         "nom": "ALLAUCH", "iban": "FR1", "bic": "BIC1", "montant_cts": 100}
+    assert lignes[1]["nom"] == "ISTRES" and lignes[1]["montant_cts"] == 200

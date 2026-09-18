@@ -80,9 +80,10 @@ def _ecrit_csv(chemin, lignes):
 
 
 def write_reports(dossier, fichiers, totaux_source, totaux_edf, ecarts,
-                  quartz_totaux=None, quartz_ecarts=None, doublons=None):
+                  quartz_totaux=None, quartz_ecarts=None, doublons=None, doublons_detail=None):
     quartz_ecarts = quartz_ecarts or []
     doublons = doublons or []
+    doublons_detail = doublons_detail or []
     dossier = Path(dossier)
     dossier.mkdir(parents=True, exist_ok=True)
 
@@ -92,6 +93,7 @@ def write_reports(dossier, fichiers, totaux_source, totaux_edf, ecarts,
     _ecrit_csv(dossier / "controle_lignes_ecarts.csv", ecarts)
     _ecrit_csv(dossier / "controle_quartz_ecarts.csv", quartz_ecarts)
     _ecrit_csv(dossier / "controle_doublons_ack.csv", doublons)
+    _ecrit_csv(dossier / "controle_doublons_virements.csv", doublons_detail)
 
     # Les doublons ont leur propre section : on ne les presente pas comme des fichiers manquants
     fichiers_ko = [f for f in fichiers if f["statut"] not in ("OK", "DOUBLON")]
@@ -250,6 +252,31 @@ def write_reports(dossier, fichiers, totaux_source, totaux_edf, ecarts,
             for d in doublons
         ]
         lignes_md.append("")
+        if doublons_detail:
+            lignes_md += [
+                "#### Bénéficiaires concernés par les envois en double",
+                "",
+                "Pour chaque envoi en double, la liste des virements qu'il contient — donc des "
+                "bénéficiaires susceptibles d'avoir été payés deux fois. Cette même liste est "
+                "fournie au format Excel dans `controle_doublons_virements.csv` pour être "
+                "transmise à la trésorerie ou à la banque.",
+                "",
+            ]
+            for d in doublons:
+                lignes_d = [l for l in doublons_detail
+                            if l["guid"] == d["guid"] and l["fichier"] == d["fichier"]]
+                lignes_md += [
+                    f"**Envoi `{d['fichier']}`** — {len(lignes_d)} virement(s), "
+                    f"{_euros(int(d['montant_cts']))}",
+                    "",
+                    "| Bénéficiaire | IBAN | BIC | Montant |",
+                    "|---|---|---|---|",
+                ]
+                lignes_md += [
+                    f"| {l['nom']} | {l['iban']} | {l['bic']} | {_euros(int(l['montant_cts']))} |"
+                    for l in lignes_d
+                ]
+                lignes_md.append("")
     if fichiers_ko:
         lignes_md += [
             "### Fichiers manquants ou incomplets",
@@ -413,6 +440,9 @@ def write_reports(dossier, fichiers, totaux_source, totaux_edf, ecarts,
         "- **`controle_doublons_ack.csv`** — les envois vers la banque dont le contenu est "
         "identique à un envoi déjà transmis sur la journée. **Un fichier vide signifie "
         "qu'aucun envoi n'a été transmis en double**.",
+        "- **`controle_doublons_virements.csv`** — le détail, virement par virement "
+        "(bénéficiaire, IBAN, BIC, montant), des envois transmis en double : la liste à "
+        "communiquer à la banque pour les demandes de retour de fonds.",
         "",
     ]
 

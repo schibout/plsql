@@ -54,3 +54,17 @@ def test_write_reports_doublons_rend_ko(tmp_path):
     assert "300,00 EUR" in synth
     # Un doublon n'est pas un fichier manquant : il ne doit pas figurer dans cette section
     assert "Fichiers manquants ou incomplets" not in synth
+
+
+def test_write_reports_detail_des_virements_en_double(tmp_path):
+    doublons = [{"guid": "g1", "fichier": "ACK_B", "guid_original": "g1", "fichier_original": "ACK_A",
+                 "nb_virements": 1, "montant_cts": 100}]
+    detail = [{"guid": "g1", "fichier": "ACK_B", "fichier_original": "ACK_A",
+               "nom": "COMMUNE D ALLAUCH", "iban": "FR7612345", "bic": "BIC1", "montant_cts": 100}]
+    ok = write_reports(tmp_path / "rapport", [], [], [], [], None, [], doublons, detail)
+    assert ok is False
+    csv_detail = (tmp_path / "rapport" / "controle_doublons_virements.csv").read_text(encoding="utf-8")
+    assert "COMMUNE D ALLAUCH" in csv_detail and "FR7612345" in csv_detail
+    synth = (tmp_path / "rapport" / "synthese.md").read_text(encoding="utf-8")
+    assert "COMMUNE D ALLAUCH" in synth and "FR7612345" in synth
+    assert "controle_doublons_virements.csv" in synth
