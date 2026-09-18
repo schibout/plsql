@@ -1,0 +1,46 @@
+{
+  "_aide": "Clé = code d'erreur tel qu'il apparaît dans le log ('Erreur 025', 'ORA-01555', 'APP-FND-01564'). Une clé finissant par * est un préfixe. Champs : explication, action, gravite (bloquant | à reprendre | normal | à qualifier), programmes (indicatif).",
+
+  "Erreur 001": {
+    "programmes": ["RBAFBIMP"],
+    "gravite": "normal",
+    "explication": "Compte bancaire erroné : le compte du relevé n'existe pas dans le référentiel des comptes bancaires EBS. Quelques occurrences par import sont habituelles (comptes non gérés dans RB).",
+    "action": "Aucune si le nombre reste dans l'ordre de grandeur habituel (≈19 sur le flux multi-banques de 07:50, ≈5 sur le flux Société Générale de 08:20). Sinon vérifier si un nouveau compte doit être créé."
+  },
+  "Erreur 025": {
+    "programmes": ["RBAFBIMP"],
+    "gravite": "bloquant",
+    "explication": "Journée manquante : la date du relevé est postérieure au dernier relevé chargé pour ce compte, il manque au moins un relevé intermédiaire. Le contrôle de continuité rejette toute la journée pour le compte. Si des centaines de lignes sont en 025, un fichier entier d'une journée précédente n'a pas été intégré.",
+    "action": "Identifier la journée manquante (date du dernier relevé chargé vs première date du fichier), retrouver le fichier manquant côté PFE/Talend ou banque, le rejouer dans l'ordre chronologique, puis relancer les fichiers rejetés. Voir ControleReleveBancaire/README.md §8."
+  },
+  "ORA-01555": {
+    "gravite": "à reprendre",
+    "explication": "Snapshot too old : la requête a duré trop longtemps pour l'espace d'annulation disponible.",
+    "action": "Relancer le traitement, de préférence hors des pics de charge. Si récurrent, signaler au DBA."
+  },
+  "ORA-00001": {
+    "gravite": "à qualifier",
+    "explication": "Violation de contrainte unique : tentative d'insérer une ligne déjà présente (souvent un fichier rejoué deux fois).",
+    "action": "Vérifier si le fichier ou le lot a déjà été intégré avant toute relance."
+  },
+  "ORA-01403": {
+    "gravite": "à qualifier",
+    "explication": "No data found : une donnée de référence attendue est absente (paramétrage, correspondance, compte).",
+    "action": "Lire les messages FND_FILE juste avant l'erreur pour identifier la donnée manquante."
+  },
+  "ORA-20*": {
+    "gravite": "à qualifier",
+    "explication": "Erreur applicative levée volontairement par un package PL/SQL (RAISE_APPLICATION_ERROR). Le message qui suit le code est écrit par le développeur du traitement.",
+    "action": "Le message est fonctionnel : le lire tel quel et chercher le package dans le dépôt (ex. DKA_SRBCTRLRB_PKG.sql)."
+  },
+  "APP-FND-01564": {
+    "gravite": "à reprendre",
+    "explication": "Erreur Oracle interne remontée par le gestionnaire simultané ; le vrai code ORA- figure dans le message.",
+    "action": "Traiter le code ORA- indiqué dans le message."
+  },
+  "APP-FND-00806": {
+    "gravite": "à qualifier",
+    "explication": "Fichier introuvable ou illisible par le traitement (chemin, droits, fichier non arrivé).",
+    "action": "Vérifier l'arrivée du fichier dans le répertoire d'entrée et les droits du compte applicatif."
+  }
+}

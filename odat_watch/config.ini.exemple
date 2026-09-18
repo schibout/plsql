@@ -1,12 +1,22 @@
-; Copier en config.ini et renseigner. Ne pas committer config.ini.
+; Copier en config.ini et renseigner. config.ini est ignore par git.
 [database]
-user = APPS
+; Compte Oracle (nominatif ou APPS). Les vues FND doivent etre accessibles sans prefixe,
+; sinon renseigner schema = APPS.
+user = mon_compte
 password = XXXXXXXX
-; host:port/service_name
-dsn = hostname:1521/PROD
+; Format host:port/service_name
+dsn = prdscanc1pdb03.dalkia.net:1521/ebs_PDBFINP1
+schema =
 
 [oracle]
 ; Fenetre d'historique recuperee a chaque rafraichissement (heures)
 heures_historique = 48
-; Filtre sur DESCRIPTION des requetes (LIKE). Vide = toutes les requetes.
+; Filtre LIKE sur la DESCRIPTION des demandes (nom du job Control-M). Vide = toutes.
 filtre_description = FIN%
+; Programmes a suivre meme s'ils ne passent pas par Control-M (liste separee par des virgules, vide = aucun)
+programmes_suivis = RBAFBIMP,DKA_SRBCTRLRB
+
+[logs]
+; Dossiers locaux ou sont deposes les l<request_id>.req et o<request_id>.out rapatries du serveur EBS
+; (plusieurs dossiers separes par ; ). Sous-dossiers inclus.
+dossiers = ..\ControleReleveBancaire\import;..\ControleReleveBancaire\controle;logs_ebs

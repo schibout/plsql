@@ -1,0 +1,218 @@
+"""Onglet Oracle Apps de l'interface : demandes concurrentes, lien Control-M, logs et diagnostics."""
+from __future__ import annotations
+import json
+from datetime import datetime, timedelta
+
+import pandas as pd
+import streamlit as st
+
+from db import connect, DB_PATH
+
+PHASE_ICON = {"P": "⏳", "R": "▶", "C": "✔", "I": "⏸"}
+STATUS_ICON = {"E": "✖", "G": "⚠", "X": "✖", "D": "✖", "T": "⏹"}
+GRAVITE_ICON = {"bloquant": "🟥", "à reprendre": "🟧", "normal": "🟩", "à qualifier": "⬜"}
+
+
+@st.cache_data(show_spinner=False)
+def _charger(_stamp: float):
+    con = connect()
+    req = pd.read_sql_query("SELECT * FROM ora_requests", con)
+    logs = pd.read_sql_query("SELECT * FROM ora_request_logs", con)
+    progs = pd.read_sql_query("SELECT * FROM ora_programs", con)
+    con.close()
+    return req, logs, progs
+
+
+def _etat(r) -> str:
+    if r["phase_code"] == "C":
+        return f"{STATUS_ICON.get(r['status_code'], '✔')} {r['status'] or r['status_code']}"
+    return f"{PHASE_ICON.get(r['phase_code'], '•')} {r['phase'] or r['phase_code']}"
+
+
+def _filtre(df: pd.DataFrame, recherche: str, application: str | None) -> pd.DataFrame:
+    if df.empty:
+        return df
+    if application and application.startswith("FIN"):
+        pass  # les demandes chargées sont déjà filtrées par config (filtre_description)
+    if recherche:
+        m = pd.Series(False, index=df.index)
+        for c in ("job_name", "program_short", "program_name", "description", "argument_text", "requestor"):
+            if c in df.columns:
+                m |= df[c].fillna("").astype(str).str.lower().str.contains(recherche, regex=False)
+        df = df[m]
+    return df
+
+
+def render(application, recherche, now: datetime, kpi, badge):
+    stamp = DB_PATH.stat().st_mtime if DB_PATH.exists() else 0.0
+    req, logs, progs = _charger(stamp)
+
+    if req.empty and logs.empty:
+        st.info("Aucune donnée Oracle. Renseignez `config.ini` (copie de `config.ini.exemple`) puis cliquez "
+                "« Demandes » dans la barre latérale, ou lancez `python oracle_refresh.py --test`.")
+        return
+
+    req = _filtre(req, recherche, application)
+    for c in ("request_date", "requested_start", "actual_start", "actual_completion", "refreshed_at"):
+        if c in req.columns:
+            req[c] = pd.to_datetime(req[c], errors="coerce")
+    if not req.empty:
+        req["état"] = req.apply(_etat, axis=1)
+        req["durée_min"] = ((req["actual_completion"] - req["actual_start"]).dt.total_seconds() / 60).round(1)
+        req["en_erreur"] = (req["phase_code"] == "C") & req["status_code"].isin(["E", "G", "X", "D"])
+
+    # ------------------------------------------------------------ KPI
+    c = st.columns(6)
+    kpi(c[0], int((req["phase_code"] == "R").sum()) if not req.empty else 0, "▶ en cours")
+    kpi(c[1], int((req["phase_code"] == "P").sum()) if not req.empty else 0, "⏳ en attente / planifiées")
+    kpi(c[2], int(req["en_erreur"].sum()) if not req.empty else 0, "✖ en erreur / avertissement")
+    kpi(c[3], int(req["job_name"].notna().sum()) if not req.empty else 0, "liées à un job Control-M")
+    kpi(c[4], len(logs), "logs analysés")
+    maj = req["refreshed_at"].max() if not req.empty else None
+    kpi(c[5], f"{maj:%d/%m %H:%M}" if pd.notna(maj) else "—", "dernier rafraîchissement")
+
+    s_err, s_next, s_all, s_logs, s_progs = st.tabs(
+        ["✖ Erreurs et logs", "⏳ Ce soir / demain côté Oracle", "📋 Toutes les demandes", "🧾 Logs chargés", "📚 Programmes"])
+
+    cols_req = ["état", "request_id", "job_name", "program_short", "program_name", "requested_start", "actual_start",
+                "actual_completion", "durée_min", "requestor", "argument_text", "completion_text"]
+
+    # ------------------------------------------------------------ erreurs + logs
+    with s_err:
+        err = req[req["en_erreur"]].sort_values("actual_completion", ascending=False) if not req.empty else pd.DataFrame()
+        # demandes dont on a un log avec erreurs, même sans ligne ora_requests (cas des logs copiés à la main)
+        logs_err = logs[logs["erreurs"].fillna("[]") != "[]"] if not logs.empty else pd.DataFrame()
+        if err.empty and logs_err.empty:
+            st.success("Aucune demande en erreur sur la période chargée.")
+        else:
+            if not err.empty:
+                st.markdown("#### Demandes terminées en erreur ou avertissement")
+                st.dataframe(err[cols_req], use_container_width=True, hide_index=True, height=min(400, 38 * len(err) + 40))
+            ids = sorted(set(err["request_id"].tolist() if not err.empty else []) | set(logs_err["request_id"].tolist()),
+                         reverse=True)
+            st.markdown("#### Diagnostic d'une demande")
+            rid = st.selectbox("Request id", ids, format_func=lambda i: _libelle(i, req, logs))
+            if rid:
+                _detail_request(rid, req, logs)
+            st.markdown("---")
+            st.caption("Logs absents en local ? Générez la liste des chemins pour `copy_ebs_logs.sh` :")
+            if st.button("📝 Générer list.txt des logs manquants"):
+                import logs as logmod
+                st.info(logmod.ecrire_liste())
+
+    # ------------------------------------------------------------ ce soir / demain
+    with s_next:
+        if req.empty:
+            st.info("Pas de demandes chargées.")
+        else:
+            fin = (now + timedelta(days=2)).replace(hour=6, minute=0, second=0, microsecond=0)
+            nxt = req[(req["phase_code"].isin(["P", "R"])) & (req["requested_start"].fillna(now) <= fin)] \
+                .sort_values("requested_start")
+            st.caption("Demandes Oracle en cours ou planifiées (PHASE Pending/Running) jusqu'à après-demain 06:00. "
+                       "Les demandes Control-M n'apparaissent ici qu'une fois soumises par le lanceur : l'onglet "
+                       "« Ce soir » reste la prévision, celui-ci la confirmation.")
+            if nxt.empty:
+                st.info("Rien de planifié côté Oracle sur la plage.")
+            else:
+                n = nxt.copy()
+                n["quand"] = n["requested_start"].dt.strftime("%a %d/%m %H:%M")
+                n["récurrence"] = n["resubmit_interval"].fillna("").astype(str) + " " + n["resubmit_unit"].fillna("")
+                st.dataframe(n[["état", "quand", "request_id", "job_name", "program_short", "program_name",
+                                "récurrence", "requestor", "argument_text"]],
+                             use_container_width=True, hide_index=True, height=min(600, 38 * len(n) + 40))
+
+    # ------------------------------------------------------------ toutes
+    with s_all:
+        if req.empty:
+            st.info("Pas de demandes chargées.")
+        else:
+            st.dataframe(req.sort_values("request_date", ascending=False)[cols_req],
+                         use_container_width=True, hide_index=True, height=600)
+
+    # ------------------------------------------------------------ logs
+    with s_logs:
+        if logs.empty:
+            st.info("Aucun log analysé. Déposez des fichiers l<id>.req / o<id>.out dans les dossiers de "
+                    "`config.ini [logs]` puis cliquez « Analyser les logs ».")
+        else:
+            l = logs.copy()
+            l["nb_erreurs"] = l["erreurs"].apply(lambda s: sum(e.get("nb", 0) for e in json.loads(s or "[]")))
+            l["codes"] = l["erreurs"].apply(lambda s: ", ".join(e["code"] for e in json.loads(s or "[]")))
+            l = _filtre(l.rename(columns={"program": "program_name"}), recherche, application)
+            st.dataframe(l[["request_id", "kind", "program_name", "started", "ended", "nb_erreurs", "codes", "path"]]
+                         .sort_values(["request_id", "kind"], ascending=[False, True]),
+                         use_container_width=True, hide_index=True, height=500)
+            rid = st.selectbox("Voir le détail", sorted(l["request_id"].unique(), reverse=True), key="log_detail")
+            if rid:
+                _detail_request(rid, req, logs)
+
+    # ------------------------------------------------------------ programmes
+    with s_progs:
+        if progs.empty:
+            st.info("Référentiel vide : cliquez « Programmes » dans la barre latérale.")
+        else:
+            p = progs
+            if recherche:
+                m = pd.Series(False, index=p.index)
+                for c in ("program_short", "program_name", "executable_name", "execution_file", "description"):
+                    m |= p[c].fillna("").astype(str).str.lower().str.contains(recherche, regex=False)
+                p = p[m]
+            st.dataframe(p[["program_short", "program_name", "application_short", "execution_method",
+                            "executable_name", "execution_file", "description"]],
+                         use_container_width=True, hide_index=True, height=600)
+
+
+def _libelle(rid, req, logs) -> str:
+    r = req[req["request_id"] == rid]
+    if not r.empty:
+        r = r.iloc[0]
+        return f"{rid} — {r['job_name'] or ''} {r['program_short'] or ''} — {r['état']}"
+    l = logs[(logs["request_id"] == rid) & (logs["kind"] == "req")]
+    return f"{rid} — {l.iloc[0]['program'] if not l.empty else 'log seul'}"
+
+
+def _detail_request(rid, req, logs):
+    r = req[req["request_id"] == rid]
+    if not r.empty:
+        r = r.iloc[0]
+        c = st.columns(4)
+        c[0].markdown(f"**Job Control-M** : `{r['job_name'] or '—'}`")
+        c[1].markdown(f"**Programme** : `{r['program_short']}`  \n{r['program_name']}")
+        c[2].markdown(f"**Début / fin** : {r['actual_start']} → {r['actual_completion']}")
+        c[3].markdown(f"**Statut** : {r['état']}  \n{r['completion_text'] or ''}")
+        if r["argument_text"]:
+            st.caption(f"Arguments : {r['argument_text']}")
+        st.caption(f"Log : `{r['logfile_name'] or '?'}`  ·  Sortie : `{r['outfile_name'] or '?'}`")
+    lr = logs[logs["request_id"] == rid]
+    if lr.empty:
+        st.warning("Aucun log local pour cette demande. Rapatriez l<id>.req et o<id>.out puis « Analyser les logs ».")
+        return
+    for _, l in lr.sort_values("kind", ascending=False).iterrows():  # req d'abord
+        titre = "Journal (.req)" if l["kind"] == "req" else "Sortie (.out)"
+        diag = json.loads(l["diagnostic"] or "[]")
+        compt = json.loads(l["compteurs"] or "{}")
+        lus = _entier(next((v for k, v in compt.items() if "lus" in k.lower()), None))
+        ecrits = _entier(next((v for k, v in compt.items() if "crit" in k.lower()), None))
+        zero_ecrit = lus and ecrits == 0
+        with st.expander(f"{titre} — {l['path']}" + (f"  ·  {sum(d['nb'] for d in diag)} erreur(s)" if diag else ""),
+                         expanded=bool(diag) or l["kind"] == "req"):
+            if diag:
+                for d in diag:
+                    st.markdown(f"{GRAVITE_ICON.get(d['gravite'], '⬜')} **{d['code']}** × {d['nb']} — {d['explication']}  \n"
+                                f"👉 {d['action']}")
+            elif zero_ecrit:
+                st.warning(f"{lus} enregistrements lus mais 0 ligne écrite : le fichier a été rejeté en totalité. "
+                           "Le détail est dans la sortie (.out).")
+            else:
+                st.success("Aucune erreur détectée dans ce fichier.")
+            if compt:
+                st.table(pd.DataFrame({"valeur": compt}).astype(str))
+            if l["fnd_messages"]:
+                st.code(l["fnd_messages"], language="text")
+
+
+def _entier(v):
+    try:
+        return int(str(v).strip().replace(" ", "").replace(".", "").replace(",", ""))
+    except (TypeError, ValueError):
+        return None

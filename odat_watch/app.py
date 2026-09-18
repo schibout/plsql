@@ -82,6 +82,36 @@ with st.sidebar:
         with st.expander("Journal du dernier import"):
             st.code("\n".join(st.session_state["logs_import"]))
     st.caption("Sources scannées : dossier ODAT du dépôt et Téléchargements.")
+    st.divider()
+    st.markdown("**Oracle Apps**")
+    c_a, c_b = st.columns(2)
+    if c_a.button("🔄 Demandes", use_container_width=True, help="FND_CONCURRENT_REQUESTS : 48 h + en attente"):
+        try:
+            import oracle_refresh
+            with st.spinner("Oracle…"):
+                st.session_state["log_oracle"] = oracle_refresh.refresh_requests()
+        except SystemExit as e:
+            st.session_state["log_oracle"] = f"⚠ {e}"
+        except Exception as e:  # noqa: BLE001
+            st.session_state["log_oracle"] = f"⚠ {type(e).__name__}: {e}"
+        st.cache_data.clear()
+    if c_b.button("📚 Programmes", use_container_width=True, help="Référentiel FND_CONCURRENT_PROGRAMS"):
+        try:
+            import oracle_refresh
+            with st.spinner("Oracle…"):
+                st.session_state["log_oracle"] = oracle_refresh.refresh_programs()
+        except SystemExit as e:
+            st.session_state["log_oracle"] = f"⚠ {e}"
+        except Exception as e:  # noqa: BLE001
+            st.session_state["log_oracle"] = f"⚠ {type(e).__name__}: {e}"
+        st.cache_data.clear()
+    if st.button("🧾 Analyser les logs .req / .out", use_container_width=True):
+        import logs as logmod
+        with st.spinner("Analyse des logs…"):
+            st.session_state["log_oracle"] = "\n".join(logmod.run()[-8:])
+        st.cache_data.clear()
+    if "log_oracle" in st.session_state:
+        st.caption(st.session_state["log_oracle"])
 
 if not apps:
     st.warning("Base vide. Lancez l'import depuis la barre latérale ou `python ingest.py`.")
@@ -175,8 +205,12 @@ if snap_time:
                f"il y a {int(age.total_seconds() // 3600)} h {int(age.total_seconds() % 3600 // 60)} min · "
                f"{len(snaps)} photos, {df_runs['odate'].nunique()} jours d'historique")
 
-tab_soir, tab_demain, tab_now, tab_histo, tab_profils, tab_data = st.tabs(
-    ["🌙 Ce soir", "📅 Demain", "🔴 Maintenant", "🔎 Historique", "📈 Profils", "🗂 Données"])
+tab_soir, tab_demain, tab_now, tab_ora, tab_histo, tab_profils, tab_data = st.tabs(
+    ["🌙 Ce soir", "📅 Demain", "🔴 Maintenant", "🅾 Oracle", "🔎 Historique", "📈 Profils", "🗂 Données"])
+
+with tab_ora:
+    import ui_oracle
+    ui_oracle.render(application, recherche, now, kpi, badge)
 
 # ------------------------------------------------------------------ ce soir
 with tab_soir:

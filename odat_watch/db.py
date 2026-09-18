@@ -27,15 +27,38 @@ CREATE TABLE IF NOT EXISTS ctm_jobs (
 CREATE INDEX IF NOT EXISTS ix_ctm_jobs_job ON ctm_jobs(job_name, odate);
 CREATE INDEX IF NOT EXISTS ix_ctm_jobs_app ON ctm_jobs(application, snapshot_id);
 
+CREATE TABLE IF NOT EXISTS ora_programs (
+    program_short     TEXT PRIMARY KEY,
+    program_name      TEXT, application_short TEXT, application_name TEXT,
+    executable_name   TEXT, execution_method TEXT, execution_file TEXT,
+    enabled           TEXT, description TEXT, refreshed_at TEXT
+);
 CREATE TABLE IF NOT EXISTS ora_requests (
     request_id        INTEGER PRIMARY KEY,
     program_short     TEXT, program_name TEXT, application_short TEXT,
     phase_code        TEXT, status_code TEXT, phase TEXT, status TEXT,
-    requested_start   TEXT, actual_start TEXT, actual_completion TEXT,
-    requestor         TEXT, parent_request_id INTEGER, resubmit_interval TEXT,
-    resubmit_unit     TEXT, argument_text TEXT, refreshed_at TEXT
+    request_date      TEXT, requested_start TEXT, actual_start TEXT, actual_completion TEXT,
+    requestor         TEXT, responsibility TEXT, parent_request_id INTEGER,
+    resubmit_interval TEXT, resubmit_unit TEXT, argument_text TEXT,
+    description       TEXT, completion_text TEXT,
+    logfile_name      TEXT, outfile_name TEXT, job_name TEXT,
+    refreshed_at      TEXT
 );
 CREATE INDEX IF NOT EXISTS ix_ora_prog ON ora_requests(program_short, requested_start);
+CREATE INDEX IF NOT EXISTS ix_ora_job ON ora_requests(job_name, actual_start);
+CREATE INDEX IF NOT EXISTS ix_ora_phase ON ora_requests(phase_code, status_code);
+
+CREATE TABLE IF NOT EXISTS ora_request_logs (
+    request_id   INTEGER NOT NULL,
+    kind         TEXT NOT NULL,             -- 'req' (log) ou 'out' (sortie)
+    path         TEXT, size INTEGER, loaded_at TEXT,
+    program      TEXT, started TEXT, ended TEXT,
+    compteurs    TEXT,                      -- JSON {libellé: valeur}
+    erreurs      TEXT,                      -- JSON [{code, message, nb}]
+    fnd_messages TEXT,                      -- extrait des messages FND_FILE
+    diagnostic   TEXT,                      -- JSON [{code, explication, action}]
+    PRIMARY KEY (request_id, kind)
+);
 
 CREATE TABLE IF NOT EXISTS job_mapping (
     job_name      TEXT PRIMARY KEY,
@@ -49,5 +72,15 @@ def connect(path: Path | str = DB_PATH) -> sqlite3.Connection:
     con = sqlite3.connect(str(path))
     con.row_factory = sqlite3.Row
     con.execute("PRAGMA foreign_keys = ON")
+    _migrate(con)
     con.executescript(SCHEMA)
     return con
+
+
+def _migrate(con: sqlite3.Connection) -> None:
+    """Tables Oracle recréées si leur structure a changé (elles se rechargent en un clic)."""
+    for table, colonne in (("ora_requests", "job_name"),):
+        cols = [r[1] for r in con.execute(f"PRAGMA table_info({table})")]
+        if cols and colonne not in cols:
+            con.execute(f"DROP TABLE {table}")
+            con.commit()
