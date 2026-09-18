@@ -14,13 +14,23 @@ GRAVITE_ICON = {"bloquant": "🟥", "à reprendre": "🟧", "normal": "🟩", "�
 
 
 @st.cache_data(show_spinner=False)
-def _charger(_stamp: float):
+def _charger(_stamp: tuple):
     con = connect()
     req = pd.read_sql_query("SELECT * FROM ora_requests", con)
     logs = pd.read_sql_query("SELECT * FROM ora_request_logs", con)
     progs = pd.read_sql_query("SELECT * FROM ora_programs", con)
     con.close()
     return req, logs, progs
+
+
+def _stamp() -> tuple:
+    """Clé de cache : compteurs + dernier rafraîchissement (robuste même si le mtime ne bouge pas)."""
+    con = connect()
+    t = (con.execute("SELECT COUNT(*), MAX(refreshed_at) FROM ora_requests").fetchone()[:],
+         con.execute("SELECT COUNT(*), MAX(loaded_at) FROM ora_request_logs").fetchone()[:],
+         con.execute("SELECT COUNT(*) FROM ora_programs").fetchone()[0])
+    con.close()
+    return tuple(map(str, t))
 
 
 def _etat(r) -> str:
@@ -44,8 +54,10 @@ def _filtre(df: pd.DataFrame, recherche: str, application: str | None) -> pd.Dat
 
 
 def render(application, recherche, now: datetime, kpi, badge):
-    stamp = DB_PATH.stat().st_mtime if DB_PATH.exists() else 0.0
-    req, logs, progs = _charger(stamp)
+    req, logs, progs = _charger(_stamp())
+    if not progs.empty and (progs["description"] == "(mock)").any():
+        st.warning("Données Oracle **simulées** (mock_oracle.py) : programmes et statuts indicatifs. "
+                   "Sur le poste Dalkia, « Demandes » + « Programmes » les remplacent par les vraies données.", icon="🧪")
 
     if req.empty and logs.empty:
         st.info("Aucune donnée Oracle. Renseignez `config.ini` (copie de `config.ini.exemple`) puis cliquez "
