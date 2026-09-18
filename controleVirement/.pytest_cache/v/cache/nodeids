@@ -47,5 +47,7 @@
   "tests/test_report.py::test_write_reports_detecte_ko",
   "tests/test_report.py::test_write_reports_doublons_rend_ko",
   "tests/test_report.py::test_write_reports_quartz_ecart_rend_ko",
+  "tests/test_report.py::test_write_reports_synthese_simple",
+  "tests/test_report.py::test_write_reports_synthese_simple_conforme",
   "tests/test_report.py::test_write_reports_tout_ok"
 ]

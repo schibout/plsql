@@ -68,3 +68,27 @@ def test_write_reports_detail_des_virements_en_double(tmp_path):
     synth = (tmp_path / "rapport" / "synthese.md").read_text(encoding="utf-8")
     assert "COMMUNE D ALLAUCH" in synth and "FR7612345" in synth
     assert "controle_doublons_virements.csv" in synth
+
+
+def test_write_reports_synthese_simple(tmp_path):
+    fichiers = [{"guid": "g1", "categorie": "DK", "fichier": "DK_x", "statut": "MANQUANT", "detail": ""}]
+    totaux_edf = [{"guid": "g1", "fichier_edf": "ACK_x", "statut_lignes": "OK", "statut_montant": "OK",
+                   "nb_sources_regroupees": 1, "nb_ack_footer": 3, "montant_ack_footer": 30000}]
+    doublons = [{"guid": "g1", "fichier": "ACK_B", "guid_original": "g1", "fichier_original": "ACK_A",
+                 "nb_virements": 2, "montant_cts": 100}]
+    quartz_totaux = {"nb_cible": 5, "nb_quartz": 5, "montant_cible_cts": 30100,
+                     "montant_quartz_cts": 30100, "statut_lignes": "OK", "statut_montant": "OK"}
+    write_reports(tmp_path / "rapport", fichiers, [], totaux_edf, [], quartz_totaux, [], doublons)
+    simple = (tmp_path / "rapport" / "synthese_simple.md").read_text(encoding="utf-8")
+    assert "Points d'attention" in simple
+    assert "1 fichier(s) manquant(s)" in simple
+    assert "1 envoi(s) transmis en double" in simple and "1,00 EUR" in simple
+    assert "300,00 EUR" in simple           # montant transmis
+    assert "ACK_B" not in simple            # pas de detail par fichier
+    assert len(simple.splitlines()) < 40
+
+
+def test_write_reports_synthese_simple_conforme(tmp_path):
+    write_reports(tmp_path / "rapport", [], [], [], [])
+    simple = (tmp_path / "rapport" / "synthese_simple.md").read_text(encoding="utf-8")
+    assert "Conforme" in simple and "Points d'attention" not in simple

@@ -447,4 +447,46 @@ def write_reports(dossier, fichiers, totaux_source, totaux_edf, ecarts,
     ]
 
     (dossier / "synthese.md").write_text("\n".join(lignes_md), encoding="utf-8")
+
+    # Version courte : resultat, chiffres cles, un point d'attention par ligne, sans detail
+    simple = ["# Contrôle des virements — synthèse rapide", ""]
+    simple.append("**Résultat : ✅ Conforme**" if tout_ok else "**Résultat : ⚠️ À examiner**")
+    simple.append("")
+    if montant_envoye is not None:
+        simple.append(f"- Transmis à la banque : **{nb_envoye} virements** pour "
+                      f"**{_euros(montant_envoye)}**")
+    if quartz_totaux:
+        simple.append(f"- Repris par la trésorerie : **{quartz_totaux['nb_quartz']} virements** "
+                      f"pour **{_euros(quartz_totaux['montant_quartz_cts'])}**")
+    else:
+        simple.append("- Retour trésorerie : non fourni (rapprochement non réalisé)")
+    simple.append("")
+    points = []
+    if doublons:
+        points.append(f"**{len(doublons)} envoi(s) transmis en double** à la banque : "
+                      f"{nb_doublons_vir} virements pour {_euros(montant_doublons)} "
+                      "susceptibles d'avoir été payés deux fois — à vérifier avec la banque.")
+    if fichiers_ko:
+        points.append(f"**{len(fichiers_ko)} fichier(s) manquant(s) ou non exploitable(s)** : "
+                      "une partie de la journée n'est pas contrôlée — à vérifier avec l'exploitation.")
+    if src_ko:
+        points.append(f"**{len(src_ko)} fichier(s) d'origine** avec un écart de nombre ou de montant.")
+    if edf_ko:
+        points.append(f"**{len(edf_ko)} envoi(s) vers la banque** avec un écart de nombre ou de montant.")
+    if ecarts:
+        points.append(f"**{len(ecarts)} écart(s) virement par virement** (bénéficiaire, montant ou banque).")
+    if quartz_ko:
+        points.append(f"**{len(quartz_ecarts)} écart(s) avec le retour de la trésorerie** "
+                      f"({quartz_totaux['nb_quartz'] - quartz_totaux['nb_cible']:+d} virement(s), "
+                      f"{_euros(abs(quartz_totaux['montant_quartz_cts'] - quartz_totaux['montant_cible_cts']))}).")
+    if anomalies_euro:
+        points.append(f"**{len(anomalies_euro)} fichier(s)** avec une anomalie de devise.")
+    if points:
+        simple += ["## Points d'attention", ""] + [f"- {pt}" for pt in points] + [""]
+        simple.append("Chaque point est détaillé dans `synthese.md` et dans les fichiers CSV du dossier.")
+    else:
+        simple.append("Aucune anomalie : tous les virements préparés ont été transmis une seule fois, "
+                      "sans perte ni écart. Aucune action attendue.")
+    simple.append("")
+    (dossier / "synthese_simple.md").write_text("\n".join(simple), encoding="utf-8")
     return tout_ok
