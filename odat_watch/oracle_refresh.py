@@ -118,13 +118,57 @@ def load_config() -> configparser.ConfigParser:
     return cfg
 
 
+_THICK_DONE = False
+
+
+def _init_thick(cfg) -> None:
+    """Active le mode thick (client Oracle) si demandé ou si un Instant Client est configuré.
+
+    Nécessaire quand le compte a un vérificateur de mot de passe 10g (erreur DPY-3015) : le mode
+    thin ne le supporte pas. Le client doit être un Instant Client 64 bits (19c ou plus), dézippé
+    par exemple dans C:\\oracle\\instantclient_21_13 et renseigné dans config.ini [database] client_dir.
+    """
+    global _THICK_DONE
+    if _THICK_DONE:
+        return
+    import oracledb
+    db = cfg["database"]
+    client_dir = (db.get("client_dir", "") or "").strip()
+    mode = (db.get("mode", "auto") or "auto").strip().lower()
+    if mode == "thin":
+        return
+    if client_dir:
+        try:
+            oracledb.init_oracle_client(lib_dir=client_dir)
+            _THICK_DONE = True
+        except Exception as e:  # noqa: BLE001
+            raise SystemExit(f"Client Oracle introuvable ou incompatible dans {client_dir} : {e}\n"
+                             "Il faut un Instant Client 64 bits (Basic ou Basic Light, 19c+), "
+                             "voir https://www.oracle.com/database/technologies/instant-client/downloads.html")
+    elif mode == "thick":
+        oracledb.init_oracle_client()  # cherche dans le PATH
+        _THICK_DONE = True
+
+
 def _connect_oracle(cfg):
     try:
         import oracledb
     except ImportError:
         raise SystemExit("Module oracledb absent : pip install oracledb")
+    _init_thick(cfg)
     db = cfg["database"]
-    return oracledb.connect(user=db["user"], password=db["password"], dsn=db["dsn"])
+    try:
+        return oracledb.connect(user=db["user"], password=db["password"], dsn=db["dsn"])
+    except oracledb.NotSupportedError as e:
+        if "DPY-3015" in str(e):
+            raise SystemExit(
+                "DPY-3015 : le mot de passe de ce compte utilise un vérificateur 10g, non supporté en mode thin.\n"
+                "Deux solutions :\n"
+                "  1) Mode thick : dézipper un Instant Client 64 bits (Basic Light suffit) et renseigner\n"
+                "     client_dir = C:\\oracle\\instantclient_21_13 dans config.ini [database].\n"
+                "  2) Demander au DBA de régénérer le mot de passe du compte (ALTER USER ... IDENTIFIED BY)\n"
+                "     avec SQLNET.ALLOWED_LOGON_VERSION_SERVER >= 11, ce qui crée un vérificateur 11g/12c.")
+        raise
 
 
 def _schema(cfg) -> str:

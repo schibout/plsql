@@ -1,12 +1,18 @@
-; Copier en config.ini et renseigner. config.ini est ignore par git.
+; Copier en config.ini et renseigner. config.ini est ignore par git : ne jamais mettre de mot de passe ici.
 [database]
 ; Compte Oracle (nominatif ou APPS). Les vues FND doivent etre accessibles sans prefixe,
 ; sinon renseigner schema = APPS.
-user = aroux
-password = GAERFTXF
+user = mon_compte
+password = XXXXXXXX
 ; Format host:port/service_name
 dsn = prdscanc1pdb03.dalkia.net:1521/ebs_PDBFINP1
-schema =APPS
+schema = APPS
+; Mode de connexion : auto (thin, ou thick si client_dir renseigne) | thin | thick
+; Erreur DPY-3015 (verificateur de mot de passe 10g) => obligatoirement thick :
+; dezipper un Instant Client 64 bits (Basic Light suffit, 19c ou plus) et indiquer son dossier.
+mode = auto
+client_dir =
+; exemple : client_dir = C:\oracle\instantclient_21_13
 
 [oracle]
 ; Fenetre d'historique recuperee a chaque rafraichissement (heures)
