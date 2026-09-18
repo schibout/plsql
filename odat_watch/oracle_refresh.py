@@ -13,6 +13,7 @@ Usage :
     python oracle_refresh.py --jours 90      # chargement initial long
     python oracle_refresh.py --programmes    # rafraîchit aussi le référentiel des programmes
     python oracle_refresh.py --test          # teste seulement la connexion
+    python oracle_refresh.py --clients       # liste les clients Oracle du poste et leur architecture
 """
 from __future__ import annotations
 import argparse
@@ -142,12 +143,84 @@ def _init_thick(cfg) -> None:
             oracledb.init_oracle_client(lib_dir=client_dir)
             _THICK_DONE = True
         except Exception as e:  # noqa: BLE001
-            raise SystemExit(f"Client Oracle introuvable ou incompatible dans {client_dir} : {e}\n"
-                             "Il faut un Instant Client 64 bits (Basic ou Basic Light, 19c+), "
-                             "voir https://www.oracle.com/database/technologies/instant-client/downloads.html")
+            raise SystemExit(_diag_client(client_dir, e))
     elif mode == "thick":
         oracledb.init_oracle_client()  # cherche dans le PATH
         _THICK_DONE = True
+
+
+def _arch_dll(path) -> str | None:
+    """'x86' ou 'x64' d'après l'en-tête PE d'une DLL, None si illisible."""
+    import struct
+    try:
+        with open(path, "rb") as f:
+            f.seek(0x3C)
+            off = struct.unpack("<I", f.read(4))[0]
+            f.seek(off + 4)
+            machine = struct.unpack("<H", f.read(2))[0]
+        return {0x14C: "x86", 0x8664: "x64"}.get(machine)
+    except OSError:
+        return None
+
+
+def _diag_client(client_dir: str, err: Exception) -> str:
+    import platform
+    from pathlib import Path
+    py = platform.architecture()[0]
+    d = Path(client_dir)
+    oci = d / "oci.dll"
+    if not oci.exists() and (d / "bin" / "oci.dll").exists():
+        return (f"{client_dir} est un ORACLE_HOME complet : indiquez son sous-dossier bin\n"
+                f"  client_dir = {d / 'bin'}")
+    if not oci.exists():
+        return (f"Aucun oci.dll dans {client_dir}. Indiquez le dossier qui contient oci.dll "
+                "(Instant Client dézippé, ou <ORACLE_HOME>\\bin).")
+    arch = _arch_dll(oci)
+    if arch == "x86" and py == "64bit":
+        return (f"Le client {client_dir} est 32 bits, votre Python est 64 bits : incompatibles.\n"
+                "Deux options :\n"
+                "  1) Dézipper un Instant Client 64 bits (Basic Light, 19c+) dans C:\\oracle\\instantclient_21_13\n"
+                "     et mettre client_dir = C:\\oracle\\instantclient_21_13\n"
+                "  2) Chercher un autre client 64 bits déjà présent : python oracle_refresh.py --clients")
+    if arch == "x64" and py == "32bit":
+        return f"Le client {client_dir} est 64 bits mais votre Python est 32 bits."
+    return (f"Client Oracle dans {client_dir} ({arch or '?'}, Python {py}) non chargeable : {err}\n"
+            "Souvent une DLL dépendante manquante (VC++ Redistributable 2017+ pour les Instant Client 19c+).")
+
+
+def lister_clients() -> str:
+    """Cherche les oci.dll présents sur le poste (dossiers Oracle usuels + PATH) et donne leur architecture."""
+    import os
+    import platform
+    from pathlib import Path
+    candidats: list[Path] = []
+    for base in (r"C:\oracle", r"C:\app", r"C:\OraHome1", r"C:\Oracle", r"C:\instantclient",
+                 r"C:\Program Files\Oracle", r"C:\Program Files (x86)\Oracle"):
+        b = Path(base)
+        if b.exists():
+            for motif in ("oci.dll", "*/oci.dll", "*/*/oci.dll", "*/*/*/oci.dll", "*/*/*/*/oci.dll"):
+                candidats += list(b.glob(motif))
+    directs = [Path(p) for p in os.environ.get("PATH", "").split(";") if p]
+    for base in (Path("C:/"), Path.home(), Path.home() / "Downloads", Path.home() / "Desktop"):
+        if base.exists():
+            directs += [d for d in base.iterdir() if d.is_dir() and d.name.lower().startswith("instantclient")]
+    for d in directs:
+        if (d / "oci.dll").exists():
+            candidats.append(d / "oci.dll")
+    vus, lignes = set(), []
+    for oci in candidats:
+        if oci in vus:
+            continue
+        vus.add(oci)
+        lignes.append(f"  {_arch_dll(oci) or '?':4} {oci.parent}")
+    ok = [l for l in lignes if l.strip().startswith("x64")]
+    out = [f"Python {platform.architecture()[0]}. Clients Oracle trouvés :"] + (lignes or ["  aucun"])
+    if ok:
+        out.append(f"\nUtilisable : client_dir = {ok[0].split(None, 1)[1]}")
+    else:
+        out.append("\nAucun client 64 bits : dézipper un Instant Client Basic Light 64 bits (19c+) dans "
+                   r"C:\oracle\instantclient_21_13 puis client_dir = C:\oracle\instantclient_21_13")
+    return "\n".join(out)
 
 
 def _connect_oracle(cfg):
@@ -271,8 +344,11 @@ if __name__ == "__main__":
     ap.add_argument("--jours", type=float, help="historique en jours (chargement initial)")
     ap.add_argument("--programmes", action="store_true", help="rafraîchir aussi le référentiel des programmes")
     ap.add_argument("--test", action="store_true", help="tester la connexion et sortir")
+    ap.add_argument("--clients", action="store_true", help="lister les clients Oracle du poste (32/64 bits)")
     a = ap.parse_args()
-    if a.test:
+    if a.clients:
+        print(lister_clients())
+    elif a.test:
         print(test_connexion())
     else:
         if a.programmes:
