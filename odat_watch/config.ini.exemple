@@ -1,0 +1,12 @@
+; Copier en config.ini et renseigner. Ne pas committer config.ini.
+[database]
+user = APPS
+password = XXXXXXXX
+; host:port/service_name
+dsn = hostname:1521/PROD
+
+[oracle]
+; Fenetre d'historique recuperee a chaque rafraichissement (heures)
+heures_historique = 48
+; Filtre sur DESCRIPTION des requetes (LIKE). Vide = toutes les requetes.
+filtre_description = FIN%
