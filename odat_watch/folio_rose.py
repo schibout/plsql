@@ -211,19 +211,19 @@ def importer(export: Export, con: sqlite3.Connection) -> int | None:
     """Insère l'export et ses lignes. None si ce fichier (même hash) est déjà en base."""
     if con.execute("SELECT 1 FROM fr_exports WHERE file_hash = ?", (export.file_hash,)).fetchone():
         return None
-    cur = con.execute(
-        "INSERT INTO fr_exports(nom_fichier, file_hash, date_export, periode_debut, periode_fin, importe_le, "
-        "nb_lignes, encodage, nb_montants_illisibles) VALUES (?,?,?,?,?,?,?,?,?)",
-        (export.nom, export.file_hash, export.date_export.isoformat(), export.periode_debut, export.periode_fin,
-         datetime.now().strftime("%Y-%m-%d %H:%M:%S"), len(export.lignes), export.encodage,
-         export.nb_montants_illisibles))
-    eid = cur.lastrowid
-    cols = list(export.lignes.columns)
-    con.executemany(
-        f"INSERT INTO fr_lignes(export_id, {','.join(cols)}) VALUES (?{',?' * len(cols)})",
-        [(eid, *[None if pd.isna(v) else (int(v) if isinstance(v, float) and c in ('age_j', 'num') else v)
-                 for c, v in zip(cols, row)]) for row in export.lignes.itertuples(index=False)])
-    con.commit()
+    with con:
+        cur = con.execute(
+            "INSERT INTO fr_exports(nom_fichier, file_hash, date_export, periode_debut, periode_fin, importe_le, "
+            "nb_lignes, encodage, nb_montants_illisibles) VALUES (?,?,?,?,?,?,?,?,?)",
+            (export.nom, export.file_hash, export.date_export.isoformat(), export.periode_debut, export.periode_fin,
+             datetime.now().strftime("%Y-%m-%d %H:%M:%S"), len(export.lignes), export.encodage,
+             export.nb_montants_illisibles))
+        eid = cur.lastrowid
+        cols = list(export.lignes.columns)
+        con.executemany(
+            f"INSERT INTO fr_lignes(export_id, {','.join(cols)}) VALUES (?{',?' * len(cols)})",
+            [(eid, *[None if pd.isna(v) else (int(v) if isinstance(v, float) and c in ('age_j', 'num') else v)
+                     for c, v in zip(cols, row)]) for row in export.lignes.itertuples(index=False)])
     export.id = eid
     return eid
 
@@ -272,6 +272,7 @@ def groupes_compenses(lignes: pd.DataFrame) -> pd.DataFrame:
     libres = lignes[~lignes["rapproche"].astype(bool)]
     if libres.empty:
         return pd.DataFrame(columns=["folio", "fichier_base", "nb", "somme", "empreintes"])
+    libres = libres.assign(ecart_debit=libres["ecart_debit"].fillna(0))
     g = (libres.groupby(["folio", "fichier_base"])
          .agg(nb=("empreinte", "size"), somme=("ecart_debit", "sum"), empreintes=("empreinte", list))
          .reset_index())
@@ -285,7 +286,8 @@ def somme_selection(lignes: pd.DataFrame, empreintes: list[str]) -> float:
 
 def _ecarts_par_empreinte(empreintes: list[str], con: sqlite3.Connection) -> dict[str, float]:
     q = ",".join("?" * len(empreintes))
-    rows = con.execute(f"SELECT empreinte, ecart_debit FROM fr_lignes WHERE empreinte IN ({q}) "
+    # une empreinte détermine ses montants par construction (folio|date|fichier|amont|si) : n'importe quelle ligne convient
+    rows = con.execute(f"SELECT empreinte, MAX(ecart_debit) FROM fr_lignes WHERE empreinte IN ({q}) "
                        "GROUP BY empreinte", empreintes).fetchall()
     return {r[0]: float(r[1] or 0) for r in rows}
 
@@ -306,13 +308,14 @@ def rapprocher(empreintes: list[str], commentaire: str, con: sqlite3.Connection)
                        empreintes).fetchone()[0]
     if deja:
         raise ValueError(f"{deja} ligne(s) déjà rapprochée(s).")
-    cur = con.execute("INSERT INTO fr_rapprochements(cree_le, commentaire, somme_ecart, nb_lignes) VALUES (?,?,?,?)",
-                      (datetime.now().strftime("%Y-%m-%d %H:%M:%S"), (commentaire or "").strip() or None,
-                       round(somme, 2), len(empreintes)))
-    rid = cur.lastrowid
-    con.executemany("INSERT INTO fr_rapprochement_lignes(rapprochement_id, empreinte) VALUES (?,?)",
-                    [(rid, e) for e in empreintes])
-    con.commit()
+    with con:
+        cur = con.execute(
+            "INSERT INTO fr_rapprochements(cree_le, commentaire, somme_ecart, nb_lignes) VALUES (?,?,?,?)",
+            (datetime.now().strftime("%Y-%m-%d %H:%M:%S"), (commentaire or "").strip() or None,
+             round(somme, 2), len(empreintes)))
+        rid = cur.lastrowid
+        con.executemany("INSERT INTO fr_rapprochement_lignes(rapprochement_id, empreinte) VALUES (?,?)",
+                        [(rid, e) for e in empreintes])
     return rid
 
 
@@ -407,12 +410,12 @@ def controler_oracle(export_id: int, con: sqlite3.Connection) -> str:
             except Exception as e:  # noqa: BLE001 — le message Oracle est l'information utile
                 erreurs += 1
                 resultats.append((export_id, folio, base, typ, None, None, None, None, str(e).strip(), now))
-    con.executemany(
-        "INSERT INTO fr_oracle(export_id, folio, fichier_base, type, nb_oracle, montant_oracle, nb_interface, "
-        "montant_interface, erreur, controle_le) VALUES (?,?,?,?,?,?,?,?,?,?) "
-        "ON CONFLICT(export_id, folio, fichier_base, type) DO UPDATE SET nb_oracle=excluded.nb_oracle, "
-        "montant_oracle=excluded.montant_oracle, nb_interface=excluded.nb_interface, "
-        "montant_interface=excluded.montant_interface, erreur=excluded.erreur, controle_le=excluded.controle_le",
-        resultats)
-    con.commit()
+    with con:
+        con.executemany(
+            "INSERT INTO fr_oracle(export_id, folio, fichier_base, type, nb_oracle, montant_oracle, nb_interface, "
+            "montant_interface, erreur, controle_le) VALUES (?,?,?,?,?,?,?,?,?,?) "
+            "ON CONFLICT(export_id, folio, fichier_base, type) DO UPDATE SET nb_oracle=excluded.nb_oracle, "
+            "montant_oracle=excluded.montant_oracle, nb_interface=excluded.nb_interface, "
+            "montant_interface=excluded.montant_interface, erreur=excluded.erreur, controle_le=excluded.controle_le",
+            resultats)
     return f"{len(couples)} couple(s) folio/fichier interrogé(s), {erreurs} en erreur."

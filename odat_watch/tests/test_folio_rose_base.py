@@ -21,7 +21,7 @@ def test_tables_folio_rose(tmp_path):
     con.close()
 
 
-def _export(tmp_path, nom="ExportCSV-04-08-2026.csv"):
+def _export(tmp_path, nom="ExportCSV-20-08-2026.csv"):
     return fr.lire_export(SAUVEGARDE / nom)
 
 
@@ -44,7 +44,19 @@ def test_lignes_export_sans_controle(tmp_path):
     assert "statut" in l.columns and "rapproche" in l.columns
     assert set(l.loc[l["type"] != "AUTRE", "statut"]) == {"—"}
     assert set(l.loc[l["type"] == "AUTRE", "statut"]) <= {"NON CONTROLE"}
+    assert (l["type"] == "AUTRE").sum() == 1
     assert not l["rapproche"].any()
+    con.close()
+
+
+def test_importer_valeurs_typees(tmp_path):
+    con = db.connect(tmp_path / "t.db")
+    eid = fr.importer(_export(tmp_path), con)
+    row = con.execute("SELECT num, age_j, amont_debit FROM fr_lignes WHERE export_id = ? LIMIT 1", (eid,)).fetchone()
+    num, age_j, amont_debit = row
+    assert isinstance(num, int)
+    assert age_j is None or isinstance(age_j, int)
+    assert isinstance(amont_debit, float)
     con.close()
 
 
