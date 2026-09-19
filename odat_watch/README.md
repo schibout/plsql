@@ -8,7 +8,7 @@ Oracle EBS R12 pour répondre à : **qu'est-ce qui tourne ce soir, et demain ?**
 
 | Fichier | Rôle |
 |---|---|
-| `ingest.py` | Scanne `../ODAT`, `~/Downloads` et les dossiers ajoutés dans « Sources d'import », archive chaque CSV dans `../ODAT/archive/AAAA/MM/JJ/HHMM_odate_*.csv`, charge dans `odat.db` (SQLite). Doublons ignorés (hash du fichier). |
+| `ingest.py` | Scanne `../ODAT` (dont `Report_CTM/`, dépôt Control-M horodaté `AAAAMMJJ_HHMMSS_Report_ctm_*.csv`), `~/Downloads` et les dossiers ajoutés dans « Sources d'import », archive chaque CSV dans `../ODAT/archive/AAAA/MM/JJ/HHMM_odate_*.csv`, charge dans `odat.db` (SQLite). Doublons ignorés (hash du fichier). |
 | `forecast.py` | Profils par job Control-M (heure médiane, durée, jours, fiabilité), prévisions ce soir / demain, anomalies. |
 | `oracle_refresh.py` | **Brique Oracle Apps** : charge `FND_CONCURRENT_REQUESTS` (48 h + demandes en attente) et `FND_CONCURRENT_PROGRAMS` dans SQLite. Lie chaque demande à son job Control-M (la DESCRIPTION des demandes du lanceur DKA_SLAUNCHER contient le nom du job ; les demandes filles héritent du parent). |
 | `logs.py` | Analyse des `l<id>.req` / `o<id>.out` rapatriés du serveur EBS : compteurs, messages FND_FILE, codes d'erreur, diagnostic. Génère `list.txt` pour `copy_ebs_logs.sh`. |

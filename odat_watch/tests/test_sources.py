@@ -55,3 +55,21 @@ def test_run_journalise_les_dossiers_et_importe(tmp_path, monkeypatch):
 
     logs = ingest.run([src])                                   # même fichier : doublon
     assert any("doublon" in l for l in logs), logs
+
+
+def test_find_files_accepte_le_prefixe_horodate(tmp_path):
+    (tmp_path / "20260919_164523_Report_ctm_260919_19_new.csv").write_text("x")
+    (tmp_path / "Report_ctm_260917_17_new.csv").write_text("x")
+    (tmp_path / "autre.csv").write_text("x")
+    assert sorted(p.name for p in ingest.find_files([tmp_path])) == [
+        "20260919_164523_Report_ctm_260919_19_new.csv", "Report_ctm_260917_17_new.csv"]
+
+
+def test_snap_time_from_name(tmp_path):
+    from datetime import datetime
+    f = tmp_path / "20260919_164523_Report_ctm_260919_19_new.csv"
+    f.write_text("x")
+    assert ingest.snap_time_from_name(f) == datetime(2026, 9, 19, 16, 45)
+    g = tmp_path / "Report_ctm_260917_17_new.csv"
+    g.write_text("x")
+    assert ingest.snap_time_from_name(g).year >= 2026

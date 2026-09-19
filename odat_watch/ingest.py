@@ -19,6 +19,8 @@ ODAT_DIR = BASE_DIR.parent / "ODAT"
 ARCHIVE_DIR = ODAT_DIR / "archive"
 DOWNLOADS = Path.home() / "Downloads"
 FILE_RE = re.compile(r"Report_ctm_(\d{6})", re.I)
+# Photos déposées par Control-M : 20260919_164523_Report_ctm_260919_19_new.csv (horodatage de la photo en préfixe)
+PREFIX_RE = re.compile(r"^(\d{8})_(\d{6})_Report_ctm_", re.I)
 DATE_FMT = "%B %d, %Y %I:%M:%S %p"
 ODATE_FMT = "%B %d, %Y"
 
@@ -87,6 +89,14 @@ def archive(path: Path, snap_time: datetime) -> Path:
     return dest
 
 
+def snap_time_from_name(path: Path) -> datetime:
+    """Horodatage du préfixe AAAAMMJJ_HHMMSS_ s'il existe, sinon date de modification du fichier."""
+    m = PREFIX_RE.match(path.name)
+    if m:
+        return datetime.strptime(m.group(1) + m.group(2), "%Y%m%d%H%M%S").replace(second=0)
+    return datetime.fromtimestamp(path.stat().st_mtime).replace(microsecond=0)
+
+
 def snap_time_from_rows(rows: list[dict], fallback: datetime) -> datetime:
     """Heure de la photo = dernier événement (fin ou début) présent dans le fichier, à la minute supérieure.
 
@@ -105,8 +115,7 @@ def ingest_file(con, path: Path) -> str:
     if con.execute("SELECT 1 FROM snapshots WHERE file_hash=?", (h,)).fetchone():
         return "doublon, ignoré"
     rows = read_rows(path)
-    mtime = datetime.fromtimestamp(path.stat().st_mtime).replace(microsecond=0)
-    snap_time = snap_time_from_rows(rows, mtime)
+    snap_time = snap_time_from_rows(rows, snap_time_from_name(path))
     odate = odate_from_name(path) or min(r["odate"] for r in rows if r["odate"])
     if con.execute("SELECT 1 FROM snapshots WHERE odate=? AND snap_time=?", (odate, snap_time.strftime("%Y-%m-%d %H:%M:%S"))).fetchone():
         return f"même photo déjà chargée ({snap_time:%d/%m %H:%M}), ignoré"
@@ -149,7 +158,7 @@ def find_files(roots: list[Path]) -> list[Path]:
         if root.is_file():
             out.add(root)
         elif root.is_dir():
-            out.update(p for p in root.rglob("Report_ctm_*.csv") if ARCHIVE_DIR not in p.parents)
+            out.update(p for p in root.rglob("*Report_ctm_*.csv") if ARCHIVE_DIR not in p.parents)
     return sorted(out, key=lambda p: p.stat().st_mtime)
 
 
@@ -162,7 +171,7 @@ def run(roots: list[Path] | None = None) -> list[str]:
         logs.append(f"{n} photo(s) recalée(s) ou dédoublonnée(s) d'après leur contenu.")
     for root in roots:
         if root.is_dir() or root.is_file():
-            logs.append(f"{root} : {len(find_files([root]))} fichier(s) Report_ctm_*.csv")
+            logs.append(f"{root} : {len(find_files([root]))} fichier(s) *Report_ctm_*.csv")
         else:
             logs.append(f"{root} : absent")
     for f in find_files(roots):
