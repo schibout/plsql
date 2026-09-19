@@ -32,9 +32,9 @@ def _mt(v) -> str:
     try:
         if v is None or pd.isna(v):
             return ""
+        return f"{float(v):,.2f}".replace(",", " ").replace(".", ",")
     except (TypeError, ValueError):
         return _t(v)
-    return f"{float(v):,.2f}".replace(",", " ").replace(".", ",")
 
 
 def _nb(v) -> str:

@@ -2,6 +2,7 @@
 rapprochements (manuels et groupes compensés), contrôle Oracle, rapport HTML, historique."""
 from __future__ import annotations
 import contextlib
+import hashlib
 from datetime import date
 from pathlib import Path
 
@@ -17,16 +18,26 @@ BASE_DIR = Path(__file__).resolve().parent
 DOSSIER_SAUVEGARDE = BASE_DIR.parent / "ControleFolioRose"
 COLS_AFFICHEES = ["folio", "type", "date", "age_j", "fichier", "amont_nb", "amont_debit", "si_nb", "si_debit",
                   "ecart_nb", "ecart_debit", "nb_oracle", "montant_oracle", "montant_interface", "statut",
-                  "rapproche", "commentaire"]
+                  "erreur", "rapproche", "commentaire"]
 LIBELLES = {"folio": "Folio", "type": "Type", "date": "Date", "age_j": "Âge (j)", "fichier": "Fichier transmis",
             "amont_nb": "Amont nb", "amont_debit": "Amont débit", "si_nb": "SI nb", "si_debit": "SI débit",
             "ecart_nb": "Écart nb", "ecart_debit": "Écart débit", "nb_oracle": "Nb Oracle",
             "montant_oracle": "Montant Oracle", "montant_interface": "Montant interface", "statut": "Statut",
-            "rapproche": "Rapproché", "commentaire": "Commentaire"}
+            "erreur": "Erreur Oracle", "rapproche": "Rapproché", "commentaire": "Commentaire"}
+COLS_MONTANTS = ("Amont débit", "SI débit", "Écart débit", "Montant Oracle", "Montant interface")
+COLS_NB = ("Âge (j)", "Amont nb", "SI nb", "Écart nb", "Nb Oracle")
+
+
+def _fmt_mt(v) -> str:
+    return "" if pd.isna(v) else f"{float(v):,.2f}".replace(",", " ").replace(".", ",")
+
+
+def _fmt_nb(v) -> str:
+    return "" if pd.isna(v) else f"{int(round(float(v))):,}".replace(",", " ")
 
 
 def _eur(v) -> str:
-    return f"{v:,.2f} €".replace(",", " ").replace(".", ",")
+    return f"{_fmt_mt(v)} €"
 
 
 def _importer_fichiers(fichiers) -> list[str]:
@@ -50,8 +61,8 @@ def _style(df: pd.DataFrame):
         if r["Statut"] == "KO":
             return ["background-color: #FDECEC"] * len(r)
         return [""] * len(r)
-    return df.style.apply(ligne, axis=1).format({c: "{:,.2f}" for c in ("Amont débit", "SI débit", "Écart débit",
-                                                                       "Montant Oracle", "Montant interface")}, na_rep="")
+    fmt = {**{c: _fmt_mt for c in COLS_MONTANTS if c in df.columns}, **{c: _fmt_nb for c in COLS_NB if c in df.columns}}
+    return df.style.apply(ligne, axis=1).format(fmt)
 
 
 def render(kpi):
@@ -112,11 +123,15 @@ def render(kpi):
 
         # ------------------------------------------------------------ tableau + sélection
         aff = vue[COLS_AFFICHEES].rename(columns=LIBELLES)
+        # Streamlit n'inclut pas les données dans l'identité d'un st.dataframe à clé : on change la clé
+        # dès que l'ensemble (ou l'ordre) des lignes affichées change, sinon la sélection survit au filtre.
+        sig = hashlib.blake2b("|".join(vue["empreinte"].astype(str)).encode("utf-8"), digest_size=6).hexdigest()
         ev = st.dataframe(_style(aff), use_container_width=True, hide_index=True, height=420,
-                          on_select="rerun", selection_mode="multi-row", key=f"fr_table_{eid}_{len(vue)}")
-        sel_idx = list(ev.selection.rows) if ev and ev.selection else []
+                          on_select="rerun", selection_mode="multi-row", key=f"fr_table_{eid}_{sig}")
+        rows = list(ev.selection.rows) if ev and ev.selection else []
+        sel_idx = [i for i in rows if 0 <= i < len(vue)]
         sel = vue.iloc[sel_idx]
-        somme = float(sel["ecart_debit"].sum())
+        somme = fr.somme_selection(vue, sel["empreinte"].tolist())
         if sel.empty:
             st.caption("Cochez des lignes : la somme de leurs écarts débit s'affiche ici. À 0, elles peuvent être rapprochées.")
         elif len(sel) >= 2 and abs(somme) < fr.TOL:
@@ -148,7 +163,7 @@ def render(kpi):
                         fr.rapprocher(list(g["empreintes"]), "groupe compensé (auto)", con); n += 1
                     except ValueError:
                         pass
-                st.session_state["fr_msg"] = f"{n} groupe(s) rapproché(s)."
+                st.session_state["fr_msg"] = f"{n} groupe(s) rapproché(s), {len(groupes) - n} refusé(s)."
                 st.rerun()
             for i, g in groupes.iterrows():
                 a, b = st.columns([5, 1])
@@ -156,6 +171,7 @@ def render(kpi):
                 if b.button("Rapprocher", key=f"fr_grp_{i}"):
                     try:
                         fr.rapprocher(list(g["empreintes"]), "groupe compensé", con)
+                        st.session_state["fr_msg"] = f"Groupe {g['folio']} rapproché."
                         st.rerun()
                     except ValueError as e:
                         st.error(str(e))

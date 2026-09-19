@@ -59,14 +59,8 @@ def test_selection_et_rapprochement(app):
     assert not at.exception
     assert any("Groupes compensés en attente (1)" in m.value for m in at.markdown)
     # la sélection de lignes dans st.dataframe n'est pas pilotable par AppTest : on rapproche le groupe
-    next(b_ for b_ in at.button if b_.label == "Rapprocher").click().run()
+    at.button(key="fr_grp_0").click().run()
     assert not at.exception
     assert fr.lignes_export(eid, con)["rapproche"].sum() == 2
     assert any("Groupes compensés en attente (0)" in m.value for m in at.markdown)
     con.close()
-
-
-def test_somme_selection_logique():
-    # la partie « somme en direct » repose sur folio_rose.somme_selection, testée unitairement ;
-    # ici on vérifie seulement que le module expose bien la fonction utilisée par l'onglet
-    assert callable(fr.somme_selection)
