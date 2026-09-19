@@ -1,0 +1,4 @@
+﻿Folio;Ecart;Début de période;Fin de période
+K;Oui;01/09/2026;09/09/2026
+Folio;Date;App Amont Nb piéce;App Amont Débit;App Amont Crédit;SI Finance Nb piece;SI Finance Débit;SI Finance Crédit;Ecarts Nb Piece;Ecarts Débit;Ecarts Crédit;Commentaire;Nom fichier transmis;Présence d'une piéce jointe;Lettrage
+KCP;04/09/2026;1776;95398816,84;95398816,84;1774;95398812,68;95398812,68;2;4,16;4,16;030000315  et 030001349 dans la GDR;CDPG.NC4.EXPORT.2026090314512363398.COMP.E_COMP_DALKIA.E_COMPTA_1;non;
