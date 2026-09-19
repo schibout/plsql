@@ -118,7 +118,7 @@ ON CONFLICT(program_short) DO UPDATE SET
 def load_config() -> configparser.ConfigParser:
     if not CONFIG.exists():
         raise SystemExit(f"Fichier {CONFIG} absent : copier config.ini.exemple en config.ini et le renseigner.")
-    cfg = configparser.ConfigParser(inline_comment_prefixes=(";", "#"))
+    cfg = configparser.ConfigParser(interpolation=None, inline_comment_prefixes=(";", "#"))
     cfg.read(CONFIG, encoding="utf-8")
     return cfg
 
@@ -282,9 +282,30 @@ def borne_chargement(cle: str, con) -> datetime | None:
     return datetime.strptime(row[0], "%Y-%m-%d %H:%M:%S") if row and row[0] else None
 
 
-def _memoriser_borne(cle: str, quand: datetime, con) -> None:
-    con.execute("INSERT INTO parametres(cle, valeur) VALUES (?, ?) ON CONFLICT(cle) DO UPDATE SET valeur = excluded.valeur",
-                (f"oracle.{cle}.depuis", quand.strftime("%Y-%m-%d %H:%M:%S")))
+def _memoriser_borne(cle: str, quand: datetime, con, signature: str = "") -> None:
+    for k, v in ((f"oracle.{cle}.depuis", quand.strftime("%Y-%m-%d %H:%M:%S")), (f"oracle.{cle}.signature", signature)):
+        con.execute("INSERT INTO parametres(cle, valeur) VALUES (?, ?) ON CONFLICT(cle) DO UPDATE SET valeur = excluded.valeur", (k, v))
+
+
+def _signature(cfg) -> str:
+    """Périmètre du chargement : s'il change (filtre, programmes suivis, profondeur), le delta ne suffit plus."""
+    ora = cfg["oracle"] if cfg.has_section("oracle") else {}
+    return "|".join(((ora.get("filtre_description", "") or "").strip(), (ora.get("programmes_suivis", "") or "").strip(),
+                     str(ora.get("jours_initial", 365)).strip()))
+
+
+def _signature_memorisee(cle: str, con) -> str | None:
+    row = con.execute("SELECT valeur FROM parametres WHERE cle = ?", (f"oracle.{cle}.signature",)).fetchone()
+    return row[0] if row else None
+
+
+def etat_chargement(con) -> str:
+    """Résumé pour l'interface : volume en base et dernier chargement."""
+    n = con.execute("SELECT COUNT(*) FROM ora_requests").fetchone()[0]
+    borne = borne_chargement("demandes", con)
+    mn, mx = con.execute("SELECT MIN(request_date), MAX(request_date) FROM ora_requests").fetchone()
+    periode = f", du {mn[:10]} au {mx[:10]}" if mn and mx else ""
+    return f"{n} demandes en base{periode} · dernier chargement : {borne:%d/%m %H:%M}" if borne else f"{n} demandes en base · jamais chargé"
 
 
 def _heure_oracle(cur) -> datetime:
@@ -310,6 +331,9 @@ def _fenetre(cle: str, cfg, con, cur, heures: float | None, complet: bool) -> tu
         return maintenant - timedelta(hours=heures), AUCUN_ID, f"fenêtre de {heures:g} h", maintenant
     if complet or borne is None or max_id is None:
         return maintenant - timedelta(days=jours_initial), AUCUN_ID, f"chargement initial ({jours_initial:g} j)", maintenant
+    if _signature_memorisee(cle, con) != _signature(cfg):
+        return (maintenant - timedelta(days=jours_initial), AUCUN_ID,
+                f"chargement initial ({jours_initial:g} j) — périmètre modifié dans config.ini", maintenant)
     return borne - MARGE, int(max_id), f"delta depuis le {borne:%d/%m %H:%M} (request_id > {max_id})", maintenant
 
 
@@ -398,7 +422,7 @@ def refresh_requests(heures: float | None = None, complet: bool = False) -> str:
             "ON CONFLICT(job_name) DO UPDATE SET program_short=excluded.program_short, commentaire=excluded.commentaire",
             [(j, p, d) for j, (p, d) in mapping.items()])
         if not heures:   # une fenêtre explicite ne fait pas avancer la borne du delta
-            _memoriser_borne("demandes", maintenant, con)
+            _memoriser_borne("demandes", maintenant, con, _signature(cfg))
     con.close()
     conseil = (" — 0 demande : vérifier filtre_description / programmes_suivis dans config.ini [oracle]."
                if not total and (filtre or progs) else "")

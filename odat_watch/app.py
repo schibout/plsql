@@ -152,12 +152,19 @@ with st.sidebar:
             st.code("\n".join(st.session_state["logs_import"]))
     st.divider()
     st.markdown("**Oracle Apps**")
+    import oracle_refresh
+    con = connect()
+    try:
+        st.caption(oracle_refresh.etat_chargement(con))
+    finally:
+        con.close()
+    tout = st.checkbox("Tout recharger (chargement initial)", False, key="ora_complet",
+                       help="Ignore la borne du delta et recharge jours_initial jours d'historique")
     c_a, c_b = st.columns(2)
     if c_a.button("🔄 Demandes", use_container_width=True, help="FND_CONCURRENT_REQUESTS : tout l'historique la première fois (jours_initial), ensuite seulement le delta"):
         try:
-            import oracle_refresh
             with st.spinner("Oracle…"):
-                st.session_state["log_oracle"] = oracle_refresh.refresh_requests()
+                st.session_state["log_oracle"] = oracle_refresh.refresh_requests(complet=tout)
         except SystemExit as e:
             st.session_state["log_oracle"] = f"⚠ {e}"
         except Exception as e:  # noqa: BLE001
@@ -165,9 +172,8 @@ with st.sidebar:
         st.cache_data.clear()
     if c_b.button("📚 Programmes", use_container_width=True, help="Référentiel FND_CONCURRENT_PROGRAMS"):
         try:
-            import oracle_refresh
             with st.spinner("Oracle…"):
-                st.session_state["log_oracle"] = oracle_refresh.refresh_programs()
+                st.session_state["log_oracle"] = oracle_refresh.refresh_programs(complet=tout)
         except SystemExit as e:
             st.session_state["log_oracle"] = f"⚠ {e}"
         except Exception as e:  # noqa: BLE001
@@ -179,7 +185,8 @@ with st.sidebar:
             st.session_state["log_oracle"] = "\n".join(logmod.run()[-8:])
         st.cache_data.clear()
     if "log_oracle" in st.session_state:
-        st.caption(st.session_state["log_oracle"])
+        msg = st.session_state["log_oracle"]
+        (st.error if msg.startswith("⚠") else st.success)(msg)
 
 if not apps:
     st.warning("Base vide. Lancez l'import depuis la barre latérale ou `python ingest.py`.")

@@ -75,7 +75,7 @@ def _bouton_telecharger(chemin: Path, cle: str, libelle: str = "⬇ Télécharge
 def _config_oracle_ok() -> bool:
     if not CONFIG.exists():
         return False
-    cfg = configparser.ConfigParser(inline_comment_prefixes=(";", "#"))
+    cfg = configparser.ConfigParser(interpolation=None, inline_comment_prefixes=(";", "#"))
     cfg.read(CONFIG, encoding="utf-8")
     return cfg.has_section("database")
 

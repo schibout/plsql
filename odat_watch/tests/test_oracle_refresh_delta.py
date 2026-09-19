@@ -139,3 +139,36 @@ def test_les_filles_heritent_du_job_du_lanceur_sur_plusieurs_lots(env, monkeypat
                     12: "FINFIN_J18TRT_04_IMP01_Q", 13: None}
     assert con.execute("SELECT program_short FROM job_mapping WHERE job_name='FINFIN_J18TRT_04_IMP01_Q'").fetchone()[0] == "PROG"
     con.close()
+
+
+def test_changement_de_perimetre_relance_l_initial(env):
+    cur, base, sysdate = env
+    orf.refresh_requests()
+    con = db.connect(base); con.execute("INSERT INTO ora_requests(request_id) VALUES (7)"); con.commit(); con.close()
+    cur.appels.clear()
+    assert "delta" in orf.refresh_requests()
+    orf.load_config()["oracle"]["filtre_description"] = ""          # l'utilisateur vide le filtre
+    cur.appels.clear()
+    msg = orf.refresh_requests()
+    assert "initial" in msg and "périmètre modifié" in msg
+    cur.appels.clear()
+    assert "delta" in orf.refresh_requests()                          # signature mise à jour
+
+
+def test_etat_chargement(env):
+    cur, base, sysdate = env
+    con = db.connect(base)
+    assert orf.etat_chargement(con).endswith("jamais chargé")
+    con.close()
+    orf.refresh_requests()
+    con = db.connect(base)
+    assert "dernier chargement : 20/09 08:00" in orf.etat_chargement(con)
+    con.close()
+
+
+def test_load_config_accepte_le_pourcent(tmp_path, monkeypatch):
+    ini = tmp_path / "config.ini"
+    ini.write_text("[database]\nuser = u\npassword = p\ndsn = d\n[oracle]\nfiltre_description = FIN%\n", encoding="utf-8")
+    monkeypatch.setattr(orf, "CONFIG", ini)
+    cfg = orf.load_config()
+    assert cfg["oracle"].get("filtre_description") == "FIN%"
