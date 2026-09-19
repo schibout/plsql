@@ -1,0 +1,85 @@
+# 🚀 Prompt Google Apps Script : Automation d'Extraction & Stockage des Rapports CTM Dalkia
+
+Ce document contient le prompt optimisé et exhaustif à fournir à une IA (ChatGPT, Claude, Gemini) afin qu'elle génère un script Google Apps Script (GAS) robuste pour l'extraction automatique des fichiers CSV du suivi CTM.
+
+---
+
+## 📄 Prompt à copier-coller dans l'IA
+
+```text
+Vous êtes un expert en développement Google Apps Script (GAS) spécialisé dans l'automatisation des flux Google Workspace (Gmail et Google Drive).
+
+### Context & Objectif
+Nous recevons quotidiennement plusieurs e-mails d'indicateurs CTM de l'adresse `indic_ctm@dalkia.fr`. Ces e-mails contiennent le suivi des traitements batchs (CELERIS, CID, CRT, Control-M).
+L'objectif est d'écrire un script Google Apps Script complet, robuste et commenté en français, exécutable via un déclencheur temporel (Trigger), qui extrait automatiquement les fichiers CSV (presents directement ou contenus dans des archives .ZIP) et les enregistre dans un dossier Google Drive spécifié.
+
+---
+
+### 🛠️ Spécifications techniques & Fonctionnelles
+
+#### 1. Configuration & Recherche Gmail
+* **Variables de configuration globale** en haut du script :
+  * `FOLDER_ID` : ID du dossier Google Drive de destination.
+  * `SEARCH_QUERY` : Filtre Gmail exact : `from:indic_ctm@dalkia.fr subject:"DALKIA / Extract CSV du Suivi Quotidien CTM"`
+  * `LABEL_NAME` : Libellé de suivi Gmail (ex: `CTM_CSV_Traites`).
+* **Gestion des libellés** :
+  * Vérifier si le libellé `CTM_CSV_Traites` existe dans Gmail. S'il n'existe pas, le créer automatiquement (`GmailApp.createLabel`).
+  * N'analyser que les messages non traités (ex. `SEARCH_QUERY + " -label:" + LABEL_NAME`).
+  * Une fois le traitement d'un message terminé avec succès, lui appliquer le libellé pour éviter tout double traitement.
+
+#### 2. Traitement des Pièces Jointes (.ZIP et .CSV)
+* Pour chaque message correspondant :
+  * Parcourir toutes les pièces jointes (`message.getAttachments()`).
+  * Si la pièce jointe est un fichier `.zip` (ex: `Report_ctm_260918_18_September_2026.zip`) :
+    * Décompresser l'archive à l'aide de `Utilities.unzip(attachment)`.
+    * Ne conserver que les fichiers extraits ayant le type MIME `text/csv` ou se terminant par `.csv`.
+  * Si la pièce jointe est directement un fichier `.csv`, la traiter immédiatement.
+
+#### 3. Règle de Nommage & Gestion des Doublons sur Google Drive
+* Étant donné que nous recevons environ 4 à 5 rapports par jour à différentes heures (ex. 07h06, 13h45, 16h45) avec des noms de fichiers similaires, les fichiers ne doivent **JAMAIS** s'écraser.
+* Chaque fichier enregistré dans Drive doit être renommé avec le préfixe de la date/heure de réception du message Gmail :
+  * **Format de nommage** : `YYYYMMDD_HHMMSS_[NomDuFichier].csv`
+  * *Exemple* : Pour un e-mail reçu le 18/09/2026 à 16:45:25 et un fichier d'origine `Report_ctm_260918.csv`, le nom final dans Drive sera : `20260918_164525_Report_ctm_260918.csv`.
+
+#### 4. Sauvegarde dans Google Drive
+* Récupérer le dossier cible avec `DriveApp.getFolderById(FOLDER_ID)`.
+* Créer chaque fichier CSV converti en `Blob` dans ce dossier avec son nouveau nom horodaté.
+
+#### 5. Gestion des Erreurs et Logs
+* Encapsuler les traitements dans des blocs `try...catch` pour garantir qu'une erreur sur un message n'interrompe pas le traitement des autres e-mails.
+* Ajouter des logs détaillés (`Logger.log`) traçant :
+  * Le nombre de threads/messages trouvés.
+  * Le nom de chaque pièce jointe détectée (.zip ou .csv).
+  * Le nom des fichiers décompressés et sauvegardés dans Drive.
+  * L'application du libellé Gmail.
+
+---
+
+### 📦 Structure du Code Attendu
+
+1. Une fonction principale : `processCtmEmails()`.
+2. Une fonction auxiliaire de formatage des dates : `formatDateForFilename(date)`.
+3. Une fonction d'initialisation/test : `setupFolderAndLabels()`.
+4. Un guide étape par étape en commentaire ou markdown expliquant comment configurer le **Déclencheur temporel (Time-driven Trigger)** dans Apps Script (ex: exécution toutes les 15 ou 30 minutes).
+⚙️ Procédure de mise en œuvre une fois le code généré
+Ouvrir Google Apps Script :
+Allez sur script.google.com ou depuis Google Drive via Nouveau > Plus > Google Apps Script.
+Remplacer les variables :
+Remplir FOLDER_ID avec l'ID de votre dossier cible Drive.
+Configurer le déclencheur (Trigger) :
+Dans le menu de gauche, cliquez sur l'icône Réveil ⏰ (Déclencheurs).
+Cliquez sur Ajouter un déclencheur.
+Choisir la fonction processCtmEmails.
+Source de l'événement : Fonction de déclenchement temporel.
+Type de déclencheur basé sur le temps : Déclencheur par minute ou Déclencheur par heure (selon votre besoin, ex: Toutes les 15 minutes ou Toutes les heures).
+
+Erreur 
+⚠ NotSupportedError: DPY-3015: password verifier type 0x939 is not supported by python-oracledb in thin mode Help: https://python-oracledb.readthedocs.io/en/latest/user_guide/troubleshooting.html#dpy-3015
+
+
+For `use_container_width=True`, use `width='stretch'`. For `use_container_width=False`, use `width='content'`.
+2026-09-18 23:43:23.435 Please replace `use_container_width` with `width`.
+
+`use_container_width` will be removed after 2025-12-31.
+
+For `use_container_width=True`, use `width='stretch'`. For `use_container_width=False`, use `width='content'`.
