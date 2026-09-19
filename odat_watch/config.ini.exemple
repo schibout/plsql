@@ -16,6 +16,8 @@ client_dir =
 
 [oracle]
 ; Fenetre d'historique recuperee a chaque rafraichissement (heures)
+; Premier chargement des demandes : N jours d'historique ; ensuite seul le delta est charge
+jours_initial = 90
 heures_historique = 48
 ; Filtre LIKE sur la DESCRIPTION des demandes (nom du job Control-M). Vide = toutes.
 filtre_description = FIN%

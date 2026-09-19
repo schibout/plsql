@@ -144,7 +144,7 @@ with st.sidebar:
     st.divider()
     st.markdown("**Oracle Apps**")
     c_a, c_b = st.columns(2)
-    if c_a.button("🔄 Demandes", use_container_width=True, help="FND_CONCURRENT_REQUESTS : 48 h + en attente"):
+    if c_a.button("🔄 Demandes", use_container_width=True, help="FND_CONCURRENT_REQUESTS : tout l'historique la première fois (jours_initial), ensuite seulement le delta"):
         try:
             import oracle_refresh
             with st.spinner("Oracle…"):

@@ -77,10 +77,10 @@ def render(kpi):
         fichiers = st.file_uploader("Glisser-déposer un ou plusieurs ExportCSV-*.csv", type=["csv"],
                                     accept_multiple_files=True, key="fr_upload")
         c1, c2 = st.columns(2)
-        if c1.button("Importer les fichiers déposés", disabled=not fichiers, use_container_width=True):
+        if c1.button("Importer les fichiers déposés", disabled=not fichiers, use_container_width=True, key="fr_imp_fichiers"):
             st.session_state["fr_import_log"] = _importer_fichiers(fichiers)
             st.rerun()
-        if c2.button("Importer le dossier ControleFolioRose", use_container_width=True,
+        if c2.button("Importer le dossier ControleFolioRose", use_container_width=True, key="fr_imp_dossier",
                      help=str(DOSSIER_SAUVEGARDE)):
             csvs = sorted(DOSSIER_SAUVEGARDE.glob("ExportCSV-*.csv")) + sorted((DOSSIER_SAUVEGARDE / "sauvegarde").glob("ExportCSV-*.csv"))
             st.session_state["fr_import_log"] = _importer_fichiers(csvs)
@@ -149,7 +149,7 @@ def render(kpi):
         elif len(sel) >= 2 and abs(somme) < fr.TOL:
             st.success(f"✔ {len(sel)} lignes sélectionnées · somme des écarts débit = {_eur(somme)} — compensé, rapprochement possible.")
             com = st.text_input("Commentaire (optionnel)", key="fr_com")
-            if st.button("🔗 Rapprocher ces lignes", type="primary"):
+            if st.button("🔗 Rapprocher ces lignes", type="primary", key="fr_rapprocher"):
                 try:
                     fr.rapprocher(sel["empreinte"].tolist(), com, con)
                     st.session_state["fr_msg"] = f"Rapprochement enregistré ({len(sel)} lignes)."
@@ -191,7 +191,7 @@ def render(kpi):
         # ------------------------------------------------------------ Oracle + rapport
         st.markdown("#### Oracle et rapport")
         o1, o2 = st.columns(2)
-        if o1.button("🅾 Contrôler dans Oracle", disabled=not CONFIG.exists(), use_container_width=True):
+        if o1.button("🅾 Contrôler dans Oracle", disabled=not CONFIG.exists(), use_container_width=True, key="fr_oracle"):
             with st.spinner("Interrogation Oracle…"):
                 try:
                     st.session_state["fr_oracle_msg"] = fr.controler_oracle(eid, con)
@@ -200,7 +200,7 @@ def render(kpi):
                     st.error(f"Contrôle impossible : {e}")
         if st.session_state.get("fr_oracle_msg"):
             o1.caption(st.session_state["fr_oracle_msg"])
-        if o2.button("📄 Générer le rapport HTML", use_container_width=True):
+        if o2.button("📄 Générer le rapport HTML", use_container_width=True, key="fr_rapport"):
             try:
                 chemin = rp.ecrire(export, lignes, groupes, fr.rapprochements(con))
                 st.session_state["fr_rapport"] = str(chemin)

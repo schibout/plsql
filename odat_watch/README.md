@@ -13,7 +13,7 @@ Oracle EBS R12 pour répondre à : **qu'est-ce qui tourne ce soir, et demain ?**
 | `ui_preproduction.py` | Onglet « Préparer ma nuit » : prévision d'une plage libre, suivi sur dernière photo et bilan, y compris hors clôture. |
 | `ui_calendriers.py` / `calendar_import.py` | Import contrôlé des classeurs trimestriels de clôture (.xlsx), aperçu des trois mois, versionnement et provenance. |
 | `assistant_nuit.py` | Questions guidées sur le plan affiché, sans transfert vers un service d'IA externe. |
-| `oracle_refresh.py` | **Brique Oracle Apps** : charge `FND_CONCURRENT_REQUESTS` (48 h + demandes en attente) et `FND_CONCURRENT_PROGRAMS` dans SQLite. Lie chaque demande à son job Control-M (la DESCRIPTION des demandes du lanceur DKA_SLAUNCHER contient le nom du job ; les demandes filles héritent du parent). |
+| `oracle_refresh.py` | **Brique Oracle Apps** : charge `FND_CONCURRENT_REQUESTS` et `FND_CONCURRENT_PROGRAMS` dans SQLite — tout l'historique utile la première fois (`jours_initial`, 90 j), puis seulement ce qui a été créé ou modifié depuis le dernier chargement (borne Oracle mémorisée dans `parametres`, `--complet` pour repartir de zéro). Lie chaque demande à son job Control-M (la DESCRIPTION des demandes du lanceur DKA_SLAUNCHER contient le nom du job ; les demandes filles héritent du parent). |
 | `logs.py` | Analyse des `l<id>.req` / `o<id>.out` rapatriés du serveur EBS : compteurs, messages FND_FILE, codes d'erreur, diagnostic. Génère `list.txt` pour `copy_ebs_logs.sh`. |
 | `diagnostics.json` | Dictionnaire code d'erreur → explication, action, gravité. **À enrichir au fil des incidents.** |
 | `ui_oracle.py` | Onglet Oracle de l'interface. |
@@ -61,7 +61,8 @@ En ligne de commande :
 ```bat
 python oracle_refresh.py --test          REM teste la connexion
 python oracle_refresh.py --programmes    REM référentiel + demandes
-python oracle_refresh.py --jours 90      REM chargement initial long
+python oracle_refresh.py --complet       REM refait le chargement initial (jours_initial)
+python oracle_refresh.py --jours 7       REM fenêtre explicite, sans toucher la borne du delta
 python logs.py                           REM analyse les dossiers de config.ini [logs]
 python logs.py --liste                   REM écrit list.txt des logs manquants (demandes en erreur)
 ```

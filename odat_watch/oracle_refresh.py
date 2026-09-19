@@ -2,7 +2,8 @@
 
 Récupère :
   - le référentiel des programmes concurrents (ora_programs), option --programmes
-  - les demandes des N dernières heures (config heures_historique, défaut 48) + toutes les demandes
+  - première fois : les demandes des N derniers jours (config jours_initial, défaut 90) ; ensuite seulement
+    celles créées ou modifiées depuis le dernier chargement (borne mémorisée dans parametres) + toutes les demandes
     en attente (PHASE_CODE = 'P', donc planifiées pour ce soir / demain)          (ora_requests)
 La DESCRIPTION des demandes lancées par Control-M via DKA_SLAUNCHER contient le nom du job Control-M
 ("FINFIN_J18TRT_04_IMP01_Q : DKA_IPAPROJETHRM_JOB.sh") : elle alimente job_name et job_mapping.
@@ -19,7 +20,7 @@ from __future__ import annotations
 import argparse
 import configparser
 import re
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from db import connect, BASE_DIR
 
@@ -44,6 +45,7 @@ WHERE  fcp.enabled_flag = 'Y'
   AND  (fa.application_short_name IN ('DKA','XXRB','RB','SQLAP','SQLGL','AR','PA','PO','CE','FA','XLA','ZX')
         OR fcp.concurrent_program_name LIKE 'DKA%' OR fcp.concurrent_program_name LIKE 'XX%'
         OR fcp.concurrent_program_name LIKE 'RB%')
+  AND  (:depuis IS NULL OR fcp.last_update_date >= :depuis OR fcpt.last_update_date >= :depuis)
 """
 
 SQL_REQUESTS = """
@@ -73,13 +75,13 @@ LEFT JOIN {s}fnd_responsibility_tl frt
       AND frt.application_id = fcr.responsibility_application_id AND frt.language = USERENV('LANG')
 LEFT JOIN {s}fnd_lookups fl1 ON fl1.lookup_type = 'CP_PHASE_CODE'  AND fl1.lookup_code = fcr.phase_code
 LEFT JOIN {s}fnd_lookups fl2 ON fl2.lookup_type = 'CP_STATUS_CODE' AND fl2.lookup_code = fcr.status_code
-WHERE  (fcr.request_date >= SYSDATE - :heures / 24 OR fcr.phase_code IN ('P', 'R'))
+WHERE  (fcr.request_date >= :depuis OR fcr.last_update_date >= :depuis OR fcr.phase_code IN ('P', 'R'))
   AND  (   :filtre IS NULL
         OR fcr.description LIKE :filtre
         OR fcp.concurrent_program_name IN ({progs})
         OR fcr.parent_request_id IN (SELECT p.request_id FROM {s}fnd_concurrent_requests p
                                      WHERE p.description LIKE :filtre
-                                       AND p.request_date >= SYSDATE - :heures / 24 - 2))
+                                       AND p.request_date >= :depuis - 2))
 """
 
 UPSERT_REQ = """
@@ -264,30 +266,71 @@ def test_connexion() -> str:
     return f"Connexion OK. {n} demandes sur 24 h, dernière à {d:%d/%m %H:%M}."
 
 
-def refresh_programs() -> str:
+# ------------------------------------------------------------------ chargement incrémental
+# Première fois : tout l'historique utile (config [oracle] jours_initial, défaut 90 j). Ensuite, seulement
+# ce qui a bougé depuis le dernier chargement (request_date ou last_update_date, plus les demandes en
+# attente / en cours), avec une heure de marge. La borne est l'heure Oracle (SYSDATE) du dernier chargement,
+# mémorisée dans la table parametres.
+MARGE = timedelta(hours=1)
+
+
+def borne_chargement(cle: str, con) -> datetime | None:
+    row = con.execute("SELECT valeur FROM parametres WHERE cle = ?", (f"oracle.{cle}.depuis",)).fetchone()
+    return datetime.strptime(row[0], "%Y-%m-%d %H:%M:%S") if row and row[0] else None
+
+
+def _memoriser_borne(cle: str, quand: datetime, con) -> None:
+    con.execute("INSERT INTO parametres(cle, valeur) VALUES (?, ?) ON CONFLICT(cle) DO UPDATE SET valeur = excluded.valeur",
+                (f"oracle.{cle}.depuis", quand.strftime("%Y-%m-%d %H:%M:%S")))
+
+
+def _heure_oracle(cur) -> datetime:
+    cur.execute("SELECT SYSDATE FROM dual")
+    return cur.fetchone()[0]
+
+
+def _fenetre(cle: str, cfg, con, cur, heures: float | None, complet: bool) -> tuple[datetime, str, datetime]:
+    """(borne :depuis, libellé du mode, heure Oracle du chargement)."""
+    ora = cfg["oracle"] if cfg.has_section("oracle") else {}
+    jours_initial = float(ora.get("jours_initial", 90))
+    maintenant = _heure_oracle(cur)
+    borne = borne_chargement(cle, con)
+    if heures:
+        return maintenant - timedelta(hours=heures), f"fenêtre de {heures:g} h", maintenant
+    if complet or borne is None:
+        return maintenant - timedelta(days=jours_initial), f"chargement initial ({jours_initial:g} j)", maintenant
+    return borne - MARGE, f"delta depuis le {borne:%d/%m %H:%M}", maintenant
+
+
+def refresh_programs(complet: bool = False) -> str:
     cfg = load_config()
     now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    con = connect()
     with _connect_oracle(cfg) as ocon:
         cur = ocon.cursor()
         cur.arraysize = 5000
-        cur.execute(SQL_PROGRAMS.format(s=_schema(cfg)))
+        borne = None if complet else borne_chargement("programmes", con)
+        maintenant = _heure_oracle(cur)
+        depuis = None if borne is None else borne - MARGE
+        mode = "chargement initial" if depuis is None else f"delta depuis le {borne:%d/%m %H:%M}"
+        cur.execute(SQL_PROGRAMS.format(s=_schema(cfg)), {"depuis": depuis})
         rows = cur.fetchall()
-    con = connect()
-    con.executemany(UPSERT_PROG, [(*r, now) for r in rows])
-    con.commit()
+    with con:
+        con.executemany(UPSERT_PROG, [(*r, now) for r in rows])
+        _memoriser_borne("programmes", maintenant, con)
     con.close()
-    return f"{len(rows)} programmes concurrents chargés."
+    return f"{len(rows)} programmes concurrents chargés ({mode})."
 
 
-def refresh_requests(heures: float | None = None) -> str:
+def refresh_requests(heures: float | None = None, complet: bool = False) -> str:
+    """heures : fenêtre explicite (CLI --jours) ; complet : refait le chargement initial ; sinon delta."""
     cfg = load_config()
     ora = cfg["oracle"] if cfg.has_section("oracle") else {}
-    heures = heures or float(ora.get("heures_historique", 48))
     filtre = (ora.get("filtre_description", "") or "").strip() or None
     progs = [p.strip() for p in (ora.get("programmes_suivis", "") or "").split(",") if p.strip()]
     now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
-    binds = {"heures": heures, "filtre": filtre}
+    binds = {"filtre": filtre}
     if progs:
         names = ", ".join(f":p{i}" for i in range(len(progs)))
         binds.update({f"p{i}": p for i, p in enumerate(progs)})
@@ -295,14 +338,15 @@ def refresh_requests(heures: float | None = None) -> str:
         names = "NULL"
     sql = SQL_REQUESTS.format(s=_schema(cfg), progs=names)
 
+    con = connect()
     with _connect_oracle(cfg) as ocon:
         cur = ocon.cursor()
         cur.arraysize = 5000
+        binds["depuis"], mode, maintenant = _fenetre("demandes", cfg, con, cur, heures, complet)
         cur.execute(sql, binds)
         rows = cur.fetchall()
 
     # job Control-M : depuis la description, sinon hérité du parent (même lot ou déjà en base)
-    con = connect()
     connus = {r[0]: r[1] for r in con.execute("SELECT request_id, job_name FROM ora_requests WHERE job_name IS NOT NULL")}
     by_id = {r[0]: r for r in rows}
     jobs: dict[int, str | None] = {}
@@ -325,17 +369,19 @@ def refresh_requests(heures: float | None = None) -> str:
         j = job_from_description(desc)
         if j:
             mapping[j] = (pshort, (desc or "").strip())
-    con.executemany(UPSERT_REQ, payload)
-    con.executemany(
-        "INSERT INTO job_mapping(job_name, program_short, commentaire) VALUES (?,?,?) "
-        "ON CONFLICT(job_name) DO UPDATE SET program_short=excluded.program_short, commentaire=excluded.commentaire",
-        [(j, p, d) for j, (p, d) in mapping.items()])
-    con.commit()
+    with con:
+        con.executemany(UPSERT_REQ, payload)
+        con.executemany(
+            "INSERT INTO job_mapping(job_name, program_short, commentaire) VALUES (?,?,?) "
+            "ON CONFLICT(job_name) DO UPDATE SET program_short=excluded.program_short, commentaire=excluded.commentaire",
+            [(j, p, d) for j, (p, d) in mapping.items()])
+        if not heures:   # une fenêtre explicite ne fait pas avancer la borne du delta
+            _memoriser_borne("demandes", maintenant, con)
     con.close()
     pending = sum(1 for r in rows if r[4] == "P")
     running = sum(1 for r in rows if r[4] == "R")
     err = sum(1 for r in rows if r[4] == "C" and r[5] in ("E", "G", "X"))
-    return (f"{len(rows)} demandes Oracle chargées : {running} en cours, {pending} en attente, "
+    return (f"{len(rows)} demandes Oracle chargées ({mode}) : {running} en cours, {pending} en attente, "
             f"{err} terminées en erreur/avertissement ; {len(mapping)} jobs Control-M reconnus.")
 
 
@@ -343,6 +389,7 @@ if __name__ == "__main__":
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--jours", type=float, help="historique en jours (chargement initial)")
     ap.add_argument("--programmes", action="store_true", help="rafraîchir aussi le référentiel des programmes")
+    ap.add_argument("--complet", action="store_true", help="refaire le chargement initial (jours_initial) au lieu du delta")
     ap.add_argument("--test", action="store_true", help="tester la connexion et sortir")
     ap.add_argument("--clients", action="store_true", help="lister les clients Oracle du poste (32/64 bits)")
     a = ap.parse_args()
@@ -352,5 +399,5 @@ if __name__ == "__main__":
         print(test_connexion())
     else:
         if a.programmes:
-            print(refresh_programs())
-        print(refresh_requests(a.jours * 24 if a.jours else None))
+            print(refresh_programs(complet=a.complet))
+        print(refresh_requests(a.jours * 24 if a.jours else None, complet=a.complet))
