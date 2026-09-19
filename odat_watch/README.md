@@ -14,9 +14,13 @@ Oracle EBS R12 pour répondre à : **qu'est-ce qui tourne ce soir, et demain ?**
 | `logs.py` | Analyse des `l<id>.req` / `o<id>.out` rapatriés du serveur EBS : compteurs, messages FND_FILE, codes d'erreur, diagnostic. Génère `list.txt` pour `copy_ebs_logs.sh`. |
 | `diagnostics.json` | Dictionnaire code d'erreur → explication, action, gravité. **À enrichir au fil des incidents.** |
 | `ui_oracle.py` | Onglet Oracle de l'interface. |
+| `controle_matin.py` | **Contrôle du matin** : portage `oracledb` des 15 contrôles de `ControleMatinGenerique/Controle_Quotidien_Complet.sql` (DSP, Notilus, factures Xerox/Tradeshift, GL, traitements de la nuit, RB) sur une plage date+heure libre. Calcule les statuts OK/W et le statut global, historise la synthèse dans `controle_matin_histo`. Aussi en ligne de commande (`--rapport`). Le `.sql` reste la référence : toute évolution métier se fait d'abord là, puis se reporte ici. |
+| `rapport_matin.py` | Rapport HTML du contrôle du matin (charte des `Rapport_Verification_*.html`), écrit dans `rapports/` (ignoré par git). |
+| `planif_matin.py` | Tâche du Planificateur Windows `ODATWatch_ControleMatin` (`schtasks`) qui lance `controle_matin.py --rapport` chaque matin. |
+| `ui_matin.py` | Onglet Matin : plage date+heure, bandeau, tuiles avec écart vs. veille, détail par section, génération/téléchargement du rapport, programmation, tendance 30 jours. |
 | `ui_sql.py` | Onglet SQL : explorateur des tables SQLite (structure, volumes) et requêteur libre en lecture seule, exemples fournis, export CSV. |
 | `mock_oracle.py` | **Poste sans Oracle** : fabrique des demandes simulées à partir des exécutions Control-M (lanceur + programme métier, statuts alignés) et des logs présents. `python mock_oracle.py --reset`. Écrasé par les vraies données au premier `oracle_refresh.py`. |
-| `app.py` | Interface Streamlit : Ce soir, Demain, Maintenant, Oracle, Historique, Profils, Données, SQL. |
+| `app.py` | Interface Streamlit : Ce soir, Demain, Maintenant, Matin, Oracle, Historique, Profils, Données, SQL. |
 | `.streamlit/config.toml` | Thème de l'interface. |
 | `run.bat` | Import ODAT + lancement de l'interface. |
 | `config.ini.exemple` | Modèle de configuration (Oracle, filtres, dossiers de logs). Copier en `config.ini` (ignoré par git). |
@@ -72,3 +76,21 @@ python logs.py --liste                   REM écrit list.txt des logs manquants 
   téléchargement du log via le serveur web EBS.
 - Prochaine étape possible : `ingest_gmail.py` (IMAP + mot de passe d'application) pour récupérer
   les ODAT directement depuis la boîte mail.
+
+## Contrôle du matin
+
+Onglet **☀️ Matin** : choisir la plage de nuit (défaut hier 19:00 → aujourd'hui 07:00 ; modifiable pour rejouer un
+matin passé), « ▶ Lancer le contrôle » exécute les mêmes requêtes que `ControleMatinGenerique\Lancer_Controle_Quotidien.ps1`,
+puis « 📄 Générer le rapport HTML » produit `rapports\Controle_Matin_AAAAMMJJ_HHMM.html` à joindre au mail.
+« ⏰ Programmer » crée une tâche Windows quotidienne (`schtasks`) qui fait la même chose sans ouvrir l'application.
+Les compteurs de la synthèse sont historisés dans `controle_matin_histo` (tuiles : écart vs. veille, tendance 30 j).
+
+En ligne de commande : `python controle_matin.py [--debut "AAAA-MM-JJ HH:MM"] [--fin "..."] [--histo 3] [--rapport]`.
+
+Tests : `PYTHONIOENCODING=utf-8 python -m pytest tests -q` (sans Oracle) — 42 tests, dont 5 tests d'interface
+AppTest. Validation métier : lancer l'onglet et le `.ps1` le même matin, les compteurs de la « SYNTHESE DU JOUR »
+doivent coïncider.
+
+Validation Oracle en attente : à faire sur le poste Dalkia (le serveur n'est pas joignable depuis le poste de
+développement). Les requêtes ont été vérifiées ligne à ligne contre le `.sql` ; la première exécution réelle doit
+être comparée au log du `.ps1` du même matin.
