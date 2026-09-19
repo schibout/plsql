@@ -2,3 +2,5 @@
 __pycache__/
 rapports/
 odat.db
+list.txt
+logs_ebs/
