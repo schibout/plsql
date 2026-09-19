@@ -7,7 +7,7 @@
  */
 const CTM_CONFIG = Object.freeze({
   /** ID du dossier Google Drive de destination. */
-  FOLDER_ID: 'A_REMPLACER_PAR_ID_DOSSIER_DRIVE',
+ FOLDER_ID: '1__xp-bdnQJlb_W7aJ9OerGsxgyVbI0qq',
 
   /** Requête Gmail de base. Une fenêtre temporelle est ajoutée à l'exécution. */
   SEARCH_QUERY: 'from:indic_ctm@dalkia.fr subject:"DALKIA / Extract CSV du Suivi Quotidien CTM"',
