@@ -81,6 +81,11 @@ CREATE TABLE IF NOT EXISTS controle_matin_histo (
     fichier_rapport   TEXT
 );
 CREATE INDEX IF NOT EXISTS ix_cm_histo_date ON controle_matin_histo(date_ctrl, executed_at);
+
+CREATE TABLE IF NOT EXISTS parametres (      -- réglages de l'interface (ex. import.dossiers)
+    cle    TEXT PRIMARY KEY,
+    valeur TEXT
+);
 """
 
 

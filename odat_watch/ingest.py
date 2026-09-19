@@ -160,6 +160,11 @@ def run(roots: list[Path] | None = None) -> list[str]:
     n = recaler_snapshots(con)
     if n:
         logs.append(f"{n} photo(s) recalée(s) ou dédoublonnée(s) d'après leur contenu.")
+    for root in roots:
+        if root.is_dir() or root.is_file():
+            logs.append(f"{root} : {len(find_files([root]))} fichier(s) Report_ctm_*.csv")
+        else:
+            logs.append(f"{root} : absent")
     for f in find_files(roots):
         try:
             logs.append(f"{f.name} -> {ingest_file(con, f)}")

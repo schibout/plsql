@@ -8,7 +8,7 @@ Oracle EBS R12 pour répondre à : **qu'est-ce qui tourne ce soir, et demain ?**
 
 | Fichier | Rôle |
 |---|---|
-| `ingest.py` | Scanne `../ODAT` et `~/Downloads`, archive chaque CSV dans `../ODAT/archive/AAAA/MM/JJ/HHMM_odate_*.csv`, charge dans `odat.db` (SQLite). Doublons ignorés (hash du fichier). |
+| `ingest.py` | Scanne `../ODAT`, `~/Downloads` et les dossiers ajoutés dans « Sources d'import », archive chaque CSV dans `../ODAT/archive/AAAA/MM/JJ/HHMM_odate_*.csv`, charge dans `odat.db` (SQLite). Doublons ignorés (hash du fichier). |
 | `forecast.py` | Profils par job Control-M (heure médiane, durée, jours, fiabilité), prévisions ce soir / demain, anomalies. |
 | `oracle_refresh.py` | **Brique Oracle Apps** : charge `FND_CONCURRENT_REQUESTS` (48 h + demandes en attente) et `FND_CONCURRENT_PROGRAMS` dans SQLite. Lie chaque demande à son job Control-M (la DESCRIPTION des demandes du lanceur DKA_SLAUNCHER contient le nom du job ; les demandes filles héritent du parent). |
 | `logs.py` | Analyse des `l<id>.req` / `o<id>.out` rapatriés du serveur EBS : compteurs, messages FND_FILE, codes d'erreur, diagnostic. Génère `list.txt` pour `copy_ebs_logs.sh`. |
@@ -18,6 +18,7 @@ Oracle EBS R12 pour répondre à : **qu'est-ce qui tourne ce soir, et demain ?**
 | `rapport_matin.py` | Rapport HTML du contrôle du matin (charte des `Rapport_Verification_*.html`), écrit dans `rapports/` (ignoré par git). |
 | `planif_matin.py` | Tâche du Planificateur Windows `ODATWatch_ControleMatin` (`schtasks`) qui lance `controle_matin.py --rapport` chaque matin. |
 | `ui_matin.py` | Onglet Matin : plage date+heure, bandeau, tuiles avec écart vs. veille, détail par section, génération/téléchargement du rapport, programmation, tendance 30 jours. |
+| `sources.py` | Dossiers d'import choisis par l'utilisateur (boîte de dialogue Windows ou chemin collé), mémorisés dans la table `parametres` d'`odat.db`. |
 | `ui_sql.py` | Onglet SQL : explorateur des tables SQLite (structure, volumes) et requêteur libre en lecture seule, exemples fournis, export CSV. |
 | `mock_oracle.py` | **Poste sans Oracle** : fabrique des demandes simulées à partir des exécutions Control-M (lanceur + programme métier, statuts alignés) et des logs présents. `python mock_oracle.py --reset`. Écrasé par les vraies données au premier `oracle_refresh.py`. |
 | `app.py` | Interface Streamlit : Ce soir, Demain, Maintenant, Matin, Oracle, Historique, Profils, Données, SQL. |
@@ -38,7 +39,9 @@ copy config.ini.exemple config.ini      REM puis renseigner user / password / ds
 
 ## Utilisation
 
-1. Déposer les fichiers ODAT reçus dans `../ODAT` (ou les laisser dans Téléchargements).
+1. Déposer les fichiers ODAT reçus dans `../ODAT` (ou les laisser dans Téléchargements), ou ajouter
+   son propre dossier dans la barre latérale (« 📂 Sources d'import » → « Parcourir… »). Fichiers `Report_ctm_*.csv`
+   uniquement : dézipper les archives reçues par mail.
 2. Double-cliquer `run.bat` : import des nouveaux fichiers, ouverture du navigateur.
 3. Barre latérale : « Importer les nouveaux fichiers ODAT », « Demandes » (Oracle 48 h), « Programmes »
    (référentiel, une fois par semaine suffit), « Analyser les logs ».

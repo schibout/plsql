@@ -13,6 +13,7 @@ import streamlit as st
 
 import forecast as fc
 import ingest
+import sources
 from db import connect, DB_PATH
 
 st.set_page_config(page_title="ODAT Watch", page_icon="🕓", layout="wide")
@@ -104,15 +105,40 @@ with st.sidebar:
     application = st.selectbox("Application", apps, index=idx) if apps else None
     recherche = st.text_input("Filtre (job, description, script)", "").strip().lower()
     st.divider()
-    if st.button("📥 Importer les nouveaux fichiers ODAT", use_container_width=True):
+    con = connect()
+    dossiers_perso = sources.dossiers_memorises(con)
+    con.close()
+    with st.expander("📂 Sources d'import", expanded=st.session_state.pop("src_ouvert", not dossiers_perso)):
+        defauts = st.checkbox("Scanner aussi ODAT et Téléchargements", True,
+                              help=" · ".join(str(d) for d in sources.SOURCES_DEFAUT))
+        if st.button("📂 Parcourir…", use_container_width=True, help="Boîte de dialogue Windows de choix de dossier"):
+            choix = sources.choisir_dossier()
+            if choix:
+                con = connect(); sources.ajouter_dossier(con, choix); con.close()
+                st.session_state["src_ouvert"] = True
+                st.rerun()
+        with st.form("src_form", clear_on_submit=True, border=False):
+            saisie = st.text_input("Dossier à ajouter", placeholder="…ou coller un chemin", label_visibility="collapsed")
+            if st.form_submit_button("Ajouter ce dossier", use_container_width=True) and saisie.strip():
+                con = connect(); sources.ajouter_dossier(con, saisie); con.close()
+                st.session_state["src_ouvert"] = True
+                st.rerun()
+        for d in dossiers_perso:
+            a, b = st.columns([5, 1])
+            a.caption(("✅ " if d.is_dir() else "⚠️ absent · ") + str(d))
+            if b.button("✖", key=f"src_del_{d}", help="Retirer de la liste"):
+                con = connect(); sources.retirer_dossier(con, d); con.close()
+                st.session_state["src_ouvert"] = True
+                st.rerun()
+    roots = (sources.SOURCES_DEFAUT if defauts else []) + dossiers_perso
+    if st.button("📥 Importer les nouveaux fichiers ODAT", use_container_width=True, disabled=not roots):
         with st.spinner("Import en cours…"):
-            logs = ingest.run()
+            logs = ingest.run(roots)
         st.cache_data.clear()
         st.session_state["logs_import"] = logs
     if "logs_import" in st.session_state:
         with st.expander("Journal du dernier import"):
             st.code("\n".join(st.session_state["logs_import"]))
-    st.caption("Sources scannées : dossier ODAT du dépôt et Téléchargements.")
     st.divider()
     st.markdown("**Oracle Apps**")
     c_a, c_b = st.columns(2)
