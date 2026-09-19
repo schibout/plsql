@@ -5,7 +5,8 @@ deux lignes de filtres, en-têtes tolérants aux accents, montants à virgule), 
 (CLIENTS / FOURNISSEURS / GL par folio + fichier de base), même statut OK/KO par ligne.
 S'y ajoute ce que le .ps1 ne fait pas : les lignes d'un même folio + fichier de base dont la somme des
 « Écarts Débit » fait 0 peuvent être rapprochées, et ces rapprochements sont mémorisés (empreinte de ligne
-stable d'un export à l'autre).
+stable d'un export à l'autre ; deux lignes strictement identiques dans un même export reçoivent un rang
+d'occurrence, stable d'un export à l'autre).
 """
 from __future__ import annotations
 import csv
@@ -29,7 +30,7 @@ COLONNES = {
     "si_nb": ["si finance nb piece"], "si_debit": ["si finance debit"], "si_credit": ["si finance credit"],
     "ecart_nb": ["ecarts nb piece", "ecart nb piece"], "ecart_debit": ["ecarts debit", "ecart debit"],
     "ecart_credit": ["ecarts credit", "ecart credit"],
-    "commentaire": ["commentaire"], "fichier": ["nom fichier transmis"],
+    "commentaire": ["commentaire", "commentaires"], "fichier": ["nom fichier transmis"],
     "piece_jointe": ["presence d'une piece jointe"], "lettrage": ["lettrage"],
 }
 MONTANTS = ["amont_nb", "amont_debit", "amont_credit", "si_nb", "si_debit", "si_credit",
@@ -55,15 +56,17 @@ def detecter_encodage(octets: bytes) -> str:
     return "cp850" if n_oem > n_ansi else "cp1252"
 
 
+_MONTANT_RE = re.compile(r"-?\d+(\.\d+)?")
+
+
 def montant(txt: str | None) -> tuple[float, bool]:
     """(valeur, illisible). Vide ou '-' → 0 ; illisible → 0 et True, comme Parse-Montant."""
-    v = (txt or "").strip().replace(" ", "").replace(" ", "").replace(",", ".")
+    v = (txt or "").strip().replace(" ", "").replace(" ", "").replace(" ", "").replace(",", ".")
     if v in ("", "-"):
         return 0.0, False
-    try:
-        return float(v), False
-    except ValueError:
+    if not _MONTANT_RE.fullmatch(v):
         return 0.0, True
+    return float(v), False
 
 
 def type_flux(fichier: str | None) -> str:
@@ -87,7 +90,12 @@ def fichier_base(fichier: str | None) -> str:
 
 def date_export_du_nom(nom: str) -> date | None:
     m = re.search(r"ExportCSV-(\d{2})-(\d{2})-(\d{4})", nom)
-    return date(int(m.group(3)), int(m.group(2)), int(m.group(1))) if m else None
+    if not m:
+        return None
+    try:
+        return date(int(m.group(3)), int(m.group(2)), int(m.group(1)))
+    except ValueError:
+        return None
 
 
 def _date_fr(txt: str | None) -> date | None:
@@ -97,9 +105,9 @@ def _date_fr(txt: str | None) -> date | None:
         return None
 
 
-def empreinte(folio, date_txt, fichier, amont_debit, si_debit) -> str:
+def empreinte(folio, date_txt, fichier, amont_debit, si_debit, rang: int = 0) -> str:
     cle = f"{(folio or '').strip()}|{(date_txt or '').strip()}|{(fichier or '').strip()}|{amont_debit:.2f}|{si_debit:.2f}"
-    return hashlib.sha1(cle.encode("utf-8")).hexdigest()
+    return hashlib.sha1(f"{cle}|{rang}".encode("utf-8")).hexdigest()
 
 
 # ------------------------------------------------------------------ lecture
@@ -177,12 +185,21 @@ def lire_export(source: Path | str | bytes, nom: str | None = None, date_import:
         e["fichier_base"] = fichier_base(e["fichier"])
         d = _date_fr(e["date"])
         e["age_j"] = (date_export - d).days if d else None
-        e["empreinte"] = empreinte(e["folio"], e["date"], e["fichier"], e["amont_debit"], e["si_debit"])
+        e["_cle"] = (f"{(e['folio'] or '').strip()}|{(e['date'] or '').strip()}|{(e['fichier'] or '').strip()}|"
+                     f"{e['amont_debit']:.2f}|{e['si_debit']:.2f}")
         e["num"] = num
         enregs.append(e)
     colonnes = ["num", "empreinte", "folio", "date", "type", "fichier", "fichier_base", *MONTANTS,
                 "commentaire", "piece_jointe", "lettrage", "age_j"]
-    df = pd.DataFrame(enregs, columns=colonnes)
+    df = pd.DataFrame(enregs, columns=[*colonnes, "_cle"])
+    if not df.empty:
+        rangs = df.groupby("_cle").cumcount()
+        df["empreinte"] = [
+            empreinte(f, d, fi, ad, sd, r)
+            for f, d, fi, ad, sd, r in zip(df["folio"], df["date"], df["fichier"],
+                                           df["amont_debit"], df["si_debit"], rangs)
+        ]
+    df = df.drop(columns="_cle")[colonnes]
     return Export(nom=nom, date_export=date_export, periode_debut=periode_debut, periode_fin=periode_fin,
                   encodage=enc, file_hash=hashlib.sha1(octets).hexdigest(), lignes=df,
                   nb_montants_illisibles=illisibles)

@@ -34,14 +34,17 @@ def test_lecture_export_reel(chemin):
 def test_regles_unitaires():
     assert fr.normaliser("App Amont Nb piéce ") == "app amont nb piece"
     assert fr.montant("1 234,56") == (1234.56, False)
+    assert fr.montant("1 234,56") == (1234.56, False)
     assert fr.montant("-") == (0.0, False) and fr.montant("") == (0.0, False)
     assert fr.montant("abc") == (0.0, True)
+    assert fr.montant("nan") == (0.0, True)
     assert fr.type_flux("HEF01_SRC_FACTURESCLIENTS_070826-011057_ST_HEF01_6392_001") == "CLIENTS"
     assert fr.type_flux("CEL01_SRC_FACTURESFOURNISSEURS_070826") == "FOURNISSEURS"
     assert fr.type_flux("CDPG_XXX") == "GL" and fr.type_flux("truc") == "AUTRE" and fr.type_flux("") == "AUTRE"
     assert fr.fichier_base("A_B_ST_HEF01_6392_001") == "A_B" and fr.fichier_base("A_B") == "A_B"
     assert fr.date_export_du_nom("ExportCSV-19-08-2026_16h00.csv") == date(2026, 8, 19)
     assert fr.date_export_du_nom("autre.csv") is None
+    assert fr.date_export_du_nom("ExportCSV-32-13-2026.csv") is None
 
 
 def test_empreinte_stable_entre_deux_exports():
@@ -49,9 +52,24 @@ def test_empreinte_stable_entre_deux_exports():
     b = fr.lire_export(RACINE / "sauvegarde" / "ExportCSV-19-08-2026.csv").lignes
     communes = set(a["empreinte"]) & set(b["empreinte"])
     assert len(communes) >= 10          # les exports se recouvrent largement
-    la = a.set_index("empreinte").loc[sorted(communes)]
-    lb = b.set_index("empreinte").loc[sorted(communes)]
+    la = a.drop_duplicates("empreinte").set_index("empreinte").loc[sorted(communes)]
+    lb = b.drop_duplicates("empreinte").set_index("empreinte").loc[sorted(communes)]
     assert (la["folio"] == lb["folio"]).all() and (la["fichier"] == lb["fichier"]).all()
+
+
+def test_empreintes_uniques_dans_un_export():
+    for chemin in EXPORTS:
+        e = fr.lire_export(chemin)
+        assert not e.lignes["empreinte"].duplicated().any(), chemin.name
+
+
+def test_empreinte_rang_stable():
+    a = fr.lire_export(RACINE / "sauvegarde" / "ExportCSV-18-08-2026.csv").lignes
+    b = fr.lire_export(RACINE / "sauvegarde" / "ExportCSV-19-08-2026.csv").lignes
+    # la facture VFF 672,72 du 10/08 est présente deux fois dans les deux exports : mêmes deux empreintes
+    da = a[(a["folio"] == "VFF") & (a["amont_debit"].sub(672.72).abs() < 0.005)]
+    db_ = b[(b["folio"] == "VFF") & (b["amont_debit"].sub(672.72).abs() < 0.005)]
+    assert len(da) == 2 and set(da["empreinte"]) == set(db_["empreinte"])
 
 
 def test_colonnes_decalees_donnent_autre():
