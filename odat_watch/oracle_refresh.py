@@ -434,6 +434,9 @@ def refresh_requests(heures: float | None = None, complet: bool = False) -> str:
             [(j, p, d, prog) for j, (p, d, prog) in mapping.items()])
         if not heures:   # une fenêtre explicite ne fait pas avancer la borne du delta
             _memoriser_borne("demandes", maintenant, con, _signature(cfg))
+    # les programmes nouvellement connus alimentent le référentiel jobs <-> programmes
+    import referentiel
+    referentiel.synchroniser(con)
     con.close()
     conseil = (" — 0 demande : vérifier filtre_description / programmes_suivis dans config.ini [oracle]."
                if not total and (filtre or progs) else "")

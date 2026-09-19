@@ -83,6 +83,18 @@ CREATE TABLE IF NOT EXISTS controle_matin_histo (
 );
 CREATE INDEX IF NOT EXISTS ix_cm_histo_date ON controle_matin_histo(date_ctrl, executed_at);
 
+-- Référentiel jobs Control-M <-> programmes Oracle Applications (auto + saisie manuelle prioritaire)
+CREATE TABLE IF NOT EXISTS referentiel_jobs (
+    job_name         TEXT PRIMARY KEY,
+    application_ctm  TEXT, chaine TEXT, description TEXT, script TEXT,
+    programme_auto   TEXT,                 -- déduit des demandes Oracle (lanceur / filles / script)
+    programme        TEXT,                 -- saisie manuelle (prioritaire) ; vide = auto
+    application_ora  TEXT,                 -- saisie manuelle
+    commentaire      TEXT,
+    vu_le            TEXT,                 -- dernière photo où le job apparaît
+    maj_le           TEXT                  -- dernière modification manuelle
+);
+
 CREATE TABLE IF NOT EXISTS parametres (      -- réglages de l'interface (ex. import.dossiers)
     cle    TEXT PRIMARY KEY,
     valeur TEXT

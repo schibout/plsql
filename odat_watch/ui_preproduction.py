@@ -10,7 +10,7 @@ import streamlit as st
 
 import night_monitoring
 import production_plan
-import forecast
+import referentiel
 import ui_assistant_nuit
 
 COLORS = {"à venir": "#8A94A6", "Wait for Event": "#D9A400", "Executing": "#2F6FED",
@@ -104,7 +104,7 @@ def render(con: sqlite3.Connection, profs, last: pd.DataFrame, now: datetime, kp
     kpi(cards[4], counts.get("Non observé — à vérifier", 0), "à vérifier")
     # Le tableau d'abord (ce que l'exploitant lit), la chronologie en bas.
     st.markdown("##### Traitements attendus")
-    _table(shown, mode, forecast.programmes_oracle(con))
+    _table(shown, mode, referentiel.programmes(con))
     left, right = st.columns([1, 1])
     with left:
         _tree(shown)

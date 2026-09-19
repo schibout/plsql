@@ -78,9 +78,11 @@ def charger(application: str | None, _stamp: float):
 
 @st.cache_data(show_spinner=False)
 def programmes_oracle(_stamp: float) -> dict[str, str]:
+    """Job -> programme Oracle : saisie du référentiel prioritaire, sinon déduit des demandes Oracle."""
+    import referentiel
     con = connect()
     try:
-        return fc.programmes_oracle(con)
+        return referentiel.programmes(con)
     finally:
         con.close()
 
@@ -145,6 +147,14 @@ with st.sidebar:
     if st.button("📥 Importer les nouveaux fichiers ODAT", use_container_width=True, disabled=not roots):
         with st.spinner("Import en cours…"):
             logs = ingest.run(roots)
+        import referentiel
+        con = connect()
+        try:
+            n = referentiel.synchroniser(con)
+            if n:
+                logs.append(f"Référentiel : {n} nouveau(x) job(s) Control-M.")
+        finally:
+            con.close()
         st.cache_data.clear()
         st.session_state["logs_import"] = logs
     if "logs_import" in st.session_state:
@@ -296,8 +306,12 @@ st.markdown(f"""
   <div class="meta">{meta}</div>
 </div>""", unsafe_allow_html=True)
 
-tab_plan, tab_calendriers, tab_soir, tab_demain, tab_now, tab_matin, tab_folio, tab_ora, tab_histo, tab_profils, tab_data, tab_sql = st.tabs(
-    ["🧭 Préparer ma nuit", "📥 Clôtures", "🌙 Ce soir", "📅 Demain", "🔴 Maintenant", "☀️ Matin", "🌹 Folio Rose", "🅾 Oracle", "🔎 Historique", "📈 Profils", "🗂 Données", "⌨ SQL"])
+tab_plan, tab_calendriers, tab_soir, tab_demain, tab_now, tab_matin, tab_folio, tab_ora, tab_ref, tab_histo, tab_profils, tab_data, tab_sql = st.tabs(
+    ["🧭 Préparer ma nuit", "📥 Clôtures", "🌙 Ce soir", "📅 Demain", "🔴 Maintenant", "☀️ Matin", "🌹 Folio Rose", "🅾 Oracle", "📒 Référentiel", "🔎 Historique", "📈 Profils", "🗂 Données", "⌨ SQL"])
+
+with tab_ref:
+    import ui_referentiel
+    ui_referentiel.render()
 
 with tab_plan:
     con = connect()
