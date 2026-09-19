@@ -14,8 +14,10 @@ Oracle EBS R12 pour répondre à : **qu'est-ce qui tourne ce soir, et demain ?**
 | `logs.py` | Analyse des `l<id>.req` / `o<id>.out` rapatriés du serveur EBS : compteurs, messages FND_FILE, codes d'erreur, diagnostic. Génère `list.txt` pour `copy_ebs_logs.sh`. |
 | `diagnostics.json` | Dictionnaire code d'erreur → explication, action, gravité. **À enrichir au fil des incidents.** |
 | `ui_oracle.py` | Onglet Oracle de l'interface. |
+| `ui_sql.py` | Onglet SQL : explorateur des tables SQLite (structure, volumes) et requêteur libre en lecture seule, exemples fournis, export CSV. |
 | `mock_oracle.py` | **Poste sans Oracle** : fabrique des demandes simulées à partir des exécutions Control-M (lanceur + programme métier, statuts alignés) et des logs présents. `python mock_oracle.py --reset`. Écrasé par les vraies données au premier `oracle_refresh.py`. |
-| `app.py` | Interface Streamlit : Ce soir, Demain, Maintenant, Oracle, Historique, Profils, Données. |
+| `app.py` | Interface Streamlit : Ce soir, Demain, Maintenant, Oracle, Historique, Profils, Données, SQL. |
+| `.streamlit/config.toml` | Thème de l'interface. |
 | `run.bat` | Import ODAT + lancement de l'interface. |
 | `config.ini.exemple` | Modèle de configuration (Oracle, filtres, dossiers de logs). Copier en `config.ini` (ignoré par git). |
 
@@ -60,6 +62,8 @@ python logs.py --liste                   REM écrit list.txt des logs manquants 
 
 ## Notes
 
+- L'heure d'une photo est déduite de son contenu (dernier événement du fichier), pas de la date du fichier,
+  qui change à chaque copie ou téléchargement en lot.
 - Les heures prévues sont la médiane des démarrages observés : indicatif à 3 jours, fiable à 3 mois.
   Les jobs hebdo (`_H`) et mensuels (`_M`) ne sont prévus que les jours de semaine où on les a déjà vus.
 - Le compte Oracle peut être nominatif : les vues FND doivent être lisibles sans préfixe (sinon

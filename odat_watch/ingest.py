@@ -10,7 +10,7 @@ import hashlib
 import re
 import shutil
 import sys
-from datetime import datetime
+from datetime import datetime, timedelta
 from pathlib import Path
 
 from db import connect, BASE_DIR
@@ -87,13 +87,29 @@ def archive(path: Path, snap_time: datetime) -> Path:
     return dest
 
 
+def snap_time_from_rows(rows: list[dict], fallback: datetime) -> datetime:
+    """Heure de la photo = dernier événement (fin ou début) présent dans le fichier, à la minute supérieure.
+
+    Plus fiable que la date du fichier, qui change à chaque copie / git pull / téléchargement en lot.
+    """
+    evts = [r["end_time"] or r["start_time"] for r in rows if (r["end_time"] or r["start_time"])]
+    evts = [e for e in evts if len(e) == 19]
+    if not evts:
+        return fallback
+    last = datetime.fromisoformat(max(evts))
+    return (last + timedelta(seconds=59)).replace(second=0)
+
+
 def ingest_file(con, path: Path) -> str:
     h = file_hash(path)
     if con.execute("SELECT 1 FROM snapshots WHERE file_hash=?", (h,)).fetchone():
         return "doublon, ignoré"
-    snap_time = datetime.fromtimestamp(path.stat().st_mtime).replace(microsecond=0)
     rows = read_rows(path)
+    mtime = datetime.fromtimestamp(path.stat().st_mtime).replace(microsecond=0)
+    snap_time = snap_time_from_rows(rows, mtime)
     odate = odate_from_name(path) or min(r["odate"] for r in rows if r["odate"])
+    if con.execute("SELECT 1 FROM snapshots WHERE odate=? AND snap_time=?", (odate, snap_time.strftime("%Y-%m-%d %H:%M:%S"))).fetchone():
+        return f"même photo déjà chargée ({snap_time:%d/%m %H:%M}), ignoré"
     dest = archive(path, snap_time)
     cur = con.execute(
         "INSERT INTO snapshots(odate, snap_time, source_file, file_hash, nb_lignes) VALUES (?,?,?,?,?)",
@@ -104,6 +120,27 @@ def ingest_file(con, path: Path) -> str:
         [(sid, *[r[c] for c in COLS]) for r in rows])
     con.commit()
     return f"chargé ({len(rows)} lignes, photo {snap_time:%d/%m %H:%M}, odate {odate})"
+
+
+def recaler_snapshots(con) -> int:
+    """Recalcule snap_time des photos déjà chargées à partir de leur contenu (une fois, après mise à jour)."""
+    n = 0
+    for sid, snap in con.execute("SELECT id, snap_time FROM snapshots").fetchall():
+        last = con.execute("SELECT MAX(COALESCE(end_time, start_time)) FROM ctm_jobs WHERE snapshot_id=? "
+                           "AND LENGTH(COALESCE(end_time, start_time)) = 19", (sid,)).fetchone()[0]
+        if not last:
+            continue
+        new = (datetime.fromisoformat(last) + timedelta(seconds=59)).replace(second=0).strftime("%Y-%m-%d %H:%M:%S")
+        if new != snap:
+            con.execute("UPDATE snapshots SET snap_time=? WHERE id=?", (new, sid))
+            n += 1
+    # doublons de contenu (même odate + même heure) : on garde le premier
+    dbl = con.execute("""SELECT id FROM snapshots WHERE id NOT IN (SELECT MIN(id) FROM snapshots GROUP BY odate, snap_time)""").fetchall()
+    for (sid,) in dbl:
+        con.execute("DELETE FROM ctm_jobs WHERE snapshot_id=?", (sid,))
+        con.execute("DELETE FROM snapshots WHERE id=?", (sid,))
+    con.commit()
+    return n + len(dbl)
 
 
 def find_files(roots: list[Path]) -> list[Path]:
@@ -120,6 +157,9 @@ def run(roots: list[Path] | None = None) -> list[str]:
     roots = roots or [ODAT_DIR, DOWNLOADS]
     con = connect()
     logs = []
+    n = recaler_snapshots(con)
+    if n:
+        logs.append(f"{n} photo(s) recalée(s) ou dédoublonnée(s) d'après leur contenu.")
     for f in find_files(roots):
         try:
             logs.append(f"{f.name} -> {ingest_file(con, f)}")

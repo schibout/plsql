@@ -29,11 +29,34 @@ ICONES = {"à venir": "⏳", "Wait for Event": "⏸", "Executing": "▶", "Ended
 
 st.markdown("""
 <style>
-.block-container {padding-top: 3rem;}
-.kpi {border:1px solid rgba(128,128,128,.25); border-radius:12px; padding:.7rem 1rem; margin-bottom:.4rem;}
-.kpi .v {font-size:1.7rem; font-weight:700; line-height:1.1;}
-.kpi .l {font-size:.8rem; opacity:.7;}
-.job {font-family: ui-monospace, Consolas, monospace; font-size:.85rem;}
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+html, body, [class*="css"], .stApp {font-family: 'Inter', system-ui, sans-serif;}
+.block-container {padding-top: 2.2rem; padding-bottom: 3rem; max-width: 1500px;}
+section[data-testid="stSidebar"] {background:#FFFFFF; border-right:1px solid #E4E8EF;}
+section[data-testid="stSidebar"] .stButton>button {background:#F2F5FA; border:1px solid #D5DCE6; color:#1B2430; font-weight:500;}
+section[data-testid="stSidebar"] .stButton>button:hover {background:#2F6FED; border-color:#2F6FED; color:#fff;}
+section[data-testid="stSidebar"] hr {border-color:#E4E8EF;}
+.hero {display:flex; align-items:flex-end; justify-content:space-between; gap:1rem; padding:1.1rem 1.4rem; border-radius:16px;
+       background: linear-gradient(120deg,#2F6FED 0%,#5B8DEF 55%,#7FB0FF 100%); color:#fff; margin-bottom:1rem;
+       box-shadow: 0 8px 24px rgba(47,111,237,.25);}
+.hero h1 {margin:0; font-size:1.6rem; font-weight:700; letter-spacing:-.01em; color:#fff;}
+.hero .sub {opacity:.9; font-size:.9rem; margin-top:.2rem;}
+.hero .meta {text-align:right; font-size:.82rem; opacity:.95; line-height:1.5;}
+.hero .meta b {font-weight:600;}
+.kpi {position:relative; overflow:hidden; border:1px solid #E4E8EF; background:#fff; border-radius:14px; padding:.8rem 1rem .7rem 1.1rem;
+      margin-bottom:.4rem; box-shadow:0 1px 2px rgba(16,24,40,.04);}
+.kpi:before {content:""; position:absolute; left:0; top:0; bottom:0; width:5px; background:var(--accent,#2F6FED);}
+.kpi .v {font-size:1.75rem; font-weight:700; line-height:1.1; letter-spacing:-.02em; color:#1B2430;}
+.kpi .l {font-size:.78rem; color:#5B6573; margin-top:.15rem; text-transform:uppercase; letter-spacing:.04em;}
+.kpi.ok {--accent:#1F9D55;} .kpi.warn {--accent:#D9A400;} .kpi.err {--accent:#D23F31;} .kpi.neutral {--accent:#8A94A6;} .kpi.run {--accent:#2F6FED;}
+.stTabs [data-baseweb="tab-list"] {gap:.25rem; border-bottom:1px solid #E4E8EF;}
+.stTabs [data-baseweb="tab"] {height:2.6rem; padding:0 1rem; border-radius:10px 10px 0 0; font-weight:500;}
+.stTabs [aria-selected="true"] {background:#fff; border:1px solid #E4E8EF; border-bottom-color:#fff;}
+div[data-testid="stDataFrame"] {border:1px solid #E4E8EF; border-radius:12px; overflow:hidden;}
+h3, h4 {letter-spacing:-.01em;}
+code, .stCode, textarea {font-family:'JetBrains Mono', Consolas, monospace !important;}
+.stButton>button[kind="primary"] {border-radius:10px; font-weight:600;}
+.stButton>button {border-radius:10px;}
 </style>
 """, unsafe_allow_html=True)
 
@@ -54,8 +77,15 @@ def stamp() -> float:
     return DB_PATH.stat().st_mtime if DB_PATH.exists() else 0.0
 
 
-def kpi(col, valeur, libelle):
-    col.markdown(f'<div class="kpi"><div class="v">{valeur}</div><div class="l">{libelle}</div></div>',
+def kpi(col, valeur, libelle, ton: str = ""):
+    """ton : ok | warn | err | run | neutral (couleur de l'accent). Déduit du libellé si vide."""
+    if not ton:
+        l = libelle.lower()
+        ton = ("err" if any(k in l for k in ("erreur", "not ok", "anomal")) else
+               "ok" if any(k in l for k in ("ok", "terminé")) else
+               "warn" if any(k in l for k in ("wait", "attente", "hebdo", "retard")) else
+               "run" if any(k in l for k in ("executing", "en cours", "attendu", "chaîne", "job")) else "neutral")
+    col.markdown(f'<div class="kpi {ton}"><div class="v">{valeur}</div><div class="l">{libelle}</div></div>',
                  unsafe_allow_html=True)
 
 
@@ -65,7 +95,8 @@ def badge(statut: str) -> str:
 
 # ------------------------------------------------------------------ barre latérale
 with st.sidebar:
-    st.title("🕓 ODAT Watch")
+    st.markdown("## 🕓 ODAT Watch")
+    st.caption("Control-M · Oracle EBS · FIN-FINANCE")
     con = connect()
     apps = [r[0] for r in con.execute("SELECT DISTINCT application FROM ctm_jobs ORDER BY 1")]
     con.close()
@@ -197,20 +228,28 @@ def resume(prev: pd.DataFrame):
 
 
 # ------------------------------------------------------------------ en-tête
-h1, h2 = st.columns([3, 2])
-h1.subheader(f"{application} · {fc.JOURS_LONGS[now.weekday()]} {now:%d/%m/%Y %H:%M}")
+meta = ""
 if snap_time:
     age = now - snap_time
-    h2.caption(f"Dernière photo Control-M : **{snap_time:%d/%m %H:%M}** (odate {last.attrs['odate']}), "
-               f"il y a {int(age.total_seconds() // 3600)} h {int(age.total_seconds() % 3600 // 60)} min · "
-               f"{len(snaps)} photos, {df_runs['odate'].nunique()} jours d'historique")
+    meta = (f"Dernière photo Control-M <b>{snap_time:%d/%m %H:%M}</b> · odate {last.attrs['odate']}<br>"
+            f"il y a {int(age.total_seconds() // 3600)} h {int(age.total_seconds() % 3600 // 60)} min · "
+            f"{len(snaps)} photos · {df_runs['odate'].nunique()} jours d'historique")
+st.markdown(f"""
+<div class="hero">
+  <div><h1>{application}</h1><div class="sub">{fc.JOURS_LONGS[now.weekday()].capitalize()} {now:%d/%m/%Y}, {now:%H:%M} — qu'est-ce qui tourne ce soir, et demain ?</div></div>
+  <div class="meta">{meta}</div>
+</div>""", unsafe_allow_html=True)
 
-tab_soir, tab_demain, tab_now, tab_ora, tab_histo, tab_profils, tab_data = st.tabs(
-    ["🌙 Ce soir", "📅 Demain", "🔴 Maintenant", "🅾 Oracle", "🔎 Historique", "📈 Profils", "🗂 Données"])
+tab_soir, tab_demain, tab_now, tab_ora, tab_histo, tab_profils, tab_data, tab_sql = st.tabs(
+    ["🌙 Ce soir", "📅 Demain", "🔴 Maintenant", "🅾 Oracle", "🔎 Historique", "📈 Profils", "🗂 Données", "⌨ SQL"])
 
 with tab_ora:
     import ui_oracle
     ui_oracle.render(application, recherche, now, kpi, badge)
+
+with tab_sql:
+    import ui_sql
+    ui_sql.render(kpi)
 
 # ------------------------------------------------------------------ ce soir
 with tab_soir:
