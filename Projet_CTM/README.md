@@ -53,6 +53,8 @@ Ces valeurs peuvent être ajustées dans `Config.gs` avec `INITIAL_LOOKBACK_MONT
 - L'identifiant Gmail est mémorisé et inscrit dans la description du fichier Drive.
 - Le libellé Gmail est uniquement visuel, car plusieurs messages peuvent appartenir à la même conversation.
 - Le premier historique couvre quatre mois, puis les exécutions suivantes sont incrémentales.
+- Le script ne supprime aucun e-mail, ne le déplace pas dans la corbeille et ne modifie pas son état lu/non lu.
+- Après un traitement réussi, la seule modification apportée dans Gmail est l'application du libellé `CTM_CSV_Traites` à la conversation.
 
 ## Vérification et dépannage
 

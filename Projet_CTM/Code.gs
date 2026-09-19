@@ -1,6 +1,9 @@
 /**
  * Point d'entrée principal. À lancer manuellement pour la recette, puis avec un
  * déclencheur temporel toutes les 15 minutes.
+ *
+ * Cette automatisation ne supprime aucun e-mail et ne modifie jamais son état
+ * lu/non lu. Le libellé de suivi est la seule modification effectuée dans Gmail.
  */
 function processCtmEmails() {
   const lock = LockService.getScriptLock();

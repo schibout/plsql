@@ -128,6 +128,7 @@ Le nombre de fichiers `.gs` peut être réduit si l'équipe préfère un seul `C
 - **FR-20** — Lors de la première mise en service, Apps Script DOIT rechercher et traiter les messages reçus au cours des quatre mois calendaires précédents.
 - **FR-21** — Après la fin du rattrapage initial, Apps Script DOIT passer automatiquement en mode incrémental et ne créer de fichier que pour les nouveaux messages non encore traités.
 - **FR-22** — Le rattrapage initial DOIT être reprenable sur plusieurs exécutions avec un curseur persistant et une limite configurable de messages par exécution.
+- **FR-23** — Le système NE DOIT NI supprimer, NI déplacer dans la corbeille, NI marquer comme lu un e-mail CTM ; il doit uniquement appliquer le libellé de suivi après un traitement réussi.
 
 ### Exigences non fonctionnelles
 
@@ -343,6 +344,7 @@ Dans ces cas, l'exécution doit s'arrêter avec un log explicite, sans modifier 
 - **AC-15 / FR-20 :** étant donné une première exécution le 19 septembre 2026, quand la recherche Gmail est construite, alors elle commence le 19 mai 2026.
 - **AC-16 / FR-21 :** étant donné un rattrapage terminé et une dernière exécution réussie, quand le script est relancé, alors seuls les messages absents de l'état sont enregistrés malgré la marge de recouvrement.
 - **AC-17 / FR-22, NFR-09 :** étant donné plus de messages historiques que la taille d'un lot, quand plusieurs exécutions se succèdent, alors le curseur reprend après le dernier message réussi et aucun fichier n'est créé deux fois.
+- **AC-18 / FR-23 :** étant donné un message traité avec succès ou en erreur, quand le script se termine, alors le message reste dans Gmail avec son état lu/non lu inchangé ; seul le libellé de suivi peut être modifié.
 
 ## 12. Matrice minimale de tests
 
@@ -370,6 +372,7 @@ Dans ces cas, l'exécution doit s'arrêter avec un log explicite, sans modifier 
 | T-20 | Première exécution le 19/09/2026 | Recherche à partir du 19/05/2026 |
 | T-21 | Exécution après rattrapage | Fenêtre calculée depuis la dernière réussite avec recouvrement |
 | T-22 | Rattrapage supérieur à un lot | Reprise au curseur lors de l'exécution suivante, sans doublon |
+| T-23 | Message Gmail traité | Aucun déplacement, suppression ou changement lu/non lu ; libellé seulement |
 
 ## 13. Risques et mesures de réduction
 
@@ -388,8 +391,8 @@ Dans ces cas, l'exécution doit s'arrêter avec un log explicite, sans modifier 
 Le développement sera considéré comme terminé lorsque :
 
 - toutes les décisions de la section 4 auront été validées ;
-- tous les critères AC-01 à AC-17 seront vérifiés ;
-- les tests T-01 à T-22 auront un résultat documenté ;
+- tous les critères AC-01 à AC-18 seront vérifiés ;
+- les tests T-01 à T-23 auront un résultat documenté ;
 - aucun secret ne sera présent dans le code ou les logs ;
 - le guide d'installation et de reprise sera utilisable par une personne autre que le développeur ;
 - une relance Apps Script, une exécution concurrente et une relance Python ne créeront aucun doublon ;

@@ -44,3 +44,4 @@ Utiliser un dossier Drive de test et des messages anonymisés.
 | IT-17 | Historique supérieur à la taille du lot | Plusieurs exécutions reprennent au curseur sans doublon |
 | IT-18 | Rattrapage terminé | Le mode passe automatiquement à incrémental |
 | IT-19 | Nouveau mail après la dernière réussite | Seul ce nouveau CSV est créé |
+| IT-20 | Message traité avec succès ou en erreur | Le message reste dans Gmail avec son état lu/non lu inchangé ; seul le libellé peut changer |
