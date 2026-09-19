@@ -104,3 +104,41 @@ def test_somme_selection():
     df = _df(("a", "X", "F", 1.5, False), ("b", "X", "F", -1.5, False), ("c", "X", "F", 2.0, False))
     assert fr.somme_selection(df, ["a", "b"]) == pytest.approx(0.0)
     assert fr.somme_selection(df, ["a", "c"]) == pytest.approx(3.5)
+
+
+class _FauxCurseur:
+    def __init__(self):
+        self.appels = []
+    def execute(self, sql, binds):
+        self.appels.append((sql, binds))
+        if binds["folio"] == "BOOM":
+            raise RuntimeError("ORA-00942: table ou vue inexistante")
+        self.derniere = (2, 100.0, 2, 100.0)
+    def fetchone(self):
+        return self.derniere
+
+
+class _FauxCon:
+    def __init__(self): self.cur = _FauxCurseur()
+    def cursor(self): return self.cur
+    def __enter__(self): return self
+    def __exit__(self, *a): return False
+
+
+def test_controler_oracle_simule(tmp_path, monkeypatch):
+    con = db.connect(tmp_path / "t.db")
+    eid = fr.importer(_export(tmp_path), con)
+    con.execute("UPDATE fr_lignes SET folio = 'BOOM' WHERE id = (SELECT MIN(id) FROM fr_lignes WHERE type <> 'AUTRE')")
+    con.commit()
+    faux = _FauxCon()
+    monkeypatch.setattr(fr, "_connexion_oracle", lambda: (faux, "APPS."))
+    resume = fr.controler_oracle(eid, con)
+    couples = con.execute("SELECT COUNT(*), SUM(erreur IS NOT NULL) FROM fr_oracle WHERE export_id=?", (eid,)).fetchone()
+    assert couples[0] == len(faux.cur.appels) and couples[1] == 1
+    assert "1 en erreur" in resume
+    sql, binds = faux.cur.appels[0]
+    assert "APPS." in sql and set(binds) == {"folio", "base"} and ":v_" not in sql
+    l = fr.lignes_export(eid, con)
+    assert set(l.loc[l["type"] != "AUTRE", "statut"]) <= {"OK", "KO", "INDETERMINE"}
+    assert (l.loc[l["folio"] == "BOOM", "statut"] == "INDETERMINE").all()
+    con.close()

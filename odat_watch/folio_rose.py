@@ -329,3 +329,90 @@ def rapprochements(con: sqlite3.Connection) -> pd.DataFrame:
                (SELECT GROUP_CONCAT(DISTINCT l.folio) FROM fr_rapprochement_lignes rl
                 JOIN fr_lignes l ON l.empreinte = rl.empreinte WHERE rl.rapprochement_id = r.id) AS folios
         FROM fr_rapprochements r ORDER BY r.id DESC""", con)
+
+
+# ------------------------------------------------------------------ contrôle Oracle (requêtes du .ps1)
+
+SQL_ORACLE = {
+    "CLIENTS": """
+SELECT NVL(q1.nb_trx, 0), NVL(q1.sum_amt, 0), NVL(q2.nb_int, 0), NVL(q2.sum_int, 0)
+FROM (SELECT COUNT(DISTINCT racta.customer_trx_id) AS nb_trx, SUM(rctl.extended_amount) AS sum_amt
+      FROM   {s}ra_customer_trx_all racta, {s}ra_customer_trx_lines_all rctl
+      WHERE  racta.customer_trx_id = rctl.customer_trx_id
+        AND  rctl.attribute10 LIKE :base || '%'
+        AND  rctl.attribute9 = :folio) q1
+CROSS JOIN
+     (SELECT COUNT(*) AS nb_int,
+             SUM(CASE WHEN typmvt = 'SI_AMT_FACTURE' THEN fmt_amount ELSE -1 * fmt_amount END) AS sum_int
+      FROM   {s}dka_iarpafac_interface
+      WHERE  fic_ident LIKE :base || '%'
+        AND  local_account LIKE '411%'
+        AND  oa_status != 'A'
+        AND  fmt_origin = :folio) q2""",
+    "FOURNISSEURS": """
+SELECT NVL(q_def.nb_trx, 0), NVL(q_def.sum_amt, 0), NVL(q_int.nb_int, 0), NVL(q_int.sum_int, 0)
+FROM (SELECT COUNT(DISTINCT aia.invoice_id) AS nb_trx, SUM(aia.invoice_amount) AS sum_amt
+      FROM   {s}ap_invoices_all aia
+      WHERE  aia.attribute10 LIKE :base || '%'
+        AND  aia.attribute9 = :folio) q_def
+CROSS JOIN
+     (SELECT COUNT(DISTINCT aii.invoice_id) AS nb_int, SUM(aili.amount) AS sum_int
+      FROM   {s}ap_invoices_interface aii
+      JOIN   {s}ap_invoice_lines_interface aili ON aii.invoice_id = aili.invoice_id
+      WHERE  aii.attribute10 LIKE :base || '%'
+        AND  aii.attribute9 = :folio
+        AND  NOT EXISTS (SELECT 1 FROM {s}ap_interface_rejections air
+                         WHERE air.parent_id = aii.invoice_id
+                           AND air.parent_table IN ('AP_INVOICES_INTERFACE', 'AP_INVOICE_LINES_INTERFACE'))) q_int""",
+    "GL": """
+SELECT NVL(q_def.nb_trx, 0), NVL(q_def.sum_amt, 0), NVL(q_int.nb_int, 0), NVL(q_int.sum_int, 0)
+FROM (SELECT COUNT(DISTINCT gjh.je_header_id) AS nb_trx, SUM(gjl.entered_dr) AS sum_amt
+      FROM   {s}gl_je_headers gjh
+      JOIN   {s}gl_je_lines gjl ON gjh.je_header_id = gjl.je_header_id
+      WHERE  gjl.attribute10 LIKE :base || '%'
+        AND  gjl.attribute9 = :folio) q_def
+CROSS JOIN
+     (SELECT COUNT(*) AS nb_int, SUM(entered_dr) AS sum_int
+      FROM   {s}gl_interface
+      WHERE  attribute10 LIKE :base || '%'
+        AND  attribute9 = :folio) q_int""",
+}
+
+
+def _connexion_oracle():
+    """(connexion, préfixe de schéma). Isolé pour être remplacé dans les tests."""
+    from oracle_refresh import _connect_oracle, _schema, load_config
+    cfg = load_config()
+    return _connect_oracle(cfg), _schema(cfg)
+
+
+def controler_oracle(export_id: int, con: sqlite3.Connection) -> str:
+    """Interroge Oracle pour chaque couple (folio, fichier de base, type) de l'export et mémorise le résultat."""
+    couples = con.execute(
+        "SELECT DISTINCT folio, fichier_base, type FROM fr_lignes WHERE export_id = ? AND type <> 'AUTRE' "
+        "AND folio <> '' AND fichier_base <> '' ORDER BY 1, 2", (export_id,)).fetchall()
+    if not couples:
+        return "Aucune ligne contrôlable (types CLIENTS / FOURNISSEURS / GL)."
+    ocon, s = _connexion_oracle()
+    now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    resultats, erreurs = [], 0
+    with ocon:
+        cur = ocon.cursor()
+        for folio, base, typ in couples:
+            try:
+                cur.execute(SQL_ORACLE[typ].format(s=s), {"folio": folio.strip(), "base": base.strip()})
+                nb_trx, sum_amt, nb_int, sum_int = cur.fetchone() or (None, None, None, None)
+                resultats.append((export_id, folio, base, typ, float(nb_trx or 0), float(sum_amt or 0),
+                                  float(nb_int or 0), float(sum_int or 0), None, now))
+            except Exception as e:  # noqa: BLE001 — le message Oracle est l'information utile
+                erreurs += 1
+                resultats.append((export_id, folio, base, typ, None, None, None, None, str(e).strip(), now))
+    con.executemany(
+        "INSERT INTO fr_oracle(export_id, folio, fichier_base, type, nb_oracle, montant_oracle, nb_interface, "
+        "montant_interface, erreur, controle_le) VALUES (?,?,?,?,?,?,?,?,?,?) "
+        "ON CONFLICT(export_id, folio, fichier_base, type) DO UPDATE SET nb_oracle=excluded.nb_oracle, "
+        "montant_oracle=excluded.montant_oracle, nb_interface=excluded.nb_interface, "
+        "montant_interface=excluded.montant_interface, erreur=excluded.erreur, controle_le=excluded.controle_le",
+        resultats)
+    con.commit()
+    return f"{len(couples)} couple(s) folio/fichier interrogé(s), {erreurs} en erreur."
