@@ -145,9 +145,24 @@ function diagnoseCtmEmails() {
   const result = {
     configurationValid: false,
     folderAccessible: false,
+    effectiveUser: '',
     broadMessages: 0,
     exactMessages: 0,
+    discoveryMessages: 0,
+    discoveredSenders: [],
+    discoveredSubjects: [],
   };
+
+  try {
+    result.effectiveUser = Session.getEffectiveUser().getEmail() || '';
+    ctmLog_('INFO', 'Diagnostic : compte Google exécutant le script.', {
+      effectiveUser: result.effectiveUser || '(adresse non exposée par Google)',
+    });
+  } catch (error) {
+    ctmLog_('WARN', 'Diagnostic : compte exécutant non déterminé.', {
+      error: ctmErrorMessage_(error),
+    });
+  }
 
   try {
     ctmValidateConfig_();
@@ -210,6 +225,63 @@ function diagnoseCtmEmails() {
   });
 
   ctmLog_('INFO', 'Diagnostic : recherche Gmail exacte.', {query: exactQuery});
+
+  // Recherche de découverte : aucun filtre d'expéditeur, afin d'identifier
+  // l'adresse réellement portée par les mails contenant Report_ctm.
+  const discoveryQueries = [
+    'in:anywhere has:attachment newer_than:' +
+      CTM_CONFIG.INITIAL_LOOKBACK_MONTHS + 'm filename:Report_ctm',
+    'in:anywhere has:attachment newer_than:' +
+      CTM_CONFIG.INITIAL_LOOKBACK_MONTHS + 'm subject:"Extract CSV"',
+  ];
+  const seenMessageIds = {};
+  const discoveredSenders = {};
+  const discoveredSubjects = {};
+
+  discoveryQueries.forEach(function(discoveryQuery) {
+    ctmLog_('INFO', 'Diagnostic : recherche de découverte.', {query: discoveryQuery});
+    GmailApp.search(discoveryQuery, 0, 100).forEach(function(thread) {
+      thread.getMessages().forEach(function(message) {
+        const messageId = message.getId();
+        if (seenMessageIds[messageId]) return;
+        if (message.getDate().getTime() < cutoff.getTime()) return;
+
+        const attachments = message.getAttachments({
+          includeInlineImages: false,
+          includeAttachments: true,
+        });
+        const attachmentNames = attachments.map(function(attachment) {
+          return attachment.getName();
+        });
+        const hasReportCtm = attachmentNames.some(function(fileName) {
+          return /^Report_ctm_.*\.(?:zip|csv)$/i.test(String(fileName || ''));
+        });
+        const hasExpectedWords = /extract\s+csv/i.test(String(message.getSubject() || ''));
+        if (!hasReportCtm && !hasExpectedWords) return;
+
+        seenMessageIds[messageId] = true;
+        result.discoveryMessages++;
+        const actualSender = ctmExtractEmailAddress_(message.getFrom());
+        const actualSubject = String(message.getSubject() || '').trim();
+        discoveredSenders[actualSender] = true;
+        discoveredSubjects[actualSubject] = true;
+
+        if (logged < 20) {
+          ctmLog_('INFO', 'Diagnostic : message découvert sans filtre expéditeur.', {
+            date: message.getDate().toISOString(),
+            sender: actualSender,
+            subject: actualSubject,
+            inTrash: message.isInTrash(),
+            attachments: attachmentNames,
+          });
+          logged++;
+        }
+      });
+    });
+  });
+
+  result.discoveredSenders = Object.keys(discoveredSenders).sort();
+  result.discoveredSubjects = Object.keys(discoveredSubjects).sort();
   ctmLog_('INFO', 'Diagnostic CTM terminé.', result);
   return result;
 }

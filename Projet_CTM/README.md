@@ -59,7 +59,7 @@ Ces valeurs peuvent être ajustées dans `Config.gs` avec `INITIAL_LOOKBACK_MONT
 ## Vérification et dépannage
 
 - Les tests d'intégration sont décrits dans `tests/TEST_CASES.md`.
-- Si l'exécution se termine sans fichier, exécuter `diagnoseCtmEmails()` puis consulter le journal d'exécution. Cette fonction est strictement en lecture seule.
+- Si l'exécution se termine sans fichier, exécuter `diagnoseCtmEmails()` puis consulter le journal d'exécution. Cette fonction est strictement en lecture seule. Elle recherche aussi les pièces jointes `Report_ctm...zip` sans imposer l'expéditeur et affiche le compte Google exécutant le script, l'expéditeur réel et l'objet réel.
 - Si le script indique que le dossier est inaccessible, vérifier l'ID et les droits Drive.
 - Si aucun message n'est trouvé, vérifier l'adresse réelle de l'expéditeur et l'objet exact dans Gmail.
 - Si un ZIP contient zéro ou plusieurs CSV, il est rejeté sans création de fichier.
