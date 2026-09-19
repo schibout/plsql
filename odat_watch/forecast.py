@@ -222,7 +222,12 @@ def programmes_oracle(con) -> dict[str, str]:
     Le job lance un lanceur (DKA_SLAUNCHER, mémorisé dans job_mapping), qui soumet le traitement métier :
     c'est ce dernier qu'on affiche. Un job dont on ne connaît que le lanceur affiche le lanceur.
     """
-    lanceurs = {r[0]: r[1] for r in con.execute("SELECT job_name, program_short FROM job_mapping")}
+    lanceurs, scripts = {}, {}
+    for job, short, prog in con.execute("SELECT job_name, program_short, programme FROM job_mapping"):
+        lanceurs[job] = short
+        if prog:
+            scripts[job] = prog
+    noms = {r[0]: r[1] or "" for r in con.execute("SELECT program_short, program_name FROM ora_programs")}
     rows = con.execute("""
         SELECT job_name, program_short, COALESCE(program_name, ''), COUNT(*) AS n
         FROM ora_requests WHERE job_name IS NOT NULL AND program_short IS NOT NULL
@@ -232,8 +237,12 @@ def programmes_oracle(con) -> dict[str, str]:
         par_job.setdefault(job, []).append((short, name))
     out = {}
     for job, progs in par_job.items():
-        metier = [(s, n) for s, n in progs if s != lanceurs.get(job)] or progs
-        out[job] = " ; ".join(f"{s} · {n}" if n else s for s, n in metier[:4])
+        metier = [(s, n) for s, n in progs if s != lanceurs.get(job)]
+        if metier:
+            out[job] = " ; ".join(f"{s} · {n}" if n else s for s, n in metier[:4])
+    # Sans demande fille connue : le programme déduit du script du lanceur, sinon le lanceur lui-même
+    for job, prog in scripts.items():
+        out.setdefault(job, f"{prog} · {noms[prog]}" if noms.get(prog) else prog)
     for job, short in lanceurs.items():
         out.setdefault(job, short)
     return out

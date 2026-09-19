@@ -18,3 +18,22 @@ def test_programmes_oracle_prend_le_traitement_lance_par_le_lanceur(tmp_path):
     assert prog["FINEXT_J11GEN_06_EXP01_Q"] == "DKA_SLAUNCHER · Lanceur générique"
     assert "INCONNU" not in prog
     con.close()
+
+
+def test_programme_depuis_description():
+    import oracle_refresh as orf
+    assert orf.programme_from_description("FINFIN_J18TRT_04_IMP01_Q : DKA_IPAPROJETHRM_JOB.sh") == "DKA_IPAPROJETHRM"
+    assert orf.programme_from_description("FINEXT_J11GEN_06_EXP01_Q : DKA_APEXPCDE_JOB.sh (DKA : Lanceur (SHELL))") == "DKA_APEXPCDE"
+    assert orf.programme_from_description("FINFIN_X : ebsstop.ksh") == "EBSSTOP"
+    assert orf.programme_from_description("Import des projets") is None
+
+
+def test_programmes_oracle_utilise_le_script_du_lanceur_a_defaut_de_filles(tmp_path):
+    con = db.connect(tmp_path / "t.db")
+    con.execute("INSERT INTO job_mapping(job_name, program_short, commentaire, programme) VALUES "
+                "('FINFIN_J18TRT_04_IMP01_Q', 'DKA_SLAUNCHER', 'FINFIN_J18TRT_04_IMP01_Q : DKA_IPAPROJETHRM_JOB.sh', 'DKA_IPAPROJETHRM')")
+    con.execute("INSERT INTO ora_programs(program_short, program_name) VALUES ('DKA_IPAPROJETHRM', 'Import projets HRM')")
+    con.execute("INSERT INTO ora_requests(request_id, program_short, program_name, job_name) VALUES (1, 'DKA_SLAUNCHER', 'Lanceur', 'FINFIN_J18TRT_04_IMP01_Q')")
+    con.commit()
+    assert fc.programmes_oracle(con)["FINFIN_J18TRT_04_IMP01_Q"] == "DKA_IPAPROJETHRM · Import projets HRM"
+    con.close()

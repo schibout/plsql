@@ -62,8 +62,9 @@ CREATE TABLE IF NOT EXISTS ora_request_logs (
 
 CREATE TABLE IF NOT EXISTS job_mapping (
     job_name      TEXT PRIMARY KEY,
-    program_short TEXT,
-    commentaire   TEXT
+    program_short TEXT,                 -- programme de la demande portant le nom du job (le lanceur)
+    commentaire   TEXT,
+    programme     TEXT                  -- programme concurrent déduit du script lancé (DKA_X_JOB.sh -> DKA_X)
 );
 
 CREATE TABLE IF NOT EXISTS controle_matin_histo (
@@ -184,6 +185,10 @@ def connect(path: Path | str = DB_PATH) -> sqlite3.Connection:
 
 def _migrate(con: sqlite3.Connection) -> None:
     """Tables Oracle recréées si leur structure a changé (elles se rechargent en un clic)."""
+    cols = [r[1] for r in con.execute("PRAGMA table_info(job_mapping)")]
+    if cols and "programme" not in cols:
+        con.execute("ALTER TABLE job_mapping ADD COLUMN programme TEXT")
+        con.commit()
     for table, colonne in (("ora_requests", "job_name"),):
         cols = [r[1] for r in con.execute(f"PRAGMA table_info({table})")]
         if cols and colonne not in cols:

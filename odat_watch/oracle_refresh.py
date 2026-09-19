@@ -258,6 +258,16 @@ def job_from_description(desc: str | None) -> str | None:
     return m.group(1) if m else None
 
 
+# « FINFIN_J18TRT_04_IMP01_Q : DKA_IPAPROJETHRM_JOB.sh » : le script lancé par concsub nomme le programme
+# concurrent (DKA_IPAPROJETHRM), cf. ChaineControleM/Analyse_Chaine_ControlM_Concsub.md.
+SCRIPT_RE = re.compile(r":\s*([A-Za-z0-9_\-]+?)(?:_JOB)?\.(?:sh|ksh)(?![A-Za-z0-9])", re.I)
+
+
+def programme_from_description(desc: str | None) -> str | None:
+    m = SCRIPT_RE.search(desc or "")
+    return m.group(1).upper() if m else None
+
+
 def test_connexion() -> str:
     cfg = load_config()
     with _connect_oracle(cfg) as ocon:
@@ -384,7 +394,7 @@ def refresh_requests(heures: float | None = None, complet: bool = False) -> str:
         # description porte le nom du job Control-M) précède toujours ses demandes filles, qui héritent
         # de son job. Les lots précédents sont retrouvés via `connus` (mémoire) ou la base.
         connus = {r[0]: r[1] for r in con.execute("SELECT request_id, job_name FROM ora_requests WHERE job_name IS NOT NULL")}
-        mapping: dict[str, tuple[str, str]] = {}
+        mapping: dict[str, tuple[str, str, str | None]] = {}
         total = pending = running = err = 0
         while True:
             rows = cur.fetchmany(LOT)
@@ -408,7 +418,7 @@ def refresh_requests(heures: float | None = None, complet: bool = False) -> str:
                     connus[rid] = jobs[rid]
                 j = job_from_description(desc)
                 if j:
-                    mapping[j] = (pshort, (desc or "").strip())
+                    mapping[j] = (pshort, (desc or "").strip(), programme_from_description(desc))
                 total += 1
                 pending += ph == "P"
                 running += ph == "R"
@@ -418,9 +428,10 @@ def refresh_requests(heures: float | None = None, complet: bool = False) -> str:
 
     with con:
         con.executemany(
-            "INSERT INTO job_mapping(job_name, program_short, commentaire) VALUES (?,?,?) "
-            "ON CONFLICT(job_name) DO UPDATE SET program_short=excluded.program_short, commentaire=excluded.commentaire",
-            [(j, p, d) for j, (p, d) in mapping.items()])
+            "INSERT INTO job_mapping(job_name, program_short, commentaire, programme) VALUES (?,?,?,?) "
+            "ON CONFLICT(job_name) DO UPDATE SET program_short=excluded.program_short, commentaire=excluded.commentaire, "
+            "programme=COALESCE(excluded.programme, job_mapping.programme)",
+            [(j, p, d, prog) for j, (p, d, prog) in mapping.items()])
         if not heures:   # une fenêtre explicite ne fait pas avancer la borne du delta
             _memoriser_borne("demandes", maintenant, con, _signature(cfg))
     con.close()
