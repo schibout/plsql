@@ -162,3 +162,16 @@ def test_statut_global_ignore_les_volumes_sans_integration():
     assert cm.statut_global(c, _sections(), volumes_controles=False) == "OK"
     assert cm.statut_global(compteurs_ok(nb_erreurs=1), _sections(), volumes_controles=False) == "ALERTE"
     assert cm.statut_global(compteurs_ok(nb_warnings=1), _sections(), volumes_controles=False) == "WARNING"
+
+
+# ------------------------------------------------------------------ programmes génériques (lanceur)
+
+def test_requetes_nuit_excluent_les_programmes_generiques():
+    for cle, _t, sql, _a in cm.CATALOGUE:
+        if cle.startswith("nuit_"):
+            assert ":generiques" in sql, cle
+    for cles, sql in cm.SYNTHESE:
+        if "nb_traitements" in cles:
+            assert ":generiques" in sql
+    assert cm.regex_generiques(["DKA_SLAUNCHER", "XX_LANCEUR"]) == "^(DKA_SLAUNCHER|XX_LANCEUR)$"
+    assert cm.regex_generiques([]) == "^$"

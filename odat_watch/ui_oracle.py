@@ -65,6 +65,10 @@ def render(application, recherche, now: datetime, kpi, badge):
         return
 
     req = _filtre(req, recherche, application)
+    # Les programmes génériques (lanceur DKA_SLAUNCHER…) ne portent aucune information métier : masqués.
+    if not req.empty and "program_short" in req.columns:
+        import forecast
+        req = req[~req["program_short"].isin(forecast.GENERIQUES)]
     for c in ("request_date", "requested_start", "actual_start", "actual_completion", "refreshed_at"):
         if c in req.columns:
             req[c] = pd.to_datetime(req[c], errors="coerce")

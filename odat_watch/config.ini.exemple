@@ -25,6 +25,8 @@ heures_historique = 48
 filtre_description =
 ; Programmes a suivre meme s'ils ne passent pas par Control-M (liste separee par des virgules, vide = aucun)
 programmes_suivis = RBAFBIMP,DKA_SRBCTRLRB
+; Programmes generiques (lanceurs) : jamais comptes ni affiches dans les controles de nuit / du matin
+programmes_generiques = DKA_SLAUNCHER
 
 [logs]
 ; Dossiers locaux ou sont deposes les l<request_id>.req et o<request_id>.out rapatries du serveur EBS

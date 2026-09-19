@@ -173,10 +173,16 @@ DEB = "CAST(:debut AS DATE)"
 FIN = "CAST(:fin AS DATE)"
 JOUR_FR = "'DAY', 'NLS_DATE_LANGUAGE=FRENCH'"
 
+# Programmes génériques (lanceur DKA_SLAUNCHER…) : ils ne font que soumettre le traitement métier, on ne les
+# compte ni ne les affiche. Bind :generiques = expression régulière construite par regex_generiques().
+HORS_GENERIQUES = ("AND    fcr.concurrent_program_id NOT IN (SELECT p.concurrent_program_id FROM {{s}}fnd_concurrent_programs p "
+                   "WHERE REGEXP_LIKE(p.concurrent_program_name, :generiques))")
+
 NUIT = f"""
 WHERE  fcr.actual_start_date >= {DEB}
 AND    fcr.actual_start_date <  {FIN}
-AND    fcr.requested_by IN (SELECT user_id FROM {{s}}fnd_user WHERE user_name LIKE 'EXP%')"""
+AND    fcr.requested_by IN (SELECT user_id FROM {{s}}fnd_user WHERE user_name LIKE 'EXP%')
+{HORS_GENERIQUES}"""
 
 TYPE_FLUX = """CASE
     WHEN dih.file_name LIKE '%SUP%'                                  THEN 'FOURNISSEURS'
@@ -363,6 +369,7 @@ JOIN   {{s}}fnd_concurrent_programs_vl fcp ON fcr.concurrent_program_id = fcp.co
 WHERE  fcr.actual_start_date >= {DEB}
 AND    fcr.requested_by IN (SELECT user_id FROM {{s}}fnd_user WHERE user_name LIKE 'EXP%')
 AND    fcr.status_code = 'R'
+{HORS_GENERIQUES}
 ORDER BY fcr.actual_start_date""", True),
 
     ("rb", "Rapprochement bancaire (RB)", f"""
@@ -413,6 +420,18 @@ AND    NOT EXISTS (SELECT 1 FROM {{s}}fnd_documents fd
 ]
 
 
+def regex_generiques(noms) -> str:
+    """Expression REGEXP_LIKE pour la liste des programmes génériques ('^$' n'exclut rien)."""
+    noms = [n.strip() for n in noms if n and n.strip()]
+    return "^(" + "|".join(re.escape(n) for n in noms) + ")$" if noms else "^$"
+
+
+def programmes_generiques(cfg) -> list[str]:
+    ora = cfg["oracle"] if cfg.has_section("oracle") else {}
+    txt = ora.get("programmes_generiques", "DKA_SLAUNCHER") or ""
+    return [n.strip() for n in txt.split(",") if n.strip()]
+
+
 def _binds(sql: str, params: dict) -> dict:
     """oracledb refuse les binds absents de la requête : on ne passe que ceux qu'elle utilise."""
     presents = set(re.findall(r"(?<!:):(\w+)", sql))
@@ -448,7 +467,8 @@ def executer(debut: datetime, fin: datetime, nb_jours_histo: int = 3, forcer_vol
         raise ValueError("La fin de la plage doit être postérieure à son début.")
     cfg = load_config()
     s = _schema(cfg)
-    params = {"debut": debut, "fin": fin, "histo": int(nb_jours_histo)}
+    params = {"debut": debut, "fin": fin, "histo": int(nb_jours_histo),
+              "generiques": regex_generiques(programmes_generiques(cfg))}
     t0 = time.perf_counter()
     executed_at = datetime.now()
     compteurs: dict = {k: None for k in COMPTEURS}

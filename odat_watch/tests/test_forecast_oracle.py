@@ -15,7 +15,7 @@ def test_programmes_oracle_prend_le_traitement_lance_par_le_lanceur(tmp_path):
     con.commit()
     prog = fc.programmes_oracle(con)
     assert prog["FINFIN_J18TRT_04_IMP01_Q"] == "DKA_IPAPROJETHRM · Import projets HRM ; APXIIMPT · Import des factures fournisseurs"
-    assert prog["FINEXT_J11GEN_06_EXP01_Q"] == "DKA_SLAUNCHER · Lanceur générique"
+    assert "FINEXT_J11GEN_06_EXP01_Q" not in prog          # lanceur seul : pas de programme métier connu
     assert "INCONNU" not in prog
     con.close()
 
@@ -36,4 +36,13 @@ def test_programmes_oracle_utilise_le_script_du_lanceur_a_defaut_de_filles(tmp_p
     con.execute("INSERT INTO ora_requests(request_id, program_short, program_name, job_name) VALUES (1, 'DKA_SLAUNCHER', 'Lanceur', 'FINFIN_J18TRT_04_IMP01_Q')")
     con.commit()
     assert fc.programmes_oracle(con)["FINFIN_J18TRT_04_IMP01_Q"] == "DKA_IPAPROJETHRM · Import projets HRM"
+    con.close()
+
+
+def test_programmes_oracle_n_affiche_jamais_le_lanceur(tmp_path):
+    con = db.connect(tmp_path / "t.db")
+    con.execute("INSERT INTO job_mapping(job_name, program_short, commentaire) VALUES ('FINFIN_J11TEC_04_DEB01_Q', 'DKA_SLAUNCHER', 'x')")
+    con.execute("INSERT INTO ora_requests(request_id, program_short, program_name, job_name) VALUES (1, 'DKA_SLAUNCHER', 'Lanceur', 'FINFIN_J11TEC_04_DEB01_Q')")
+    con.commit()
+    assert "FINFIN_J11TEC_04_DEB01_Q" not in fc.programmes_oracle(con)
     con.close()

@@ -216,7 +216,10 @@ def historique_job(df_runs: pd.DataFrame, job: str) -> pd.DataFrame:
         ["odate", "start_time", "end_time", "duree_min", "status", "rerun", "order_id"]]
 
 
-def programmes_oracle(con) -> dict[str, str]:
+GENERIQUES = {"DKA_SLAUNCHER"}   # lanceurs : jamais affichés comme « programme » d'un job
+
+
+def programmes_oracle(con, generiques: set[str] = GENERIQUES) -> dict[str, str]:
     """Job Control-M -> programmes Oracle Applications qu'il déclenche, par fréquence décroissante.
 
     Le job lance un lanceur (DKA_SLAUNCHER, mémorisé dans job_mapping), qui soumet le traitement métier :
@@ -237,12 +240,11 @@ def programmes_oracle(con) -> dict[str, str]:
         par_job.setdefault(job, []).append((short, name))
     out = {}
     for job, progs in par_job.items():
-        metier = [(s, n) for s, n in progs if s != lanceurs.get(job)]
+        metier = [(s, n) for s, n in progs if s != lanceurs.get(job) and s not in generiques]
         if metier:
             out[job] = " ; ".join(f"{s} · {n}" if n else s for s, n in metier[:4])
-    # Sans demande fille connue : le programme déduit du script du lanceur, sinon le lanceur lui-même
+    # Sans demande fille connue : le programme déduit du script du lanceur ; jamais le lanceur lui-même
     for job, prog in scripts.items():
-        out.setdefault(job, f"{prog} · {noms[prog]}" if noms.get(prog) else prog)
-    for job, short in lanceurs.items():
-        out.setdefault(job, short)
+        if prog not in generiques:
+            out.setdefault(job, f"{prog} · {noms[prog]}" if noms.get(prog) else prog)
     return out
