@@ -30,6 +30,18 @@ Exécuter les fonctions dans cet ordre depuis l'éditeur Apps Script :
 4. Contrôler les fichiers dans le dossier Drive et les journaux d'exécution.
 5. `createCtmTimeDrivenTrigger()` : crée le déclencheur toutes les 15 minutes.
 
+## Première exécution et mode incrémental
+
+- Tant que le rattrapage initial n'est pas terminé, la recherche remonte quatre mois en arrière.
+- Le rattrapage traite au maximum 40 nouveaux messages par exécution afin de rester sous la limite de temps Apps Script.
+- Un curseur est enregistré après chaque message réussi. L'exécution suivante reprend à cet endroit sans recréer les fichiers déjà présents.
+- Le déclencheur de 15 minutes peut être activé dès le début : il terminera automatiquement les lots restants.
+- Quand les quatre mois ont été parcourus, le script passe automatiquement en mode incrémental.
+- En mode incrémental, une marge de deux jours est rescannée par sécurité, mais seuls les messages dont l'identifiant n'a pas déjà été traité produisent un nouveau fichier.
+
+Ces valeurs peuvent être ajustées dans `Config.gs` avec `INITIAL_LOOKBACK_MONTHS`,
+`MAX_MESSAGES_PER_RUN` et `INCREMENTAL_OVERLAP_DAYS`.
+
 ## Règles appliquées
 
 - Expéditeur exact : `indic_ctm@dalkia.fr`.
@@ -40,6 +52,7 @@ Exécuter les fonctions dans cet ordre depuis l'éditeur Apps Script :
 - Une collision ajoute `_02`, `_03`, etc. avant `.csv`.
 - L'identifiant Gmail est mémorisé et inscrit dans la description du fichier Drive.
 - Le libellé Gmail est uniquement visuel, car plusieurs messages peuvent appartenir à la même conversation.
+- Le premier historique couvre quatre mois, puis les exécutions suivantes sont incrémentales.
 
 ## Vérification et dépannage
 

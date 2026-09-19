@@ -10,8 +10,11 @@ function processCtmEmails() {
   }
 
   const report = {
+    mode: '',
     threads: 0,
     matched: 0,
+    attempted: 0,
+    deferred: 0,
     created: 0,
     recovered: 0,
     alreadyProcessed: 0,
@@ -25,32 +28,90 @@ function processCtmEmails() {
     const label = ctmGetOrCreateLabel_(CTM_CONFIG.LABEL_NAME);
     const state = ctmLoadState_();
     const now = new Date();
-    const cutoff = ctmSearchCutoff_(CTM_CONFIG, now);
-    const query = ctmBuildSearchQuery_(CTM_CONFIG, now);
+    const searchWindow = ctmBuildSearchWindow_(CTM_CONFIG, state, now);
+    const query = ctmBuildSearchQuery_(CTM_CONFIG, state, now);
+    report.mode = searchWindow.mode;
 
     ctmLog_('INFO', 'Début du traitement CTM.', {
+      mode: searchWindow.mode,
       destination: folder.getName(),
       query: query,
     });
 
-    const threads = ctmSearchThreads_(query);
+    const searchResult = ctmSearchThreads_(query);
+    const threads = searchResult.threads;
     report.threads = threads.length;
-    ctmLog_('INFO', 'Conversations Gmail trouvées.', {count: threads.length});
-
-    threads.forEach(function(thread) {
-      try {
-        ctmProcessThread_(thread, folder, label, state, cutoff, report);
-      } catch (error) {
-        report.errors++;
-        ctmLog_('ERROR', 'Conversation non traitée ; poursuite avec la suivante.', {
-          threadId: thread.getId(),
-          error: ctmErrorMessage_(error),
-        });
-      }
+    ctmLog_('INFO', 'Conversations Gmail trouvées.', {
+      count: threads.length,
+      truncated: searchResult.hasMore,
     });
 
-    state.lastRunIso = new Date().toISOString();
+    const collection = ctmCollectCandidateMessages_(
+      threads,
+      searchWindow.messageCutoff,
+      report
+    );
+    report.matched = collection.messages.length;
+
+    let outcome = {deferred: 0, blocked: collection.failed};
+    if (searchWindow.mode === 'backfill' && searchResult.hasMore) {
+      outcome.blocked = true;
+      report.errors++;
+      ctmLog_('ERROR', 'Rattrapage suspendu : le nombre de conversations dépasse le plafond.', {
+        maxThreads: CTM_CONFIG.MAX_THREADS_PER_RUN,
+      });
+    } else if (!collection.failed || searchWindow.mode === 'incremental') {
+      const processingOutcome = ctmProcessCandidateMessages_(
+        collection.messages,
+        folder,
+        state,
+        searchWindow.mode,
+        report
+      );
+      outcome = {
+        deferred: processingOutcome.deferred,
+        blocked: processingOutcome.blocked || collection.failed,
+      };
+    }
+
+    report.deferred = outcome.deferred;
+
+    let backfillCompletedThisRun = false;
+    if (searchWindow.mode === 'backfill') {
+      const backfillFinished = !outcome.blocked &&
+        outcome.deferred === 0 &&
+        !searchResult.hasMore &&
+        collection.messages.every(function(item) {
+          return ctmIsProcessed_(state, item.messageId);
+        });
+
+      if (backfillFinished) {
+        state.backfillComplete = true;
+        state.backfillCursorMs = null;
+        state.lastSuccessfulRunIso = now.toISOString();
+        backfillCompletedThisRun = true;
+        ctmLog_('INFO', 'Rattrapage des quatre derniers mois terminé ; passage en incrémental.');
+      } else {
+        ctmLog_('INFO', 'Rattrapage à poursuivre lors de la prochaine exécution.', {
+          cursor: state.backfillCursorMs
+            ? new Date(state.backfillCursorMs).toISOString()
+            : null,
+          deferred: outcome.deferred,
+        });
+      }
+    } else if (!outcome.blocked && outcome.deferred === 0 && !searchResult.hasMore) {
+      state.lastSuccessfulRunIso = now.toISOString();
+    }
+
     ctmSaveState_(state);
+    ctmUpdateThreadLabels_(
+      threads,
+      label,
+      state,
+      searchWindow.messageCutoff,
+      report,
+      backfillCompletedThisRun
+    );
 
     const todayCount = ctmCountProcessedOnDay_(state, now);
     ctmLog_('INFO', 'Contrôle du volume quotidien.', {
@@ -70,32 +131,73 @@ function processCtmEmails() {
 }
 
 /** @private */
-function ctmProcessThread_(thread, folder, label, state, cutoff, report) {
+function ctmCollectCandidateMessages_(threads, cutoff, report) {
   const messages = [];
-  let allComplete = true;
+  let failed = false;
 
-  thread.getMessages().forEach(function(message) {
+  threads.forEach(function(thread) {
     try {
-      if (ctmMessageMatches_(message, cutoff)) messages.push(message);
+      thread.getMessages().forEach(function(message) {
+        try {
+          if (!ctmMessageMatches_(message, cutoff)) return;
+          messages.push({
+            message: message,
+            thread: thread,
+            messageId: message.getId(),
+            receivedMs: message.getDate().getTime(),
+          });
+        } catch (error) {
+          failed = true;
+          report.errors++;
+          ctmLog_('ERROR', 'Impossible de contrôler les métadonnées d’un message.', {
+            error: ctmErrorMessage_(error),
+          });
+        }
+      });
     } catch (error) {
-      allComplete = false;
+      failed = true;
       report.errors++;
-      ctmLog_('ERROR', 'Impossible de contrôler les métadonnées d’un message.', {
+      ctmLog_('ERROR', 'Impossible de lire une conversation Gmail.', {
+        threadId: thread.getId(),
         error: ctmErrorMessage_(error),
       });
     }
   });
 
-  if (messages.length === 0 && allComplete) return;
+  messages.sort(function(left, right) {
+    if (left.receivedMs !== right.receivedMs) return left.receivedMs - right.receivedMs;
+    return left.messageId.localeCompare(right.messageId);
+  });
 
-  messages.forEach(function(message) {
-    const messageId = message.getId();
-    report.matched++;
+  return {messages: messages, failed: failed};
+}
 
-    if (ctmIsProcessed_(state, messageId)) {
+/** @private */
+function ctmProcessCandidateMessages_(items, folder, state, mode, report) {
+  let attempted = 0;
+  let blocked = false;
+  let deferred = 0;
+
+  for (let index = 0; index < items.length; index++) {
+    const item = items[index];
+
+    if (ctmIsProcessed_(state, item.messageId)) {
       report.alreadyProcessed++;
-      return;
+      if (mode === 'backfill') ctmAdvanceBackfillCursor_(state, item.receivedMs);
+      continue;
     }
+
+    if (attempted >= CTM_CONFIG.MAX_MESSAGES_PER_RUN) {
+      deferred = items.slice(index).filter(function(candidate) {
+        return !ctmIsProcessed_(state, candidate.messageId);
+      }).length;
+      break;
+    }
+
+    attempted++;
+    report.attempted++;
+
+    const message = item.message;
 
     try {
       const csvCandidate = ctmExtractSingleCsv_(message);
@@ -104,40 +206,76 @@ function ctmProcessThread_(thread, folder, label, state, cutoff, report) {
       else report.recovered++;
 
       ctmMarkProcessed_(state, message);
+      if (mode === 'backfill') ctmAdvanceBackfillCursor_(state, item.receivedMs);
       ctmSaveState_(state);
     } catch (error) {
-      allComplete = false;
+      blocked = true;
       report.errors++;
       ctmLog_('ERROR', 'Message non traité ; il sera retenté.', {
-        messageId: messageId,
-        receivedAt: message.getDate().toISOString(),
+        messageId: item.messageId,
+        receivedAt: new Date(item.receivedMs).toISOString(),
+        error: ctmErrorMessage_(error),
+      });
+
+      // En rattrapage, ne jamais avancer au-delà d'un message en erreur : le
+      // curseur doit garantir qu'aucun historique n'est oublié.
+      if (mode === 'backfill') {
+        deferred = items.slice(index).filter(function(candidate) {
+          return !ctmIsProcessed_(state, candidate.messageId);
+        }).length;
+        break;
+      }
+    }
+  }
+
+  return {deferred: deferred, blocked: blocked};
+}
+
+/** @private */
+function ctmAdvanceBackfillCursor_(state, receivedMs) {
+  if (state.backfillCursorMs === null || receivedMs > Number(state.backfillCursorMs)) {
+    state.backfillCursorMs = receivedMs;
+  }
+}
+
+/** @private */
+function ctmUpdateThreadLabels_(threads, label, state, cutoff, report, forceComplete) {
+  threads.forEach(function(thread) {
+    let matchingMessages = [];
+    let readable = true;
+
+    try {
+      matchingMessages = thread.getMessages().filter(function(message) {
+        return ctmMessageMatches_(message, cutoff);
+      });
+    } catch (error) {
+      readable = false;
+      ctmLog_('WARN', 'Impossible de vérifier une conversation avant labellisation.', {
+        threadId: thread.getId(),
+        error: ctmErrorMessage_(error),
+      });
+    }
+
+    if (matchingMessages.length === 0 && readable) return;
+    const allComplete = forceComplete === true ||
+      (readable && matchingMessages.every(function(message) {
+        return ctmIsProcessed_(state, message.getId());
+      }));
+
+    try {
+      if (allComplete) {
+        label.addToThread(thread);
+        report.labelsApplied++;
+      } else {
+        label.removeFromThread(thread);
+      }
+    } catch (error) {
+      ctmLog_('WARN', 'Impossible de mettre à jour le libellé de la conversation.', {
+        threadId: thread.getId(),
         error: ctmErrorMessage_(error),
       });
     }
   });
-
-  // Vérification finale de tous les messages CTM visibles dans la fenêtre.
-  if (messages.some(function(message) {
-    return !ctmIsProcessed_(state, message.getId());
-  })) {
-    allComplete = false;
-  }
-
-  try {
-    if (allComplete) {
-      label.addToThread(thread);
-      report.labelsApplied++;
-    } else {
-      // Un nouveau message en erreur peut appartenir à une conversation déjà
-      // labellisée ; retirer le label évite un faux indicateur de réussite.
-      label.removeFromThread(thread);
-    }
-  } catch (error) {
-    ctmLog_('WARN', 'Impossible de mettre à jour le libellé de la conversation.', {
-      threadId: thread.getId(),
-      error: ctmErrorMessage_(error),
-    });
-  }
 }
 
 /**
@@ -188,5 +326,8 @@ function ctmValidateConfig_() {
   }
   if (!CTM_CONFIG.LABEL_NAME) {
     throw new Error('CTM_CONFIG.LABEL_NAME est vide.');
+  }
+  if (CTM_CONFIG.INITIAL_LOOKBACK_MONTHS < 1 || CTM_CONFIG.MAX_MESSAGES_PER_RUN < 1) {
+    throw new Error('La configuration du rattrapage CTM est invalide.');
   }
 }

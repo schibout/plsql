@@ -15,7 +15,9 @@ Exécuter `runCtmUnitTests()` dans l'éditeur Google Apps Script.
 | UT-07 | Détection ZIP | Les extensions ZIP sont insensibles à la casse |
 | UT-08 | Collision | Le suffixe `_02` est placé avant `.csv` |
 | UT-09 | Expéditeur | L'adresse est extraite d'un champ avec nom affiché |
-| UT-10 | Recherche Gmail | La fenêtre de recherche est présente et aucun `-label:` n'est utilisé |
+| UT-10 | Première recherche Gmail | La fenêtre commence quatre mois en arrière et aucun `-label:` n'est utilisé |
+| UT-11 | Recherche incrémentale | La dernière réussite moins deux jours de recouvrement est utilisée |
+| UT-12 | Reprise du rattrapage | La recherche repart un jour avant le curseur, puis filtre précisément sur celui-ci |
 
 ## Recette d'intégration
 
@@ -38,3 +40,7 @@ Utiliser un dossier Drive de test et des messages anonymisés.
 | IT-13 | Nom déjà présent pour un autre message | Suffixe `_02`, puis `_03`, sans écrasement |
 | IT-14 | Fichier créé mais état perdu | Le marqueur Drive permet de reconnaître le fichier à la relance |
 | IT-15 | Libellé absent | `setupFolderAndLabels()` le crée |
+| IT-16 | Première mise en service | Les quatre derniers mois sont parcourus |
+| IT-17 | Historique supérieur à la taille du lot | Plusieurs exécutions reprennent au curseur sans doublon |
+| IT-18 | Rattrapage terminé | Le mode passe automatiquement à incrémental |
+| IT-19 | Nouveau mail après la dernière réussite | Seul ce nouveau CSV est créé |

@@ -22,10 +22,16 @@ const CTM_CONFIG = Object.freeze({
   /** Fuseau utilisé pour le nom des fichiers. */
   TIME_ZONE: 'Europe/Paris',
 
-  /** Fenêtre rescannée à chaque exécution ; l'ID du message évite les doublons. */
-  SEARCH_WINDOW_DAYS: 30,
+  /** Première mise en service : rattrapage des quatre derniers mois. */
+  INITIAL_LOOKBACK_MONTHS: 4,
+
+  /** Mode courant : petite marge rescannée, sans recréer les fichiers connus. */
+  INCREMENTAL_OVERLAP_DAYS: 2,
+
+  /** Le rattrapage progresse par lots pour rester sous la durée maximale Apps Script. */
+  MAX_MESSAGES_PER_RUN: 40,
   SEARCH_BATCH_SIZE: 100,
-  MAX_THREADS_PER_RUN: 500,
+  MAX_THREADS_PER_RUN: 1000,
 
   /** État d'idempotence conservé dans les propriétés du script. */
   STATE_PROPERTY_KEY: 'CTM_IMPORT_STATE_V1',

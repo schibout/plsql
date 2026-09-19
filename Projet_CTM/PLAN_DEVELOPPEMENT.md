@@ -125,6 +125,9 @@ Le nombre de fichiers `.gs` peut être réduit si l'équipe préfère un seul `C
 - **FR-17** — Le composant Python DOIT pouvoir lister puis télécharger les nouveaux CSV du dossier Drive configuré.
 - **FR-18** — Le composant Python DOIT mémoriser l'identifiant Drive des fichiers déjà récupérés afin de ne pas les télécharger une seconde fois.
 - **FR-19** — L'authentification Python à Google Drive DOIT utiliser OAuth ou un compte de service autorisé, sans secret inclus dans Git.
+- **FR-20** — Lors de la première mise en service, Apps Script DOIT rechercher et traiter les messages reçus au cours des quatre mois calendaires précédents.
+- **FR-21** — Après la fin du rattrapage initial, Apps Script DOIT passer automatiquement en mode incrémental et ne créer de fichier que pour les nouveaux messages non encore traités.
+- **FR-22** — Le rattrapage initial DOIT être reprenable sur plusieurs exécutions avec un curseur persistant et une limite configurable de messages par exécution.
 
 ### Exigences non fonctionnelles
 
@@ -136,6 +139,7 @@ Le nombre de fichiers `.gs` peut être réduit si l'équipe préfère un seul `C
 - **NFR-06 — Compatibilité :** le projet doit utiliser le runtime V8 de Google Apps Script.
 - **NFR-07 — Confidentialité :** les logs ne doivent contenir ni contenu CSV, ni adresse autre que l'expéditeur configuré, ni secret.
 - **NFR-08 — Complétude métier :** le bilan doit permettre de constater le nombre de rapports reçus et traités dans la journée, notamment par rapport aux cinq rapports attendus.
+- **NFR-09 — Durée d'exécution :** le rattrapage doit progresser par lots afin de rester sous la limite d'exécution Apps Script et reprendre sans doublon après une interruption.
 
 ### Nommage attendu pour les cinq réceptions quotidiennes
 
@@ -267,6 +271,9 @@ Dans ces cas, l'exécution doit s'arrêter avec un log explicite, sans modifier 
 ### Phase 4 — Traitement Gmail et pièces jointes
 
 - Construire la requête Gmail à partir de `SEARCH_QUERY`.
+- Utiliser une fenêtre initiale de quatre mois tant que le rattrapage n'est pas terminé.
+- Persister un curseur après chaque message réussi et limiter la taille d'un lot.
+- Après le rattrapage, construire la fenêtre à partir de la dernière exécution réussie avec une courte marge de recouvrement.
 - Paginer les résultats.
 - Parcourir chaque message et ses pièces jointes.
 - Traiter les CSV directs.
@@ -333,6 +340,9 @@ Dans ces cas, l'exécution doit s'arrêter avec un log explicite, sans modifier 
 - **AC-12 / FR-16, NFR-08 :** étant donné cinq messages valides reçus dans la journée avec le même nom de CSV, quand le script s'exécute, alors cinq fichiers distincts sont présents dans Drive et le bilan indique cinq succès.
 - **AC-13 / FR-17, FR-18 :** étant donné cinq nouveaux CSV dans Drive, quand Python s'exécute deux fois, alors les cinq fichiers sont téléchargés à la première exécution et aucun ne l'est à la seconde.
 - **AC-14 / FR-19 :** étant donné le composant Python, quand son dépôt est inspecté, alors aucun jeton, mot de passe ou fichier d'identification réel n'est suivi par Git.
+- **AC-15 / FR-20 :** étant donné une première exécution le 19 septembre 2026, quand la recherche Gmail est construite, alors elle commence le 19 mai 2026.
+- **AC-16 / FR-21 :** étant donné un rattrapage terminé et une dernière exécution réussie, quand le script est relancé, alors seuls les messages absents de l'état sont enregistrés malgré la marge de recouvrement.
+- **AC-17 / FR-22, NFR-09 :** étant donné plus de messages historiques que la taille d'un lot, quand plusieurs exécutions se succèdent, alors le curseur reprend après le dernier message réussi et aucun fichier n'est créé deux fois.
 
 ## 12. Matrice minimale de tests
 
@@ -357,6 +367,9 @@ Dans ces cas, l'exécution doit s'arrêter avec un log explicite, sans modifier 
 | T-17 | Déclencheur exécuté après réception | Le nom utilise l'heure du mail et non celle de l'exécution |
 | T-18 | Deux exécutions du téléchargeur Python | Aucun second téléchargement |
 | T-19 | Identifiants Google absents ou invalides côté Python | Échec contrôlé sans modifier le registre local |
+| T-20 | Première exécution le 19/09/2026 | Recherche à partir du 19/05/2026 |
+| T-21 | Exécution après rattrapage | Fenêtre calculée depuis la dernière réussite avec recouvrement |
+| T-22 | Rattrapage supérieur à un lot | Reprise au curseur lors de l'exécution suivante, sans doublon |
 
 ## 13. Risques et mesures de réduction
 
@@ -375,8 +388,8 @@ Dans ces cas, l'exécution doit s'arrêter avec un log explicite, sans modifier 
 Le développement sera considéré comme terminé lorsque :
 
 - toutes les décisions de la section 4 auront été validées ;
-- tous les critères AC-01 à AC-14 seront vérifiés ;
-- les tests T-01 à T-19 auront un résultat documenté ;
+- tous les critères AC-01 à AC-17 seront vérifiés ;
+- les tests T-01 à T-22 auront un résultat documenté ;
 - aucun secret ne sera présent dans le code ou les logs ;
 - le guide d'installation et de reprise sera utilisable par une personne autre que le développeur ;
 - une relance Apps Script, une exécution concurrente et une relance Python ne créeront aucun doublon ;

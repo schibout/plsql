@@ -76,14 +76,72 @@ function runCtmUnitTests() {
       },
     },
     {
-      name: 'construit une requête sans exclusion par libellé',
+      name: 'construit la première recherche quatre mois en arrière',
       run: function() {
-        const query = ctmBuildSearchQuery_({
+        const config = {
           SEARCH_QUERY: 'from:indic_ctm@dalkia.fr subject:"DALKIA / Extract CSV du Suivi Quotidien CTM"',
-          SEARCH_WINDOW_DAYS: 30,
-        }, new Date('2026-09-19T12:00:00.000Z'));
-        ctmAssertContains_(query, 'after:2026/08/20');
+          TIME_ZONE: 'Europe/Paris',
+          INITIAL_LOOKBACK_MONTHS: 4,
+          INCREMENTAL_OVERLAP_DAYS: 2,
+        };
+        const state = {
+          backfillComplete: false,
+          backfillCursorMs: null,
+          lastSuccessfulRunIso: null,
+        };
+        const query = ctmBuildSearchQuery_(
+          config,
+          state,
+          new Date('2026-09-19T12:00:00.000Z')
+        );
+        ctmAssertContains_(query, 'after:2026/05/19');
         ctmAssertFalse_(query.indexOf('-label:') !== -1);
+      },
+    },
+    {
+      name: 'construit la recherche incrémentale avec recouvrement',
+      run: function() {
+        const config = {
+          SEARCH_QUERY: 'from:indic_ctm@dalkia.fr',
+          TIME_ZONE: 'Europe/Paris',
+          INITIAL_LOOKBACK_MONTHS: 4,
+          INCREMENTAL_OVERLAP_DAYS: 2,
+        };
+        const state = {
+          backfillComplete: true,
+          backfillCursorMs: null,
+          lastSuccessfulRunIso: '2026-09-18T12:00:00.000Z',
+        };
+        const query = ctmBuildSearchQuery_(
+          config,
+          state,
+          new Date('2026-09-19T12:00:00.000Z')
+        );
+        ctmAssertContains_(query, 'after:2026/09/16');
+      },
+    },
+    {
+      name: 'reprend le rattrapage au curseur persistant',
+      run: function() {
+        const window = ctmBuildSearchWindow_({
+          TIME_ZONE: 'Europe/Paris',
+          INITIAL_LOOKBACK_MONTHS: 4,
+          INCREMENTAL_OVERLAP_DAYS: 2,
+        }, {
+          backfillComplete: false,
+          backfillCursorMs: new Date('2026-06-10T08:00:00.000Z').getTime(),
+          lastSuccessfulRunIso: null,
+        }, new Date('2026-09-19T12:00:00.000Z'));
+
+        ctmAssertEquals_('backfill', window.mode);
+        ctmAssertEquals_(
+          new Date('2026-06-10T08:00:00.000Z').getTime(),
+          window.messageCutoff.getTime()
+        );
+        ctmAssertEquals_(
+          new Date('2026-06-09T08:00:00.000Z').getTime(),
+          window.queryStart.getTime()
+        );
       },
     },
   ];

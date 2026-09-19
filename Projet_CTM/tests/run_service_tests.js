@@ -94,7 +94,14 @@ context.PropertiesService = {
   }),
 };
 
-['Config.gs', 'Utils.gs', 'AttachmentService.gs', 'DriveService.gs', 'GmailService.gs'].forEach(fileName => {
+[
+  'Config.gs',
+  'Utils.gs',
+  'AttachmentService.gs',
+  'DriveService.gs',
+  'GmailService.gs',
+  'Code.gs',
+].forEach(fileName => {
   vm.runInContext(
     fs.readFileSync(path.join(projectRoot, fileName), 'utf8'),
     context,
@@ -154,7 +161,12 @@ vm.runInContext(`
   assert(collisionSave.fileName === '20260919_074025_Report_ctm_02.csv', 'suffixe collision incorrect');
   assert(folder.files.length === 2, 'la collision doit créer un second fichier distinct');
 
-  const oversizedState = {lastRunIso: new Date().toISOString(), processed: {}};
+  const oversizedState = {
+    lastSuccessfulRunIso: new Date().toISOString(),
+    backfillComplete: false,
+    backfillCursorMs: null,
+    processed: {},
+  };
   for (let index = 0; index < 300; index++) {
     oversizedState.processed['message-id-' + String(index).padStart(4, '0') + '-xxxxxxxx'] = Date.now();
   }
@@ -163,5 +175,62 @@ vm.runInContext(`
   assert(serializedState.length <= 8000, 'l’état doit rester sous la marge de 8 000 caractères');
   assert(Object.keys(JSON.parse(serializedState).processed).length <= 200, 'le plafond d’ID doit être respecté');
 
-  console.log('SERVICE TESTS: 9/9 réussis.');
+  ctmExtractSingleCsv_ = function(messageToProcess) {
+    if (messageToProcess.fail) throw new Error('échec simulé');
+    return {blob: new MockBlob('rapport.csv', 'text/csv'), originalName: 'rapport.csv'};
+  };
+  ctmSaveCsv_ = function() {
+    return {created: true, fileName: 'rapport.csv', file: null};
+  };
+
+  function makeItem(index, fail) {
+    const receivedMs = new Date('2026-05-19T00:00:00.000Z').getTime() + index * 60000;
+    const batchMessage = new MockMessage('batch-' + index, new Date(receivedMs), []);
+    batchMessage.fail = fail === true;
+    return {
+      message: batchMessage,
+      messageId: batchMessage.getId(),
+      receivedMs: receivedMs,
+    };
+  }
+
+  const batchItems = [];
+  for (let index = 0; index < 45; index++) batchItems.push(makeItem(index, false));
+  const batchState = {
+    lastSuccessfulRunIso: null,
+    backfillComplete: false,
+    backfillCursorMs: null,
+    processed: {},
+  };
+  const batchReport = {attempted: 0, created: 0, recovered: 0, alreadyProcessed: 0, errors: 0};
+  const firstBatch = ctmProcessCandidateMessages_(
+    batchItems, {}, batchState, 'backfill', batchReport
+  );
+  assert(firstBatch.deferred === 5, 'cinq messages doivent être différés après le premier lot');
+  assert(Object.keys(batchState.processed).length === 40, 'le premier lot doit traiter quarante messages');
+  assert(batchState.backfillCursorMs === batchItems[39].receivedMs, 'le curseur doit suivre le lot');
+
+  const secondBatch = ctmProcessCandidateMessages_(
+    batchItems, {}, batchState, 'backfill', batchReport
+  );
+  assert(secondBatch.deferred === 0, 'le second lot doit terminer le rattrapage');
+  assert(Object.keys(batchState.processed).length === 45, 'les quarante-cinq messages doivent être traités');
+  assert(batchState.backfillCursorMs === batchItems[44].receivedMs, 'le curseur final est incorrect');
+
+  const failingItems = [makeItem(100, false), makeItem(101, true), makeItem(102, false)];
+  const failingState = {
+    lastSuccessfulRunIso: null,
+    backfillComplete: false,
+    backfillCursorMs: null,
+    processed: {},
+  };
+  const failingReport = {attempted: 0, created: 0, recovered: 0, alreadyProcessed: 0, errors: 0};
+  const failingBackfill = ctmProcessCandidateMessages_(
+    failingItems, {}, failingState, 'backfill', failingReport
+  );
+  assert(failingBackfill.blocked === true, 'une erreur doit bloquer le curseur de rattrapage');
+  assert(failingBackfill.deferred === 2, 'le message en erreur et le suivant doivent être différés');
+  assert(!failingState.processed['batch-102'], 'le rattrapage ne doit pas dépasser le message en erreur');
+
+  console.log('SERVICE TESTS: 17/17 réussis.');
 `, context, {filename: 'service-tests'});

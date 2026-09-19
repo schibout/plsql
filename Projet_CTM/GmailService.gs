@@ -23,7 +23,9 @@ function ctmSearchThreads_(query) {
     start += batch.length;
   }
 
-  return threads;
+  const hasMore = threads.length === CTM_CONFIG.MAX_THREADS_PER_RUN &&
+    GmailApp.search(query, threads.length, 1).length > 0;
+  return {threads: threads, hasMore: hasMore};
 }
 
 /** @private */
@@ -39,7 +41,12 @@ function ctmMessageMatches_(message, cutoff) {
 
 /** @private */
 function ctmLoadState_() {
-  const emptyState = {lastRunIso: null, processed: {}};
+  const emptyState = {
+    lastSuccessfulRunIso: null,
+    backfillComplete: false,
+    backfillCursorMs: null,
+    processed: {},
+  };
   try {
     const raw = PropertiesService.getScriptProperties()
       .getProperty(CTM_CONFIG.STATE_PROPERTY_KEY);
@@ -47,7 +54,11 @@ function ctmLoadState_() {
 
     const parsed = JSON.parse(raw);
     return {
-      lastRunIso: parsed.lastRunIso || null,
+      lastSuccessfulRunIso: parsed.lastSuccessfulRunIso || parsed.lastRunIso || null,
+      backfillComplete: parsed.backfillComplete === true,
+      backfillCursorMs: parsed.backfillCursorMs === null || parsed.backfillCursorMs === undefined
+        ? null
+        : Number(parsed.backfillCursorMs),
       processed: parsed.processed || {},
     };
   } catch (error) {
@@ -63,7 +74,9 @@ function ctmLoadState_() {
  * @private
  */
 function ctmSaveState_(state) {
-  const cutoffMs = Date.now() - CTM_CONFIG.STATE_RETENTION_DAYS * 24 * 60 * 60 * 1000;
+  const cutoffMs = state.backfillComplete
+    ? Date.now() - CTM_CONFIG.STATE_RETENTION_DAYS * 24 * 60 * 60 * 1000
+    : 0;
   const retainedIds = Object.keys(state.processed)
     .filter(function(messageId) {
       return Number(state.processed[messageId]) >= cutoffMs;
@@ -74,14 +87,14 @@ function ctmSaveState_(state) {
     .slice(0, CTM_CONFIG.MAX_PROCESSED_IDS);
 
   let kept = ctmSelectProcessedIds_(state.processed, retainedIds);
-  let serialized = JSON.stringify({lastRunIso: state.lastRunIso, processed: kept});
+  let serialized = ctmSerializeState_(state, kept);
 
   // Une valeur ScriptProperties est limitée à 9 Ko. On conserve une marge et
   // retire d'abord les identifiants les plus anciens si la taille est dépassée.
   while (serialized.length > CTM_CONFIG.MAX_STATE_JSON_CHARS && retainedIds.length > 0) {
     retainedIds.pop();
     kept = ctmSelectProcessedIds_(state.processed, retainedIds);
-    serialized = JSON.stringify({lastRunIso: state.lastRunIso, processed: kept});
+    serialized = ctmSerializeState_(state, kept);
   }
 
   state.processed = kept;
@@ -97,6 +110,16 @@ function ctmSaveState_(state) {
     });
     return false;
   }
+}
+
+/** @private */
+function ctmSerializeState_(state, processed) {
+  return JSON.stringify({
+    lastSuccessfulRunIso: state.lastSuccessfulRunIso || null,
+    backfillComplete: state.backfillComplete === true,
+    backfillCursorMs: state.backfillCursorMs === null ? null : Number(state.backfillCursorMs),
+    processed: processed,
+  });
 }
 
 /** @private */

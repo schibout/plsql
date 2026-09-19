@@ -79,15 +79,67 @@ function ctmExtractEmailAddress_(fromValue) {
 }
 
 /** @private */
-function ctmSearchCutoff_(config, now) {
+function ctmSubtractCalendarMonths_(date, months) {
+  const result = new Date(date.getTime());
+  const originalDay = result.getDate();
+  result.setDate(1);
+  result.setMonth(result.getMonth() - months);
+  const lastDayOfTargetMonth = new Date(
+    result.getFullYear(),
+    result.getMonth() + 1,
+    0
+  ).getDate();
+  result.setDate(Math.min(originalDay, lastDayOfTargetMonth));
+  return result;
+}
+
+/**
+ * Calcule la fenêtre exacte à inspecter et la date, volontairement plus large,
+ * envoyée à la recherche Gmail dont l'opérateur after: travaille au jour près.
+ * @private
+ */
+function ctmBuildSearchWindow_(config, state, now) {
   const dayMs = 24 * 60 * 60 * 1000;
-  return new Date(now.getTime() - config.SEARCH_WINDOW_DAYS * dayMs);
+
+  if (!state.backfillComplete) {
+    if (state.backfillCursorMs !== null && !isNaN(Number(state.backfillCursorMs))) {
+      const cursor = new Date(Number(state.backfillCursorMs));
+      return {
+        mode: 'backfill',
+        messageCutoff: cursor,
+        queryStart: new Date(cursor.getTime() - dayMs),
+      };
+    }
+
+    const initialStart = ctmSubtractCalendarMonths_(now, config.INITIAL_LOOKBACK_MONTHS);
+    initialStart.setHours(0, 0, 0, 0);
+    return {
+      mode: 'backfill',
+      messageCutoff: initialStart,
+      queryStart: initialStart,
+    };
+  }
+
+  const lastSuccessfulRun = new Date(state.lastSuccessfulRunIso || now.toISOString());
+  const safeLastRun = isNaN(lastSuccessfulRun.getTime()) ? now : lastSuccessfulRun;
+  const incrementalStart = new Date(
+    safeLastRun.getTime() - config.INCREMENTAL_OVERLAP_DAYS * dayMs
+  );
+  return {
+    mode: 'incremental',
+    messageCutoff: incrementalStart,
+    queryStart: incrementalStart,
+  };
 }
 
 /** @private */
-function ctmBuildSearchQuery_(config, now) {
-  const cutoff = ctmSearchCutoff_(config, now);
-  const afterDate = Utilities.formatDate(cutoff, config.TIME_ZONE || 'Europe/Paris', 'yyyy/MM/dd');
+function ctmBuildSearchQuery_(config, state, now) {
+  const window = ctmBuildSearchWindow_(config, state, now);
+  const afterDate = Utilities.formatDate(
+    window.queryStart,
+    config.TIME_ZONE || 'Europe/Paris',
+    'yyyy/MM/dd'
+  );
 
   // Ne pas ajouter -label:. Gmail peut regrouper les cinq envois quotidiens
   // dans une seule conversation ; un nouveau message pourrait alors être masqué.
