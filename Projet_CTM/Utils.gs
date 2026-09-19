@@ -91,6 +91,14 @@ function ctmSubjectMatches_(subject, expectedPrefix) {
 }
 
 /** @private */
+function ctmShouldBlockEmptyInitialBackfill_(state, mode, threadCount, matchedCount) {
+  return mode === 'backfill' &&
+    (state.backfillCursorMs === null || state.backfillCursorMs === undefined) &&
+    threadCount > 0 &&
+    matchedCount === 0;
+}
+
+/** @private */
 function ctmSubtractCalendarMonths_(date, months) {
   const result = new Date(date.getTime());
   const originalDay = result.getDate();

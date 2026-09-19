@@ -6,6 +6,9 @@
  * utilise les autorisations du compte Google qui l'exécute.
  */
 const CTM_CONFIG = Object.freeze({
+  /** Version visible dans les journaux pour verifier le code reellement deploye. */
+  CODE_VERSION: 'CTM-2026-09-19.3',
+
   /** ID du dossier Google Drive de destination. */
  FOLDER_ID: '1__xp-bdnQJlb_W7aJ9OerGsxgyVbI0qq',
 
@@ -35,8 +38,8 @@ const CTM_CONFIG = Object.freeze({
   MAX_THREADS_PER_RUN: 1000,
 
   /** État d'idempotence conservé dans les propriétés du script. */
-  // V2 force un nouveau rattrapage apres la correction du filtre d'objet.
-  STATE_PROPERTY_KEY: 'CTM_IMPORT_STATE_V2',
+  // V3 force un nouveau rattrapage apres la correction du filtre principal.
+  STATE_PROPERTY_KEY: 'CTM_IMPORT_STATE_V3',
   STATE_RETENTION_DAYS: 37,
   MAX_PROCESSED_IDS: 200,
   MAX_STATE_JSON_CHARS: 8000,

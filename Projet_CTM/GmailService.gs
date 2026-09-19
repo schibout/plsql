@@ -29,14 +29,27 @@ function ctmSearchThreads_(query) {
 }
 
 /** @private */
-function ctmMessageMatches_(message, cutoff) {
-  if (message.isInTrash() || message.isDraft()) return false;
-  if (message.getDate().getTime() < cutoff.getTime()) return false;
+function ctmGetMessageMatchResult_(message, cutoff) {
+  if (message.isInTrash()) return {matches: false, reason: 'trash'};
+  if (message.isDraft()) return {matches: false, reason: 'draft'};
+  if (message.getDate().getTime() < cutoff.getTime()) {
+    return {matches: false, reason: 'beforeCutoff'};
+  }
 
   const sender = ctmExtractEmailAddress_(message.getFrom());
   const subject = String(message.getSubject() || '').trim();
-  return sender === CTM_CONFIG.EXPECTED_SENDER.toLowerCase() &&
-    ctmSubjectMatches_(subject, CTM_CONFIG.EXPECTED_SUBJECT_PREFIX);
+  if (sender !== CTM_CONFIG.EXPECTED_SENDER.toLowerCase()) {
+    return {matches: false, reason: 'sender'};
+  }
+  if (!ctmSubjectMatches_(subject, CTM_CONFIG.EXPECTED_SUBJECT_PREFIX)) {
+    return {matches: false, reason: 'subject'};
+  }
+  return {matches: true, reason: 'matched'};
+}
+
+/** @private */
+function ctmMessageMatches_(message, cutoff) {
+  return ctmGetMessageMatchResult_(message, cutoff).matches;
 }
 
 /** @private */

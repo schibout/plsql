@@ -171,7 +171,7 @@ vm.runInContext(`
     oversizedState.processed['message-id-' + String(index).padStart(4, '0') + '-xxxxxxxx'] = Date.now();
   }
   assert(ctmSaveState_(oversizedState) === true, 'l’état doit être enregistré');
-  const serializedState = propertyStore.CTM_IMPORT_STATE_V2;
+  const serializedState = propertyStore.CTM_IMPORT_STATE_V3;
   assert(serializedState.length <= 8000, 'l’état doit rester sous la marge de 8 000 caractères');
   assert(Object.keys(JSON.parse(serializedState).processed).length <= 200, 'le plafond d’ID doit être respecté');
 

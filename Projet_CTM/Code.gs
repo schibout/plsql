@@ -13,6 +13,7 @@ function processCtmEmails() {
   }
 
   const report = {
+    version: CTM_CONFIG.CODE_VERSION,
     mode: '',
     threads: 0,
     matched: 0,
@@ -36,6 +37,7 @@ function processCtmEmails() {
     report.mode = searchWindow.mode;
 
     ctmLog_('INFO', 'Début du traitement CTM.', {
+      version: CTM_CONFIG.CODE_VERSION,
       mode: searchWindow.mode,
       destination: folder.getName(),
       query: query,
@@ -55,6 +57,24 @@ function processCtmEmails() {
       report
     );
     report.matched = collection.messages.length;
+    ctmLog_('INFO', 'Résultat du filtrage des messages.', {
+      version: CTM_CONFIG.CODE_VERSION,
+      matched: report.matched,
+      rejected: collection.rejectionReasons,
+    });
+
+    if (ctmShouldBlockEmptyInitialBackfill_(
+      state,
+      searchWindow.mode,
+      threads.length,
+      report.matched
+    )) {
+      throw new Error(
+        'Incoherence de filtrage : la recherche Gmail a trouve ' + threads.length +
+        ' conversation(s), mais aucun message CTM. Verifiez que Config.gs, ' +
+        'Utils.gs et GmailService.gs sont tous deployes dans la meme version.'
+      );
+    }
 
     let outcome = {deferred: 0, blocked: collection.failed};
     if (searchWindow.mode === 'backfill' && searchResult.hasMore) {
@@ -143,12 +163,15 @@ function processCtmEmails() {
  */
 function diagnoseCtmEmails() {
   const result = {
+    version: CTM_CONFIG.CODE_VERSION,
     configurationValid: false,
     folderAccessible: false,
     effectiveUser: '',
     broadMessages: 0,
     exactMessages: 0,
     subjectMatchesMessages: 0,
+    mainFilterMessages: 0,
+    mainFilterRejections: {},
     outsideWindowMessages: 0,
     latestOutsideWindowDate: null,
     discoveryMessages: 0,
@@ -216,6 +239,13 @@ function diagnoseCtmEmails() {
       );
       if (exactSubject) result.exactMessages++;
       if (subjectMatches) result.subjectMatchesMessages++;
+      const mainFilterResult = ctmGetMessageMatchResult_(message, cutoff);
+      if (mainFilterResult.matches) {
+        result.mainFilterMessages++;
+      } else {
+        result.mainFilterRejections[mainFilterResult.reason] =
+          (result.mainFilterRejections[mainFilterResult.reason] || 0) + 1;
+      }
 
       if (logged < 20) {
         ctmLog_('INFO', 'Diagnostic : message candidat.', {
@@ -224,6 +254,8 @@ function diagnoseCtmEmails() {
           subject: message.getSubject(),
           exactSubject: exactSubject,
           subjectMatches: subjectMatches,
+          mainFilterMatches: mainFilterResult.matches,
+          mainFilterReason: mainFilterResult.reason,
           attachments: attachments.map(function(attachment) {
             return attachment.getName();
           }),
@@ -332,12 +364,18 @@ function diagnoseCtmEmails() {
 function ctmCollectCandidateMessages_(threads, cutoff, report) {
   const messages = [];
   let failed = false;
+  const rejectionReasons = {};
 
   threads.forEach(function(thread) {
     try {
       thread.getMessages().forEach(function(message) {
         try {
-          if (!ctmMessageMatches_(message, cutoff)) return;
+          const matchResult = ctmGetMessageMatchResult_(message, cutoff);
+          if (!matchResult.matches) {
+            rejectionReasons[matchResult.reason] =
+              (rejectionReasons[matchResult.reason] || 0) + 1;
+            return;
+          }
           messages.push({
             message: message,
             thread: thread,
@@ -367,7 +405,11 @@ function ctmCollectCandidateMessages_(threads, cutoff, report) {
     return left.messageId.localeCompare(right.messageId);
   });
 
-  return {messages: messages, failed: failed};
+  return {
+    messages: messages,
+    failed: failed,
+    rejectionReasons: rejectionReasons,
+  };
 }
 
 /** @private */

@@ -19,10 +19,17 @@ Décisions prises :
   fonctionner indépendamment.
 - Rapport = fichier HTML + `st.download_button`. Pas d'envoi mail ni d'Outlook en V1.
 - Historique = une ligne de synthèse par exécution dans `odat.db`.
+- **Plage de contrôle libre** : deux bornes date + heure, « début de nuit » (défaut hier 19:00) et
+  « fin de nuit » (défaut aujourd'hui 07:00). Les requêtes n'utilisent plus `SYSDATE` pour la
+  fenêtre : la « veille » = jour du début, le « jour » = jour de la fin. On peut donc rejouer un
+  matin passé (lundi pour le week-end, par exemple).
+- **Programmation** : un bouton crée une tâche du Planificateur Windows (`schtasks`) qui lance
+  chaque matin à l'heure choisie `python controle_matin.py --rapport` (contrôle + HTML + historique,
+  app fermée ou non) ; un autre la supprime ; l'état (prochaine / dernière exécution) est affiché.
 
 ## Architecture
 
-Trois nouveaux modules dans `odat_watch/`, une migration dans `db.py`, une ligne dans `app.py`.
+Quatre nouveaux modules dans `odat_watch/`, une migration dans `db.py`, une ligne dans `app.py`.
 
 ### `controle_matin.py` — moteur
 
@@ -49,10 +56,15 @@ Trois nouveaux modules dans `odat_watch/`, une migration dans `db.py`, une ligne
   | `nuit_en_cours` | NUIT — En cours (potentiellement bloqués) | S7 (alerte si ≥ 1) |
   | `rb` | Rapprochement bancaire | S8 |
 
-  Les binds `:v_nb_jours_histo`, `:v_heure_fermeture`, `:v_heure_ouverture` deviennent des
-  paramètres Python. `NLS_DATE_LANGUAGE=FRENCH` conservé. Les dates sont renvoyées typées
-  (le `TO_CHAR` d'affichage est fait côté Python) pour que pandas trie correctement.
-- `synthese(con, h_fermeture, h_ouverture) -> dict` : les 12 compteurs de la SECTION 2
+  Binds Python : `:debut` et `:fin` (datetime, bornes de la nuit) et `:histo` (jours).
+  Correspondance avec le `.sql` : `TRUNC(SYSDATE - 1)` → `TRUNC(:debut)`, `TRUNC(SYSDATE)` →
+  `TRUNC(:fin)`, `SYSDATE - :v_nb_jours_histo` → `:fin - :histo`, `SYSDATE - 30` → `:fin - 30`,
+  fenêtre nuit → `actual_start_date >= :debut AND < :fin`. Seule la durée des traitements « en
+  cours » garde `SYSDATE` (elle mesure l'instant présent). `NLS_DATE_LANGUAGE=FRENCH` conservé.
+  Les colonnes d'affichage restent formatées par Oracle (`TO_CHAR`) comme dans le `.sql`, ce qui
+  garde les requêtes comparables à la référence ; l'ordre est garanti par le `ORDER BY` Oracle.
+- `plage_par_defaut(now) -> (debut, fin)` : hier 19:00 → aujourd'hui 07:00.
+- `synthese(con, debut, fin) -> dict` : les 12 compteurs de la SECTION 2
   (`nb_flux_dsp, nb_ndf, nb_fac_xerox, nb_fac_tradeshift, nb_fac_dsp, nb_gl_interface,
   nb_gl_lignes, nb_traitements, nb_erreurs, nb_warnings, nb_rb_imports, nb_images_manq`)
   + `date_rb_max`.
@@ -63,7 +75,7 @@ Trois nouveaux modules dans `odat_watch/`, une migration dans `db.py`, une ligne
   `ERREUR` si une section a levé une exception Oracle ; sinon `ALERTE` si
   `nb_erreurs > 0` ou `nb_images_manq > 0` ; sinon `WARNING` si `nb_warnings > 0`, ou un
   statut à `W`, ou une section « en cours » non vide ; sinon `OK`. Même esprit que le `.ps1`.
-- `executer(nb_jours_histo=3, h_fermeture=19, h_ouverture=7) -> Resultat` :
+- `executer(debut, fin, nb_jours_histo=3) -> Resultat` :
   ouvre une connexion, exécute synthèse + 15 sections **chacune dans un try/except**
   (une section en erreur n'arrête pas les autres ; l'erreur est portée par `Section.erreur`),
   mesure la durée, enrichit `nuit_err_detail` et `nuit_en_cours` avec le `job_name`
@@ -73,14 +85,20 @@ Trois nouveaux modules dans `odat_watch/`, une migration dans `db.py`, une ligne
   duree_s, fichier_rapport: str | None`.
 - `delta_veille(compteurs) -> dict` : différence avec la dernière ligne d'historique d'une date
   antérieure (pour les tuiles).
+- **CLI** : `python controle_matin.py [--debut "AAAA-MM-JJ HH:MM"] [--fin ...] [--histo 3] [--rapport]`
+  exécute le contrôle (plage par défaut si bornes absentes), affiche la synthèse, et avec
+  `--rapport` écrit le HTML et met à jour l'historique. C'est la commande lancée par la tâche
+  planifiée.
 
 ### `db.py` — nouvelle table
 
 ```sql
 CREATE TABLE IF NOT EXISTS controle_matin_histo (
     id                INTEGER PRIMARY KEY AUTOINCREMENT,
-    date_ctrl         TEXT NOT NULL,      -- AAAA-MM-JJ (jour de l'exécution)
+    date_ctrl         TEXT NOT NULL,      -- AAAA-MM-JJ (jour de la borne de fin)
     executed_at       TEXT NOT NULL,      -- AAAA-MM-JJ HH:MM:SS
+    plage_debut       TEXT NOT NULL,      -- AAAA-MM-JJ HH:MM
+    plage_fin         TEXT NOT NULL,
     statut_global     TEXT NOT NULL,
     nb_flux_dsp       INTEGER, nb_ndf INTEGER, nb_fac_xerox INTEGER, nb_fac_tradeshift INTEGER,
     nb_fac_dsp        INTEGER, nb_gl_interface INTEGER, nb_gl_lignes INTEGER,
@@ -109,13 +127,30 @@ Une ligne par exécution ; `fichier_rapport` mis à jour quand le rapport est g�
   `.gitignore` du projet.
 - Module pur : ne lit ni Oracle ni SQLite.
 
+### `planif_matin.py` — tâche planifiée Windows
+
+- `NOM_TACHE = "ODATWatch_ControleMatin"`.
+- `commande(heure, python, script) -> list[str]` : arguments `schtasks /Create /TN … /SC DAILY
+  /ST HH:MM /TR "<python> <script> --rapport" /F` (fonction pure, testée).
+- `creer(heure) -> str`, `supprimer() -> str` : exécutent `schtasks`, renvoient la sortie ; une
+  erreur (`returncode ≠ 0`) lève `RuntimeError` avec le message de `schtasks`.
+- `etat() -> dict | None` : `schtasks /Query /TN … /FO CSV /V`, lu par position de colonne
+  (indépendant de la langue de Windows) : `prochaine`, `statut`, `derniere`, `dernier_resultat`.
+  `None` si la tâche n'existe pas.
+- Le script est lancé avec le Python courant (`sys.executable`, donc le venv) et le chemin absolu
+  de `controle_matin.py` ; `config.ini` et `odat.db` sont déjà résolus en absolu par les modules.
+
 ### `ui_matin.py` — onglet Streamlit « ☀️ Matin »
 
 `render(now, kpi, badge)` appelé depuis `app.py`, onglet inséré après « 🔴 Maintenant ».
 
-1. **Paramètres** sur une ligne : historique (j, défaut 3), heure fermeture (19),
-   heure ouverture (7), bouton **▶ Lancer le contrôle**. Le résultat est gardé en
+1. **Paramètres** : « Début de nuit » (date + heure, défaut hier 19:00), « Fin de nuit »
+   (date + heure, défaut aujourd'hui 07:00), historique (j, défaut 3), bouton
+   **▶ Lancer le contrôle**. Refus si fin ≤ début. Le résultat est gardé en
    `st.session_state["matin"]`. Spinner pendant l'exécution, durée affichée ensuite.
+   À côté, un encart **⏰ Programmer** : heure (défaut 07:15), bouton **Programmer chaque matin**
+   (crée/remplace la tâche), bouton **Supprimer**, et l'état de la tâche existante
+   (prochaine exécution, dernier résultat).
 2. **Bandeau** de statut global (vert / jaune / rouge) + rappel lundi.
 3. **Tuiles** via `kpi()` : les 12 compteurs, ton selon statut OK/W (erreurs / images
    manquantes en rouge si > 0), delta vs. veille en légende (`+3 vs 18/09`).
@@ -125,9 +160,10 @@ Une ligne par exécution ; `fichier_rapport` mis à jour quand le rapport est g�
    `fichier_rapport` dans l'historique, `st.download_button` sur le fichier, chemin affiché.
    En dessous : les 10 derniers fichiers de `rapports/`, chacun avec un bouton de
    téléchargement.
-6. **Tendance** : `st.line_chart` des 30 derniers jours (`nb_erreurs, nb_warnings,
-   nb_flux_dsp, nb_images_manq`) depuis `controle_matin_histo`, une ligne par jour
-   (dernière exécution de chaque jour).
+6. **Tendance** : graphique Plotly des 30 derniers jours (`nb_erreurs` rouge, `nb_warnings`
+   jaune, `nb_images_manq` violet, `nb_flux_dsp` bleu — palette des KPI de l'app) depuis
+   `controle_matin_histo`, une ligne par jour (dernière exécution de chaque jour), marqueurs
+   colorés par statut global.
 
 Si `config.ini` n'a pas de section `[oracle]`, l'onglet affiche le même message d'aide que
 l'onglet Oracle et le bouton est désactivé.
@@ -138,6 +174,8 @@ l'onglet Oracle et le bouton est désactivé.
 - Requête d'une section en échec → section marquée `erreur`, les autres continuent,
   `statut_global = ERREUR`, la ligne d'historique est quand même enregistrée.
 - Génération du rapport impossible (droits, disque) → `st.error`, l'exécution reste en session.
+- `schtasks` en échec (droits, stratégie de groupe) → `st.error` avec la sortie de la commande et
+  la ligne de commande à exécuter soi-même.
 
 ## Tests
 
@@ -148,11 +186,12 @@ l'onglet Oracle et le bouton est désactivé.
 - `rapport_matin.construire()` sur un `Resultat` factice : présence des 15 `<h2>`, classe du
   bandeau, « Aucune ligne » pour une section vide, échappement d'un `<` dans une valeur.
 - `db.connect()` sur une base temporaire : table créée, `enregistrer_histo` + `delta_veille`.
+- `plage_par_defaut()`, `planif_matin.commande()` et le parsing CSV de `etat()` sur un
+  échantillon, `subprocess.run` mocké.
 
 Validation manuelle : lancer l'onglet et le `.ps1` le même matin, les compteurs de la synthèse
 doivent coïncider.
 
 ## Hors périmètre V1
 
-Envoi mail (SMTP), brouillon Outlook, planification automatique, modification du `.sql` ou du
-`.ps1`.
+Envoi mail (SMTP), brouillon Outlook, modification du `.sql` ou du `.ps1`.

@@ -94,6 +94,42 @@ function runCtmUnitTests() {
       },
     },
     {
+      name: 'bloque un premier rattrapage incoherent sans message valide',
+      run: function() {
+        ctmAssertTrue_(ctmShouldBlockEmptyInitialBackfill_(
+          {backfillCursorMs: null},
+          'backfill',
+          622,
+          0
+        ));
+        ctmAssertFalse_(ctmShouldBlockEmptyInitialBackfill_(
+          {backfillCursorMs: null},
+          'backfill',
+          622,
+          100
+        ));
+      },
+    },
+    {
+      name: 'accepte le message reel observe dans le diagnostic Dalkia',
+      run: function() {
+        const message = {
+          isInTrash: function() { return false; },
+          isDraft: function() { return false; },
+          getDate: function() { return new Date('2026-09-19T14:45:23.000Z'); },
+          getFrom: function() { return 'Indic_CTM@dalkia.fr'; },
+          getSubject: function() {
+            return 'DALKIA / Extract CSV du Suivi Quotidien CTM ' +
+              '(ODAT=260919) => 19/09/2026 16-45-23';
+          },
+        };
+        ctmAssertTrue_(ctmMessageMatches_(
+          message,
+          new Date('2026-05-19T00:00:00.000Z')
+        ));
+      },
+    },
+    {
       name: 'construit la première recherche quatre mois en arrière',
       run: function() {
         const config = {

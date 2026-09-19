@@ -49,7 +49,7 @@ const context = vm.createContext({
   },
 });
 
-['Config.gs', 'Utils.gs', 'Tests.gs'].forEach(fileName => {
+['Config.gs', 'Utils.gs', 'GmailService.gs', 'Tests.gs'].forEach(fileName => {
   const source = fs.readFileSync(path.join(projectRoot, fileName), 'utf8');
   vm.runInContext(source, context, {filename: fileName});
 });
