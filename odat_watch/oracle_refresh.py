@@ -75,13 +75,15 @@ LEFT JOIN {s}fnd_responsibility_tl frt
       AND frt.application_id = fcr.responsibility_application_id AND frt.language = USERENV('LANG')
 LEFT JOIN {s}fnd_lookups fl1 ON fl1.lookup_type = 'CP_PHASE_CODE'  AND fl1.lookup_code = fcr.phase_code
 LEFT JOIN {s}fnd_lookups fl2 ON fl2.lookup_type = 'CP_STATUS_CODE' AND fl2.lookup_code = fcr.status_code
-WHERE  (fcr.request_date >= :depuis OR fcr.last_update_date >= :depuis OR fcr.phase_code IN ('P', 'R'))
+WHERE  (fcr.request_id > :max_id OR fcr.request_date >= :depuis OR fcr.last_update_date >= :depuis
+        OR fcr.phase_code IN ('P', 'R'))
   AND  (   :filtre IS NULL
         OR fcr.description LIKE :filtre
         OR fcp.concurrent_program_name IN ({progs})
         OR fcr.parent_request_id IN (SELECT p.request_id FROM {s}fnd_concurrent_requests p
                                      WHERE p.description LIKE :filtre
                                        AND p.request_date >= :depuis - 2))
+ORDER BY fcr.request_id
 """
 
 UPSERT_REQ = """
@@ -272,6 +274,7 @@ def test_connexion() -> str:
 # attente / en cours), avec une heure de marge. La borne est l'heure Oracle (SYSDATE) du dernier chargement,
 # mémorisée dans la table parametres.
 MARGE = timedelta(hours=1)
+LOT = 20_000          # lignes par lot lors du chargement des demandes
 
 
 def borne_chargement(cle: str, con) -> datetime | None:
@@ -289,17 +292,25 @@ def _heure_oracle(cur) -> datetime:
     return cur.fetchone()[0]
 
 
-def _fenetre(cle: str, cfg, con, cur, heures: float | None, complet: bool) -> tuple[datetime, str, datetime]:
-    """(borne :depuis, libellé du mode, heure Oracle du chargement)."""
+AUCUN_ID = 2 ** 62   # request_id > AUCUN_ID est toujours faux : neutralise le critère max(request_id)
+
+
+def _fenetre(cle: str, cfg, con, cur, heures: float | None, complet: bool) -> tuple[datetime, int, str, datetime]:
+    """(borne :depuis, borne :max_id, libellé du mode, heure Oracle du chargement).
+
+    Delta = toute demande de request_id supérieur au plus grand déjà chargé (rien ne peut être manqué,
+    même si le chargement précédent a été interrompu) + demandes modifiées depuis la dernière borne
+    (fin d'exécution, changement de statut) + demandes en attente / en cours."""
     ora = cfg["oracle"] if cfg.has_section("oracle") else {}
-    jours_initial = float(ora.get("jours_initial", 90))
+    jours_initial = float(ora.get("jours_initial", 365))
     maintenant = _heure_oracle(cur)
     borne = borne_chargement(cle, con)
+    max_id = con.execute("SELECT MAX(request_id) FROM ora_requests").fetchone()[0]
     if heures:
-        return maintenant - timedelta(hours=heures), f"fenêtre de {heures:g} h", maintenant
-    if complet or borne is None:
-        return maintenant - timedelta(days=jours_initial), f"chargement initial ({jours_initial:g} j)", maintenant
-    return borne - MARGE, f"delta depuis le {borne:%d/%m %H:%M}", maintenant
+        return maintenant - timedelta(hours=heures), AUCUN_ID, f"fenêtre de {heures:g} h", maintenant
+    if complet or borne is None or max_id is None:
+        return maintenant - timedelta(days=jours_initial), AUCUN_ID, f"chargement initial ({jours_initial:g} j)", maintenant
+    return borne - MARGE, int(max_id), f"delta depuis le {borne:%d/%m %H:%M} (request_id > {max_id})", maintenant
 
 
 def refresh_programs(complet: bool = False) -> str:
@@ -342,35 +353,46 @@ def refresh_requests(heures: float | None = None, complet: bool = False) -> str:
     with _connect_oracle(cfg) as ocon:
         cur = ocon.cursor()
         cur.arraysize = 5000
-        binds["depuis"], mode, maintenant = _fenetre("demandes", cfg, con, cur, heures, complet)
+        binds["depuis"], binds["max_id"], mode, maintenant = _fenetre("demandes", cfg, con, cur, heures, complet)
         cur.execute(sql, binds)
-        rows = cur.fetchall()
 
-    # job Control-M : depuis la description, sinon hérité du parent (même lot ou déjà en base)
-    connus = {r[0]: r[1] for r in con.execute("SELECT request_id, job_name FROM ora_requests WHERE job_name IS NOT NULL")}
-    by_id = {r[0]: r for r in rows}
-    jobs: dict[int, str | None] = {}
-    for r in rows:
-        jobs[r[0]] = job_from_description(r[18])
-    for r in rows:
-        rid, parent = r[0], r[14]
-        if not jobs[rid] and parent:
-            jobs[rid] = jobs.get(parent) or connus.get(parent) or (
-                job_from_description(by_id[parent][18]) if parent in by_id else None)
+        # Traitement par lots, dans l'ordre des request_id : un parent (lanceur DKA_SLAUNCHER, dont la
+        # description porte le nom du job Control-M) précède toujours ses demandes filles, qui héritent
+        # de son job. Les lots précédents sont retrouvés via `connus` (mémoire) ou la base.
+        connus = {r[0]: r[1] for r in con.execute("SELECT request_id, job_name FROM ora_requests WHERE job_name IS NOT NULL")}
+        mapping: dict[str, tuple[str, str]] = {}
+        total = pending = running = err = 0
+        while True:
+            rows = cur.fetchmany(LOT)
+            if not rows:
+                break
+            by_id = {r[0]: r for r in rows}
+            jobs: dict[int, str | None] = {r[0]: job_from_description(r[18]) for r in rows}
+            for r in rows:
+                rid, parent = r[0], r[14]
+                if not jobs[rid] and parent:
+                    jobs[rid] = jobs.get(parent) or connus.get(parent) or (
+                        job_from_description(by_id[parent][18]) if parent in by_id else None)
+            payload = []
+            for r in rows:
+                (rid, pshort, pname, app, ph, st, phase, status, rdate, rstart, astart, acomp,
+                 user, resp, parent, rint, runit, args, desc, ctext, logf, outf) = r
+                payload.append((rid, pshort, pname, app, ph, st, phase, status, rdate, rstart, astart, acomp,
+                                user, resp, parent, None if rint is None else str(rint), runit, args, desc,
+                                ctext, logf, outf, jobs[rid], now))
+                if jobs[rid]:
+                    connus[rid] = jobs[rid]
+                j = job_from_description(desc)
+                if j:
+                    mapping[j] = (pshort, (desc or "").strip())
+                total += 1
+                pending += ph == "P"
+                running += ph == "R"
+                err += ph == "C" and st in ("E", "G", "X")
+            with con:
+                con.executemany(UPSERT_REQ, payload)
 
-    payload = []
-    mapping: dict[str, tuple[str, str]] = {}
-    for r in rows:
-        (rid, pshort, pname, app, ph, st, phase, status, rdate, rstart, astart, acomp,
-         user, resp, parent, rint, runit, args, desc, ctext, logf, outf) = r
-        payload.append((rid, pshort, pname, app, ph, st, phase, status, rdate, rstart, astart, acomp,
-                        user, resp, parent, None if rint is None else str(rint), runit, args, desc,
-                        ctext, logf, outf, jobs[rid], now))
-        j = job_from_description(desc)
-        if j:
-            mapping[j] = (pshort, (desc or "").strip())
     with con:
-        con.executemany(UPSERT_REQ, payload)
         con.executemany(
             "INSERT INTO job_mapping(job_name, program_short, commentaire) VALUES (?,?,?) "
             "ON CONFLICT(job_name) DO UPDATE SET program_short=excluded.program_short, commentaire=excluded.commentaire",
@@ -378,11 +400,10 @@ def refresh_requests(heures: float | None = None, complet: bool = False) -> str:
         if not heures:   # une fenêtre explicite ne fait pas avancer la borne du delta
             _memoriser_borne("demandes", maintenant, con)
     con.close()
-    pending = sum(1 for r in rows if r[4] == "P")
-    running = sum(1 for r in rows if r[4] == "R")
-    err = sum(1 for r in rows if r[4] == "C" and r[5] in ("E", "G", "X"))
-    return (f"{len(rows)} demandes Oracle chargées ({mode}) : {running} en cours, {pending} en attente, "
-            f"{err} terminées en erreur/avertissement ; {len(mapping)} jobs Control-M reconnus.")
+    conseil = (" — 0 demande : vérifier filtre_description / programmes_suivis dans config.ini [oracle]."
+               if not total and (filtre or progs) else "")
+    return (f"{total} demandes Oracle chargées ({mode}) : {running} en cours, {pending} en attente, "
+            f"{err} terminées en erreur/avertissement ; {len(mapping)} jobs Control-M reconnus.{conseil}")
 
 
 if __name__ == "__main__":

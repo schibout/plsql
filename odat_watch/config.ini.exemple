@@ -16,11 +16,13 @@ client_dir =
 
 [oracle]
 ; Fenetre d'historique recuperee a chaque rafraichissement (heures)
-; Premier chargement des demandes : N jours d'historique ; ensuite seul le delta est charge
-jours_initial = 90
+; Premier chargement des demandes : N jours d'historique (tout ce que FND conserve) ; ensuite seul le delta
+; (request_id > dernier charge, demandes modifiees, en attente / en cours) est charge.
+jours_initial = 365
 heures_historique = 48
 ; Filtre LIKE sur la DESCRIPTION des demandes (nom du job Control-M). Vide = toutes.
-filtre_description = FIN%
+; Vide = toutes les applications (necessaire pour rapprocher toutes les photos ODAT). Ex. : FIN%
+filtre_description =
 ; Programmes a suivre meme s'ils ne passent pas par Control-M (liste separee par des virgules, vide = aucun)
 programmes_suivis = RBAFBIMP,DKA_SRBCTRLRB
 
