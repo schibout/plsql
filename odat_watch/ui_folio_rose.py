@@ -61,8 +61,14 @@ def _style(df: pd.DataFrame):
         if r["Statut"] == "KO":
             return ["background-color: #FDECEC"] * len(r)
         return [""] * len(r)
-    fmt = {**{c: _fmt_mt for c in COLS_MONTANTS if c in df.columns}, **{c: _fmt_nb for c in COLS_NB if c in df.columns}}
-    return df.style.apply(ligne, axis=1).format(fmt)
+    return df.style.apply(ligne, axis=1)
+
+
+# Formats numériques confiés au navigateur (locale française) : les valeurs restent des nombres,
+# donc triables, et les NULL Oracle s'affichent vides (un Styler les rendrait « None »).
+COLONNES_CONFIG = {**{c: st.column_config.NumberColumn(c, format="euro") for c in COLS_MONTANTS},
+                   **{c: st.column_config.NumberColumn(c, format="%d") for c in COLS_NB},
+                   "Rapproché": st.column_config.CheckboxColumn("Rapproché", disabled=True)}
 
 
 def render(kpi):
@@ -122,12 +128,18 @@ def render(kpi):
         vue = vue.reset_index(drop=True)
 
         # ------------------------------------------------------------ tableau + sélection
-        aff = vue[COLS_AFFICHEES].rename(columns=LIBELLES)
+        # colonnes Oracle masquées tant qu'aucun contrôle n'a été lancé (Streamlit afficherait « None »)
+        colonnes = COLS_AFFICHEES if "—" not in set(lignes["statut"]) else             [c for c in COLS_AFFICHEES if c not in ("nb_oracle", "montant_oracle", "montant_interface", "erreur")]
+        aff = vue[colonnes].rename(columns=LIBELLES)
+        for c in COLS_MONTANTS + COLS_NB:
+            if c in aff.columns:
+                aff[c] = pd.to_numeric(aff[c], errors="coerce")
         # Streamlit n'inclut pas les données dans l'identité d'un st.dataframe à clé : on change la clé
         # dès que l'ensemble (ou l'ordre) des lignes affichées change, sinon la sélection survit au filtre.
         sig = hashlib.blake2b("|".join(vue["empreinte"].astype(str)).encode("utf-8"), digest_size=6).hexdigest()
         ev = st.dataframe(_style(aff), use_container_width=True, hide_index=True, height=420,
-                          on_select="rerun", selection_mode="multi-row", key=f"fr_table_{eid}_{sig}")
+                          column_config=COLONNES_CONFIG, on_select="rerun", selection_mode="multi-row",
+                          key=f"fr_table_{eid}_{sig}")
         rows = list(ev.selection.rows) if ev and ev.selection else []
         sel_idx = [i for i in rows if 0 <= i < len(vue)]
         sel = vue.iloc[sel_idx]

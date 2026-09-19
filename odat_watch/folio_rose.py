@@ -15,7 +15,7 @@ import io
 import re
 import sqlite3
 import unicodedata
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from datetime import date, datetime
 from pathlib import Path
 
