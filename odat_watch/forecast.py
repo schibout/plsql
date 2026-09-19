@@ -139,7 +139,10 @@ def prevision(profs: dict[str, Profil], debut: datetime, fin: datetime,
             elif od.weekday() not in p.jours_semaine:
                 continue
             prevu = datetime.combine(od + timedelta(days=p.decalage_jour), p.heure_mediane)
-            if not (debut <= prevu < fin):
+            # Une nuit peut commencer avant minuit : conserver aussi un job lancé
+            # avant le créneau mais dont la durée habituelle le fait chevaucher.
+            fin_prevue = prevu + timedelta(minutes=max(p.duree_mediane or 0, 6))
+            if not (prevu < fin and fin_prevue > debut):
                 continue
             r = etat.get(p.job_name)
             statut, reel_debut, reel_fin = "à venir", None, None

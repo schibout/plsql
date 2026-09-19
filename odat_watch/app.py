@@ -14,6 +14,8 @@ import streamlit as st
 import forecast as fc
 import ingest
 import sources
+import ui_calendriers
+import ui_preproduction
 from db import connect, DB_PATH
 
 st.set_page_config(page_title="ODAT Watch", page_icon="🕓", layout="wide")
@@ -172,6 +174,8 @@ with st.sidebar:
 
 if not apps:
     st.warning("Base vide. Lancez l'import depuis la barre latérale ou `python ingest.py`.")
+    st.info("Vous pouvez néanmoins charger dès maintenant un calendrier métier de clôture.")
+    ui_calendriers.render()
     st.stop()
 
 df_runs, profs, last, snaps = charger(application, stamp())
@@ -227,8 +231,13 @@ def table_prevision(prev: pd.DataFrame):
     t["heure"] = t["heure_prevue"].dt.strftime("%H:%M")
     t["jour"] = [f"{fc.JOURS[d.weekday()]} {d:%d/%m}" for d in t["heure_prevue"]]
     t["état"] = t["statut"].map(badge)
-    t["réel"] = [f"{pd.to_datetime(a):%H:%M}" + (f" → {pd.to_datetime(b):%H:%M}" if b else "") if a else ""
-                 for a, b in zip(t["debut_reel"], t["fin_reel"])]
+    def horaire_reel(debut, fin) -> str:
+        debut = pd.to_datetime(debut, errors="coerce")
+        fin = pd.to_datetime(fin, errors="coerce")
+        if pd.isna(debut):
+            return ""
+        return f"{debut:%H:%M}" + (f" → {fin:%H:%M}" if not pd.isna(fin) else "")
+    t["réel"] = [horaire_reel(a, b) for a, b in zip(t["debut_reel"], t["fin_reel"])]
     t["fiabilité"] = t["fiabilite"]
     t["hebdo/mensuel"] = t["frequence"].isin(["Hebdo", "Mensuel"])
     cols = ["jour", "heure", "état", "job", "description", "duree_min", "fiabilité", "frequence", "cyclique", "script", "réel", "nb_obs"]
@@ -266,8 +275,18 @@ st.markdown(f"""
   <div class="meta">{meta}</div>
 </div>""", unsafe_allow_html=True)
 
-tab_soir, tab_demain, tab_now, tab_matin, tab_folio, tab_ora, tab_histo, tab_profils, tab_data, tab_sql = st.tabs(
-    ["🌙 Ce soir", "📅 Demain", "🔴 Maintenant", "☀️ Matin", "🌹 Folio Rose", "🅾 Oracle", "🔎 Historique", "📈 Profils", "🗂 Données", "⌨ SQL"])
+tab_plan, tab_calendriers, tab_soir, tab_demain, tab_now, tab_matin, tab_folio, tab_ora, tab_histo, tab_profils, tab_data, tab_sql = st.tabs(
+    ["🧭 Préparer ma nuit", "📥 Clôtures", "🌙 Ce soir", "📅 Demain", "🔴 Maintenant", "☀️ Matin", "🌹 Folio Rose", "🅾 Oracle", "🔎 Historique", "📈 Profils", "🗂 Données", "⌨ SQL"])
+
+with tab_plan:
+    con = connect()
+    try:
+        ui_preproduction.render(con, profs, last, now, kpi)
+    finally:
+        con.close()
+
+with tab_calendriers:
+    ui_calendriers.render()
 
 with tab_matin:
     import ui_matin
