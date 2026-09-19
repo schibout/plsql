@@ -25,14 +25,20 @@ script. Aucun mot de passe Gmail ne doit être ajouté au code.
 Exécuter les fonctions dans cet ordre depuis l'éditeur Apps Script :
 
 1. `setupFolderAndLabels()` : autorise Gmail/Drive, vérifie le dossier et crée le libellé.
-2. `runCtmUnitTests()` : exécute les tests des fonctions pures.
-3. `processCtmEmails()` : réalise une première extraction manuelle.
-4. Contrôler les fichiers dans le dossier Drive et les journaux d'exécution.
-5. `createCtmTimeDrivenTrigger()` : crée le déclencheur toutes les 15 minutes.
+2. `authorizeAndTestCtmDrive()` : force l'autorisation OAuth et teste une vraie création dans le dossier. Le fichier temporaire est aussitôt placé dans la corbeille.
+3. `runCtmUnitTests()` : exécute les tests des fonctions pures.
+4. `processCtmEmails()` : réalise une première extraction manuelle.
+5. Contrôler les fichiers dans le dossier Drive et les journaux d'exécution.
+6. `createCtmTimeDrivenTrigger()` : crée le déclencheur toutes les 15 minutes.
 
 Après toute modification de `appsscript.json`, relancer
 `setupFolderAndLabels()` et accepter la nouvelle demande d'autorisation Google.
 Le service Drive avancé n'est pas nécessaire : le projet utilise `DriveApp`.
+
+Même lorsque Gmail et Drive appartiennent au même compte, chaque projet Apps
+Script possède sa propre autorisation OAuth. Il n'y a aucun mot de passe ni
+secret à configurer, mais le compte doit accepter une fois l'accès Drive en
+écriture pour ce projet précis.
 
 Si une ancienne exécution a enregistré le mode incrémental avant que les droits
 Drive soient accordés, exécuter une seule fois `resetCtmImportState()`, puis
@@ -67,7 +73,7 @@ Ces valeurs peuvent être ajustées dans `Config.gs` avec `INITIAL_LOOKBACK_MONT
 
 ## Vérification et dépannage
 
-- Chaque exécution doit afficher `CTM-2026-09-19.3` dans le journal. Si cette version n'apparaît pas, les fichiers du projet Apps Script ne sont pas synchronisés.
+- Chaque exécution doit afficher `CTM-2026-09-19.4` dans le journal. Si cette version n'apparaît pas, les fichiers du projet Apps Script ne sont pas synchronisés.
 - Les tests d'intégration sont décrits dans `tests/TEST_CASES.md`.
 - Si l'exécution se termine sans fichier, exécuter `diagnoseCtmEmails()` puis consulter le journal d'exécution. Cette fonction est strictement en lecture seule. Elle recherche aussi les pièces jointes `Report_ctm...zip` sans imposer l'expéditeur et affiche le compte Google exécutant le script, l'expéditeur réel et l'objet réel.
 - Si le script indique que le dossier est inaccessible, vérifier l'ID et les droits Drive.

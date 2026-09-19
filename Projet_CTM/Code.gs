@@ -6,6 +6,10 @@
  * lu/non lu. Le libellé de suivi est la seule modification effectuée dans Gmail.
  */
 function processCtmEmails() {
+  // Ne demande rien lorsque les droits sont deja accordes. En execution
+  // manuelle, Google affiche l'ecran de consentement si un scope manque.
+  ctmRequireFullAuthorization_();
+
   const lock = LockService.getScriptLock();
   if (!lock.tryLock(CTM_CONFIG.LOCK_WAIT_MS)) {
     ctmLog_('WARN', 'Une autre exécution CTM est déjà en cours. Arrêt sans traitement.');
@@ -522,6 +526,7 @@ function ctmUpdateThreadLabels_(threads, label, state, cutoff, report, forceComp
  * Vérifie le dossier et crée le libellé. À exécuter une fois avant la recette.
  */
 function setupFolderAndLabels() {
+  ctmRequireFullAuthorization_();
   ctmValidateConfig_();
   const folder = DriveApp.getFolderById(CTM_CONFIG.FOLDER_ID);
   const label = ctmGetOrCreateLabel_(CTM_CONFIG.LABEL_NAME);
@@ -531,6 +536,65 @@ function setupFolderAndLabels() {
     label: label.getName(),
     timeZone: CTM_CONFIG.TIME_ZONE,
   });
+}
+
+/**
+ * Force l'autorisation de tous les services utilises par le projet, puis teste
+ * une vraie ecriture dans le dossier CTM. Le fichier de test est aussitot mis
+ * a la corbeille et aucun e-mail n'est modifie.
+ *
+ * A lancer manuellement depuis l'editeur Apps Script avant le premier import.
+ */
+function authorizeAndTestCtmDrive() {
+  ctmRequireFullAuthorization_();
+  ctmValidateConfig_();
+
+  const folder = DriveApp.getFolderById(CTM_CONFIG.FOLDER_ID);
+  const testName = 'CTM_PERMISSION_TEST_' + new Date().getTime() + '.txt';
+  let testFile = null;
+
+  try {
+    testFile = folder.createFile(
+      Utilities.newBlob(
+        'Test temporaire d\'autorisation Drive pour le projet CTM.',
+        'text/plain',
+        testName
+      )
+    );
+    ctmLog_('INFO', 'Test d\'ecriture Drive reussi.', {
+      version: CTM_CONFIG.CODE_VERSION,
+      folderName: folder.getName(),
+      fileId: testFile.getId(),
+    });
+    return true;
+  } catch (error) {
+    ctmLog_('ERROR', 'Test d\'ecriture Drive refuse.', {
+      version: CTM_CONFIG.CODE_VERSION,
+      folderName: folder.getName(),
+      error: ctmErrorMessage_(error),
+    });
+    throw error;
+  } finally {
+    if (testFile) {
+      try {
+        testFile.setTrashed(true);
+        ctmLog_('INFO', 'Fichier temporaire de permission place dans la corbeille.', {
+          fileId: testFile.getId(),
+        });
+      } catch (cleanupError) {
+        ctmLog_('WARN', 'Le fichier temporaire doit etre supprime manuellement.', {
+          fileId: testFile.getId(),
+          fileName: testName,
+          error: ctmErrorMessage_(cleanupError),
+        });
+      }
+    }
+  }
+}
+
+/** @private */
+function ctmRequireFullAuthorization_() {
+  ScriptApp.requireAllScopes(ScriptApp.AuthMode.FULL);
 }
 
 /**

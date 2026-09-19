@@ -7,7 +7,7 @@
  */
 const CTM_CONFIG = Object.freeze({
   /** Version visible dans les journaux pour verifier le code reellement deploye. */
-  CODE_VERSION: 'CTM-2026-09-19.3',
+  CODE_VERSION: 'CTM-2026-09-19.4',
 
   /** ID du dossier Google Drive de destination. */
  FOLDER_ID: '1__xp-bdnQJlb_W7aJ9OerGsxgyVbI0qq',
