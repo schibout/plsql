@@ -203,3 +203,129 @@ def lire_export(source: Path | str | bytes, nom: str | None = None, date_import:
     return Export(nom=nom, date_export=date_export, periode_debut=periode_debut, periode_fin=periode_fin,
                   encodage=enc, file_hash=hashlib.sha1(octets).hexdigest(), lignes=df,
                   nb_montants_illisibles=illisibles)
+
+
+# ------------------------------------------------------------------ import et lecture SQLite
+
+def importer(export: Export, con: sqlite3.Connection) -> int | None:
+    """Insère l'export et ses lignes. None si ce fichier (même hash) est déjà en base."""
+    if con.execute("SELECT 1 FROM fr_exports WHERE file_hash = ?", (export.file_hash,)).fetchone():
+        return None
+    cur = con.execute(
+        "INSERT INTO fr_exports(nom_fichier, file_hash, date_export, periode_debut, periode_fin, importe_le, "
+        "nb_lignes, encodage, nb_montants_illisibles) VALUES (?,?,?,?,?,?,?,?,?)",
+        (export.nom, export.file_hash, export.date_export.isoformat(), export.periode_debut, export.periode_fin,
+         datetime.now().strftime("%Y-%m-%d %H:%M:%S"), len(export.lignes), export.encodage,
+         export.nb_montants_illisibles))
+    eid = cur.lastrowid
+    cols = list(export.lignes.columns)
+    con.executemany(
+        f"INSERT INTO fr_lignes(export_id, {','.join(cols)}) VALUES (?{',?' * len(cols)})",
+        [(eid, *[None if pd.isna(v) else (int(v) if isinstance(v, float) and c in ('age_j', 'num') else v)
+                 for c, v in zip(cols, row)]) for row in export.lignes.itertuples(index=False)])
+    con.commit()
+    export.id = eid
+    return eid
+
+
+def exports(con: sqlite3.Connection) -> pd.DataFrame:
+    return pd.read_sql_query(
+        "SELECT id, nom_fichier, date_export, periode_debut, periode_fin, importe_le, nb_lignes, "
+        "nb_montants_illisibles FROM fr_exports ORDER BY date_export DESC, id DESC", con)
+
+
+def _statut(r, controle_lance: bool) -> str:
+    if r["type"] == "AUTRE":
+        return "NON CONTROLE"
+    if not controle_lance:
+        return "—"
+    if r["erreur"] or pd.isna(r["nb_oracle"]):
+        return "INDETERMINE"
+    if abs(r["amont_nb"] - r["nb_oracle"]) < TOL and abs(r["amont_debit"] - r["montant_oracle"]) < TOL:
+        return "OK"
+    return "KO"
+
+
+def lignes_export(export_id: int, con: sqlite3.Connection) -> pd.DataFrame:
+    """Lignes d'un export + résultat Oracle + rapproche + statut (règle du .ps1)."""
+    df = pd.read_sql_query("""
+        SELECT l.*, o.nb_oracle, o.montant_oracle, o.nb_interface, o.montant_interface, o.erreur, o.controle_le,
+               EXISTS (SELECT 1 FROM fr_rapprochement_lignes rl JOIN fr_rapprochements r ON r.id = rl.rapprochement_id
+                       WHERE rl.empreinte = l.empreinte AND r.annule_le IS NULL) AS rapproche
+        FROM fr_lignes l
+        LEFT JOIN fr_oracle o ON o.export_id = l.export_id AND o.folio = l.folio
+                             AND o.fichier_base = l.fichier_base AND o.type = l.type
+        WHERE l.export_id = ?
+        ORDER BY l.num""", con, params=(export_id,))
+    df["rapproche"] = df["rapproche"].astype(bool)
+    controle_lance = bool(con.execute("SELECT 1 FROM fr_oracle WHERE export_id = ? LIMIT 1", (export_id,)).fetchone())
+    df["ecart_nb_calcule"] = df["amont_nb"] - df["nb_oracle"]
+    df["ecart_mt_calcule"] = df["amont_debit"] - df["montant_oracle"]
+    df["statut"] = df.apply(_statut, axis=1, controle_lance=controle_lance) if not df.empty else pd.Series(dtype=str)
+    return df
+
+
+# ------------------------------------------------------------------ rapprochements
+
+def groupes_compenses(lignes: pd.DataFrame) -> pd.DataFrame:
+    """Par folio + fichier de base, lignes non rapprochées : nb ≥ 2 et somme des écarts débit ≈ 0."""
+    libres = lignes[~lignes["rapproche"].astype(bool)]
+    if libres.empty:
+        return pd.DataFrame(columns=["folio", "fichier_base", "nb", "somme", "empreintes"])
+    g = (libres.groupby(["folio", "fichier_base"])
+         .agg(nb=("empreinte", "size"), somme=("ecart_debit", "sum"), empreintes=("empreinte", list))
+         .reset_index())
+    g = g[(g["nb"] >= 2) & (g["somme"].abs() < TOL)].reset_index(drop=True)
+    return g
+
+
+def somme_selection(lignes: pd.DataFrame, empreintes: list[str]) -> float:
+    return float(lignes.loc[lignes["empreinte"].isin(empreintes), "ecart_debit"].sum())
+
+
+def _ecarts_par_empreinte(empreintes: list[str], con: sqlite3.Connection) -> dict[str, float]:
+    q = ",".join("?" * len(empreintes))
+    rows = con.execute(f"SELECT empreinte, ecart_debit FROM fr_lignes WHERE empreinte IN ({q}) "
+                       "GROUP BY empreinte", empreintes).fetchall()
+    return {r[0]: float(r[1] or 0) for r in rows}
+
+
+def rapprocher(empreintes: list[str], commentaire: str, con: sqlite3.Connection) -> int:
+    empreintes = list(dict.fromkeys(empreintes))
+    if len(empreintes) < 2:
+        raise ValueError("Un rapprochement porte sur au moins deux lignes.")
+    ecarts = _ecarts_par_empreinte(empreintes, con)
+    if len(ecarts) != len(empreintes):
+        raise ValueError("Ligne inconnue dans la sélection.")
+    somme = sum(ecarts.values())
+    if abs(somme) >= TOL:
+        raise ValueError(f"La somme des écarts n'est pas nulle ({somme:,.2f}).")
+    q = ",".join("?" * len(empreintes))
+    deja = con.execute(f"SELECT COUNT(*) FROM fr_rapprochement_lignes rl JOIN fr_rapprochements r "
+                       f"ON r.id = rl.rapprochement_id WHERE r.annule_le IS NULL AND rl.empreinte IN ({q})",
+                       empreintes).fetchone()[0]
+    if deja:
+        raise ValueError(f"{deja} ligne(s) déjà rapprochée(s).")
+    cur = con.execute("INSERT INTO fr_rapprochements(cree_le, commentaire, somme_ecart, nb_lignes) VALUES (?,?,?,?)",
+                      (datetime.now().strftime("%Y-%m-%d %H:%M:%S"), (commentaire or "").strip() or None,
+                       round(somme, 2), len(empreintes)))
+    rid = cur.lastrowid
+    con.executemany("INSERT INTO fr_rapprochement_lignes(rapprochement_id, empreinte) VALUES (?,?)",
+                    [(rid, e) for e in empreintes])
+    con.commit()
+    return rid
+
+
+def annuler_rapprochement(rid: int, con: sqlite3.Connection) -> None:
+    con.execute("UPDATE fr_rapprochements SET annule_le = ? WHERE id = ? AND annule_le IS NULL",
+                (datetime.now().strftime("%Y-%m-%d %H:%M:%S"), rid))
+    con.commit()
+
+
+def rapprochements(con: sqlite3.Connection) -> pd.DataFrame:
+    """Un rapprochement par ligne, avec les folios concernés (les plus récents d'abord)."""
+    return pd.read_sql_query("""
+        SELECT r.id, r.cree_le, r.nb_lignes, r.somme_ecart, r.commentaire, r.annule_le,
+               (SELECT GROUP_CONCAT(DISTINCT l.folio) FROM fr_rapprochement_lignes rl
+                JOIN fr_lignes l ON l.empreinte = rl.empreinte WHERE rl.rapprochement_id = r.id) AS folios
+        FROM fr_rapprochements r ORDER BY r.id DESC""", con)

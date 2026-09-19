@@ -19,3 +19,88 @@ def test_tables_folio_rose(tmp_path):
     for c in ("empreinte", "folio", "type", "fichier_base", "ecart_debit", "age_j"):
         assert c in cols
     con.close()
+
+
+def _export(tmp_path, nom="ExportCSV-04-08-2026.csv"):
+    return fr.lire_export(SAUVEGARDE / nom)
+
+
+def test_importer_dedoublonne(tmp_path):
+    con = db.connect(tmp_path / "t.db")
+    e = _export(tmp_path)
+    eid = fr.importer(e, con)
+    assert eid and e.id == eid
+    assert fr.importer(_export(tmp_path), con) is None
+    assert con.execute("SELECT COUNT(*) FROM fr_lignes WHERE export_id=?", (eid,)).fetchone()[0] == len(e.lignes)
+    ex = fr.exports(con)
+    assert list(ex.columns)[:3] == ["id", "nom_fichier", "date_export"] and len(ex) == 1
+    con.close()
+
+
+def test_lignes_export_sans_controle(tmp_path):
+    con = db.connect(tmp_path / "t.db")
+    eid = fr.importer(_export(tmp_path), con)
+    l = fr.lignes_export(eid, con)
+    assert "statut" in l.columns and "rapproche" in l.columns
+    assert set(l.loc[l["type"] != "AUTRE", "statut"]) == {"—"}
+    assert set(l.loc[l["type"] == "AUTRE", "statut"]) <= {"NON CONTROLE"}
+    assert not l["rapproche"].any()
+    con.close()
+
+
+def _df(*lignes):
+    """(empreinte, folio, base, ecart, rapproche)"""
+    return pd.DataFrame(lignes, columns=["empreinte", "folio", "fichier_base", "ecart_debit", "rapproche"])
+
+
+def test_groupes_compenses():
+    df = _df(("a", "CYC", "F1", 100.0, False), ("b", "CYC", "F1", -60.0, False), ("c", "CYC", "F1", -40.0, False),
+             ("d", "CYC", "F2", 10.0, False), ("e", "GCA", "F1", 5.0, False), ("f", "GCA", "F1", -5.0, True))
+    g = fr.groupes_compenses(df)
+    assert len(g) == 1
+    assert g.iloc[0]["folio"] == "CYC" and g.iloc[0]["nb"] == 3 and abs(g.iloc[0]["somme"]) < fr.TOL
+    assert sorted(g.iloc[0]["empreintes"]) == ["a", "b", "c"]
+
+
+def test_rapprocher_et_annuler(tmp_path):
+    con = db.connect(tmp_path / "t.db")
+    eid = fr.importer(_export(tmp_path), con)
+    l = fr.lignes_export(eid, con)
+    g = fr.groupes_compenses(l)
+    if g.empty:                                         # on fabrique un groupe si l'export n'en a pas
+        con.execute("UPDATE fr_lignes SET ecart_debit = -ecart_debit WHERE id = (SELECT MIN(id) FROM fr_lignes)")
+        con.commit()
+        l = fr.lignes_export(eid, con); g = fr.groupes_compenses(l)
+    empreintes = list(g.iloc[0]["empreintes"]) if not g.empty else []
+    if len(empreintes) < 2:
+        pytest.skip("aucun groupe compensé exploitable dans cet export")
+    rid = fr.rapprocher(empreintes, "test", con)
+    l2 = fr.lignes_export(eid, con)
+    assert l2.loc[l2["empreinte"].isin(empreintes), "rapproche"].all()
+    assert fr.groupes_compenses(l2).apply(lambda r: set(r["empreintes"]) != set(empreintes), axis=1).all() if not fr.groupes_compenses(l2).empty else True
+    with pytest.raises(ValueError):                      # déjà rapprochées
+        fr.rapprocher(empreintes, "", con)
+    r = fr.rapprochements(con)
+    assert len(r) == 1 and r.iloc[0]["nb_lignes"] == len(empreintes) and r.iloc[0]["commentaire"] == "test"
+    fr.annuler_rapprochement(rid, con)
+    assert not fr.lignes_export(eid, con)["rapproche"].any()
+    assert fr.rapprochements(con).iloc[0]["annule_le"]
+    con.close()
+
+
+def test_rapprocher_refuse_somme_non_nulle(tmp_path):
+    con = db.connect(tmp_path / "t.db")
+    eid = fr.importer(_export(tmp_path), con)
+    l = fr.lignes_export(eid, con)
+    deux = l[l["ecart_debit"] > 0]["empreinte"].head(2).tolist()
+    with pytest.raises(ValueError, match="somme"):
+        fr.rapprocher(deux, "", con)
+    with pytest.raises(ValueError, match="deux"):
+        fr.rapprocher(deux[:1], "", con)
+    con.close()
+
+
+def test_somme_selection():
+    df = _df(("a", "X", "F", 1.5, False), ("b", "X", "F", -1.5, False), ("c", "X", "F", 2.0, False))
+    assert fr.somme_selection(df, ["a", "b"]) == pytest.approx(0.0)
+    assert fr.somme_selection(df, ["a", "c"]) == pytest.approx(3.5)
