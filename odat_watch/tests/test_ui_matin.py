@@ -57,7 +57,7 @@ def app(tmp_path, monkeypatch):
         cm.enregistrer_histo(cm.Resultat(executed_at=now - timedelta(days=i), debut=deb, fin=fin, nb_jours_histo=3,
                                          compteurs=c, statuts=cm.statuts(c), statut_global="OK"), con)
     con.close()
-    monkeypatch.setattr(ui_matin, "CONFIG", Path(__file__))          # existe
+    monkeypatch.setattr(ui_matin, "_config_oracle_ok", lambda: True)
     monkeypatch.setattr(ui_matin, "connect", lambda: db.connect(base))
     monkeypatch.setattr(pm, "etat", lambda: None)
     monkeypatch.setattr(rm, "DOSSIER_RAPPORTS", rapports)

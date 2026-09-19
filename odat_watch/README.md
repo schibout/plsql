@@ -94,3 +94,8 @@ doivent coïncider.
 Validation Oracle en attente : à faire sur le poste Dalkia (le serveur n'est pas joignable depuis le poste de
 développement). Les requêtes ont été vérifiées ligne à ligne contre le `.sql` ; la première exécution réelle doit
 être comparée au log du `.ps1` du même matin.
+
+Écarts assumés avec le `.sql` : le seuil « flux DSP ≥ 5 » est appliqué tous les jours (le `.sql` le
+neutralise samedi, dimanche et lundi), donc un lundi sort le plus souvent en WARNING ; le rappel « fichier SG »
+s'affiche chaque lundi, même si un import RB est présent. Le lundi, pour contrôler tout le week-end, mettre
+« Début de nuit » au vendredi 19:00.
