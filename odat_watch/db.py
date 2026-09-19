@@ -86,6 +86,54 @@ CREATE TABLE IF NOT EXISTS parametres (      -- réglages de l'interface (ex. im
     cle    TEXT PRIMARY KEY,
     valeur TEXT
 );
+
+-- Folio Rose : exports, lignes, contrôle Oracle, rapprochements
+CREATE TABLE IF NOT EXISTS fr_exports (
+    id                     INTEGER PRIMARY KEY AUTOINCREMENT,
+    nom_fichier            TEXT NOT NULL,
+    file_hash              TEXT NOT NULL UNIQUE,
+    date_export            TEXT NOT NULL,          -- AAAA-MM-JJ (nom du fichier, sinon date d'import)
+    periode_debut          TEXT, periode_fin TEXT, -- JJ/MM/AAAA tels que lus
+    importe_le             TEXT NOT NULL,
+    nb_lignes              INTEGER NOT NULL,
+    encodage               TEXT,
+    nb_montants_illisibles INTEGER DEFAULT 0
+);
+CREATE TABLE IF NOT EXISTS fr_lignes (
+    id            INTEGER PRIMARY KEY AUTOINCREMENT,
+    export_id     INTEGER NOT NULL REFERENCES fr_exports(id) ON DELETE CASCADE,
+    num           INTEGER NOT NULL,                -- rang dans le fichier
+    empreinte     TEXT NOT NULL,                   -- identité stable d'une ligne entre exports
+    folio         TEXT, date TEXT, type TEXT, fichier TEXT, fichier_base TEXT,
+    amont_nb      REAL, amont_debit REAL, amont_credit REAL,
+    si_nb         REAL, si_debit REAL, si_credit REAL,
+    ecart_nb      REAL, ecart_debit REAL, ecart_credit REAL,
+    commentaire   TEXT, piece_jointe TEXT, lettrage TEXT,
+    age_j         INTEGER
+);
+CREATE INDEX IF NOT EXISTS ix_fr_lignes_export ON fr_lignes(export_id);
+CREATE INDEX IF NOT EXISTS ix_fr_lignes_empreinte ON fr_lignes(empreinte);
+CREATE TABLE IF NOT EXISTS fr_oracle (
+    export_id         INTEGER NOT NULL REFERENCES fr_exports(id) ON DELETE CASCADE,
+    folio             TEXT NOT NULL, fichier_base TEXT NOT NULL, type TEXT NOT NULL,
+    nb_oracle         REAL, montant_oracle REAL, nb_interface REAL, montant_interface REAL,
+    erreur            TEXT, controle_le TEXT NOT NULL,
+    PRIMARY KEY (export_id, folio, fichier_base, type)
+);
+CREATE TABLE IF NOT EXISTS fr_rapprochements (
+    id          INTEGER PRIMARY KEY AUTOINCREMENT,
+    cree_le     TEXT NOT NULL,
+    commentaire TEXT,
+    somme_ecart REAL NOT NULL,
+    nb_lignes   INTEGER NOT NULL,
+    annule_le   TEXT
+);
+CREATE TABLE IF NOT EXISTS fr_rapprochement_lignes (
+    rapprochement_id INTEGER NOT NULL REFERENCES fr_rapprochements(id) ON DELETE CASCADE,
+    empreinte        TEXT NOT NULL,
+    PRIMARY KEY (rapprochement_id, empreinte)
+);
+CREATE INDEX IF NOT EXISTS ix_fr_rl_empreinte ON fr_rapprochement_lignes(empreinte);
 """
 
 
