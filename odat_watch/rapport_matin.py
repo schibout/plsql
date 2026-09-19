@@ -41,8 +41,8 @@ STYLE = """
   .bandeau.ok   { background: #d7f2e3; color: #0b6b3a; border: 1px solid #7fc9a3; }
   .bandeau.warn { background: #fff4d6; color: #7a5600; border: 1px solid #e8c46a; }
   .bandeau.ko   { background: #fbdcdc; color: #9b1c1c; border: 1px solid #e39292; }
-  .tiles { display: flex; flex-wrap: wrap; gap: 11px; margin-bottom: 8px; }
-  .tile { flex: 1 1 145px; background: #fff; border: 1px solid #dde3ea; border-radius: 6px;
+  .tiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(145px, 1fr)); gap: 11px; margin-bottom: 8px; }
+  .tile { background: #fff; border: 1px solid #dde3ea; border-radius: 6px;
           padding: 13px 9px; text-align: center; box-shadow: 0 1px 2px rgba(0,0,0,.05); }
   .tv { font-size: 1.45em; font-weight: 700; line-height: 1.15; }
   .tn { font-size: .73em; color: #57606a; text-transform: uppercase; letter-spacing: .03em; margin-top: 4px; }
@@ -67,7 +67,14 @@ STYLE = """
 
 
 def _t(valeur) -> str:
-    return html.escape("" if valeur is None or (isinstance(valeur, float) and pd.isna(valeur)) else str(valeur))
+    if valeur is None:
+        return ""
+    try:
+        if pd.isna(valeur):
+            return ""
+    except (TypeError, ValueError):   # listes, dicts… : pd.isna n'est pas scalaire
+        pass
+    return html.escape(str(valeur))
 
 
 def _nb(valeur) -> str:
@@ -81,7 +88,7 @@ def _tuile(cle: str, res: Resultat) -> str:
     if cle in res.erreurs_synthese:
         pill = '<span class="pill ko">non contrôlé</span>'
     elif cle in res.statuts:
-        pill = f'<span class="pill {"ok" if res.statuts[cle] == "OK" else "warn"}">{res.statuts[cle]}</span>'
+        pill = f'<span class="pill {"ok" if res.statuts[cle] == "OK" else "warn"}">{_t(res.statuts[cle])}</span>'
     elif cle in ("nb_erreurs", "nb_images_manq"):
         pill = f'<span class="pill {"ko" if (val or 0) > 0 else "ok"}">{"ALERTE" if (val or 0) > 0 else "OK"}</span>'
     elif cle == "nb_warnings":

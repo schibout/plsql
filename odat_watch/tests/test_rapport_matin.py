@@ -69,3 +69,15 @@ def test_ecrire_nomme_le_fichier(tmp_path):
     p = rm.ecrire(_resultat(), tmp_path)
     assert p.name == "Controle_Matin_20260919_0730.html"
     assert p.read_text(encoding="utf-8").startswith("<!DOCTYPE html>")
+
+
+def test_valeurs_nulles_pandas_rendues_vides():
+    df = pd.DataFrame({"REQ_ID": [1], "FIN": [pd.NaT], "DUREE_MIN": [pd.NA]})
+    h = rm.construire(_resultat("ALERTE", nuit_err_detail=df))
+    assert "NaT" not in h and "&lt;NA&gt;" not in h
+
+
+def test_statut_tuile_echappe():
+    r = _resultat()
+    r.statuts["nb_ndf"] = "<b>"
+    assert "&lt;b&gt;" in rm.construire(r) and "<b>" not in rm.construire(r)
