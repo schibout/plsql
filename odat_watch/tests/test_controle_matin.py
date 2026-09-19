@@ -101,3 +101,29 @@ def test_catalogue_15_sections_sans_sysdate_de_fenetre():
             assert "SYSDATE" not in sql, cle
     for _cles, sql in cm.SYNTHESE:
         assert "SYSDATE" not in sql
+
+
+def test_binds_ignore_les_prefixes_et_les_doubles_deux_points():
+    sql = "SELECT :histo, :finale FROM dual WHERE x = 'a::b'"
+    assert cm._binds(sql, {"histo": 3, "fin": 1, "b": 2}) == {"histo": 3}
+
+
+def test_enrichir_job_ajoute_le_job_controlm(tmp_path):
+    import db
+    con = db.connect(tmp_path / "t.db")
+    con.execute("INSERT INTO ora_requests(request_id, job_name) VALUES (101, 'FINFIN_J18TRT_04_IMP01_Q')")
+    con.commit()
+    df = pd.DataFrame({"REQ_ID": [101, 102], "PROGRAMME": ["A", "B"]})
+    out = cm.enrichir_job(df, con)
+    assert list(out.columns)[:2] == ["REQ_ID", "JOB_CTM"]
+    assert out.loc[0, "JOB_CTM"] == "FINFIN_J18TRT_04_IMP01_Q"
+    assert out.loc[1, "JOB_CTM"] == ""
+    con.close()
+
+
+def test_enrichir_job_sans_colonne_req_id_ne_change_rien(tmp_path):
+    import db
+    con = db.connect(tmp_path / "t.db")
+    df = pd.DataFrame({"SOURCE": ["X"]})
+    assert cm.enrichir_job(df, con).equals(df)
+    con.close()

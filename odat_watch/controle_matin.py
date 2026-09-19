@@ -17,6 +17,7 @@ Usage en ligne de commande (c'est ce que lance la tâche planifiée) :
 """
 from __future__ import annotations
 import argparse
+import re
 import sqlite3
 import time
 from dataclasses import dataclass, field
@@ -367,4 +368,157 @@ AND    NOT EXISTS (SELECT 1 FROM {{s}}fnd_documents fd
 
 def _binds(sql: str, params: dict) -> dict:
     """oracledb refuse les binds absents de la requête : on ne passe que ceux qu'elle utilise."""
-    return {k: v for k, v in params.items() if f":{k}" in sql}
+    presents = set(re.findall(r"(?<!:):(\w+)", sql))
+    return {k: v for k, v in params.items() if k in presents}
+
+
+# ------------------------------------------------------------------ exécution
+
+def _lire_df(cur, sql: str, params: dict) -> pd.DataFrame:
+    cur.execute(sql, _binds(sql, params))
+    cols = [d[0] for d in cur.description]
+    return pd.DataFrame.from_records(cur.fetchall(), columns=cols)
+
+
+def enrichir_job(df: pd.DataFrame, con: sqlite3.Connection) -> pd.DataFrame:
+    """Ajoute JOB_CTM (job Control-M connu d'ora_requests) juste après REQ_ID. Vide si inconnu."""
+    if df is None or "REQ_ID" not in df.columns or df.empty:
+        return df
+    ids = [int(x) for x in df["REQ_ID"].dropna().unique()]
+    q = ",".join("?" * len(ids))
+    connus = {r[0]: r[1] or "" for r in con.execute(
+        f"SELECT request_id, job_name FROM ora_requests WHERE request_id IN ({q})", ids)}
+    out = df.copy()
+    out.insert(1, "JOB_CTM", out["REQ_ID"].map(lambda x: connus.get(int(x), "") if pd.notna(x) else ""))
+    return out
+
+
+def executer(debut: datetime, fin: datetime, nb_jours_histo: int = 3) -> Resultat:
+    """Lance la synthèse puis les 15 sections sur la plage [debut, fin[. Une section en échec n'arrête pas les autres."""
+    if fin <= debut:
+        raise ValueError("La fin de la plage doit être postérieure à son début.")
+    cfg = load_config()
+    s = _schema(cfg)
+    params = {"debut": debut, "fin": fin, "histo": int(nb_jours_histo)}
+    t0 = time.perf_counter()
+    executed_at = datetime.now()
+    compteurs: dict = {k: None for k in COMPTEURS}
+    erreurs_synthese: dict = {}
+    date_rb_max = None
+    sections: list[Section] = []
+
+    with _connect_oracle(cfg) as ocon:
+        cur = ocon.cursor()
+        for cles, sql in SYNTHESE:
+            sql = sql.format(s=s)
+            try:
+                cur.execute(sql, _binds(sql, params))
+                row = cur.fetchone() or ()
+                for cle, val in zip(cles, row):
+                    if cle == "date_rb_max":
+                        date_rb_max = val.date() if hasattr(val, "date") else val
+                    else:
+                        compteurs[cle] = int(val or 0)
+            except Exception as e:  # noqa: BLE001 — on veut le message Oracle, quel qu'il soit
+                for cle in cles:
+                    if cle != "date_rb_max":
+                        erreurs_synthese[cle] = str(e).strip()
+        for cle, titre, sql, alerte_si_lignes in CATALOGUE:
+            sec = Section(cle=cle, titre=titre)
+            try:
+                sec.df = _lire_df(cur, sql.format(s=s), params)
+                sec.alerte = bool(alerte_si_lignes and not sec.df.empty)
+            except Exception as e:  # noqa: BLE001
+                sec.erreur = str(e).strip()
+            sections.append(sec)
+
+    con = connect()
+    try:
+        for sec in sections:
+            if sec.cle in ("nuit_err_detail", "nuit_warnings", "nuit_longs", "nuit_en_cours"):
+                sec.df = enrichir_job(sec.df, con)
+        res = Resultat(executed_at=executed_at, debut=debut, fin=fin, nb_jours_histo=int(nb_jours_histo),
+                       compteurs=compteurs, statuts=statuts(compteurs),
+                       statut_global=statut_global(compteurs, sections), sections=sections,
+                       duree_s=round(time.perf_counter() - t0, 1), date_rb_max=date_rb_max,
+                       erreurs_synthese=erreurs_synthese)
+        enregistrer_histo(res, con)
+    finally:
+        con.close()
+    return res
+
+
+# ------------------------------------------------------------------ historique SQLite
+
+def enregistrer_histo(res: Resultat, con: sqlite3.Connection) -> int:
+    cols = ["date_ctrl", "executed_at", "plage_debut", "plage_fin", "statut_global",
+            *COMPTEURS, "duree_s", "fichier_rapport"]
+    vals = [res.date_ctrl.strftime("%Y-%m-%d"), res.executed_at.strftime("%Y-%m-%d %H:%M:%S"),
+            res.debut.strftime("%Y-%m-%d %H:%M"), res.fin.strftime("%Y-%m-%d %H:%M"), res.statut_global,
+            *[res.compteurs.get(k) for k in COMPTEURS], res.duree_s, res.fichier_rapport]
+    cur = con.execute(f"INSERT INTO controle_matin_histo({','.join(cols)}) VALUES ({','.join('?' * len(cols))})", vals)
+    con.commit()
+    res.histo_id = cur.lastrowid
+    return res.histo_id
+
+
+def maj_fichier_rapport(histo_id: int, fichier: str, con: sqlite3.Connection) -> None:
+    con.execute("UPDATE controle_matin_histo SET fichier_rapport = ? WHERE id = ?", (fichier, histo_id))
+    con.commit()
+
+
+def delta_veille(compteurs: dict, date_ctrl: date, con: sqlite3.Connection) -> dict:
+    """Écart de chaque compteur avec la dernière exécution d'un jour antérieur. {} si aucune."""
+    row = con.execute(
+        f"SELECT date_ctrl, {','.join(COMPTEURS)} FROM controle_matin_histo "
+        "WHERE date_ctrl < ? ORDER BY executed_at DESC LIMIT 1", (date_ctrl.strftime("%Y-%m-%d"),)).fetchone()
+    if row is None:
+        return {}
+    out = {"date": row[0]}
+    for k in COMPTEURS:
+        a, b = compteurs.get(k), row[k]
+        if a is not None and b is not None:
+            out[k] = a - b
+    return out
+
+
+def historique(jours: int, con: sqlite3.Connection) -> pd.DataFrame:
+    """Une ligne par jour (dernière exécution du jour), sur les N derniers jours."""
+    sql = f"""
+    SELECT date_ctrl, executed_at, statut_global, {','.join(COMPTEURS)}
+    FROM controle_matin_histo h
+    WHERE executed_at = (SELECT MAX(executed_at) FROM controle_matin_histo WHERE date_ctrl = h.date_ctrl)
+      AND date_ctrl >= date('now', ?)
+    ORDER BY date_ctrl"""
+    return pd.read_sql_query(sql, con, params=(f"-{int(jours)} days",))
+
+
+# ------------------------------------------------------------------ ligne de commande
+
+def _parse_dt(txt: str | None) -> datetime | None:
+    return datetime.strptime(txt, "%Y-%m-%d %H:%M") if txt else None
+
+
+if __name__ == "__main__":
+    ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    ap.add_argument("--debut", help='début de nuit "AAAA-MM-JJ HH:MM" (défaut hier 19:00)')
+    ap.add_argument("--fin", help='fin de nuit "AAAA-MM-JJ HH:MM" (défaut aujourd\'hui 07:00)')
+    ap.add_argument("--histo", type=int, default=3, help="jours d'historique (défaut 3)")
+    ap.add_argument("--rapport", action="store_true", help="écrit aussi le rapport HTML dans rapports/")
+    a = ap.parse_args()
+    d0, f0 = plage_par_defaut(datetime.now())
+    res = executer(_parse_dt(a.debut) or d0, _parse_dt(a.fin) or f0, a.histo)
+    print(f"[{res.statut_global}] plage {res.debut:%d/%m %H:%M} → {res.fin:%d/%m %H:%M}, {res.duree_s} s")
+    for k in COMPTEURS:
+        v = res.compteurs.get(k)
+        print(f"  {LIBELLES[k]:<26}: {'?' if v is None else v:>7}  [{res.statuts.get(k, '')}]")
+    for sec in res.sections:
+        if sec.erreur:
+            print(f"  !! {sec.titre} : {sec.erreur}")
+    if a.rapport:
+        import rapport_matin
+        chemin = rapport_matin.ecrire(res)
+        con = connect()
+        maj_fichier_rapport(res.histo_id, str(chemin), con)
+        con.close()
+        print(f"Rapport : {chemin}")
