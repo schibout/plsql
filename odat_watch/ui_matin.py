@@ -1,6 +1,8 @@
 """Onglet Matin : contrôle quotidien à la demande sur une plage date+heure, rapport HTML,
 programmation quotidienne, tendance."""
 from __future__ import annotations
+import contextlib
+import sqlite3
 import subprocess
 from datetime import datetime, time as dtime
 from pathlib import Path
@@ -63,7 +65,7 @@ def render(now: datetime, kpi):
         histo = c5.number_input("Histo (j)", 1, 30, 3)
         debut, fin = datetime.combine(j_deb, h_deb), datetime.combine(j_fin, h_fin)
         st.caption(f"Traitements de nuit du {debut:%d/%m %H:%M} au {fin:%d/%m %H:%M} · veille = {debut:%d/%m} · jour = {fin:%d/%m}")
-        if st.button("▶ Lancer le contrôle", type="primary", use_container_width=True):
+        if st.button("▶ Lancer le contrôle", type="primary", width="stretch"):
             if fin <= debut:
                 st.error("La fin de la plage doit être après son début.")
             else:
@@ -82,9 +84,8 @@ def render(now: datetime, kpi):
     if res is None:
         st.caption("Aucune exécution dans cette session. Les rapports déjà générés sont listés en bas de page.")
         _anciens_rapports()
-        con = connect()
-        _tendance(con)
-        con.close()
+        with contextlib.closing(connect()) as con:
+            _tendance(con)
         return
 
     AFFICHE[res.statut_global](f"**Statut global : {res.statut_global}** — {rm.MESSAGE_STATUT[res.statut_global]}  \n"
@@ -95,45 +96,44 @@ def render(now: datetime, kpi):
     if res.erreurs_synthese:
         st.error("Compteurs non contrôlés : " + ", ".join(cm.LIBELLES[k] for k in res.erreurs_synthese))
 
-    con = connect()
-    delta = cm.delta_veille(res.compteurs, res.date_ctrl, con)
-    cols = st.columns(6)
-    for i, cle in enumerate(cm.COMPTEURS):
-        v = res.compteurs.get(cle)
-        kpi(cols[i % 6], "?" if v is None else v, cm.LIBELLES[cle] + _delta_txt(delta, cle), _ton_tuile(res, cle))
-    if res.date_rb_max:
-        st.caption(f"Dernier import RB : {res.date_rb_max:%d/%m/%Y}")
+    with contextlib.closing(connect()) as con:
+        delta = cm.delta_veille(res.compteurs, res.date_ctrl, con)
+        cols = st.columns(6)
+        for i, cle in enumerate(cm.COMPTEURS):
+            v = res.compteurs.get(cle)
+            kpi(cols[i % 6], "?" if v is None else v, cm.LIBELLES[cle] + _delta_txt(delta, cle), _ton_tuile(res, cle))
+        if res.date_rb_max:
+            st.caption(f"Dernier import RB : {res.date_rb_max:%d/%m/%Y}")
 
-    st.markdown("#### Détail des contrôles")
-    for sec in res.sections:
-        titre = f"{'🔴 ' if sec.erreur else '⚠️ ' if sec.alerte else ''}{sec.titre} — {sec.nb} ligne(s)"
-        with st.expander(titre, expanded=bool(sec.alerte or sec.erreur)):
-            if sec.erreur:
-                st.error(sec.erreur)
-            elif sec.df is None or sec.df.empty:
-                st.caption("Aucune ligne.")
-            else:
-                st.dataframe(sec.df, use_container_width=True, hide_index=True)
+        st.markdown("#### Détail des contrôles")
+        for sec in res.sections:
+            titre = f"{'🔴 ' if sec.erreur else '⚠️ ' if sec.alerte else ''}{sec.titre} — {sec.nb} ligne(s)"
+            with st.expander(titre, expanded=bool(sec.alerte or sec.erreur)):
+                if sec.erreur:
+                    st.error(sec.erreur)
+                elif sec.df is None or sec.df.empty:
+                    st.caption("Aucune ligne.")
+                else:
+                    st.dataframe(sec.df, width="stretch", hide_index=True)
 
-    st.markdown("#### Rapport")
-    r1, r2 = st.columns([1, 3])
-    if r1.button("📄 Générer le rapport HTML", use_container_width=True):
-        try:
-            chemin = rm.ecrire(res)
-            if res.histo_id:
-                cm.maj_fichier_rapport(res.histo_id, str(chemin), con)
-            st.session_state["matin_rapport"] = str(chemin)
-        except OSError as e:
-            st.error(f"Écriture du rapport impossible : {e}")
-    if st.session_state.get("matin_rapport"):
-        chemin = Path(st.session_state["matin_rapport"])
-        with r2:
-            st.caption(f"Rapport écrit : `{chemin}`")
-            _bouton_telecharger(chemin, "dl_courant")
+        st.markdown("#### Rapport")
+        r1, r2 = st.columns([1, 3])
+        if r1.button("📄 Générer le rapport HTML", width="stretch"):
+            try:
+                chemin = rm.ecrire(res)
+                if res.histo_id:
+                    cm.maj_fichier_rapport(res.histo_id, str(chemin), con)
+                st.session_state["matin_rapport"] = str(chemin)
+            except (OSError, sqlite3.Error) as e:
+                st.error(f"Écriture du rapport impossible : {e}")
+        if st.session_state.get("matin_rapport"):
+            chemin = Path(st.session_state["matin_rapport"])
+            with r2:
+                st.caption(f"Rapport écrit : `{chemin}`")
+                _bouton_telecharger(chemin, "dl_courant")
 
-    _anciens_rapports()
-    _tendance(con)
-    con.close()
+        _anciens_rapports()
+        _tendance(con)
 
 
 def _bloc_programmer():
@@ -147,14 +147,14 @@ def _bloc_programmer():
                    "poste allumé et session ouverte.")
     c1, c2, c3 = st.columns([1, 1.2, 1])
     heure = c1.time_input("Heure", dtime(7, 15), key="m_hp", step=900)
-    if c2.button("Programmer", use_container_width=True, type="secondary"):
+    if c2.button("Programmer", width="stretch", type="secondary"):
         try:
             pm.creer(heure.strftime("%H:%M"))
             st.rerun()
         except (RuntimeError, OSError, subprocess.SubprocessError) as e:
             st.error(f"schtasks a échoué : {e}")
             st.code(subprocess.list2cmdline(pm.commande(heure.strftime("%H:%M"))), language="bat")
-    if c3.button("Supprimer", use_container_width=True, disabled=etat is None):
+    if c3.button("Supprimer", width="stretch", disabled=etat is None):
         try:
             pm.supprimer()
             st.rerun()
@@ -186,11 +186,13 @@ def _tendance(con):
                                  line=dict(color=couleur, width=2.5, shape="spline", smoothing=0.6),
                                  marker=dict(size=7, color=couleur, line=dict(width=1, color="white")),
                                  hovertemplate="%{x|%d/%m}<br>%{y}<extra>" + cm.LIBELLES[cle] + "</extra>"))
-    fig.add_trace(go.Scatter(x=h["date_ctrl"], y=[0] * len(h), mode="markers", name="statut du jour",
+    ymax = max(float(h[COULEURS.keys()].max().max()), 1.0)
+    fig.add_trace(go.Scatter(x=h["date_ctrl"], y=[-ymax * 0.07] * len(h), mode="markers", name="statut du jour",
                              marker=dict(size=13, symbol="square", color=[COULEUR_STATUT.get(s, "#8A94A6") for s in h["statut_global"]],
                                          line=dict(width=1, color="white")),
                              hovertemplate="%{x|%d/%m} : %{text}<extra></extra>", text=h["statut_global"]))
     fig.update_layout(height=340, margin=dict(l=10, r=10, t=10, b=10), template="plotly_white",
                       legend=dict(orientation="h", y=1.08), hovermode="x unified",
-                      xaxis=dict(tickformat="%d/%m", showgrid=False), yaxis=dict(rangemode="tozero", gridcolor="#EEF1F5"))
-    st.plotly_chart(fig, use_container_width=True)
+                      xaxis=dict(tickformat="%d/%m", showgrid=False),
+                      yaxis=dict(rangemode="normal", gridcolor="#EEF1F5", zeroline=True, zerolinecolor="#C9CED4"))
+    st.plotly_chart(fig, width="stretch")
