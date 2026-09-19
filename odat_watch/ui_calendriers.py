@@ -63,14 +63,56 @@ def render() -> None:
                         con.close()
 
     st.divider()
-    st.markdown("#### Historique des imports")
     con = connect()
     rows = calendar_import.imports(con)
-    con.close()
     if not rows:
+        con.close()
         st.info("Aucun calendrier chargé. Les nuits ordinaires restent utilisables sans calendrier.")
         return
+    _consulter(con, rows)
+    con.close()
+
+    st.markdown("#### Historique des imports")
     history = pd.DataFrame([dict(r) for r in rows])
     history["état"] = history["statut"].map({"active": "Actif", "inactive": "Historique"}).fillna(history["statut"])
     st.dataframe(history[["état", "nom_fichier", "importe_le", "nb_mois", "nb_operations", "message"]],
                  use_container_width=True, hide_index=True)
+
+
+def _consulter(con, rows) -> None:
+    """Contenu des calendriers enregistrés : une période comptable par onglet, prochains jalons en tête."""
+    st.markdown("#### 📆 Consulter le calendrier")
+    choix = {0: "Tous les calendriers actifs"}
+    choix.update({int(r["id"]): f"{r['nom_fichier']} ({'actif' if r['statut'] == 'active' else 'historique'})" for r in rows})
+    sel = st.selectbox("Calendrier", list(choix), format_func=choix.get, key="cal_sel")
+    ev = calendar_import.evenements(con, None if sel == 0 else sel)
+    if ev.empty:
+        st.caption("Aucune opération dans ce calendrier.")
+        return
+    ev["date"] = pd.to_datetime(ev["date_operation"], errors="coerce")
+    aujourdhui = pd.Timestamp.today().normalize()
+    prochains = ev[(ev["date"] >= aujourdhui) & (ev["date"] <= aujourdhui + pd.Timedelta(days=14))]
+    a, b, c = st.columns(3)
+    a.metric("Opérations", len(ev))
+    b.metric("Périodes", ev["periode_comptable"].nunique())
+    c.metric("Jalons dans les 14 jours", len(prochains))
+    if not prochains.empty:
+        with st.expander(f"Prochains jalons ({len(prochains)})", expanded=True):
+            for _, r in prochains.iterrows():
+                st.write(f"**{r['date']:%a %d/%m}** · {r['decalage_j'] or ''} · {r['moment'] or ''} — {r['libellé']}")
+    recherche = st.text_input("Rechercher une opération", "", key="cal_recherche",
+                              placeholder="ex. paie, GL, stocks…").strip().lower()
+    if recherche:
+        ev = ev[ev["libellé"].str.lower().str.contains(recherche, regex=False)]
+    colonnes = {"date_operation": "date", "decalage_j": "J±", "moment": "moment", "arrete": "arrêté",
+                "traitement": "traitement", "restitution": "restitution", "source_sheet": "feuille"}
+    periodes = sorted(ev["periode_comptable"].dropna().unique())
+    if not periodes:
+        st.caption("Aucune opération ne correspond.")
+        return
+    onglets = st.tabs([f"{p} ({int((ev['periode_comptable'] == p).sum())})" for p in periodes])
+    for onglet, periode in zip(onglets, periodes):
+        with onglet:
+            t = ev[ev["periode_comptable"] == periode][list(colonnes)].rename(columns=colonnes)
+            t.insert(1, "jour", pd.to_datetime(t["date"]).dt.strftime("%a"))
+            st.dataframe(t, use_container_width=True, hide_index=True, height=min(600, 38 * len(t) + 40))

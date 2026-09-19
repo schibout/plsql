@@ -53,3 +53,21 @@ def test_prevision_conserve_un_job_qui_chevauche_le_debut_de_plage():
                               duree_mediane=30, frequence="Quotidien")
     result = forecast.prevision({profile.job_name: profile}, datetime(2026, 1, 5, 19), datetime(2026, 1, 5, 20))
     assert len(result) == 1
+
+
+def test_evenements_du_calendrier(tmp_path):
+    import db, calendar_import as ci
+    con = db.connect(tmp_path / "t.db")
+    con.execute("INSERT INTO calendar_imports(id, nom_fichier, file_hash, importe_le, statut, nb_mois, nb_operations) "
+                "VALUES (1, 'T1.xlsx', 'h1', '2026-01-01', 'active', 3, 2), (2, 'T0.xlsx', 'h0', '2025-10-01', 'inactive', 3, 1)")
+    con.executemany("INSERT INTO calendar_events(import_id, periode_comptable, date_operation, decalage_j, moment, arrete, traitement, source_sheet, source_row) "
+                    "VALUES (?,?,?,?,?,?,?,?,?)",
+                    [(1, "2026-01", "2026-01-23", "J-5", "Nuit", None, "Incorporation GL de paie", "JANVIER 2026", 5),
+                     (1, "2026-01", "2026-01-20", "J-8", "Matin", "Remontée des PV", None, "JANVIER 2026", 3),
+                     (2, "2025-12", "2025-12-20", "J-5", "Nuit", None, "Ancien", "DECEMBRE 2025", 3)])
+    con.commit()
+    actifs = ci.evenements(con)
+    assert list(actifs["date_operation"]) == ["2026-01-20", "2026-01-23"]
+    assert list(actifs["libellé"]) == ["Remontée des PV", "Incorporation GL de paie"]
+    assert len(ci.evenements(con, 2)) == 1
+    con.close()

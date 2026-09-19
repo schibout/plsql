@@ -17,6 +17,8 @@ from typing import Iterable
 import xml.etree.ElementTree as ET
 import zipfile
 
+import pandas as pd
+
 
 MONTHS = {
     "JANVIER": 1, "FEVRIER": 2, "FÉVRIER": 2, "MARS": 3, "AVRIL": 4,
@@ -236,3 +238,19 @@ def import_workbook(con: sqlite3.Connection, name: str, content: bytes, preview:
 
 def imports(con: sqlite3.Connection):
     return con.execute("SELECT * FROM calendar_imports ORDER BY importe_le DESC, id DESC").fetchall()
+
+
+def evenements(con: sqlite3.Connection, import_id: int | None = None) -> pd.DataFrame:
+    """Opérations d'un calendrier (tous les calendriers actifs si import_id est None), datées et libellées."""
+    sql = """
+        SELECT e.id, e.import_id, i.nom_fichier, e.periode_comptable, e.date_operation, e.decalage_j, e.moment,
+               e.arrete, e.traitement, e.restitution, e.source_sheet, e.source_row
+        FROM calendar_events e JOIN calendar_imports i ON i.id = e.import_id
+        WHERE {} ORDER BY e.date_operation, e.moment, e.id"""
+    if import_id is None:
+        df = pd.read_sql_query(sql.format("i.statut = 'active'"), con)
+    else:
+        df = pd.read_sql_query(sql.format("e.import_id = ?"), con, params=(int(import_id),))
+    if not df.empty:
+        df["libellé"] = df[["arrete", "traitement", "restitution"]].fillna("").agg(" · ".join, axis=1).str.strip(" ·")
+    return df
