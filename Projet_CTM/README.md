@@ -30,6 +30,15 @@ Exécuter les fonctions dans cet ordre depuis l'éditeur Apps Script :
 4. Contrôler les fichiers dans le dossier Drive et les journaux d'exécution.
 5. `createCtmTimeDrivenTrigger()` : crée le déclencheur toutes les 15 minutes.
 
+Après toute modification de `appsscript.json`, relancer
+`setupFolderAndLabels()` et accepter la nouvelle demande d'autorisation Google.
+Le service Drive avancé n'est pas nécessaire : le projet utilise `DriveApp`.
+
+Si une ancienne exécution a enregistré le mode incrémental avant que les droits
+Drive soient accordés, exécuter une seule fois `resetCtmImportState()`, puis
+relancer `processCtmEmails()`. Cette réinitialisation ne supprime aucun mail ni
+aucun fichier Drive.
+
 ## Première exécution et mode incrémental
 
 - Tant que le rattrapage initial n'est pas terminé, la recherche remonte quatre mois en arrière.

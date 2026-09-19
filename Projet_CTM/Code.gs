@@ -492,6 +492,19 @@ function setupFolderAndLabels() {
 }
 
 /**
+ * Efface uniquement le curseur et les identifiants d'import memorises.
+ * Les e-mails, leurs libelles et les fichiers Drive ne sont pas supprimes.
+ * A executer manuellement avant de recommencer un rattrapage des quatre mois.
+ */
+function resetCtmImportState() {
+  PropertiesService.getScriptProperties()
+    .deleteProperty(CTM_CONFIG.STATE_PROPERTY_KEY);
+  ctmLog_('INFO', 'Etat d\'import CTM reinitialise.', {
+    propertyKey: CTM_CONFIG.STATE_PROPERTY_KEY,
+  });
+}
+
+/**
  * Crée le déclencheur de 15 minutes s'il n'existe pas déjà.
  */
 function createCtmTimeDrivenTrigger() {
