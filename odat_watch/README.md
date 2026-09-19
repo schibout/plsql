@@ -108,10 +108,13 @@ Validation Oracle en attente : à faire sur le poste Dalkia (le serveur n'est pa
 développement). Les requêtes ont été vérifiées ligne à ligne contre le `.sql` ; la première exécution réelle doit
 être comparée au log du `.ps1` du même matin.
 
-Écarts assumés avec le `.sql` : le seuil « flux DSP ≥ 5 » est appliqué tous les jours (le `.sql` le
-neutralise samedi, dimanche et lundi), donc un lundi sort le plus souvent en WARNING ; le rappel « fichier SG »
-s'affiche chaque lundi, même si un import RB est présent. Le lundi, pour contrôler tout le week-end, mettre
-« Début de nuit » au vendredi 19:00.
+Jours sans intégration : si la veille contrôlée (date de « Début de nuit ») est un samedi, un dimanche ou un jour
+férié français (fériés calculés, Pâques inclus), les volumes (flux DSP, notes de frais, factures, GL, imports RB)
+passent en **N/A** et ne pèsent pas dans le statut global : seuls les traitements de la nuit (erreurs, warnings,
+en cours) et les images Xerox manquantes comptent. Case « Contrôler les volumes malgré tout » (ou `--volumes` en
+ligne de commande) pour forcer. Le lundi, pour contrôler tout le week-end, mettre « Début de nuit » au vendredi 19:00.
+Le rappel « fichier SG » s'affiche chaque lundi. Les tuiles de synthèse sont cliquables : elles ouvrent la section
+de détail correspondante.
 
 ## Folio Rose
 

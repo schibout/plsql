@@ -62,7 +62,7 @@ def app(tmp_path, monkeypatch):
     monkeypatch.setattr(pm, "etat", lambda: None)
     monkeypatch.setattr(rm, "DOSSIER_RAPPORTS", rapports)
     monkeypatch.setattr(rm.ecrire, "__defaults__", (rapports,))      # défaut lié à la définition
-    monkeypatch.setattr(cm, "executer", lambda debut, fin, histo: _faux_resultat(now))
+    monkeypatch.setattr(cm, "executer", lambda debut, fin, histo, **kw: _faux_resultat(now))
     at = AppTest.from_function(_script, default_timeout=60)
     at.run()
     assert not at.exception
@@ -87,9 +87,9 @@ def test_resultats(app):
     erreurs = [e.value for e in at.error]
     assert any("Statut global : ALERTE" in e for e in erreurs)
     assert "ORA-00942: table or view does not exist" in erreurs
-    tuiles = [m.value for m in at.markdown]
-    assert any(m.startswith("2 Erreurs") and "+2 vs" in m and m.endswith("[err]") for m in tuiles)
-    assert any("Images manquantes" in m and m.endswith("[err]") for m in tuiles)
+    # les tuiles sont des boutons : « **valeur** / libellé · écart »
+    assert at.button(key="m_tuile_nb_erreurs").label.startswith("**2**") and "+2 vs" in at.button(key="m_tuile_nb_erreurs").label
+    assert "Images manquantes" in at.button(key="m_tuile_nb_images_manq").label
     labels = [x.label for x in at.expander]
     assert len(labels) == len(cm.CATALOGUE) == 15
     assert labels[0].startswith("⚠️") and labels[0].endswith("2 ligne(s)")
@@ -121,9 +121,19 @@ def test_plage_invalide(app):
 
 def test_systemexit_affiche(app, monkeypatch):
     at, _ = app
-    def boom(*a):
+    def boom(*a, **kw):
         raise SystemExit("Fichier config.ini absent")
     monkeypatch.setattr(cm, "executer", boom)
     _bouton(at, "▶").click().run()
     assert not at.exception
     assert any("Contrôle impossible : Fichier config.ini absent" in e.value for e in at.error)
+
+
+def test_tuile_ouvre_la_section(app):
+    at, _ = app
+    _bouton(at, "▶").click().run()
+    at.button(key="m_tuile_nb_ndf").click().run()
+    assert not at.exception
+    ouverts = [x.label for x in at.expander if x.proto.expanded]
+    assert any("NOTILUS" in l for l in ouverts)
+    assert not any("DSP — Détail" in l for l in ouverts)      # les autres sections sont repliées

@@ -58,6 +58,8 @@ STYLE = """
   .pill.ok   { background: #d7f2e3; color: #0b6b3a; }
   .pill.warn { background: #fff4d6; color: #7a5600; }
   .pill.ko   { background: #fbdcdc; color: #9b1c1c; }
+  .pill.na   { background: #eceff2; color: #57606a; }
+  .pill.na   { background: #eceff2; color: #57606a; }
   .vide { color: #8b949e; font-style: italic; font-size: .88em; padding: 8px 2px; }
   .erreur { background: #fbdcdc; color: #9b1c1c; border: 1px solid #e39292; border-radius: 6px;
             padding: 9px 14px; font-family: Consolas, Menlo, monospace; font-size: .82em; white-space: pre-wrap; }
@@ -88,7 +90,8 @@ def _tuile(cle: str, res: Resultat) -> str:
     if cle in res.erreurs_synthese:
         pill = '<span class="pill ko">non contrôlé</span>'
     elif cle in res.statuts:
-        pill = f'<span class="pill {"ok" if res.statuts[cle] == "OK" else "warn"}">{_t(res.statuts[cle])}</span>'
+        cls = {"OK": "ok", "N/A": "na"}.get(res.statuts[cle], "warn")
+        pill = f'<span class="pill {cls}">{_t(res.statuts[cle])}</span>'
     elif cle in ("nb_erreurs", "nb_images_manq"):
         pill = f'<span class="pill {"ko" if (val or 0) > 0 else "ok"}">{"ALERTE" if (val or 0) > 0 else "OK"}</span>'
     elif cle == "nb_warnings":
@@ -102,8 +105,11 @@ def _tuile(cle: str, res: Resultat) -> str:
 def _bandeau(res: Resultat) -> str:
     cls = CLASSE_STATUT.get(res.statut_global, "ko")
     rappel = ""
+    if res.sans_integration:
+        rappel += (f"<br>Veille = {_t(res.sans_integration)} : pas d'intégration ce jour-là, les volumes "
+                   "(flux, factures, GL, RB) sont indicatifs (N/A) et ne pèsent pas dans le statut.")
     if res.executed_at.weekday() == 0:
-        rappel = ("<br><b>Rappel lundi :</b> charger manuellement le fichier SG (Société Générale), "
+        rappel += ("<br><b>Rappel lundi :</b> charger manuellement le fichier SG (Société Générale), "
                   "les imports automatiques ne tournent pas le dimanche.")
     return (f'<div class="bandeau {cls}"><strong>Statut global : {_t(res.statut_global)}</strong>'
             f'{_t(MESSAGE_STATUT.get(res.statut_global, ""))}{rappel}</div>')

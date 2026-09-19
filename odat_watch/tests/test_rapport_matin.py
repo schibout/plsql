@@ -81,3 +81,12 @@ def test_statut_tuile_echappe():
     r = _resultat()
     r.statuts["nb_ndf"] = "<b>"
     assert "&lt;b&gt;" in rm.construire(r) and "<b>" not in rm.construire(r)
+
+
+def test_rapport_jour_sans_integration():
+    r = _resultat(executed_at=datetime(2026, 9, 21, 7, 30))          # lundi : veille = dimanche
+    r.sans_integration = "dimanche"
+    r.statuts = cm.statuts(r.compteurs, volumes_controles=False)
+    h = rm.construire(r)
+    assert "pill na" in h and h.count(">N/A<") == 8
+    assert "pas d'intégration ce jour-là" in h and "fichier SG" in h

@@ -127,3 +127,38 @@ def test_enrichir_job_sans_colonne_req_id_ne_change_rien(tmp_path):
     df = pd.DataFrame({"SOURCE": ["X"]})
     assert cm.enrichir_job(df, con).equals(df)
     con.close()
+
+
+# ------------------------------------------------------------------ jours sans intégration
+
+def test_jours_feries_2026():
+    from datetime import date
+    f = cm.jours_feries(2026)
+    assert date(2026, 4, 6) in f          # lundi de Pâques 2026
+    assert date(2026, 5, 14) in f         # Ascension
+    assert date(2026, 5, 25) in f         # lundi de Pentecôte
+    assert {date(2026, 1, 1), date(2026, 5, 1), date(2026, 5, 8), date(2026, 7, 14),
+            date(2026, 8, 15), date(2026, 11, 1), date(2026, 11, 11), date(2026, 12, 25)} <= f
+    assert len(f) == 11
+
+
+def test_jour_sans_integration():
+    from datetime import date
+    assert cm.jour_sans_integration(date(2026, 9, 19)) == "samedi"
+    assert cm.jour_sans_integration(date(2026, 9, 20)) == "dimanche"
+    assert cm.jour_sans_integration(date(2026, 7, 14)) == "jour férié"
+    assert cm.jour_sans_integration(date(2026, 9, 18)) is None
+
+
+def test_statuts_volumes_na_quand_pas_d_integration():
+    s = cm.statuts(compteurs_ok(nb_flux_dsp=0, nb_ndf=0, nb_rb_imports=0), volumes_controles=False)
+    assert set(s.values()) == {"N/A"}
+
+
+def test_statut_global_ignore_les_volumes_sans_integration():
+    c = compteurs_ok(nb_flux_dsp=0, nb_ndf=0, nb_fac_xerox=0, nb_fac_tradeshift=0, nb_gl_interface=0,
+                     nb_gl_lignes=0, nb_rb_imports=0)
+    assert cm.statut_global(c, _sections()) == "WARNING"
+    assert cm.statut_global(c, _sections(), volumes_controles=False) == "OK"
+    assert cm.statut_global(compteurs_ok(nb_erreurs=1), _sections(), volumes_controles=False) == "ALERTE"
+    assert cm.statut_global(compteurs_ok(nb_warnings=1), _sections(), volumes_controles=False) == "WARNING"

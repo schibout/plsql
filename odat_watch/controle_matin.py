@@ -73,6 +73,7 @@ class Resultat:
     erreurs_synthese: dict = field(default_factory=dict)   # compteur -> message Oracle
     fichier_rapport: str | None = None
     histo_id: int | None = None
+    sans_integration: str | None = None   # "samedi" | "dimanche" | "jour férié" : volumes non contrôlés
 
     @property
     def date_ctrl(self) -> date:
@@ -90,9 +91,51 @@ def plage_par_defaut(now: datetime) -> tuple[datetime, datetime]:
 
 # ------------------------------------------------------------------ règles de statut
 
-def statuts(compteurs: dict) -> dict:
-    """OK / W par indicateur, mêmes seuils que la SECTION 2 du .sql. Un compteur absent vaut W."""
+# ------------------------------------------------------------------ jours sans intégration
+
+def _paques(annee: int) -> date:
+    """Dimanche de Pâques (algorithme de Meeus/Jones/Butcher)."""
+    a, b, c = annee % 19, annee // 100, annee % 100
+    d, e = b // 4, b % 4
+    f = (b + 8) // 25
+    g = (b - f + 1) // 3
+    h = (19 * a + b - d - g + 15) % 30
+    i, k = c // 4, c % 4
+    l = (32 + 2 * e + 2 * i - h - k) % 7
+    m = (a + 11 * h + 22 * l) // 451
+    mois = (h + l - 7 * m + 114) // 31
+    jour = ((h + l - 7 * m + 114) % 31) + 1
+    return date(annee, mois, jour)
+
+
+def jours_feries(annee: int) -> set[date]:
+    """Les 11 jours fériés français (métropole)."""
+    paques = _paques(annee)
+    return {date(annee, 1, 1), date(annee, 5, 1), date(annee, 5, 8), date(annee, 7, 14), date(annee, 8, 15),
+            date(annee, 11, 1), date(annee, 11, 11), date(annee, 12, 25),
+            paques + timedelta(days=1), paques + timedelta(days=39), paques + timedelta(days=50)}
+
+
+def jour_sans_integration(veille: date) -> str | None:
+    """Motif pour lequel aucun flux n'est intégré ce jour-là (les volumes ne sont alors pas contrôlés)."""
+    if veille in jours_feries(veille.year):
+        return "jour férié"
+    if veille.weekday() == 5:
+        return "samedi"
+    if veille.weekday() == 6:
+        return "dimanche"
+    return None
+
+
+# ------------------------------------------------------------------ règles de statut
+
+def statuts(compteurs: dict, volumes_controles: bool = True) -> dict:
+    """OK / W par indicateur, mêmes seuils que la SECTION 2 du .sql. Un compteur absent vaut W.
+    volumes_controles=False (veille = week-end ou férié) : tous les indicateurs de volume valent N/A."""
     c = {k: compteurs.get(k) for k in COMPTEURS}
+    if not volumes_controles:
+        return {k: "N/A" for k in ("nb_flux_dsp", "nb_ndf", "nb_fac_xerox", "nb_fac_tradeshift", "nb_fac_dsp",
+                                   "nb_gl_interface", "nb_gl_lignes", "nb_rb_imports")}
     def pos(k): return c[k] is not None and c[k] > 0
     dsp_ok = c["nb_flux_dsp"] is not None and c["nb_flux_dsp"] >= 5
     return {
@@ -108,14 +151,15 @@ def statuts(compteurs: dict) -> dict:
     }
 
 
-def statut_global(compteurs: dict, sections: list[Section]) -> str:
-    """ERREUR (contrôle indisponible) > ALERTE (erreurs nuit, images manquantes) > WARNING > OK."""
+def statut_global(compteurs: dict, sections: list[Section], volumes_controles: bool = True) -> str:
+    """ERREUR (contrôle indisponible) > ALERTE (erreurs nuit, images manquantes) > WARNING > OK.
+    Sans intégration la veille, les volumes (statut N/A) ne pèsent pas : seuls la nuit et les images comptent."""
     if any(s.erreur for s in sections) or any(compteurs.get(k) is None for k in COMPTEURS):
         return "ERREUR"
     if (compteurs["nb_erreurs"] or 0) > 0 or (compteurs["nb_images_manq"] or 0) > 0:
         return "ALERTE"
     en_cours = next((s for s in sections if s.cle == "nuit_en_cours"), None)
-    if ((compteurs["nb_warnings"] or 0) > 0 or "W" in statuts(compteurs).values()
+    if ((compteurs["nb_warnings"] or 0) > 0 or "W" in statuts(compteurs, volumes_controles).values()
             or (en_cours is not None and en_cours.nb > 0)):
         return "WARNING"
     return "OK"
@@ -330,6 +374,8 @@ GROUP BY TRUNC(import_date), TO_CHAR(import_date, {JOUR_FR})
 ORDER BY TRUNC(import_date) DESC""", False),
 ]
 
+CATALOGUE_TITRES = [(cle, titre) for cle, titre, _sql, _a in CATALOGUE]
+
 # Compteurs de la SECTION 2 : (clé(s), sql). Une requête peut alimenter plusieurs compteurs.
 SYNTHESE: list[tuple[tuple[str, ...], str]] = [
     (("nb_flux_dsp",), "SELECT COUNT(DISTINCT file_name) FROM (\n" + "\n    UNION ALL ".join(
@@ -394,8 +440,10 @@ def enrichir_job(df: pd.DataFrame, con: sqlite3.Connection) -> pd.DataFrame:
     return out
 
 
-def executer(debut: datetime, fin: datetime, nb_jours_histo: int = 3) -> Resultat:
-    """Lance la synthèse puis les 15 sections sur la plage [debut, fin[. Une section en échec n'arrête pas les autres."""
+def executer(debut: datetime, fin: datetime, nb_jours_histo: int = 3, forcer_volumes: bool = False) -> Resultat:
+    """Lance la synthèse puis les 15 sections sur la plage [debut, fin[. Une section en échec n'arrête pas les autres.
+    Si la veille (date de début) est un samedi, un dimanche ou un jour férié, les volumes ne sont pas contrôlés
+    (statut N/A), sauf forcer_volumes=True."""
     if fin <= debut:
         raise ValueError("La fin de la plage doit être postérieure à son début.")
     cfg = load_config()
@@ -433,16 +481,18 @@ def executer(debut: datetime, fin: datetime, nb_jours_histo: int = 3) -> Resulta
                 sec.erreur = str(e).strip()
             sections.append(sec)
 
+    motif = None if forcer_volumes else jour_sans_integration(debut.date())
+    volumes = motif is None
     con = connect()
     try:
         for sec in sections:
             if sec.cle in ("nuit_err_detail", "nuit_warnings", "nuit_longs", "nuit_en_cours"):
                 sec.df = enrichir_job(sec.df, con)
         res = Resultat(executed_at=executed_at, debut=debut, fin=fin, nb_jours_histo=int(nb_jours_histo),
-                       compteurs=compteurs, statuts=statuts(compteurs),
-                       statut_global=statut_global(compteurs, sections), sections=sections,
+                       compteurs=compteurs, statuts=statuts(compteurs, volumes),
+                       statut_global=statut_global(compteurs, sections, volumes), sections=sections,
                        duree_s=round(time.perf_counter() - t0, 1), date_rb_max=date_rb_max,
-                       erreurs_synthese=erreurs_synthese)
+                       erreurs_synthese=erreurs_synthese, sans_integration=motif)
         enregistrer_histo(res, con)
     finally:
         con.close()
@@ -511,10 +561,12 @@ if __name__ == "__main__":
     ap.add_argument("--fin", help='fin de nuit "AAAA-MM-JJ HH:MM" (défaut aujourd\'hui 07:00)')
     ap.add_argument("--histo", type=int, default=3, help="jours d'historique (défaut 3)")
     ap.add_argument("--rapport", action="store_true", help="écrit aussi le rapport HTML dans rapports/")
+    ap.add_argument("--volumes", action="store_true", help="contrôle les volumes même si la veille est un week-end / férié")
     a = ap.parse_args()
     d0, f0 = plage_par_defaut(datetime.now())
-    res = executer(_parse_dt(a.debut) or d0, _parse_dt(a.fin) or f0, a.histo)
-    print(f"[{res.statut_global}] plage {res.debut:%d/%m %H:%M} → {res.fin:%d/%m %H:%M}, {res.duree_s} s")
+    res = executer(_parse_dt(a.debut) or d0, _parse_dt(a.fin) or f0, a.histo, forcer_volumes=a.volumes)
+    print(f"[{res.statut_global}] plage {res.debut:%d/%m %H:%M} → {res.fin:%d/%m %H:%M}, {res.duree_s} s"
+          + (f" — veille = {res.sans_integration}, volumes non contrôlés" if res.sans_integration else ""))
     for k in COMPTEURS:
         v = res.compteurs.get(k)
         print(f"  {LIBELLES[k]:<26}: {'?' if v is None else v:>7}  [{res.statuts.get(k, '')}]")
