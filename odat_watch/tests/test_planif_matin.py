@@ -33,6 +33,19 @@ def test_parse_etat_csv_par_position():
                  "derniere": "19/09/2026 07:15:00", "dernier_resultat": "0"}
 
 
+CSV_JAMAIS_EXECUTEE = ('"Nom de l\'hôte","Nom de la tâche","Prochaine exécution","Statut","Mode d\'ouverture de session",'
+                       '"Dernière exécution","Dernier résultat","Auteur","Tâche à exécuter"\r\n'
+                       '"PC01","\\ODATWatch_ControleMatin","20/09/2026 07:15:00","Prêt","Interactif seulement",'
+                       '"30/11/1999 00:00:00","267011","DALKIA\\samir","python controle_matin.py --rapport"\r\n')
+
+
+def test_parse_etat_tache_jamais_executee():
+    e = pm._parse_etat(CSV_JAMAIS_EXECUTEE)
+    assert e["prochaine"] == "20/09/2026 07:15:00"
+    assert e["derniere"] == ""
+    assert e["dernier_resultat"] == ""
+
+
 def test_etat_none_si_tache_absente(monkeypatch):
     def faux_run(*a, **k):
         return subprocess.CompletedProcess(a, 1, stdout="", stderr="ERREUR : le système ne trouve pas le fichier spécifié.")

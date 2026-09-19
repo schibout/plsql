@@ -50,7 +50,10 @@ def _parse_etat(texte_csv: str) -> dict | None:
     if len(lignes) < 2 or len(lignes[1]) < 7:
         return None
     l = lignes[1]
-    return {"prochaine": l[2], "statut": l[3], "derniere": l[5], "dernier_resultat": l[6]}
+    # Tâche jamais exécutée : Windows renvoie la date sentinelle 30/11/1999 et le code 267011.
+    derniere = "" if l[5].startswith("30/11/1999") else l[5]
+    resultat = "" if l[6] == "267011" else l[6]
+    return {"prochaine": l[2], "statut": l[3], "derniere": derniere, "dernier_resultat": resultat}
 
 
 def etat() -> dict | None:
