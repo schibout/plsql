@@ -65,6 +65,22 @@ CREATE TABLE IF NOT EXISTS job_mapping (
     program_short TEXT,
     commentaire   TEXT
 );
+
+CREATE TABLE IF NOT EXISTS controle_matin_histo (
+    id                INTEGER PRIMARY KEY AUTOINCREMENT,
+    date_ctrl         TEXT NOT NULL,      -- AAAA-MM-JJ, jour de la borne de fin
+    executed_at       TEXT NOT NULL,      -- AAAA-MM-JJ HH:MM:SS
+    plage_debut       TEXT NOT NULL,      -- AAAA-MM-JJ HH:MM
+    plage_fin         TEXT NOT NULL,
+    statut_global     TEXT NOT NULL,      -- OK | WARNING | ALERTE | ERREUR
+    nb_flux_dsp       INTEGER, nb_ndf INTEGER, nb_fac_xerox INTEGER, nb_fac_tradeshift INTEGER,
+    nb_fac_dsp        INTEGER, nb_gl_interface INTEGER, nb_gl_lignes INTEGER,
+    nb_traitements    INTEGER, nb_erreurs INTEGER, nb_warnings INTEGER,
+    nb_rb_imports     INTEGER, nb_images_manq INTEGER,
+    duree_s           REAL,
+    fichier_rapport   TEXT
+);
+CREATE INDEX IF NOT EXISTS ix_cm_histo_date ON controle_matin_histo(date_ctrl, executed_at);
 """
 
 
