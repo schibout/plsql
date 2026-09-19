@@ -18,10 +18,13 @@ Oracle EBS R12 pour répondre à : **qu'est-ce qui tourne ce soir, et demain ?**
 | `rapport_matin.py` | Rapport HTML du contrôle du matin (charte des `Rapport_Verification_*.html`), écrit dans `rapports/` (ignoré par git). |
 | `planif_matin.py` | Tâche du Planificateur Windows `ODATWatch_ControleMatin` (`schtasks`) qui lance `controle_matin.py --rapport` chaque matin. |
 | `ui_matin.py` | Onglet Matin : plage date+heure, bandeau, tuiles avec écart vs. veille, détail par section, génération/téléchargement du rapport, programmation, tendance 30 jours. |
+| `folio_rose.py` | **Folio Rose** : portage de `Verifier_Factures.ps1` (import des exports `ExportCSV-*.csv`, tables `fr_*`, groupes compensés, rapprochements, contrôle Oracle). |
+| `rapport_folio_rose.py` | Rapport HTML Folio Rose (même charte que `rapport_matin.py`), écrit dans `rapports/`. |
+| `ui_folio_rose.py` | Onglet Folio Rose : import, tableau avec sélection et somme des écarts en direct, rapprochements (manuels et groupes compensés), contrôle Oracle, rapport HTML, historique. |
 | `sources.py` | Dossiers d'import choisis par l'utilisateur (boîte de dialogue Windows ou chemin collé), mémorisés dans la table `parametres` d'`odat.db`. |
 | `ui_sql.py` | Onglet SQL : explorateur des tables SQLite (structure, volumes) et requêteur libre en lecture seule, exemples fournis, export CSV. |
 | `mock_oracle.py` | **Poste sans Oracle** : fabrique des demandes simulées à partir des exécutions Control-M (lanceur + programme métier, statuts alignés) et des logs présents. `python mock_oracle.py --reset`. Écrasé par les vraies données au premier `oracle_refresh.py`. |
-| `app.py` | Interface Streamlit : Ce soir, Demain, Maintenant, Matin, Oracle, Historique, Profils, Données, SQL. |
+| `app.py` | Interface Streamlit : Ce soir, Demain, Maintenant, Matin, Folio Rose, Oracle, Historique, Profils, Données, SQL. |
 | `.streamlit/config.toml` | Thème de l'interface. |
 | `run.bat` | Import ODAT + lancement de l'interface. |
 | `config.ini.exemple` | Modèle de configuration (Oracle, filtres, dossiers de logs). Copier en `config.ini` (ignoré par git). |
@@ -102,3 +105,27 @@ développement). Les requêtes ont été vérifiées ligne à ligne contre le `.
 neutralise samedi, dimanche et lundi), donc un lundi sort le plus souvent en WARNING ; le rappel « fichier SG »
 s'affiche chaque lundi, même si un import RB est présent. Le lundi, pour contrôler tout le week-end, mettre
 « Début de nuit » au vendredi 19:00.
+
+## Folio Rose
+
+Onglet **🌹 Folio Rose** : portage de `Verifier_Factures.ps1`. Déposer un ou plusieurs
+`ExportCSV-*.csv` par glisser-déposer, ou importer d'un coup le dossier `ControleFolioRose` (et son
+sous-dossier `sauvegarde`) ; les fichiers déjà importés (même hash) sont ignorés. Le tableau se filtre par
+type, statut et folio ; cocher des lignes affiche la somme de leurs écarts débit en direct, et à 0 (au moins
+deux lignes) propose « 🔗 Rapprocher ces lignes ». Les groupes folio + fichier dont la somme des écarts fait
+déjà 0 sont listés à part (« Groupes compensés en attente ») avec un rapprochement à l'unité ou « Tout
+rapprocher ». « 🅾 Contrôler dans Oracle » interroge Oracle par couple (folio, fichier de base, type) et
+mémorise nombre/montant côté Oracle, avec l'erreur affichée en clair (colonne « Erreur Oracle ») quand la
+requête échoue. « 📄 Générer le rapport HTML » produit `rapports/Folio_Rose_AAAAMMJJ_HHMM.html` (même charte
+que le rapport du matin). Les rapprochements sont historisés (annulables) et les données vivent dans les
+tables `fr_lignes`, `fr_oracle`, `fr_rapprochements`, `fr_rapprochement_lignes`.
+
+`Verifier_Factures.ps1` reste utilisable en parallèle (aucune dépendance vers l'onglet).
+
+Tests : `folio_rose.py` et `rapport_folio_rose.py` sont couverts unitairement, `ui_folio_rose.py` par AppTest
+(import, sélection/somme via `folio_rose.somme_selection`, rapprochement de groupe) — inclus dans les 92 tests
+de `pytest tests -q`.
+
+Validation Oracle en attente : à faire sur le poste Dalkia. Vérifier notamment le schéma propriétaire de
+`DKA_IARPAFAC_INTERFACE`, référencée sans préfixe dans le `.ps1` mais préfixée `APPS.` ici si
+`schema = APPS` dans `config.ini`.
