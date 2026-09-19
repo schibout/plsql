@@ -127,10 +127,91 @@ function processCtmEmails() {
       error: ctmErrorMessage_(error),
       stack: error && error.stack ? String(error.stack) : '',
     });
+    // Une erreur de configuration ou d'accès doit faire apparaître l'exécution
+    // en échec dans Apps Script, et non comme une exécution terminée sans fichier.
+    throw error;
   } finally {
     ctmLog_('INFO', 'Bilan du traitement CTM.', report);
     lock.releaseLock();
   }
+}
+
+/**
+ * Diagnostic en lecture seule : vérifie la configuration, l'accès Drive et les
+ * messages réellement visibles dans Gmail. Cette fonction ne crée aucun fichier,
+ * ne pose aucun libellé et ne modifie aucun e-mail.
+ */
+function diagnoseCtmEmails() {
+  const result = {
+    configurationValid: false,
+    folderAccessible: false,
+    broadMessages: 0,
+    exactMessages: 0,
+  };
+
+  try {
+    ctmValidateConfig_();
+    result.configurationValid = true;
+    const folder = DriveApp.getFolderById(CTM_CONFIG.FOLDER_ID);
+    result.folderAccessible = true;
+    ctmLog_('INFO', 'Diagnostic : dossier Drive accessible.', {
+      folderName: folder.getName(),
+      folderId: folder.getId(),
+    });
+  } catch (error) {
+    ctmLog_('ERROR', 'Diagnostic : configuration ou dossier Drive invalide.', {
+      error: ctmErrorMessage_(error),
+    });
+  }
+
+  const now = new Date();
+  const cutoff = ctmSubtractCalendarMonths_(now, CTM_CONFIG.INITIAL_LOOKBACK_MONTHS);
+  cutoff.setHours(0, 0, 0, 0);
+  const broadQuery = 'from:' + CTM_CONFIG.EXPECTED_SENDER +
+    ' has:attachment newer_than:' + CTM_CONFIG.INITIAL_LOOKBACK_MONTHS + 'm';
+  const exactQuery = CTM_CONFIG.SEARCH_QUERY +
+    ' has:attachment newer_than:' + CTM_CONFIG.INITIAL_LOOKBACK_MONTHS + 'm';
+
+  ctmLog_('INFO', 'Diagnostic : recherche Gmail large.', {query: broadQuery});
+  const broadThreads = GmailApp.search(broadQuery, 0, 100);
+  let logged = 0;
+
+  broadThreads.forEach(function(thread) {
+    thread.getMessages().forEach(function(message) {
+      if (message.getDate().getTime() < cutoff.getTime()) return;
+      if (ctmExtractEmailAddress_(message.getFrom()) !== CTM_CONFIG.EXPECTED_SENDER.toLowerCase()) {
+        return;
+      }
+
+      const attachments = message.getAttachments({
+        includeInlineImages: false,
+        includeAttachments: true,
+      });
+      if (attachments.length === 0) return;
+
+      result.broadMessages++;
+      const exactSubject = String(message.getSubject() || '').trim() ===
+        CTM_CONFIG.EXPECTED_SUBJECT;
+      if (exactSubject) result.exactMessages++;
+
+      if (logged < 20) {
+        ctmLog_('INFO', 'Diagnostic : message candidat.', {
+          date: message.getDate().toISOString(),
+          sender: ctmExtractEmailAddress_(message.getFrom()),
+          subject: message.getSubject(),
+          exactSubject: exactSubject,
+          attachments: attachments.map(function(attachment) {
+            return attachment.getName();
+          }),
+        });
+        logged++;
+      }
+    });
+  });
+
+  ctmLog_('INFO', 'Diagnostic : recherche Gmail exacte.', {query: exactQuery});
+  ctmLog_('INFO', 'Diagnostic CTM terminé.', result);
+  return result;
 }
 
 /** @private */
