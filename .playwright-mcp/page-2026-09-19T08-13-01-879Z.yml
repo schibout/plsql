@@ -1,0 +1,153 @@
+- generic [ref=f12e2]:
+  - generic [ref=f12e11]:
+    - heading "🕓 ODAT Watch" [level=2] [ref=f12e16]
+    - paragraph [ref=f12e21]: Control-M · Oracle EBS · FIN-FINANCE
+    - generic [ref=f12e23]:
+      - paragraph [ref=f12e27]: Application
+      - group [ref=f12e29]:
+        - combobox "Application" [ref=f12e30]: FIN-FINANCE
+        - button "Open" [ref=f12e31] [cursor=pointer]
+    - generic [ref=f12e36]:
+      - paragraph [ref=f12e40]: Filtre (job, description, script)
+      - textbox "Filtre (job, description, script)" [ref=f12e43]:
+        - /placeholder: ""
+    - separator [ref=f12e48]
+    - button [ref=f12e51] [cursor=pointer]:
+      - paragraph [ref=f12e56]: 📥 Importer les nouveaux fichiers ODAT
+    - paragraph [ref=f12e61]: "Sources scannées : dossier ODAT du dépôt et Téléchargements."
+    - separator [ref=f12e66]
+    - paragraph [ref=f12e71]:
+      - strong [ref=f12e72]: Oracle Apps
+    - generic [ref=f12e74]:
+      - button [ref=f12e82] [cursor=pointer]:
+        - paragraph [ref=f12e87]: 🔄 Demandes
+      - button [ref=f12e95] [cursor=pointer]:
+        - paragraph [ref=f12e100]: 📚 Programmes
+    - button [ref=f12e103] [cursor=pointer]:
+      - paragraph [ref=f12e108]: 🧾 Analyser les logs .req / .out
+  - generic [ref=f12e3]:
+    - banner [ref=f12e111]:
+      - generic [ref=f12e114]:
+        - button "Deploy" [ref=f12e116] [cursor=pointer]
+        - button "Main menu" [ref=f12e120] [cursor=pointer]
+    - generic [ref=f12e124]:
+      - generic [ref=f12e129]:
+        - generic [ref=f12e130]:
+          - heading "FIN-FINANCE" [level=1] [ref=f12e132]:
+            - text: FIN-FINANCE
+            - generic [ref=f12e133]:
+              - link "Link to heading":
+                - /url: "#fin-finance"
+          - generic [ref=f12e134]: Samedi 19/09/2026, 10:12 — qu'est-ce qui tourne ce soir, et demain ?
+        - generic [ref=f12e135]: Dernière photo Control-M 18/09 22:46 · odate 2026-09-15il y a 11 h 26 min · 104 photos · 90 jours d'historique
+      - generic [ref=f12e137]:
+        - tablist [ref=f12e138]:
+          - tab [ref=f12e139] [cursor=pointer]:
+            - paragraph [ref=f12e141]: 🌙 Ce soir
+          - tab [ref=f12e142] [cursor=pointer]:
+            - paragraph [ref=f12e144]: 📅 Demain
+          - tab [ref=f12e145] [cursor=pointer]:
+            - paragraph [ref=f12e147]: 🔴 Maintenant
+          - tab [ref=f12e148] [cursor=pointer]:
+            - paragraph [ref=f12e150]: 🅾 Oracle
+          - tab [ref=f12e151] [cursor=pointer]:
+            - paragraph [ref=f12e153]: 🔎 Historique
+          - tab [ref=f12e154] [cursor=pointer]:
+            - paragraph [ref=f12e156]: 📈 Profils
+          - tab [ref=f12e157] [cursor=pointer]:
+            - paragraph [ref=f12e159]: 🗂 Données
+          - tab [active] [selected] [ref=f12e160] [cursor=pointer]:
+            - paragraph [ref=f12e162]: ⌨ SQL
+        - tabpanel "⌨ SQL" [ref=f12e164]:
+          - generic [ref=f12e165]:
+            - generic [ref=f12e167]:
+              - generic [ref=f12e174]:
+                - generic [ref=f12e175]: "6"
+                - generic [ref=f12e176]: tables
+              - generic [ref=f12e183]:
+                - generic [ref=f12e184]: 118 108
+                - generic [ref=f12e185]: lignes au total
+              - generic [ref=f12e192]:
+                - generic [ref=f12e193]: 48.1 Mo
+                - generic [ref=f12e194]: taille du fichier
+              - generic [ref=f12e201]:
+                - generic [ref=f12e202]: odat.db
+                - generic [ref=f12e203]: base SQLite
+            - generic [ref=f12e205]:
+              - generic [ref=f12e207]:
+                - heading "🗄 Tables" [level=4] [ref=f12e213]:
+                  - text: 🗄 Tables
+                  - generic [ref=f12e214]:
+                    - link "Link to heading":
+                      - /url: "#tables"
+                - group [ref=f12e217]:
+                  - generic "keyboard_arrow_right ctm_jobs · 115 271 lignes" [ref=f12e218] [cursor=pointer]:
+                    - generic [ref=f12e219]:
+                      - generic [ref=f12e220]: keyboard_arrow_right
+                      - paragraph [ref=f12e224]:
+                        - strong [ref=f12e225]: ctm_jobs
+                        - text: · 115 271 lignes
+                - group [ref=f12e228]:
+                  - generic "keyboard_arrow_right job_mapping · 109 lignes" [ref=f12e229] [cursor=pointer]:
+                    - generic [ref=f12e230]:
+                      - generic [ref=f12e231]: keyboard_arrow_right
+                      - paragraph [ref=f12e235]:
+                        - strong [ref=f12e236]: job_mapping
+                        - text: · 109 lignes
+                - group [ref=f12e239]:
+                  - generic "keyboard_arrow_right ora_programs · 2 102 lignes" [ref=f12e240] [cursor=pointer]:
+                    - generic [ref=f12e241]:
+                      - generic [ref=f12e242]: keyboard_arrow_right
+                      - paragraph [ref=f12e246]:
+                        - strong [ref=f12e247]: ora_programs
+                        - text: · 2 102 lignes
+                - group [ref=f12e250]:
+                  - generic "keyboard_arrow_right ora_request_logs · 68 lignes" [ref=f12e251] [cursor=pointer]:
+                    - generic [ref=f12e252]:
+                      - generic [ref=f12e253]: keyboard_arrow_right
+                      - paragraph [ref=f12e257]:
+                        - strong [ref=f12e258]: ora_request_logs
+                        - text: · 68 lignes
+                - group [ref=f12e261]:
+                  - generic "keyboard_arrow_right ora_requests · 462 lignes" [ref=f12e262] [cursor=pointer]:
+                    - generic [ref=f12e263]:
+                      - generic [ref=f12e264]: keyboard_arrow_right
+                      - paragraph [ref=f12e268]:
+                        - strong [ref=f12e269]: ora_requests
+                        - text: · 462 lignes
+                - group [ref=f12e272]:
+                  - generic "keyboard_arrow_right snapshots · 96 lignes" [ref=f12e273] [cursor=pointer]:
+                    - generic [ref=f12e274]:
+                      - generic [ref=f12e275]: keyboard_arrow_right
+                      - paragraph [ref=f12e279]:
+                        - strong [ref=f12e280]: snapshots
+                        - text: · 96 lignes
+              - generic [ref=f12e282]:
+                - heading "⌨ Requêteur (lecture seule)" [level=4] [ref=f12e288]:
+                  - text: ⌨ Requêteur (lecture seule)
+                  - generic [ref=f12e289]:
+                    - link "Link to heading":
+                      - /url: "#requeteur-lecture-seule"
+                - group [ref=f12e293]:
+                  - combobox "Exemples" [ref=f12e294]: — choisir un exemple —
+                  - button "Open" [ref=f12e295] [cursor=pointer]
+                - textbox "SQL" [ref=f12e302]:
+                  - /placeholder: ""
+                  - text: SELECT * FROM snapshots ORDER BY snap_time DESC
+                - generic [ref=f12e304]:
+                  - button [ref=f12e309] [cursor=pointer]:
+                    - generic "▶ Exécuter" [ref=f12e310]:
+                      - paragraph [ref=f12e314]: ▶ Exécuter
+                  - group [ref=f12e320]:
+                    - combobox "Lignes max" [ref=f12e321]: "500"
+                    - button "Open" [ref=f12e322] [cursor=pointer]
+                  - paragraph [ref=f12e332]:
+                    - text: "Ctrl+Entrée dans la zone puis Exécuter. SQLite :"
+                    - code [ref=f12e333]: date()
+                    - text: ","
+                    - code [ref=f12e334]: time()
+                    - text: ","
+                    - code [ref=f12e335]: julianday()
+                    - text: ","
+                    - code [ref=f12e336]: json_each()
+                    - text: .
