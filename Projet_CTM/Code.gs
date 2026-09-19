@@ -148,6 +148,9 @@ function diagnoseCtmEmails() {
     effectiveUser: '',
     broadMessages: 0,
     exactMessages: 0,
+    subjectMatchesMessages: 0,
+    outsideWindowMessages: 0,
+    latestOutsideWindowDate: null,
     discoveryMessages: 0,
     discoveredSenders: [],
     discoveredSubjects: [],
@@ -205,9 +208,14 @@ function diagnoseCtmEmails() {
       if (attachments.length === 0) return;
 
       result.broadMessages++;
-      const exactSubject = String(message.getSubject() || '').trim() ===
-        CTM_CONFIG.EXPECTED_SUBJECT;
+      const messageSubject = String(message.getSubject() || '').trim();
+      const exactSubject = messageSubject === CTM_CONFIG.EXPECTED_SUBJECT_PREFIX;
+      const subjectMatches = ctmSubjectMatches_(
+        messageSubject,
+        CTM_CONFIG.EXPECTED_SUBJECT_PREFIX
+      );
       if (exactSubject) result.exactMessages++;
+      if (subjectMatches) result.subjectMatchesMessages++;
 
       if (logged < 20) {
         ctmLog_('INFO', 'Diagnostic : message candidat.', {
@@ -215,6 +223,7 @@ function diagnoseCtmEmails() {
           sender: ctmExtractEmailAddress_(message.getFrom()),
           subject: message.getSubject(),
           exactSubject: exactSubject,
+          subjectMatches: subjectMatches,
           attachments: attachments.map(function(attachment) {
             return attachment.getName();
           }),
@@ -225,6 +234,39 @@ function diagnoseCtmEmails() {
   });
 
   ctmLog_('INFO', 'Diagnostic : recherche Gmail exacte.', {query: exactQuery});
+
+  // Recherche sans limite de date pour distinguer un mauvais expediteur d'un
+  // historique simplement anterieur a la fenetre de quatre mois.
+  const historicalQuery = 'in:anywhere from:' + CTM_CONFIG.EXPECTED_SENDER +
+    ' has:attachment';
+  ctmLog_('INFO', 'Diagnostic : recherche des messages hors fenetre.', {
+    query: historicalQuery,
+    cutoff: cutoff.toISOString(),
+  });
+  GmailApp.search(historicalQuery, 0, 100).forEach(function(thread) {
+    thread.getMessages().forEach(function(message) {
+      const messageDate = message.getDate();
+      if (messageDate.getTime() >= cutoff.getTime()) return;
+      if (ctmExtractEmailAddress_(message.getFrom()) !==
+          CTM_CONFIG.EXPECTED_SENDER.toLowerCase()) return;
+      if (!ctmSubjectMatches_(
+        message.getSubject(),
+        CTM_CONFIG.EXPECTED_SUBJECT_PREFIX
+      )) return;
+
+      const attachments = message.getAttachments({
+        includeInlineImages: false,
+        includeAttachments: true,
+      });
+      if (attachments.length === 0) return;
+
+      result.outsideWindowMessages++;
+      if (!result.latestOutsideWindowDate ||
+          messageDate.getTime() > new Date(result.latestOutsideWindowDate).getTime()) {
+        result.latestOutsideWindowDate = messageDate.toISOString();
+      }
+    });
+  });
 
   // Recherche de découverte : aucun filtre d'expéditeur, afin d'identifier
   // l'adresse réellement portée par les mails contenant Report_ctm.
@@ -477,7 +519,8 @@ function ctmValidateConfig_() {
   if (!CTM_CONFIG.FOLDER_ID || CTM_CONFIG.FOLDER_ID.indexOf('A_REMPLACER') !== -1) {
     throw new Error('Renseignez CTM_CONFIG.FOLDER_ID dans Config.gs.');
   }
-  if (!CTM_CONFIG.SEARCH_QUERY || !CTM_CONFIG.EXPECTED_SENDER || !CTM_CONFIG.EXPECTED_SUBJECT) {
+  if (!CTM_CONFIG.SEARCH_QUERY || !CTM_CONFIG.EXPECTED_SENDER ||
+      !CTM_CONFIG.EXPECTED_SUBJECT_PREFIX) {
     throw new Error('La configuration Gmail CTM est incomplète.');
   }
   if (!CTM_CONFIG.LABEL_NAME) {

@@ -36,7 +36,7 @@ function ctmMessageMatches_(message, cutoff) {
   const sender = ctmExtractEmailAddress_(message.getFrom());
   const subject = String(message.getSubject() || '').trim();
   return sender === CTM_CONFIG.EXPECTED_SENDER.toLowerCase() &&
-    subject === CTM_CONFIG.EXPECTED_SUBJECT;
+    ctmSubjectMatches_(subject, CTM_CONFIG.EXPECTED_SUBJECT_PREFIX);
 }
 
 /** @private */

@@ -76,6 +76,24 @@ function runCtmUnitTests() {
       },
     },
     {
+      name: 'accepte le suffixe variable ODAT dans l\'objet',
+      run: function() {
+        ctmAssertTrue_(ctmSubjectMatches_(
+          'DALKIA / Extract CSV du Suivi Quotidien CTM (ODAT=250717) => 18/07/2025 07-36-23',
+          'DALKIA / Extract CSV du Suivi Quotidien CTM'
+        ));
+      },
+    },
+    {
+      name: 'refuse un objet qui prolonge le préfixe sans séparateur',
+      run: function() {
+        ctmAssertFalse_(ctmSubjectMatches_(
+          'DALKIA / Extract CSV du Suivi Quotidien CTM_INCORRECT',
+          'DALKIA / Extract CSV du Suivi Quotidien CTM'
+        ));
+      },
+    },
+    {
       name: 'construit la première recherche quatre mois en arrière',
       run: function() {
         const config = {

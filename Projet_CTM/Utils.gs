@@ -79,6 +79,18 @@ function ctmExtractEmailAddress_(fromValue) {
 }
 
 /** @private */
+function ctmSubjectMatches_(subject, expectedPrefix) {
+  const normalizedSubject = String(subject || '').trim();
+  const normalizedPrefix = String(expectedPrefix || '').trim();
+  if (!normalizedPrefix) return false;
+
+  // Accepte l'objet de base ainsi que son suffixe variable ODAT/horodatage,
+  // sans accepter un mot qui commencerait seulement par le meme texte.
+  return normalizedSubject === normalizedPrefix ||
+    normalizedSubject.indexOf(normalizedPrefix + ' ') === 0;
+}
+
+/** @private */
 function ctmSubtractCalendarMonths_(date, months) {
   const result = new Date(date.getTime());
   const originalDay = result.getDate();

@@ -14,7 +14,8 @@ const CTM_CONFIG = Object.freeze({
 
   /** Valeurs revérifiées sur chaque message, car la recherche Gmail est approximative. */
   EXPECTED_SENDER: 'indic_ctm@dalkia.fr',
-  EXPECTED_SUBJECT: 'DALKIA / Extract CSV du Suivi Quotidien CTM',
+  // L'objet continue par exemple avec : (ODAT=250717) => 18/07/2025 07-36-23
+  EXPECTED_SUBJECT_PREFIX: 'DALKIA / Extract CSV du Suivi Quotidien CTM',
 
   /** Libellé visuel appliqué aux conversations entièrement traitées. */
   LABEL_NAME: 'CTM_CSV_Traites',
@@ -34,7 +35,8 @@ const CTM_CONFIG = Object.freeze({
   MAX_THREADS_PER_RUN: 1000,
 
   /** État d'idempotence conservé dans les propriétés du script. */
-  STATE_PROPERTY_KEY: 'CTM_IMPORT_STATE_V1',
+  // V2 force un nouveau rattrapage apres la correction du filtre d'objet.
+  STATE_PROPERTY_KEY: 'CTM_IMPORT_STATE_V2',
   STATE_RETENTION_DAYS: 37,
   MAX_PROCESSED_IDS: 200,
   MAX_STATE_JSON_CHARS: 8000,

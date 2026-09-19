@@ -15,6 +15,7 @@ Exécuter `runCtmUnitTests()` dans l'éditeur Google Apps Script.
 | UT-07 | Détection ZIP | Les extensions ZIP sont insensibles à la casse |
 | UT-08 | Collision | Le suffixe `_02` est placé avant `.csv` |
 | UT-09 | Expéditeur | L'adresse est extraite d'un champ avec nom affiché |
+| UT-09b | Objet dynamique | Le suffixe ODAT/horodatage est accepté après le préfixe attendu |
 | UT-10 | Première recherche Gmail | La fenêtre commence quatre mois en arrière et aucun `-label:` n'est utilisé |
 | UT-11 | Recherche incrémentale | La dernière réussite moins deux jours de recouvrement est utilisée |
 | UT-12 | Reprise du rattrapage | La recherche repart un jour avant le curseur, puis filtre précisément sur celui-ci |
@@ -34,7 +35,7 @@ Utiliser un dossier Drive de test et des messages anonymisés.
 | IT-07 | ZIP avec deux CSV | Aucun fichier créé, message non mémorisé, erreur journalisée |
 | IT-08 | ZIP corrompu | L'erreur est isolée et les autres messages sont traités |
 | IT-09 | Expéditeur incorrect avec le bon objet | Message rejeté |
-| IT-10 | Objet proche mais non identique | Message rejeté |
+| IT-10 | Objet ne commençant pas par le préfixe attendu | Message rejeté |
 | IT-11 | Dossier Drive inaccessible | Arrêt avant modification des messages |
 | IT-12 | Deux exécutions simultanées | Une seule obtient le verrou et traite les messages |
 | IT-13 | Nom déjà présent pour un autre message | Suffixe `_02`, puis `_03`, sans écrasement |

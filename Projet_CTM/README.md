@@ -45,7 +45,7 @@ Ces valeurs peuvent être ajustées dans `Config.gs` avec `INITIAL_LOOKBACK_MONT
 ## Règles appliquées
 
 - Expéditeur exact : `indic_ctm@dalkia.fr`.
-- Objet exact : `DALKIA / Extract CSV du Suivi Quotidien CTM`.
+- Préfixe d'objet : `DALKIA / Extract CSV du Suivi Quotidien CTM`. Le suffixe variable, par exemple `(ODAT=250717) => 18/07/2025 07-36-23`, est accepté.
 - Un seul CSV exploitable doit être présent dans l'ensemble des pièces jointes.
 - Nom final : `YYYYMMDD_HHMMSS_NomOriginal.csv`.
 - La date provient de `message.getDate()`, jamais de l'heure du déclencheur.
@@ -61,7 +61,7 @@ Ces valeurs peuvent être ajustées dans `Config.gs` avec `INITIAL_LOOKBACK_MONT
 - Les tests d'intégration sont décrits dans `tests/TEST_CASES.md`.
 - Si l'exécution se termine sans fichier, exécuter `diagnoseCtmEmails()` puis consulter le journal d'exécution. Cette fonction est strictement en lecture seule. Elle recherche aussi les pièces jointes `Report_ctm...zip` sans imposer l'expéditeur et affiche le compte Google exécutant le script, l'expéditeur réel et l'objet réel.
 - Si le script indique que le dossier est inaccessible, vérifier l'ID et les droits Drive.
-- Si aucun message n'est trouvé, vérifier l'adresse réelle de l'expéditeur et l'objet exact dans Gmail.
+- Si aucun message récent n'est trouvé, `outsideWindowMessages` et `latestOutsideWindowDate` indiquent si seuls des messages antérieurs aux quatre mois existent.
 - Si un ZIP contient zéro ou plusieurs CSV, il est rejeté sans création de fichier.
 - Une erreur sur un message n'empêche pas les autres messages d'être traités.
 
