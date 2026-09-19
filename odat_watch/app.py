@@ -76,6 +76,15 @@ def charger(application: str | None, _stamp: float):
     return df, profs, last, snaps
 
 
+@st.cache_data(show_spinner=False)
+def programmes_oracle(_stamp: float) -> dict[str, str]:
+    con = connect()
+    try:
+        return fc.programmes_oracle(con)
+    finally:
+        con.close()
+
+
 def stamp() -> float:
     return DB_PATH.stat().st_mtime if DB_PATH.exists() else 0.0
 
@@ -240,7 +249,9 @@ def table_prevision(prev: pd.DataFrame):
     t["réel"] = [horaire_reel(a, b) for a, b in zip(t["debut_reel"], t["fin_reel"])]
     t["fiabilité"] = t["fiabilite"]
     t["hebdo/mensuel"] = t["frequence"].isin(["Hebdo", "Mensuel"])
-    cols = ["jour", "heure", "état", "job", "description", "duree_min", "fiabilité", "frequence", "cyclique", "script", "réel", "nb_obs"]
+    t["programme Oracle"] = t["job"].map(programmes_oracle(stamp())).fillna("")
+    cols = ["jour", "heure", "état", "job", "groupe", "description", "programme Oracle", "duree_min", "fiabilité",
+            "frequence", "cyclique", "script", "réel", "nb_obs"]
     st.dataframe(
         t[cols], use_container_width=True, hide_index=True, height=min(600, 38 * len(t) + 40),
         column_config={
@@ -250,6 +261,9 @@ def table_prevision(prev: pd.DataFrame):
             "cyclique": st.column_config.CheckboxColumn("cyclique"),
             "job": st.column_config.TextColumn("job", width="medium"),
             "description": st.column_config.TextColumn("description", width="large"),
+            "groupe": st.column_config.TextColumn("chaîne", width="medium"),
+            "programme Oracle": st.column_config.TextColumn("programme Oracle Applications", width="large",
+                                                           help="Traitement soumis par le lanceur du job (d'après les demandes Oracle chargées)"),
         })
 
 
@@ -310,8 +324,10 @@ with tab_soir:
     prev = filtrer(fc.prevision(profs, d0, d1, last))
     st.caption(f"Plage {d0:%d/%m %H:%M} → {d1:%d/%m %H:%M}. Heures prévues = médiane des exécutions observées.")
     resume(prev)
-    timeline_chaines(prev, d0, d1, "Chaînes attendues ce soir")
+    st.markdown("#### Traitements attendus ce soir")
     table_prevision(prev)
+    st.markdown("#### Chronologie des chaînes")
+    timeline_chaines(prev, d0, d1, "Chaînes attendues ce soir")
 
 # ------------------------------------------------------------------ demain
 with tab_demain:
@@ -320,8 +336,10 @@ with tab_demain:
     st.caption(f"Plage {d0:%d/%m %H:%M} → {d1:%d/%m %H:%M}. Les jobs hebdo et mensuels sont ceux qu'on oublie : "
                f"filtrez la colonne *frequence*.")
     resume(prev)
-    timeline_chaines(prev, d0, d1, "Chaînes attendues demain")
+    st.markdown("#### Traitements attendus demain")
     table_prevision(prev)
+    st.markdown("#### Chronologie des chaînes")
+    timeline_chaines(prev, d0, d1, "Chaînes attendues demain")
 
 # ------------------------------------------------------------------ maintenant
 with tab_now:

@@ -10,6 +10,7 @@ import streamlit as st
 
 import night_monitoring
 import production_plan
+import forecast
 import ui_assistant_nuit
 
 COLORS = {"à venir": "#8A94A6", "Wait for Event": "#D9A400", "Executing": "#2F6FED",
@@ -47,18 +48,25 @@ def _tree(plan: pd.DataFrame) -> None:
     st.dataframe(groups, use_container_width=True, hide_index=True, height=300)
 
 
-def _table(plan: pd.DataFrame, mode: str) -> None:
+def _table(plan: pd.DataFrame, mode: str, programmes: dict[str, str]) -> None:
     if plan.empty:
         return
     table = plan.copy()
     table["prévu"] = table["heure_prevue"].dt.strftime("%d/%m %H:%M")
     table["fin estimée"] = table["fin_prevue"].dt.strftime("%H:%M")
-    cols = ["prévu", "fin estimée", "job", "description", "groupe", "statut", "duree_min", "confiance", "nb_obs"]
+    table["programme Oracle"] = table["job"].map(programmes).fillna("")
+    cols = ["prévu", "fin estimée", "job", "groupe", "description", "programme Oracle", "statut", "duree_min",
+            "confiance", "nb_obs"]
     if mode != "Préparer":
-        cols.insert(6, "suivi")
-    st.dataframe(table[cols], use_container_width=True, hide_index=True, height=560,
+        cols.insert(7, "suivi")
+    st.dataframe(table[cols], use_container_width=True, hide_index=True, height=min(700, 38 * len(table) + 40),
                  column_config={"duree_min": st.column_config.NumberColumn("durée médiane (min)", format="%.1f"),
-                                "nb_obs": st.column_config.NumberColumn("observations")})
+                                "nb_obs": st.column_config.NumberColumn("observations"),
+                                "groupe": st.column_config.TextColumn("chaîne", width="medium"),
+                                "description": st.column_config.TextColumn("description", width="large"),
+                                "programme Oracle": st.column_config.TextColumn(
+                                    "programme Oracle Applications", width="large",
+                                    help="Traitement soumis par le lanceur du job (d'après les demandes Oracle chargées)")})
 
 
 def render(con: sqlite3.Connection, profs, last: pd.DataFrame, now: datetime, kpi) -> None:
@@ -94,11 +102,13 @@ def render(con: sqlite3.Connection, profs, last: pd.DataFrame, now: datetime, kp
     kpi(cards[2], counts.get("Terminé OK", 0), "terminés OK")
     kpi(cards[3], counts.get("Erreur constatée", 0), "erreurs")
     kpi(cards[4], counts.get("Non observé — à vérifier", 0), "à vérifier")
-    left, right = st.columns([1, 2])
+    # Le tableau d'abord (ce que l'exploitant lit), la chronologie en bas.
+    st.markdown("##### Traitements attendus")
+    _table(shown, mode, forecast.programmes_oracle(con))
+    left, right = st.columns([1, 1])
     with left:
         _tree(shown)
-        ui_assistant_nuit.render(shown, context, begin, end)
     with right:
-        _timeline(shown, begin, end)
-    st.markdown("##### Détail des traitements")
-    _table(shown, mode)
+        ui_assistant_nuit.render(shown, context, begin, end)
+    st.markdown("##### Chronologie des chaînes")
+    _timeline(shown, begin, end)

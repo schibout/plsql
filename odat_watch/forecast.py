@@ -214,3 +214,26 @@ def historique_job(df_runs: pd.DataFrame, job: str) -> pd.DataFrame:
     h = df_runs[(df_runs["job_name"] == job) & df_runs["start_time"].notna()].copy()
     return h.sort_values("start_time", ascending=False)[
         ["odate", "start_time", "end_time", "duree_min", "status", "rerun", "order_id"]]
+
+
+def programmes_oracle(con) -> dict[str, str]:
+    """Job Control-M -> programmes Oracle Applications qu'il déclenche, par fréquence décroissante.
+
+    Le job lance un lanceur (DKA_SLAUNCHER, mémorisé dans job_mapping), qui soumet le traitement métier :
+    c'est ce dernier qu'on affiche. Un job dont on ne connaît que le lanceur affiche le lanceur.
+    """
+    lanceurs = {r[0]: r[1] for r in con.execute("SELECT job_name, program_short FROM job_mapping")}
+    rows = con.execute("""
+        SELECT job_name, program_short, COALESCE(program_name, ''), COUNT(*) AS n
+        FROM ora_requests WHERE job_name IS NOT NULL AND program_short IS NOT NULL
+        GROUP BY job_name, program_short, program_name ORDER BY job_name, n DESC""").fetchall()
+    par_job: dict[str, list[tuple[str, str]]] = {}
+    for job, short, name, _n in rows:
+        par_job.setdefault(job, []).append((short, name))
+    out = {}
+    for job, progs in par_job.items():
+        metier = [(s, n) for s, n in progs if s != lanceurs.get(job)] or progs
+        out[job] = " ; ".join(f"{s} · {n}" if n else s for s, n in metier[:4])
+    for job, short in lanceurs.items():
+        out.setdefault(job, short)
+    return out
