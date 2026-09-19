@@ -134,6 +134,42 @@ CREATE TABLE IF NOT EXISTS fr_rapprochement_lignes (
     PRIMARY KEY (rapprochement_id, empreinte)
 );
 CREATE INDEX IF NOT EXISTS ix_fr_rl_empreinte ON fr_rapprochement_lignes(empreinte);
+
+-- Calendriers de clôture importés depuis Excel. Les versions restent conservées.
+CREATE TABLE IF NOT EXISTS calendar_imports (
+    id            INTEGER PRIMARY KEY AUTOINCREMENT,
+    nom_fichier   TEXT NOT NULL,
+    file_hash     TEXT NOT NULL UNIQUE,
+    importe_le    TEXT NOT NULL,
+    statut        TEXT NOT NULL DEFAULT 'active', -- active | inactive
+    nb_mois       INTEGER NOT NULL,
+    nb_operations INTEGER NOT NULL,
+    message       TEXT
+);
+CREATE TABLE IF NOT EXISTS calendar_events (
+    id                INTEGER PRIMARY KEY AUTOINCREMENT,
+    import_id         INTEGER NOT NULL REFERENCES calendar_imports(id) ON DELETE CASCADE,
+    periode_comptable TEXT NOT NULL, -- AAAA-MM, mois de la feuille
+    reference_j       TEXT,
+    date_operation    TEXT NOT NULL,
+    decalage_j        TEXT,
+    moment            TEXT,
+    arrete            TEXT,
+    traitement        TEXT,
+    restitution       TEXT,
+    source_sheet      TEXT NOT NULL,
+    source_row        INTEGER NOT NULL
+);
+CREATE INDEX IF NOT EXISTS ix_calendar_event_date ON calendar_events(date_operation);
+CREATE INDEX IF NOT EXISTS ix_calendar_event_period ON calendar_events(periode_comptable, import_id);
+
+-- Correspondances volontairement explicites entre une opération métier et un job Control-M.
+CREATE TABLE IF NOT EXISTS calendar_job_mapping (
+    event_id INTEGER NOT NULL REFERENCES calendar_events(id) ON DELETE CASCADE,
+    job_name TEXT NOT NULL,
+    commentaire TEXT,
+    PRIMARY KEY (event_id, job_name)
+);
 """
 
 
