@@ -1,0 +1,51 @@
+/**
+ * Configuration du flux CTM.
+ *
+ * Seule la valeur FOLDER_ID doit obligatoirement être remplacée avant le
+ * premier lancement. Aucun mot de passe Gmail n'est nécessaire : le script
+ * utilise les autorisations du compte Google qui l'exécute.
+ */
+const CTM_CONFIG = Object.freeze({
+  /** ID du dossier Google Drive de destination. */
+  FOLDER_ID: 'A_REMPLACER_PAR_ID_DOSSIER_DRIVE',
+
+  /** Requête Gmail de base. Une fenêtre temporelle est ajoutée à l'exécution. */
+  SEARCH_QUERY: 'from:indic_ctm@dalkia.fr subject:"DALKIA / Extract CSV du Suivi Quotidien CTM"',
+
+  /** Valeurs revérifiées sur chaque message, car la recherche Gmail est approximative. */
+  EXPECTED_SENDER: 'indic_ctm@dalkia.fr',
+  EXPECTED_SUBJECT: 'DALKIA / Extract CSV du Suivi Quotidien CTM',
+
+  /** Libellé visuel appliqué aux conversations entièrement traitées. */
+  LABEL_NAME: 'CTM_CSV_Traites',
+
+  /** Fuseau utilisé pour le nom des fichiers. */
+  TIME_ZONE: 'Europe/Paris',
+
+  /** Fenêtre rescannée à chaque exécution ; l'ID du message évite les doublons. */
+  SEARCH_WINDOW_DAYS: 30,
+  SEARCH_BATCH_SIZE: 100,
+  MAX_THREADS_PER_RUN: 500,
+
+  /** État d'idempotence conservé dans les propriétés du script. */
+  STATE_PROPERTY_KEY: 'CTM_IMPORT_STATE_V1',
+  STATE_RETENTION_DAYS: 37,
+  MAX_PROCESSED_IDS: 200,
+  MAX_STATE_JSON_CHARS: 8000,
+
+  /** Protection contre deux déclencheurs simultanés. */
+  LOCK_WAIT_MS: 5000,
+
+  /** Contrôle d'exploitation, sans limiter le nombre de messages traités. */
+  EXPECTED_DAILY_FILES: 5,
+
+  /** Paramètres de création du déclencheur. */
+  TRIGGER_FUNCTION: 'processCtmEmails',
+  TRIGGER_INTERVAL_MINUTES: 15,
+
+  /** Métadonnée inscrite dans la description de chaque fichier Drive. */
+  DRIVE_MESSAGE_MARKER_PREFIX: 'CTM_MESSAGE_ID=',
+
+  /** Garde-fou en cas de très nombreuses collisions de noms. */
+  MAX_FILENAME_COLLISIONS: 999,
+});

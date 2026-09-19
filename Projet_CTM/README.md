@@ -1,0 +1,59 @@
+# Extracteur CTM — Google Apps Script
+
+Ce projet lit les e-mails CTM, décompresse l'unique CSV contenu dans chaque ZIP,
+renomme le CSV avec la date de réception du message et le sauvegarde dans Google
+Drive sans écrasement.
+
+## Configuration
+
+1. Créer ou ouvrir un projet Google Apps Script avec le compte qui reçoit les e-mails CTM.
+2. Copier les fichiers `.gs` et le manifeste `appsscript.json` dans le projet.
+3. Ouvrir `Config.gs` et remplacer :
+
+   ```javascript
+   FOLDER_ID: 'A_REMPLACER_PAR_ID_DOSSIER_DRIVE'
+   ```
+
+   par l'identifiant du dossier Drive de destination.
+4. Vérifier que le fuseau du projet est `Europe/Paris`.
+
+Le dossier Drive doit être accessible en écriture par le compte qui exécute le
+script. Aucun mot de passe Gmail ne doit être ajouté au code.
+
+## Premier lancement
+
+Exécuter les fonctions dans cet ordre depuis l'éditeur Apps Script :
+
+1. `setupFolderAndLabels()` : autorise Gmail/Drive, vérifie le dossier et crée le libellé.
+2. `runCtmUnitTests()` : exécute les tests des fonctions pures.
+3. `processCtmEmails()` : réalise une première extraction manuelle.
+4. Contrôler les fichiers dans le dossier Drive et les journaux d'exécution.
+5. `createCtmTimeDrivenTrigger()` : crée le déclencheur toutes les 15 minutes.
+
+## Règles appliquées
+
+- Expéditeur exact : `indic_ctm@dalkia.fr`.
+- Objet exact : `DALKIA / Extract CSV du Suivi Quotidien CTM`.
+- Un seul CSV exploitable doit être présent dans l'ensemble des pièces jointes.
+- Nom final : `YYYYMMDD_HHMMSS_NomOriginal.csv`.
+- La date provient de `message.getDate()`, jamais de l'heure du déclencheur.
+- Une collision ajoute `_02`, `_03`, etc. avant `.csv`.
+- L'identifiant Gmail est mémorisé et inscrit dans la description du fichier Drive.
+- Le libellé Gmail est uniquement visuel, car plusieurs messages peuvent appartenir à la même conversation.
+
+## Vérification et dépannage
+
+- Les tests d'intégration sont décrits dans `tests/TEST_CASES.md`.
+- Si le script indique que le dossier est inaccessible, vérifier l'ID et les droits Drive.
+- Si aucun message n'est trouvé, vérifier l'adresse réelle de l'expéditeur et l'objet exact dans Gmail.
+- Si un ZIP contient zéro ou plusieurs CSV, il est rejeté sans création de fichier.
+- Une erreur sur un message n'empêche pas les autres messages d'être traités.
+
+## Déclencheur manuel
+
+Le déclencheur peut aussi être créé depuis l'interface Apps Script :
+
+1. Ouvrir **Déclencheurs** dans le menu de gauche.
+2. Cliquer sur **Ajouter un déclencheur**.
+3. Choisir `processCtmEmails`.
+4. Sélectionner **Déclencheur temporel**, puis **Toutes les 15 minutes**.
