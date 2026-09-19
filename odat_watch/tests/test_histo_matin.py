@@ -63,6 +63,18 @@ def test_delta_veille_sans_historique(tmp_path):
     con.close()
 
 
+def test_delta_veille_ignore_un_ancien_matin_rejoue_plus_tard(tmp_path):
+    con = db.connect(tmp_path / "t.db")
+    cm.enregistrer_histo(_resultat(datetime(2026, 9, 18, 7, 0), nb_erreurs=2), con)
+    # le 10/09 est rejoué le 19 au soir : executed_at plus récent, mais date_ctrl plus ancienne
+    vieux = _resultat(datetime(2026, 9, 10, 7, 0), nb_erreurs=9)
+    vieux.executed_at = datetime(2026, 9, 19, 22, 0)
+    cm.enregistrer_histo(vieux, con)
+    d = cm.delta_veille({"nb_erreurs": 4}, datetime(2026, 9, 19).date(), con)
+    assert d["date"] == "2026-09-18" and d["nb_erreurs"] == 2
+    con.close()
+
+
 def test_historique_une_ligne_par_jour(tmp_path):
     con = db.connect(tmp_path / "t.db")
     cm.enregistrer_histo(_resultat(datetime(2026, 9, 18, 7, 0), nb_erreurs=2), con)

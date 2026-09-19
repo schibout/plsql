@@ -19,6 +19,7 @@ from __future__ import annotations
 import argparse
 import re
 import sqlite3
+import sys
 import time
 from dataclasses import dataclass, field
 from datetime import date, datetime, timedelta
@@ -471,7 +472,7 @@ def delta_veille(compteurs: dict, date_ctrl: date, con: sqlite3.Connection) -> d
     """Écart de chaque compteur avec la dernière exécution d'un jour antérieur. {} si aucune."""
     row = con.execute(
         f"SELECT date_ctrl, {','.join(COMPTEURS)} FROM controle_matin_histo "
-        "WHERE date_ctrl < ? ORDER BY executed_at DESC LIMIT 1", (date_ctrl.strftime("%Y-%m-%d"),)).fetchone()
+        "WHERE date_ctrl < ? ORDER BY date_ctrl DESC, executed_at DESC LIMIT 1", (date_ctrl.strftime("%Y-%m-%d"),)).fetchone()
     if row is None:
         return {}
     out = {"date": row[0]}
@@ -500,6 +501,11 @@ def _parse_dt(txt: str | None) -> datetime | None:
 
 
 if __name__ == "__main__":
+    # Évite un UnicodeEncodeError sur le « → » de la synthèse quand stdout est redirigé vers un
+    # fichier (cp1252 par défaut sous Windows) : sans ça, la tâche planifiée --rapport plante
+    # avant même d'écrire le rapport.
+    if hasattr(sys.stdout, "reconfigure"):
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--debut", help='début de nuit "AAAA-MM-JJ HH:MM" (défaut hier 19:00)')
     ap.add_argument("--fin", help='fin de nuit "AAAA-MM-JJ HH:MM" (défaut aujourd\'hui 07:00)')
