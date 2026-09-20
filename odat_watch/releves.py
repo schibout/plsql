@@ -714,3 +714,75 @@ def chronologie(con: sqlite3.Connection, jours: int = 15, jour: date | None = No
         return "OK" if (r["err025"] or 0) <= 1 else f"OK mais {int(r['err025'])} × Erreur 025"
     df["resultat"] = df.apply(resultat, axis=1) if not df.empty else []
     return df
+
+
+# ---------------------------------------------------------------- continuité et reprise
+def continuite(con: sqlite3.Connection, cfg: dict, jour: date | None = None) -> pd.DataFrame:
+    """Par compte de la banque du flux B : dernier relevé chargé, date attendue (dernier fichier PFE/EBS flux B),
+    retard en jours, trou (un import ultérieur a rejeté le compte en Erreur 025)."""
+    b = cfg["banque_flux_b"]                       # code banque (rb_import_releves.banque) ; les colonnes flux valent "B"
+    connus = comptes_connus(con)
+    attendu = con.execute("SELECT MAX(m) FROM (SELECT MAX(date_max) m FROM rb_pfe WHERE flux='B' "
+                          "UNION ALL SELECT MAX(date_max) FROM rb_ebs WHERE flux='B')").fetchone()[0]
+    df = pd.read_sql_query("""
+        SELECT r.compte, r.banque, r.guichet, r.numero,
+               MAX(CASE WHEN r.en_erreur=0 THEN r.date_fin END) AS dernier_charge,
+               MAX(CASE WHEN r.code_erreur='Erreur 025' THEN i.debut END) AS dernier_rejet_025
+        FROM rb_import_releves r JOIN rb_imports i ON i.request_id = r.request_id
+        WHERE r.banque = ? GROUP BY r.compte ORDER BY r.compte""", con, params=(b,))
+    if df.empty:
+        return df.assign(attendu=None, retard_j=None, trou=None, connu=None)
+    df["attendu"] = attendu
+    # NULL SQL -> valeur manquante pandas (NaN, « vrai » en booléen) : on teste explicitement la présence
+    present = lambda v: v is not None and pd.notna(v) and str(v) != ""   # noqa: E731
+    df["retard_j"] = df.apply(lambda r: (date.fromisoformat(r["attendu"]) - date.fromisoformat(r["dernier_charge"])).days
+                              if present(r["attendu"]) and present(r["dernier_charge"]) else None, axis=1)
+    df["trou"] = df.apply(lambda r: present(r["dernier_rejet_025"]) and
+                          (not present(r["dernier_charge"]) or str(r["dernier_rejet_025"])[:10] > r["dernier_charge"]), axis=1)
+    df["connu"] = df.apply(lambda r: f"{r['banque']}/{r['guichet']}/{r['numero']}" in connus, axis=1)
+    return df
+
+
+def plan_reprise(con: sqlite3.Connection, cfg: dict) -> list[dict]:
+    """Fichiers du flux B à rejouer dans l'ordre : TARGET PFE non reçus, fichiers EBS rejetés en bloc ou jamais importés,
+    à partir du dernier relevé chargé. [{ordre, chemin, origine, periode, nb_releves, attendu}]"""
+    ok = con.execute("SELECT MAX(i.fin), MAX(r.date_fin), MAX(i.releves_erreurs) FROM rb_imports i "
+                     "JOIN rb_import_releves r ON r.request_id=i.request_id AND r.en_erreur=0 "
+                     "WHERE i.flux='B' AND i.releves_charges > 0").fetchone()
+    dernier_ok_fin, dernier_charge, erreurs_habituelles = ok
+    dernier_charge = dernier_charge or "0000-00-00"
+    cand: dict[str, dict] = {}
+    for r in con.execute("SELECT * FROM rb_pfe WHERE flux='B' AND ebs_md5_recu=0 AND complete=1 AND date_max > ?", (dernier_charge,)):
+        cand[r["md5"]] = dict(chemin=r["fichier_target"], origine="PFE (non reçu)", date_min=r["date_min"],
+                              date_max=r["date_max"], nb_releves=r["nb_releves"])
+    for r in con.execute("SELECT e.*, i.request_id, i.releves_charges, i.err025 FROM rb_ebs e "
+                         "LEFT JOIN rb_imports i ON i.md5_ebs = e.md5 WHERE e.flux='B' AND e.date_max > ?", (dernier_charge,)):
+        if r["request_id"] is None:
+            origine = "EBS (jamais importé)"
+        elif rejet_massif(dict(r)):
+            origine = "EBS (rejeté Erreur 025)"
+        else:
+            continue
+        cand[r["md5"]] = dict(chemin=str(cfg["dossier_ebs"] / r["nom"]), origine=origine, date_min=r["date_min"],
+                              date_max=r["date_max"], nb_releves=r["nb_releves"])
+    etapes = sorted(cand.values(), key=lambda c: (c["date_min"], c["date_max"]))
+    err = erreurs_habituelles or 0
+    for i, e in enumerate(etapes, 1):
+        e["ordre"] = i
+        e["periode"] = f"{e['date_min']} → {e['date_max']}"
+        e["attendu"] = f"{e['nb_releves'] - err} chargés / {err} erreurs"
+    return etapes
+
+
+def liste_logs_manquants(con: sqlite3.Connection, dest: Path | None = None) -> str:
+    """list.txt pour copy_ebs_logs.sh : requests RBAFBIMP / DKA_SRBCTRLRB connues d'ora_requests sans log local."""
+    rows = con.execute("""
+        SELECT r.request_id, r.logfile_name, r.outfile_name FROM ora_requests r
+        WHERE r.program_short IN ('RBAFBIMP', 'DKA_SRBCTRLRB') AND r.phase_code = 'C'
+          AND r.request_id NOT IN (SELECT request_id FROM rb_imports)
+          AND r.request_id NOT IN (SELECT request_id FROM rb_controles)
+        ORDER BY r.actual_start""").fetchall()
+    dest = dest or (BASE_DIR / "list_releves.txt")
+    lignes = [f"{r['logfile_name'] or ''} {r['outfile_name'] or ''}".strip() for r in rows if r["logfile_name"]]
+    dest.write_text("\n".join(lignes) + ("\n" if lignes else ""), encoding="utf-8", newline="\n")
+    return f"{len(lignes)} ligne(s) écrite(s) dans {dest} (à passer à copy_ebs_logs.sh sur le serveur EBS)."

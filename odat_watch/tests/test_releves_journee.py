@@ -155,3 +155,37 @@ def test_causes_controlm_propagees(tmp_path):
     assert next(e for e in b.etapes if e["cle"] == "controlm")["ton"] == "ko"
     assert any("06_ZIP01" in c for c in b.causes) and any("Conflit de chaînes" in c for c in b.causes)
     assert b.verdict == "KO"
+
+
+def test_continuite_sg(con):
+    c = rb.continuite(con, CFG, jour=date(2026, 9, 18))
+    assert len(c) >= 200
+    r = c[c["compte"] == "30003.01100.00020398294"].iloc[0]
+    assert r["dernier_charge"] == "2026-09-11" and r["attendu"] == "2026-09-17" and r["retard_j"] == 6 and r["trou"]
+    connu = c[c["compte"] == "30003.03620.00020137269"]
+    assert connu.empty or connu.iloc[0]["connu"]
+
+
+def test_plan_reprise(con):
+    plan = rb.plan_reprise(con, CFG)
+    assert [Path(e["chemin"]).name for e in plan] == [
+        "compt_AFB120_RELEVESDECOMPTE_260915-081614.txt", "compt_AFB120_RELEVESDECOMPTE_260916-081613.txt",
+        "AFB120.txt_20260917081953", "AFB120.txt_20260918082009"]
+    assert plan[0]["periode"] == "2026-09-11 → 2026-09-14" and plan[0]["attendu"] == "207 chargés / 6 erreurs"
+    assert plan[2]["origine"] == "EBS (rejeté Erreur 025)" and plan[0]["origine"] == "PFE (non reçu)"
+
+
+def test_plan_reprise_vide_sans_trou(tmp_path):
+    con = db.connect(tmp_path / "v.db")
+    assert rb.plan_reprise(con, CFG) == []
+
+
+def test_liste_logs_manquants(con, tmp_path):
+    con.execute("INSERT INTO ora_requests(request_id, program_short, phase_code, logfile_name, outfile_name, actual_start) "
+                "VALUES (49999999, 'RBAFBIMP', 'C', '/l/l49999999.req', '/o/o49999999.out', '2026-09-19 08:20:00')")
+    con.execute("INSERT INTO ora_requests(request_id, program_short, phase_code, logfile_name, outfile_name, actual_start) "
+                "VALUES (49061539, 'RBAFBIMP', 'C', '/l/l49061539.req', '/o/o49061539.out', '2026-09-17 08:19:53')")
+    con.commit()
+    dest = tmp_path / "list.txt"
+    msg = rb.liste_logs_manquants(con, dest)
+    assert dest.read_text() == "/l/l49999999.req /o/o49999999.out\n" and "1 ligne" in msg
