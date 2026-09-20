@@ -15,7 +15,8 @@ def test_tables_rb_creees(tmp_path):
 
 
 def test_config_releves_par_defaut(tmp_path, monkeypatch):
-    monkeypatch.setattr(rb, "CONFIG", tmp_path / "absent.ini")
+    import releves_scan
+    monkeypatch.setattr(releves_scan, "CONFIG", tmp_path / "absent.ini")      # config_releves lit releves_scan.CONFIG
     cfg = rb.config_releves()
     assert cfg["banque_flux_b"] == "30003"
     assert cfg["dossier_pfe"].name == "fluxPFE" and cfg["dossier_ebs"].name == "fichierBanque"

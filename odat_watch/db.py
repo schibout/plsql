@@ -189,7 +189,7 @@ CREATE TABLE IF NOT EXISTS calendar_job_mapping (
     PRIMARY KEY (event_id, job_name)
 );
 
--- Relevés bancaires (onglet « Relevés bancaires », module releves.py)
+-- Relevés bancaires (onglet « Relevés bancaires », modules releves_scan.py / releves.py)
 CREATE TABLE IF NOT EXISTS rb_pfe (                -- une exécution Talend (dossier <uuid>) : le fichier livré à EBS
     uuid            TEXT PRIMARY KEY,
     horodatage      TEXT,                          -- YYYY-MM-DD HH:MM:SS (nom du TARGET)
