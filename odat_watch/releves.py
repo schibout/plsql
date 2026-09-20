@@ -184,3 +184,150 @@ def rapprocher_pfe_ebs(con: sqlite3.Connection) -> None:
     """Un TARGET PFE est « reçu » si un fichier EBS a le même md5."""
     con.execute("UPDATE rb_pfe SET ebs_md5_recu = EXISTS (SELECT 1 FROM rb_ebs e WHERE e.md5 = rb_pfe.md5)")
     con.commit()
+
+
+# ---------------------------------------------------------------- logs RBAFBIMP
+MOIS = {"JAN": 1, "FEB": 2, "MAR": 3, "APR": 4, "MAY": 5, "JUN": 6, "JUL": 7, "AUG": 8, "SEP": 9, "OCT": 10,
+        "NOV": 11, "DEC": 12}
+BATCH_RE = re.compile(r"chargement N\S+\s*(\d+)")
+LIGNE_ERR_RE = re.compile(r"^\s*(\d{5}) >  (.+)$")
+CODE_ERR_RE = re.compile(r"^\s*Erreur\s+(\d{3})\s*:")
+SYNTHESE_RE = re.compile(
+    r"^(?P<err>[01])\s+(?P<num>\d+)\s+(?P<compte>\d{5}\.\d{5}\.\d{11})\s+(?P<dev>[A-Z]{3})\s+"
+    r"(?P<d1>\d{2}-[A-Z]{3}-\d{4})\s+(?P<s1>-?[\d.,]+)\s+(?P<d2>\d{2}-[A-Z]{3}-\d{4})\s+(?P<s2>-?[\d.,]+)\s+"
+    r"(?P<mvt>\d+)\s+(?P<l1>\d+)-(?P<l2>\d+)")
+PIED_RE = re.compile(r"(Relev\S+ charg\S+|erreurs|total)\s+(\d+)\s+(Lignes charg\S+|erreurs|total)\s+(\d+)", re.I)
+
+
+def _date_ora(txt: str) -> str:
+    """'17-SEP-2026' ou '17-SEP-2026 08:19:53' -> ISO."""
+    j, m, reste = txt.split("-", 2)
+    annee, _, heure = reste.partition(" ")
+    iso = f"{annee}-{MOIS[m.upper()]:02d}-{int(j):02d}"
+    return f"{iso} {heure}" if heure else iso
+
+
+def _date_ora_courte(txt: str) -> str:
+    """'14-SEP-26' -> '2026-09-14'."""
+    j, m, a = txt.split("-")
+    return f"20{a}-{MOIS[m.upper()]:02d}-{int(j):02d}"
+
+
+def parse_import_out(text: str) -> dict:
+    """Sortie de RBAFBIMP : erreurs par enregistrement, synthèse des relevés et pied (chargés / erreurs / total)."""
+    erreurs_par_compte: dict[str, str] = {}
+    compteur: Counter = Counter()
+    releves: list[dict] = []
+    batch = None
+    pied = {"releves_charges": 0, "releves_erreurs": 0, "releves_total": 0,
+            "lignes_chargees": 0, "lignes_erreurs": 0, "lignes_total": 0}
+    dernier_enreg = None
+    for ligne in text.splitlines():
+        m = BATCH_RE.search(ligne)
+        if m and batch is None:
+            batch = int(m.group(1))
+        m = LIGNE_ERR_RE.match(ligne)
+        if m:
+            enreg = m.group(2)
+            dernier_enreg = f"{enreg[2:7]}.{enreg[11:16]}.{enreg[21:32]}" if enreg.startswith("01") else None
+            continue
+        m = CODE_ERR_RE.match(ligne)
+        if m:
+            code = f"Erreur {m.group(1)}"
+            compteur[code] += 1
+            if dernier_enreg:
+                erreurs_par_compte.setdefault(dernier_enreg, code)
+            continue
+        m = SYNTHESE_RE.match(ligne)
+        if m:
+            banque, guichet, numero = m.group("compte").split(".")
+            releves.append(dict(num=int(m.group("num")), compte=m.group("compte"), banque=banque, guichet=guichet,
+                                numero=numero, devise=m.group("dev"), date_debut=_date_ora(m.group("d1")),
+                                date_fin=_date_ora(m.group("d2")), mouvements=int(m.group("mvt")),
+                                en_erreur=int(m.group("err") == "1"), code_erreur=None))
+            continue
+        m = PIED_RE.search(ligne)
+        if m:
+            g1, v1, g2, v2 = m.groups()
+            cle1 = "releves_charges" if g1.lower().startswith("relev") else "releves_" + ("erreurs" if g1.lower() == "erreurs" else "total")
+            cle2 = "lignes_chargees" if g2.lower().startswith("lignes") else "lignes_" + ("erreurs" if g2.lower() == "erreurs" else "total")
+            pied[cle1], pied[cle2] = int(v1), int(v2)
+    for r in releves:
+        if r["en_erreur"]:
+            r["code_erreur"] = erreurs_par_compte.get(r["compte"])
+    return dict(batch=batch, erreurs=dict(compteur), releves=releves, **pied)
+
+
+def _flux_import(heure: str, releves: list[dict], banque_b: str) -> str:
+    banques = {r["banque"] for r in releves}
+    if banques:
+        return "B" if banques == {banque_b} else "A"
+    return "B" if heure >= "08:05:00" else "A"
+
+
+def _charger_import(rid: int, req: Path | None, out: Path | None, con: sqlite3.Connection, banque_b: str) -> None:
+    p_req = logs.parse_req(logs.lire(req)) if req else {}
+    p_out = parse_import_out(logs.lire(out)) if out else parse_import_out("")
+    cpt = {**p_req.get("compteurs", {}), **p_req.get("infos", {})}
+    lus = next((int(v) for k, v in cpt.items() if "enregistrements lus" in k.lower()), None)
+    ecrits = next((int(v) for k, v in cpt.items() if "crites" in k.lower()), None)
+    fichier = next((v for k, v in cpt.items() if k.lower().startswith("fichier des relev")), None)
+    debut = _date_ora(p_req["started"]) if p_req.get("started") else None
+    fin = _date_ora(p_req["ended"]) if p_req.get("ended") else None
+    err = p_out["erreurs"]
+    autres = sum(v for k, v in err.items() if k not in ("Erreur 001", "Erreur 025"))
+    flux = _flux_import(debut[11:] if debut else "00:00:00", p_out["releves"], banque_b)
+    con.execute(
+        "INSERT OR REPLACE INTO rb_imports(request_id,debut,fin,fichier,lus,ecrits,batch,releves_charges,releves_erreurs,"
+        "lignes_chargees,lignes_erreurs,err001,err025,autres_erreurs,flux,source_req,source_out) "
+        "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+        (rid, debut, fin, fichier, lus, ecrits, p_out["batch"], p_out["releves_charges"], p_out["releves_erreurs"],
+         p_out["lignes_chargees"], p_out["lignes_erreurs"], err.get("Erreur 001", 0), err.get("Erreur 025", 0), autres,
+         flux, str(req) if req else None, str(out) if out else None))
+    con.execute("DELETE FROM rb_import_releves WHERE request_id=?", (rid,))
+    con.executemany(
+        "INSERT OR REPLACE INTO rb_import_releves(request_id,num,compte,banque,guichet,numero,devise,date_debut,date_fin,"
+        "mouvements,en_erreur,code_erreur) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)",
+        [(rid, r["num"], r["compte"], r["banque"], r["guichet"], r["numero"], r["devise"], r["date_debut"],
+          r["date_fin"], r["mouvements"], r["en_erreur"], r["code_erreur"]) for r in p_out["releves"]])
+
+
+def _est_import(text: str) -> bool:
+    return "RBAFBIMP" in text or "Fichier des relev" in text or "Synth" in text and "relev" in text
+
+
+def _est_controle(text: str) -> bool:
+    return "DKA_SRBCTRLRB" in text or "DATE DE REFERENCE" in text
+
+
+def scanner_logs(dossiers: list[Path], con: sqlite3.Connection, banque_b: str = "30003") -> int:
+    """Charge les couples l<id>.req / o<id>.out nouveaux (imports et contrôles). Retourne le nombre de requests ajoutées."""
+    fichiers: dict[int, dict] = {}
+    for d in dossiers:
+        if not d.is_dir():
+            continue
+        for f in d.rglob("*"):
+            m = logs.FILE_RE.match(f.name)
+            if f.is_file() and m:
+                fichiers.setdefault(int(m.group(2)), {})["req" if m.group(1).lower() == "l" else "out"] = f
+    deja = ({r[0] for r in con.execute("SELECT request_id FROM rb_imports WHERE source_out IS NOT NULL OR source_req IS NOT NULL")}
+            | {r[0] for r in con.execute("SELECT request_id FROM rb_controles")})
+    n = 0
+    for rid, fs in sorted(fichiers.items()):
+        if rid in deja:
+            continue
+        texte = "".join(logs.lire(f) for f in fs.values())
+        if _est_controle(texte):
+            _charger_controle(rid, fs.get("req"), fs.get("out"), con, banque_b)
+        elif _est_import(texte):
+            _charger_import(rid, fs.get("req"), fs.get("out"), con, banque_b)
+        else:
+            continue
+        n += 1
+    con.commit()
+    return n
+
+
+def _charger_controle(rid, req, out, con, banque_b):   # provisoire : implémenté en Task 5
+    con.execute("INSERT OR REPLACE INTO rb_controles(request_id, source_out) VALUES (?, ?)",
+                (rid, str(out) if out else None))
