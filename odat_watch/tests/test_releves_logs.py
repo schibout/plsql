@@ -121,3 +121,34 @@ def test_scanner_logs_rescan_quand_le_out_arrive(tmp_path):
     assert r["source_out"] and r["releves_erreurs"] == 213 and r["err025"] == 208 and r["md5_ebs"] == "abc"
     assert con.execute("SELECT COUNT(*) FROM rb_import_releves").fetchone()[0] == 213
     assert rb.scanner_logs([d], con) == 0
+
+
+def test_recalcul_hors_connus_apres_edition(tmp_path):
+    """Vider les comptes connus recalcule nb_hors_connus des contrôles déjà chargés (208 au lieu de 207)."""
+    import pandas as pd
+    con = db.connect(tmp_path / "t.db")
+    rb.comptes_connus_init(con, ["30003/03620/00020137269", "16807/00166/31990892212"])
+    rb.scanner_logs([REF / "controle"], con)
+    assert con.execute("SELECT nb_hors_connus, source_req FROM rb_controles WHERE request_id=49069921").fetchone()[:] \
+        == (207, str(REF / "controle" / "l49069921.req"))
+    rb.enregistrer_comptes_connus(pd.DataFrame({"cle": [], "motif": []}), con)
+    assert con.execute("SELECT nb_hors_connus FROM rb_controles WHERE request_id=49069921").fetchone()[0] == 208
+    rb.enregistrer_comptes_connus(pd.DataFrame({"cle": ["16807/00166/31990892212"], "motif": ["BP"]}), con)
+    assert con.execute("SELECT nb_hors_connus FROM rb_controles WHERE request_id=49069921").fetchone()[0] == 207
+
+
+def test_scanner_logs_controle_rescan_quand_le_out_arrive(tmp_path):
+    import shutil
+    d = tmp_path / "logs"
+    d.mkdir()
+    shutil.copy(REF / "controle/l49069921.req", d)
+    con = db.connect(tmp_path / "t.db")
+    assert rb.scanner_logs([d], con) == 1
+    r = con.execute("SELECT source_req, source_out, nb_anomalies FROM rb_controles WHERE request_id=49069921").fetchone()
+    assert r["source_req"] and r["source_out"] is None and r["nb_anomalies"] == 0
+    shutil.copy(REF / "controle/o49069921.out", d)
+    assert rb.scanner_logs([d], con) == 1
+    r = con.execute("SELECT source_out, nb_anomalies FROM rb_controles WHERE request_id=49069921").fetchone()
+    assert r["source_out"] and r["nb_anomalies"] == 208
+    assert rb.scanner_logs([d], con) == 0
+

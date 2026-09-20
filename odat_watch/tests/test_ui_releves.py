@@ -65,6 +65,8 @@ def test_scan_puis_frise_et_plan(app):
     assert "KO" in texte
     assert "KO verdict du jour [err]" in texte and "KO flux B [err]" in texte        # tuile KO en rouge
     assert "13 exécution(s) PFE" in "\n".join(i.value for i in at.info)
+    assert "207 comptes en rupture [err]" in texte                                    # hors comptes connus
+    assert "list_releves.txt des logs manquants" in "\n".join(b.label for b in at.button)
     assert len(at.get("plotly_chart")) == 1                                         # mini-tendance des imports
     at.run()                                                                        # relance sans clic : le message ne colle pas
     assert not any("exécution(s) PFE" in i.value for i in at.info)
@@ -78,3 +80,6 @@ def test_rapport_html(app, tmp_path, monkeypatch):
     at.button(key="rb_btn_rapport").click().run()
     assert not at.exception
     assert list((tmp_path / "rapports").glob("Releves_20260915_*.html"))
+    assert any("Rapport écrit" in s.value for s in at.success)
+    at.run()
+    assert not any("Rapport écrit" in s.value for s in at.success)                  # message affiché une fois

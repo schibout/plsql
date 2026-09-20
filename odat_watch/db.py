@@ -228,7 +228,7 @@ CREATE TABLE IF NOT EXISTS rb_controles (          -- request DKA_SRBCTRLRB
     request_id      INTEGER PRIMARY KEY,
     executed_at     TEXT, date_reference TEXT,
     nb_anomalies    INTEGER, nb_sg INTEGER, nb_hors_connus INTEGER,
-    source_out      TEXT
+    source_req      TEXT, source_out TEXT
 );
 CREATE TABLE IF NOT EXISTS rb_controle_lignes (
     request_id  INTEGER NOT NULL, compte_id TEXT NOT NULL,

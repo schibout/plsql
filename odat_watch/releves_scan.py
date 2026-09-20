@@ -321,12 +321,12 @@ def scanner_logs(dossiers: list[Path], con: sqlite3.Connection, banque_b: str = 
             m = logs.FILE_RE.match(f.name)
             if f.is_file() and m:
                 fichiers.setdefault(int(m.group(2)), {})["req" if m.group(1).lower() == "l" else "out"] = f
-    # request_id -> (req déjà lu, out déjà lu). rb_controles ne trace que le .out.
+    # request_id -> (req déjà lu, out déjà lu)
     deja: dict[int, tuple[bool, bool]] = {
         r[0]: (r[1] is not None, r[2] is not None)
         for r in con.execute("SELECT request_id, source_req, source_out FROM rb_imports")}
-    deja.update({r[0]: (True, r[1] is not None)
-                 for r in con.execute("SELECT request_id, source_out FROM rb_controles")})
+    deja.update({r[0]: (r[1] is not None, r[2] is not None)
+                 for r in con.execute("SELECT request_id, source_req, source_out FROM rb_controles")})
     n = 0
     for rid, fs in sorted(fichiers.items()):
         if rid in deja:
@@ -401,8 +401,16 @@ def comptes_connus_init(con: sqlite3.Connection, cles: list[str]) -> None:
     con.commit()
 
 
+def recalculer_hors_connus(con: sqlite3.Connection) -> None:
+    """Recalcule rb_controles.nb_hors_connus à partir des lignes et de la liste courante des comptes connus."""
+    con.execute("UPDATE rb_controles SET nb_hors_connus = (SELECT COUNT(*) FROM rb_controle_lignes l "
+                "WHERE l.request_id = rb_controles.request_id "
+                "AND l.banque || '/' || l.guichet || '/' || l.numero NOT IN (SELECT cle FROM rb_comptes_connus))")
+
+
 def enregistrer_comptes_connus(df: pd.DataFrame, con: sqlite3.Connection) -> None:
-    """Remplace la liste des comptes connus par le contenu de l'éditeur (lignes vides / NaN ignorées)."""
+    """Remplace la liste des comptes connus par le contenu de l'éditeur (lignes vides / NaN ignorées) et recalcule
+    les anomalies hors comptes connus des contrôles déjà chargés."""
     lignes = []
     for _, r in df.iterrows():
         cle = r.get("cle")
@@ -413,6 +421,7 @@ def enregistrer_comptes_connus(df: pd.DataFrame, con: sqlite3.Connection) -> Non
         lignes.append((str(cle).strip(), motif, maintenant()))
     con.execute("DELETE FROM rb_comptes_connus")
     con.executemany("INSERT OR REPLACE INTO rb_comptes_connus(cle, motif, ajoute_le) VALUES (?,?,?)", lignes)
+    recalculer_hors_connus(con)
     con.commit()
 
 
@@ -424,8 +433,9 @@ def _charger_controle(rid: int, req: Path | None, out: Path | None, con: sqlite3
     nb_sg = sum(1 for l in p["lignes"] if l["banque"] == banque_b)
     hors = sum(1 for l in p["lignes"] if f"{l['banque']}/{l['guichet']}/{l['numero']}" not in connus)
     con.execute("INSERT OR REPLACE INTO rb_controles(request_id,executed_at,date_reference,nb_anomalies,nb_sg,"
-                "nb_hors_connus,source_out) VALUES (?,?,?,?,?,?,?)",
-                (rid, executed, p["date_reference"], len(p["lignes"]), nb_sg, hors, str(out) if out else None))
+                "nb_hors_connus,source_req,source_out) VALUES (?,?,?,?,?,?,?,?)",
+                (rid, executed, p["date_reference"], len(p["lignes"]), nb_sg, hors,
+                 str(req) if req else None, str(out) if out else None))
     con.execute("DELETE FROM rb_controle_lignes WHERE request_id=?", (rid,))
     con.executemany(
         "INSERT OR REPLACE INTO rb_controle_lignes(request_id,compte_id,banque,guichet,numero,nom_compte,"
@@ -530,5 +540,6 @@ def scanner_tout(cfg: dict, con: sqlite3.Connection) -> str:
                     "substr(rb_imports.debut,1,16) OR (e.horodatage <= rb_imports.debut AND e.horodatage >= "
                     f"datetime(rb_imports.debut, '-3 minutes'))) {cond} ORDER BY e.horodatage DESC LIMIT 1) "
                     "WHERE md5_ebs IS NULL")
+    recalculer_hors_connus(con)
     con.commit()
     return f"{n_pfe} exécution(s) PFE, {n_ebs} fichier(s) EBS, {n_logs} log(s) nouveaux."

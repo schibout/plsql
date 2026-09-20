@@ -11,7 +11,7 @@ import numpy as np
 import pandas as pd
 
 from rapport_matin import STYLE
-from releves import Journee, TON_VERDICT
+from releves import COLONNES_CHRONO, COLONNES_CONTINUITE, COLONNES_PFE, COLONNES_PLAN, Journee, TON_VERDICT
 
 BASE_DIR = Path(__file__).resolve().parent
 DOSSIER_RAPPORTS = BASE_DIR / "rapports"
@@ -94,23 +94,17 @@ def construire(b: Bilan) -> str:
     cls = CLASSE[TON_VERDICT[j.verdict]]
     msg = {"OK": "Les deux flux ont été intégrés.", "WARN": "À surveiller.", "KO": "Rupture de la chaîne des relevés.",
            "—": "Pas d'intégration attendue (" + (j.motif or "aucune donnée") + ")."}[j.verdict]
-    plan = ("<div class='vide'>aucun fichier à rejouer</div>" if not b.plan else _table(pd.DataFrame(b.plan), {
-        "ordre": "Étape", "chemin": "Fichier source", "origine": "Origine", "periode": "Relevé", "nb_releves": "Relevés",
-        "attendu": "Résultat attendu"}))
+    plan = ("<div class='vide'>aucun fichier à rejouer</div>" if not b.plan else _table(pd.DataFrame(b.plan), COLONNES_PLAN))
     cont = b.continuite
-    if cont is not None and not cont.empty:
-        cont = cont[(cont["trou"] == True) | (cont["retard_j"].fillna(0) > 1)].sort_values("retard_j", ascending=False)  # noqa: E712
+    if cont is not None and not cont.empty:   # retard ou trou, hors comptes connus
+        cont = cont[((cont["trou"] == True) | (cont["retard_j"].fillna(0) > 1)) & ~cont["connu"].astype(bool)]  # noqa: E712
+        cont = cont.sort_values("retard_j", ascending=False)
     sections = [
         ("Matinée du %s" % j.jour.strftime("%d/%m/%Y"), "".join(_frise(f) for f in j.flux.values())),
-        ("Chronologie des imports", _table(b.chronologie, {"debut": "Date / heure", "request_id": "Request", "fichier": "Fichier EBS",
-                                                           "flux": "Flux", "lus": "Lus", "ecrits": "Écrits", "charges": "Chargés",
-                                                           "erreurs": "Erreurs", "resultat": "Résultat"})),
-        ("Continuité des comptes (retard ou trou)", _table(cont, {"compte": "Compte", "dernier_charge": "Dernier relevé chargé",
-                                                                  "attendu": "Attendu", "retard_j": "Retard (j)", "trou": "Trou", "connu": "Connu"})),
+        ("Chronologie des imports", _table(b.chronologie, COLONNES_CHRONO)),
+        ("Continuité des comptes (retard ou trou, hors comptes connus)", _table(cont, COLONNES_CONTINUITE)),
         ("Plan de reprise", plan),
-        ("Rapprochement PFE ↔ EBS", _table(b.pfe, {"horodatage": "Exécution PFE", "uuid": "UUID", "flux": "Flux", "nb_releves": "Relevés",
-                                                  "date_min": "Du", "date_max": "Au", "fichier_ebs": "Fichier EBS", "request_id": "Import",
-                                                  "statut": "Statut"})),
+        ("Rapprochement PFE ↔ EBS", _table(b.pfe, COLONNES_PFE)),
         ("Contrôles DKA_SRBCTRLRB", _table(b.controles, {"executed_at": "Exécuté le", "request_id": "Request", "date_reference": "Date de référence",
                                                         "nb_anomalies": "Anomalies", "nb_sg": "dont SG", "nb_hors_connus": "hors comptes connus"})),
     ]

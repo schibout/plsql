@@ -18,13 +18,23 @@ from releves_scan import (  # noqa: F401 — ré-exports utilisés par l'onglet,
     scanner_pfe, scanner_ebs, rapprocher_pfe_ebs, scanner_logs, scanner_tout,
     parse_import_out, parse_controle_out, _date_ctrl,
     comptes_connus, comptes_connus_init, enregistrer_comptes_connus,
-    chaine_controlm, diagnostic_controlm,
+    chaine_controlm, diagnostic_controlm, recalculer_hors_connus,
 )
 
 
 # ---------------------------------------------------------------- journée
-FENETRE = {"A": ("06:30:00", "08:05:00"), "B": ("08:05:00", "10:00:00")}
+FENETRE = {"B": ("08:05:00", "10:00:00")}          # fenêtre du flux B : borne des contrôles « après flux B » sans import
 TON_VERDICT = {"OK": "ok", "WARN": "warn", "KO": "ko", "—": "neutral"}
+
+# Libellés de colonnes partagés par l'onglet et le rapport HTML
+COLONNES_PLAN = {"ordre": "Étape", "chemin": "Fichier source", "origine": "Origine", "periode": "Relevé",
+                 "nb_releves": "Relevés", "attendu": "Résultat attendu"}
+COLONNES_CHRONO = {"debut": "Date / heure", "request_id": "Request", "fichier": "Fichier EBS", "flux": "Flux", "lus": "Lus",
+                   "ecrits": "Écrits", "charges": "Chargés", "erreurs": "Erreurs", "resultat": "Résultat"}
+COLONNES_CONTINUITE = {"compte": "Compte", "dernier_charge": "Dernier relevé chargé", "attendu": "Attendu",
+                       "retard_j": "Retard (j)", "trou": "Trou", "connu": "Connu"}
+COLONNES_PFE = {"horodatage": "Exécution PFE", "uuid": "UUID", "flux": "Flux", "nb_releves": "Relevés", "date_min": "Du",
+                "date_max": "Au", "fichier_ebs": "Fichier EBS", "request_id": "Import", "statut": "Statut"}
 
 
 @dataclass
@@ -86,6 +96,10 @@ def journee(con: sqlite3.Connection, jour: date, cfg: dict) -> Journee:
     diag = diagnostic_controlm(j.controlm_df)
     j.controles = _tous(con, "SELECT * FROM rb_controles WHERE substr(executed_at,1,10)=? ORDER BY executed_at", (js,))
     banque_b, connus = cfg["banque_flux_b"], comptes_connus(con)
+    # dernier relevé de la banque B chargé par un import du flux B (les fichiers A portent aussi quelques comptes B)
+    dernier_charge_b = con.execute("SELECT MAX(r.date_fin) FROM rb_import_releves r JOIN rb_imports i "
+                                   "ON i.request_id = r.request_id WHERE r.en_erreur=0 AND r.banque=? AND i.flux='B'",
+                                   (banque_b,)).fetchone()[0]
     for code in ("A", "B"):
         f = Flux(code=code, controlm=diag)
         f.pfe = _un(con, "SELECT * FROM rb_pfe WHERE flux=? AND substr(horodatage,1,10)=? ORDER BY horodatage DESC LIMIT 1", (code, js))
@@ -96,7 +110,7 @@ def journee(con: sqlite3.Connection, jour: date, cfg: dict) -> Journee:
         apres = (f.import_ or {}).get("fin") or (f.import_ or {}).get("debut") or f"{js} {FENETRE['B'][0]}"
         f.controles = [dict(c, nb_hors_connus_flux=_anomalies_flux(con, c, code, banque_b, connus))
                        for c in j.controles if code == "A" or c["executed_at"] > apres]
-        _verdict_flux(f, j.motif)
+        _verdict_flux(f, j.motif, dernier_charge_b if code == "B" else None)
         j.flux[code] = f
     if j.motif and not any(f.pfe or f.import_ for f in j.flux.values()):
         j.verdict = "—"
@@ -106,7 +120,7 @@ def journee(con: sqlite3.Connection, jour: date, cfg: dict) -> Journee:
     return j
 
 
-def _verdict_flux(f: Flux, motif: str | None) -> None:
+def _verdict_flux(f: Flux, motif: str | None, dernier_charge: str | None = None) -> None:
     d = f.controlm
     pfe, ebs, imp = f.pfe, f.ebs, f.import_
     # --- PFE
@@ -136,18 +150,20 @@ def _verdict_flux(f: Flux, motif: str | None) -> None:
         e_ebs = ("neutral", "—")
     # --- import
     if imp:
+        h_imp = f"{imp['debut'][11:16]} · " if imp.get("debut") else ""
         if rejet_massif(imp):
-            e_imp = ("ko", f"req {imp['request_id']} · 0 chargé · {imp['err025']} × Erreur 025")
+            e_imp = ("ko", f"{h_imp}req {imp['request_id']} · 0 chargé · {imp['err025']} × Erreur 025")
             f.causes.append(f"Import {imp['request_id']} rejeté en bloc : {imp['err025']} × Erreur 025 « Journée manquante » — "
-                            "un relevé antérieur n'a jamais été chargé ; rejouer les fichiers manquants dans l'ordre.")
+                            "un relevé antérieur n'a jamais été chargé ; rejouer les fichiers manquants dans l'ordre"
+                            + (f" — dernier relevé chargé le {dernier_charge}." if dernier_charge else "."))
         elif not imp.get("source_out"):
-            e_imp = ("warn", f"req {imp['request_id']} · .out absent")
+            e_imp = ("warn", f"{h_imp}req {imp['request_id']} · .out absent")
             f.causes.append(f"Import {imp['request_id']} : log .out absent (résultat inconnu) : lancer copy_ebs_logs.sh.")
         elif (imp["releves_charges"] or 0) == 0:
-            e_imp = ("ko", f"req {imp['request_id']} · 0 chargé")
+            e_imp = ("ko", f"{h_imp}req {imp['request_id']} · 0 chargé")
             f.causes.append(f"Import {imp['request_id']} : aucun relevé chargé.")
         else:
-            e_imp = ("ok", f"req {imp['request_id']} · {imp['releves_charges']} chargés / {imp['releves_erreurs']} err.")
+            e_imp = ("ok", f"{h_imp}req {imp['request_id']} · {imp['releves_charges']} chargés / {imp['releves_erreurs']} err.")
     elif pfe or ebs:
         e_imp = ("ko", "pas d'import")
         if ebs:
@@ -160,12 +176,13 @@ def _verdict_flux(f: Flux, motif: str | None) -> None:
     elif f.controles:
         c = f.controles[-1]
         nb = c.get("nb_hors_connus_flux", c["nb_hors_connus"]) or 0
+        h_ctl = f"{c['executed_at'][11:16]} · " if c.get("executed_at") else ""
         if nb == 0:
-            e_ctl = ("ok", f"req {c['request_id']} · aucune anomalie")
+            e_ctl = ("ok", f"{h_ctl}req {c['request_id']} · aucune anomalie")
         elif f.code == "B" and imp and not rejet_massif(imp):
-            e_ctl = ("warn", f"req {c['request_id']} · {nb} anomalie(s)")
+            e_ctl = ("warn", f"{h_ctl}req {c['request_id']} · {nb} anomalie(s)")
         else:
-            e_ctl = ("ko" if f.code == "B" else "warn", f"req {c['request_id']} · {nb} anomalie(s)")
+            e_ctl = ("ko" if f.code == "B" else "warn", f"{h_ctl}req {c['request_id']} · {nb} anomalie(s)")
     else:
         e_ctl = ("neutral", "pas de contrôle")
     f.etapes = [dict(cle=k, libelle=l, ton=t, texte=x) for k, l, (t, x) in

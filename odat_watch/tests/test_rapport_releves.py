@@ -55,3 +55,12 @@ def test_t_valeurs_manquantes_pandas():
     import pandas as pd
     import rapport_releves as rr
     assert rr._t(pd.NA) == "" and rr._t(pd.NaT) == "" and rr._t(None) == "" and rr._t("x") == "x"
+
+
+def test_continuite_du_rapport_hors_comptes_connus(tmp_path):
+    con = db.connect(tmp_path / "t.db")
+    rb.scanner_tout(CFG, con)
+    j = rb.journee(con, date(2026, 9, 18), CFG)
+    html = rr.construire(rr.Bilan(journee=j, continuite=rb.continuite(con, CFG)))
+    assert "30003.01100.00020398294" in html and "30003.03620.00020137269" not in html      # compte connu exclu
+

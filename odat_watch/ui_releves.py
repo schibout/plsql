@@ -36,19 +36,24 @@ def _frise(f: rb.Flux) -> None:
         (st.error if ton == "ko" else st.warning)(c)
 
 
-def _tuiles(kpi, j: rb.Journee, plan: list, cont: pd.DataFrame) -> None:
+def _nb_ruptures(cont: pd.DataFrame) -> int:
+    """Comptes en rupture (trou), hors comptes connus."""
+    return int((cont["trou"].astype(bool) & ~cont["connu"].astype(bool)).sum()) if not cont.empty else 0
+
+
+def _tuiles(kpi, j: rb.Journee, plan: list, cont: pd.DataFrame, n_trou: int) -> None:
     c1, c2, c3, c4, c5 = st.columns(5)
     kpi(c1, ICONE[j.verdict] + " " + j.verdict, "verdict du jour", TON_KPI[rb.TON_VERDICT[j.verdict]])
     for col, code in ((c2, "A"), (c3, "B")):
         f = j.flux[code]
         kpi(col, f.verdict, f"flux {code}", TON_KPI[rb.TON_VERDICT[f.verdict]])
-    n_trou = int(cont["trou"].sum()) if not cont.empty else 0
     kpi(c4, n_trou, "comptes en rupture", "err" if n_trou else "ok")
     kpi(c5, len(plan), "fichiers à rejouer", "err" if plan else "ok")
 
 
 def _tendance(ch: pd.DataFrame) -> None:
-    """Mini-tendance : relevés chargés (vert) et en erreur (rouge) par import, flux en abscisse secondaire."""
+    """Mini-tendance : barres empilées par import (relevés chargés en vert, en erreur en rouge), le flux figure
+    dans le libellé de chaque barre."""
     x = [f"{d[5:16]} · {f}" for d, f in zip(ch["debut"], ch["flux"])]
     fig = go.Figure()
     fig.add_bar(x=x, y=ch["charges"].fillna(0), name="Relevés chargés", marker_color=COULEUR_CHARGES,
@@ -74,7 +79,7 @@ def render(kpi):
                      help=f"PFE : {cfg['dossier_pfe']}\nEBS : {cfg['dossier_ebs']}\nLogs : {'; '.join(str(d) for d in cfg['dossiers_logs'])}"):
             with st.spinner("Lecture des fichiers PFE, EBS et des logs…"):
                 st.session_state["rb_msg"] = rb.scanner_tout(cfg, con)
-        if b3.button("📋 list.txt des logs manquants", use_container_width=True, key="rb_liste"):
+        if b3.button("📋 list_releves.txt des logs manquants", use_container_width=True, key="rb_liste"):
             st.session_state["rb_msg"] = rb.liste_logs_manquants(con)
         if st.session_state.get("rb_msg"):
             st.info(st.session_state.pop("rb_msg"))          # affiché une fois, ne colle pas aux relances
@@ -96,9 +101,10 @@ def render(kpi):
             chemin = rr.ecrire(bilan, rr.DOSSIER_RAPPORTS)
             st.session_state["rb_rapport"] = str(chemin)
         if st.session_state.get("rb_rapport"):
-            st.success(f"Rapport écrit : `{st.session_state['rb_rapport']}`")
+            st.success(f"Rapport écrit : `{st.session_state.pop('rb_rapport')}`")
 
-        _tuiles(kpi, j, plan, cont)
+        n_trou = _nb_ruptures(cont)
+        _tuiles(kpi, j, plan, cont, n_trou)
         if j.motif:
             st.caption(f"{jour:%d/%m/%Y} = {j.motif} : pas d'intégration attendue.")
 
@@ -111,36 +117,28 @@ def render(kpi):
             st.error("Rupture de continuité : rejouer ces fichiers **un par un, dans l'ordre**, en attendant la fin de "
                      "chaque request RBAFBIMP (copier sous `AFB120.txt` dans `data/in`, lancer l'import, vérifier "
                      "`Relevés chargés`). Puis lancer DKA_SRBCTRLRB.")
-            st.dataframe(pd.DataFrame(plan)[["ordre", "chemin", "origine", "periode", "nb_releves", "attendu"]],
-                         hide_index=True, use_container_width=True,
-                         column_config={"ordre": "Étape", "chemin": "Fichier source", "origine": "Origine",
-                                        "periode": "Relevé", "nb_releves": "Relevés", "attendu": "Résultat attendu"})
+            st.dataframe(pd.DataFrame(plan)[list(rb.COLONNES_PLAN)], hide_index=True, use_container_width=True,
+                         column_config=rb.COLONNES_PLAN)
 
         st.markdown("##### Chronologie des imports (15 jours)")
-        st.dataframe(ch[["debut", "request_id", "fichier", "flux", "lus", "ecrits", "charges", "erreurs", "resultat"]],
-                     hide_index=True, use_container_width=True,
-                     column_config={"debut": "Date / heure", "request_id": st.column_config.NumberColumn("Request", format="%d"),
-                                    "fichier": "Fichier EBS", "flux": "Flux", "lus": "Lus", "ecrits": "Écrits",
-                                    "charges": "Chargés", "erreurs": "Erreurs", "resultat": "Résultat"})
+        st.dataframe(ch[list(rb.COLONNES_CHRONO)], hide_index=True, use_container_width=True,
+                     column_config={**rb.COLONNES_CHRONO,
+                                    "request_id": st.column_config.NumberColumn(rb.COLONNES_CHRONO["request_id"], format="%d")})
         if not ch.empty:
             _tendance(ch)
 
-        with st.expander(f"Continuité des comptes {cfg['banque_flux_b']} — {int(cont['trou'].sum()) if not cont.empty else 0} en rupture", expanded=bool(plan)):
+        with st.expander(f"Continuité des comptes {cfg['banque_flux_b']} — {n_trou} en rupture (hors comptes connus)", expanded=bool(plan)):
             if cont.empty:
                 st.caption("Aucun import chargé pour cette banque.")
             else:
                 vue = cont.sort_values(["trou", "retard_j"], ascending=[False, False])
-                st.dataframe(vue[["compte", "dernier_charge", "attendu", "retard_j", "trou", "connu"]], hide_index=True,
-                             use_container_width=True, height=320,
-                             column_config={"compte": "Compte", "dernier_charge": "Dernier relevé chargé", "attendu": "Attendu",
-                                            "retard_j": "Retard (j)", "trou": "Trou", "connu": "Connu"})
+                st.dataframe(vue[list(rb.COLONNES_CONTINUITE)], hide_index=True, use_container_width=True, height=320,
+                             column_config=rb.COLONNES_CONTINUITE)
 
         with st.expander("Rapprochement PFE ↔ EBS"):
-            st.dataframe(pfe[["horodatage", "uuid", "flux", "nb_releves", "date_min", "date_max", "fichier_ebs", "request_id", "statut"]],
-                         hide_index=True, use_container_width=True,
-                         column_config={"horodatage": "Exécution PFE", "uuid": "UUID", "flux": "Flux", "nb_releves": "Relevés",
-                                        "date_min": "Du", "date_max": "Au", "fichier_ebs": "Fichier EBS",
-                                        "request_id": st.column_config.NumberColumn("Import", format="%d"), "statut": "Statut"})
+            st.dataframe(pfe[list(rb.COLONNES_PFE)], hide_index=True, use_container_width=True,
+                         column_config={**rb.COLONNES_PFE,
+                                        "request_id": st.column_config.NumberColumn(rb.COLONNES_PFE["request_id"], format="%d")})
 
         with st.expander("Chaîne Control-M de la matinée"):
             if j.controlm_df.empty:
@@ -164,6 +162,6 @@ def render(kpi):
                                    column_config={"cle": "banque/guichet/compte", "motif": "Motif"})
             if st.button("💾 Enregistrer les comptes connus", key="rb_connus_save"):
                 rb.enregistrer_comptes_connus(edite, con)
-                st.success("Comptes connus enregistrés — relancez « Scanner » pour recalculer les contrôles.")
+                st.success("Comptes connus enregistrés, anomalies des contrôles recalculées.")
     finally:
         con.close()

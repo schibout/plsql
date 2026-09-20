@@ -238,3 +238,19 @@ def test_rendu_entiers_et_booleens():
     df = pd.DataFrame({"n": [np.int64(3)], "b": [True], "t": ["x"]})
     h = rr._table(df, {"n": "N", "b": "B", "t": "T"})
     assert "<td class='num'>3</td>" in h and "<td>oui</td>" in h and "<td>x</td>" in h
+
+
+def test_textes_etapes_et_cause_025(con):
+    b = rb.journee(con, date(2026, 9, 17), CFG).flux["B"]
+    etapes = {e["cle"]: e["texte"] for e in b.etapes}
+    assert etapes["import"].startswith("08:19 · req 49061539")
+    assert etapes["controle"].startswith("08:26 · req 49061552")
+    assert any("dernier relevé chargé le 2026-09-11" in c for c in b.causes)
+
+
+def test_constantes_de_colonnes():
+    for cols in (rb.COLONNES_PLAN, rb.COLONNES_CHRONO, rb.COLONNES_CONTINUITE, rb.COLONNES_PFE):
+        assert isinstance(cols, dict) and cols
+    assert list(rb.COLONNES_PLAN) == ["ordre", "chemin", "origine", "periode", "nb_releves", "attendu"]
+    assert "resultat" in rb.COLONNES_CHRONO and "trou" in rb.COLONNES_CONTINUITE and "statut" in rb.COLONNES_PFE
+

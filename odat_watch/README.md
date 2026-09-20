@@ -131,11 +131,11 @@ Le flux d'un fichier est déduit de ses banques : B = uniquement la banque `banq
 
 Sources locales (section `[releves]` de `config.ini`, valeurs par défaut vers `..\ControleReleveBancaire`) :
 - `dossier_pfe` : un sous-dossier `<uuid>` par exécution Talend (`SOURCE/`, `TARGET/compt_AFB120_*.txt` +
-  `compteur_*.zip`, `TALEND/LS_IN.OK`) ; une exécution est « complète » si les trois sont présents et que le zip
-  contient le TARGET ;
+  `compteur_*.zip`, `TALEND/LS_IN.OK`) ; une exécution est « complète » si les quatre sont présents (SOURCE, TARGET,
+  zip, LS_IN.OK) et que le zip contient le TARGET ;
 - `dossier_ebs` : les `AFB120.txt_<AAAAMMJJHHMMSS>` reçus par EBS (`data/traite`, suffixe libre toléré) ;
 - `dossiers_logs` : les `l<id>.req` / `o<id>.out` des imports et contrôles, rapatriés avec `copy_ebs_logs.sh` à
-  partir du `list_releves.txt` généré par « 📋 list.txt des logs manquants » (demandes Oracle chargées sans `.out` local).
+  partir du `list_releves.txt` généré par « 📋 list_releves.txt des logs manquants » (demandes Oracle chargées sans `.out` local).
   Un log dont seul le `.req` est présent est chargé puis complété au scan suivant quand le `.out` arrive.
 
 Deux modules : `releves_scan.py` (lecture et chargement dans les tables `rb_*`) et `releves.py` (verdict, continuité,
@@ -155,7 +155,8 @@ L'onglet affiche ensuite :
   chargement), le rapprochement PFE ↔ EBS, la chaîne Control-M de la matinée (dernière photo ODAT prise ce jour-là ;
   une photo de la veille au soir n'est pas utilisée), les contrôles `DKA_SRBCTRLRB` avec le détail des lignes ;
 - les **comptes connus** (anomalies préexistantes, `banque/guichet/compte`) : initialisés depuis `config.ini`, éditables
-  dans l'onglet, ignorés par le verdict — relancer « Scanner » après modification.
+  dans l'onglet, ignorés par le verdict ; l'enregistrement recalcule aussitôt les anomalies « hors comptes connus »
+  des contrôles déjà chargés. Les comptes en rupture (tuile, continuité du rapport) excluent les comptes connus.
 
 « 📄 Rapport HTML » écrit `rapports/Releves_AAAAMMJJ_HHMM.html` (frise, chronologie, continuité, plan, PFE ↔ EBS,
 contrôles). Samedi, dimanche et jours fériés : aucune intégration attendue pour un flux qui n'a rien produit (verdict
