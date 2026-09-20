@@ -84,6 +84,12 @@ def _executer(sql: str, limite: int) -> tuple[pd.DataFrame, float]:
     return df.head(limite), dt
 
 
+def _proposer(sql: str) -> None:
+    """Place une requête dans la zone SQL (avant son affichage) et demande son exécution."""
+    st.session_state["sql_area"] = sql
+    st.session_state["sql_a_executer"] = True
+
+
 def render(kpi):
     schema = _schema()
     total = sum(c.attrs["nb"] for c in schema.values())
@@ -96,33 +102,38 @@ def render(kpi):
     gauche, droite = st.columns([1, 2.2], gap="large")
 
     # ---------------------------------------------------------------- explorateur
+    # Tout ce qui alimente la zone SQL doit s'exécuter AVANT la création du text_area (même clé d'état).
     with gauche:
         st.markdown("#### 🗄 Tables")
-        for t, cols in schema.items():
-            with st.expander(f"**{t}**  ·  {cols.attrs['nb']:,} lignes".replace(",", " ")):
-                st.dataframe(cols.rename(columns={"name": "colonne", "notnull": "non nul", "pk": "clé"}),
-                             hide_index=True, use_container_width=True, height=min(400, 36 * len(cols) + 40))
-                b1, b2 = st.columns(2)
-                if b1.button("SELECT *", key=f"sel_{t}", use_container_width=True):
-                    st.session_state["sql"] = f"SELECT *\nFROM {t}\nLIMIT 200"
-                    st.session_state["sql_run"] = True
-                if b2.button("Aperçu", key=f"ap_{t}", use_container_width=True):
-                    st.session_state["sql"] = f"SELECT {', '.join(cols['name'].head(8))}\nFROM {t}\nORDER BY rowid DESC\nLIMIT 50"
-                    st.session_state["sql_run"] = True
+        noms = list(schema)
+        libelles = {t: f"{t} · {schema[t].attrs['nb']:,} lignes".replace(",", " ") for t in noms}
+        table = st.selectbox("Table", noms, format_func=libelles.get, key="sql_table")
+        cols = schema[table]
+        st.dataframe(cols.rename(columns={"name": "colonne", "notnull": "non nul", "pk": "clé"}),
+                     hide_index=True, use_container_width=True, height=min(320, 36 * len(cols) + 40))
+        choisies = st.multiselect("Colonnes à sélectionner", list(cols["name"]), key="sql_cols",
+                                  placeholder="toutes si vide")
+        b1, b2, b3 = st.columns(3)
+        if b1.button("Colonnes choisies", key="sql_select_cols", use_container_width=True, disabled=not choisies):
+            _proposer("SELECT " + ", ".join(choisies) + "\nFROM " + table + "\nLIMIT 500")
+        if b2.button("SELECT *", key="sql_select_all", use_container_width=True):
+            _proposer("SELECT *\nFROM " + table + "\nLIMIT 200")
+        if b3.button("Compter", key="sql_count", use_container_width=True):
+            _proposer("SELECT COUNT(*) AS nb\nFROM " + table)
 
     # ---------------------------------------------------------------- requêteur
     with droite:
         st.markdown("#### ⌨ Requêteur (lecture seule)")
-        ex = st.selectbox("Exemples", ["— choisir un exemple —"] + list(EXEMPLES), label_visibility="collapsed")
-        if ex in EXEMPLES and st.session_state.get("ex_prec") != ex:
-            st.session_state["sql"] = EXEMPLES[ex]
-            st.session_state["ex_prec"] = ex
-        sql = st.text_area("SQL", st.session_state.get("sql", "SELECT * FROM snapshots ORDER BY snap_time DESC"),
-                           height=220, key="sql_area", label_visibility="collapsed")
-        st.session_state["sql"] = sql
+        ex = st.selectbox("Exemples", ["— choisir un exemple —"] + list(EXEMPLES), key="sql_exemple",
+                          label_visibility="collapsed")
+        if ex in EXEMPLES and st.session_state.get("sql_exemple_prec") != ex:
+            st.session_state["sql_exemple_prec"] = ex
+            _proposer(EXEMPLES[ex])
+        st.session_state.setdefault("sql_area", "SELECT * FROM snapshots ORDER BY snap_time DESC")
+        sql = st.text_area("SQL", height=220, key="sql_area", label_visibility="collapsed")
         c1, c2, c3 = st.columns([1, 1, 2])
-        run = c1.button("▶ Exécuter", type="primary", use_container_width=True) or st.session_state.pop("sql_run", False)
-        limite = c2.selectbox("Lignes max", [100, 500, 2000, 10000], index=1, label_visibility="collapsed")
+        run = c1.button("▶ Exécuter", type="primary", use_container_width=True, key="sql_run") or st.session_state.pop("sql_a_executer", False)
+        limite = c2.selectbox("Lignes max", [100, 500, 2000, 10000], index=1, key="sql_limite", label_visibility="collapsed")
         c3.caption("Ctrl+Entrée dans la zone puis Exécuter. SQLite : `date()`, `time()`, `julianday()`, `json_each()`.")
 
         if run and sql.strip():
@@ -140,4 +151,4 @@ def render(kpi):
             st.caption(f"{len(df)} ligne(s) · {dt * 1000:.0f} ms · {quand:%H:%M:%S}")
             st.dataframe(df, use_container_width=True, hide_index=True, height=min(520, 38 * len(df) + 40))
             st.download_button("⬇ CSV", df.to_csv(index=False, sep=";").encode("utf-8-sig"),
-                               f"requete_{quand:%Y%m%d_%H%M%S}.csv", "text/csv")
+                               f"requete_{quand:%Y%m%d_%H%M%S}.csv", "text/csv", key="sql_csv")
