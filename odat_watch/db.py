@@ -188,6 +188,58 @@ CREATE TABLE IF NOT EXISTS calendar_job_mapping (
     commentaire TEXT,
     PRIMARY KEY (event_id, job_name)
 );
+
+-- Relevés bancaires (onglet « Relevés bancaires », modules releves_scan.py / releves.py)
+CREATE TABLE IF NOT EXISTS rb_pfe (                -- une exécution Talend (dossier <uuid>) : le fichier livré à EBS
+    uuid            TEXT PRIMARY KEY,
+    horodatage      TEXT,                          -- YYYY-MM-DD HH:MM:SS (nom du TARGET)
+    fichier_source  TEXT, fichier_target TEXT, zip TEXT,
+    ls_in_ok        INTEGER, complete INTEGER,
+    flux            TEXT,                          -- A | B
+    nb_releves      INTEGER, nb_lignes INTEGER, banques TEXT,   -- banques : "30003:213;30004:12"
+    date_min        TEXT, date_max TEXT,           -- YYYY-MM-DD
+    md5             TEXT,
+    ebs_md5_recu    INTEGER DEFAULT 0,             -- 1 si un fichier rb_ebs a le même md5
+    vu_le           TEXT
+);
+CREATE TABLE IF NOT EXISTS rb_ebs (                -- fichier AFB120.txt_<horodatage> reçu par EBS (data/traite)
+    nom             TEXT PRIMARY KEY,
+    horodatage      TEXT, flux TEXT,
+    nb_releves      INTEGER, nb_lignes INTEGER, banques TEXT,
+    date_min        TEXT, date_max TEXT, md5 TEXT, vu_le TEXT
+);
+CREATE TABLE IF NOT EXISTS rb_imports (            -- request RBAFBIMP (logs l<id>.req / o<id>.out)
+    request_id      INTEGER PRIMARY KEY,
+    debut           TEXT, fin TEXT, fichier TEXT,
+    lus             INTEGER, ecrits INTEGER, batch INTEGER,
+    releves_charges INTEGER, releves_erreurs INTEGER, lignes_chargees INTEGER, lignes_erreurs INTEGER,
+    err001          INTEGER DEFAULT 0, err025 INTEGER DEFAULT 0, autres_erreurs INTEGER DEFAULT 0,
+    flux            TEXT, md5_ebs TEXT,
+    source_req      TEXT, source_out TEXT
+);
+CREATE TABLE IF NOT EXISTS rb_import_releves (     -- « Synthèse des relevés » : une ligne par relevé
+    request_id  INTEGER NOT NULL, num INTEGER NOT NULL,
+    compte      TEXT, banque TEXT, guichet TEXT, numero TEXT, devise TEXT,
+    date_debut  TEXT, date_fin TEXT, mouvements INTEGER,
+    en_erreur   INTEGER DEFAULT 0, code_erreur TEXT,
+    PRIMARY KEY (request_id, num)
+);
+CREATE TABLE IF NOT EXISTS rb_controles (          -- request DKA_SRBCTRLRB
+    request_id      INTEGER PRIMARY KEY,
+    executed_at     TEXT, date_reference TEXT,
+    nb_anomalies    INTEGER, nb_sg INTEGER, nb_hors_connus INTEGER,
+    source_req      TEXT, source_out TEXT
+);
+CREATE TABLE IF NOT EXISTS rb_controle_lignes (
+    request_id  INTEGER NOT NULL, compte_id TEXT NOT NULL,
+    banque TEXT, guichet TEXT, numero TEXT, nom_compte TEXT,
+    date_dernier_import TEXT, date_debut_releve TEXT, date_fin_releve TEXT,
+    PRIMARY KEY (request_id, compte_id)
+);
+CREATE TABLE IF NOT EXISTS rb_comptes_connus (     -- anomalies préexistantes à ignorer : 'banque/guichet/compte'
+    cle       TEXT PRIMARY KEY,
+    motif     TEXT, ajoute_le TEXT
+);
 """
 
 
@@ -251,10 +303,11 @@ def connect(path: Path | str = DB_PATH) -> sqlite3.Connection:
 def _migrate(con: sqlite3.Connection) -> None:
     """Tables Oracle recréées si leur structure a changé (elles se rechargent en un clic)."""
     _migrer_folio_rose(con)
-    cols = [r[1] for r in con.execute("PRAGMA table_info(job_mapping)")]
-    if cols and "programme" not in cols:
-        con.execute("ALTER TABLE job_mapping ADD COLUMN programme TEXT")
-        con.commit()
+    for table, colonne in (("job_mapping", "programme"), ("rb_controles", "source_req")):
+        cols = [r[1] for r in con.execute(f"PRAGMA table_info({table})")]
+        if cols and colonne not in cols:
+            con.execute(f"ALTER TABLE {table} ADD COLUMN {colonne} TEXT")
+            con.commit()
     for table, colonne in (("ora_requests", "job_name"),):
         cols = [r[1] for r in con.execute(f"PRAGMA table_info({table})")]
         if cols and colonne not in cols:

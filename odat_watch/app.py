@@ -306,8 +306,8 @@ st.markdown(f"""
   <div class="meta">{meta}</div>
 </div>""", unsafe_allow_html=True)
 
-tab_plan, tab_calendriers, tab_soir, tab_demain, tab_now, tab_matin, tab_folio, tab_ora, tab_ref, tab_histo, tab_profils, tab_data, tab_sql = st.tabs(
-    ["🧭 Préparer ma nuit", "📥 Clôtures", "🌙 Ce soir", "📅 Demain", "🔴 Maintenant", "☀️ Matin", "🌹 Folio Rose", "🅾 Oracle", "📒 Référentiel", "🔎 Historique", "📈 Profils", "🗂 Données", "⌨ SQL"])
+tab_plan, tab_calendriers, tab_soir, tab_demain, tab_now, tab_matin, tab_releves, tab_folio, tab_ora, tab_ref, tab_histo, tab_profils, tab_data, tab_sql = st.tabs(
+    ["🧭 Préparer ma nuit", "📥 Clôtures", "🌙 Ce soir", "📅 Demain", "🔴 Maintenant", "☀️ Matin", "🏦 Relevés bancaires", "🌹 Folio Rose", "🅾 Oracle", "📒 Référentiel", "🔎 Historique", "📈 Profils", "🗂 Données", "⌨ SQL"])
 
 with tab_ref:
     import ui_referentiel
@@ -326,6 +326,10 @@ with tab_calendriers:
 with tab_matin:
     import ui_matin
     ui_matin.render(now, kpi)
+
+with tab_releves:
+    import ui_releves
+    ui_releves.render(kpi)
 
 with tab_folio:
     import ui_folio_rose

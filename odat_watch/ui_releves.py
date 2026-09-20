@@ -1,0 +1,167 @@
+"""Onglet « 🏦 Relevés bancaires » : frise de la matinée (PFE → Control-M → EBS → import → contrôle), chronologie,
+continuité des comptes SG, plan de reprise, rapprochement PFE ↔ EBS, chaîne Control-M, contrôles, comptes connus."""
+from __future__ import annotations
+
+import html
+from datetime import date
+
+import pandas as pd
+import plotly.graph_objects as go
+import streamlit as st
+
+import rapport_releves as rr
+import releves as rb
+from db import connect
+
+COULEUR = {"ok": "#1F9D55", "warn": "#D9A400", "ko": "#D23F31", "neutral": "#8A94A6"}
+FOND = {"ok": "#EAF7EE", "warn": "#FFF8E1", "ko": "#FDECEC", "neutral": "#F3F4F6"}
+ICONE = {"OK": "✅", "WARN": "⚠️", "KO": "🔴", "—": "⚪"}
+TON_KPI = {"ok": "ok", "warn": "warn", "ko": "err", "neutral": "neutral"}      # tons de releves -> tons de app.kpi
+COULEUR_CHARGES, COULEUR_ERREURS = "#1F9D55", "#D23F31"
+
+
+def _frise(f: rb.Flux) -> None:
+    ton = rb.TON_VERDICT[f.verdict]
+    st.markdown(f"**Flux {f.code}** — {'multi-banques, import ~07:50' if f.code == 'A' else 'Société Générale, import ~08:20'} "
+                f"&nbsp; <span style='background:{FOND[ton]};color:{COULEUR[ton]};border:1px solid {COULEUR[ton]};"
+                f"border-radius:10px;padding:1px 9px;font-weight:700'>{ICONE[f.verdict]} {f.verdict}</span>",
+                unsafe_allow_html=True)
+    cols = st.columns(5)
+    for col, e in zip(cols, f.etapes):
+        col.markdown(f"<div style='background:#fff;border:1px solid #dde3ea;"
+                     f"border-top:4px solid {COULEUR[e['ton']]};border-radius:6px;padding:8px 10px;min-height:74px'>"
+                     f"<div style='font-size:.75rem;text-transform:uppercase;color:#57606a'>{html.escape(str(e['libelle']))}</div>"
+                     f"<div style='font-size:.85rem'>{html.escape(str(e['texte']))}</div></div>", unsafe_allow_html=True)
+    for c in f.causes:
+        (st.error if ton == "ko" else st.warning)(c)
+
+
+def _nb_ruptures(cont: pd.DataFrame) -> int:
+    """Comptes en rupture (trou), hors comptes connus."""
+    return int((cont["trou"].astype(bool) & ~cont["connu"].astype(bool)).sum()) if not cont.empty else 0
+
+
+def _tuiles(kpi, j: rb.Journee, plan: list, cont: pd.DataFrame, n_trou: int) -> None:
+    c1, c2, c3, c4, c5 = st.columns(5)
+    kpi(c1, ICONE[j.verdict] + " " + j.verdict, "verdict du jour", TON_KPI[rb.TON_VERDICT[j.verdict]])
+    for col, code in ((c2, "A"), (c3, "B")):
+        f = j.flux[code]
+        kpi(col, f.verdict, f"flux {code}", TON_KPI[rb.TON_VERDICT[f.verdict]])
+    kpi(c4, n_trou, "comptes en rupture", "err" if n_trou else "ok")
+    kpi(c5, len(plan), "fichiers à rejouer", "err" if plan else "ok")
+
+
+def _tendance(ch: pd.DataFrame) -> None:
+    """Mini-tendance : barres empilées par import (relevés chargés en vert, en erreur en rouge), le flux figure
+    dans le libellé de chaque barre."""
+    x = [f"{d[5:16]} · {f}" for d, f in zip(ch["debut"], ch["flux"])]
+    fig = go.Figure()
+    fig.add_bar(x=x, y=ch["charges"].fillna(0), name="Relevés chargés", marker_color=COULEUR_CHARGES,
+                customdata=ch["request_id"], hovertemplate="req %{customdata} · %{y} chargés<extra></extra>")
+    fig.add_bar(x=x, y=ch["erreurs"].fillna(0), name="Relevés en erreur", marker_color=COULEUR_ERREURS,
+                customdata=ch["request_id"], hovertemplate="req %{customdata} · %{y} en erreur<extra></extra>")
+    fig.update_layout(barmode="stack", height=230, margin=dict(l=10, r=10, t=10, b=10), template="plotly_white",
+                      legend=dict(orientation="h", y=1.12, x=0), xaxis_title=None, yaxis_title="relevés",
+                      xaxis=dict(tickangle=-45, tickfont=dict(size=10)))
+    st.plotly_chart(fig, use_container_width=True)
+
+
+def render(kpi):
+    cfg = rb.config_releves()
+    con = connect()
+    try:
+        st.markdown("#### Chaîne des relevés bancaires · PFE → Control-M (FINEXT_J14INT_05/06) → EBS (RBAFBIMP → DKA_SRBCTRLRB)")
+        b1, b2, b3, b4 = st.columns([1.2, 1.4, 1.4, 1.6])
+        # valeur par défaut portée par session_state (pas de `value` + `key` déjà en état : StreamlitAPIException)
+        st.session_state.setdefault("rb_jour", date.today())
+        jour = b1.date_input("Matinée", key="rb_jour", format="DD/MM/YYYY")
+        if b2.button("🔄 Scanner les dossiers", type="primary", use_container_width=True, key="rb_scanner",
+                     help=f"PFE : {cfg['dossier_pfe']}\nEBS : {cfg['dossier_ebs']}\nLogs : {'; '.join(str(d) for d in cfg['dossiers_logs'])}"):
+            with st.spinner("Lecture des fichiers PFE, EBS et des logs…"):
+                st.session_state["rb_msg"] = rb.scanner_tout(cfg, con)
+        if b3.button("📋 list_releves.txt des logs manquants", use_container_width=True, key="rb_liste"):
+            st.session_state["rb_msg"] = rb.liste_logs_manquants(con)
+        if st.session_state.get("rb_msg"):
+            st.info(st.session_state.pop("rb_msg"))          # affiché une fois, ne colle pas aux relances
+
+        vide = con.execute("SELECT (SELECT COUNT(*) FROM rb_pfe) + (SELECT COUNT(*) FROM rb_ebs) + (SELECT COUNT(*) FROM rb_imports)").fetchone()[0] == 0
+        if vide:
+            st.caption("Aucune donnée : copiez les exécutions PFE (dossiers <uuid>), les fichiers AFB120.txt_* et les logs "
+                       ".req/.out dans les dossiers de `config.ini [releves]`, puis cliquez sur **Scanner**.")
+            return
+
+        j = rb.journee(con, jour, cfg)
+        plan = rb.plan_reprise(con, cfg)
+        cont = rb.continuite(con, cfg, jour)
+        ch = rb.chronologie(con, 15, jour)
+        pfe = rb.rapprochement_pfe(con)
+        ctl = rb.controles(con)
+        if b4.button("📄 Rapport HTML", use_container_width=True, key="rb_btn_rapport"):
+            bilan = rr.Bilan(journee=j, chronologie=ch, continuite=cont, plan=plan, pfe=pfe, controles=ctl)
+            chemin = rr.ecrire(bilan, rr.DOSSIER_RAPPORTS)
+            st.session_state["rb_rapport"] = str(chemin)
+        if st.session_state.get("rb_rapport"):
+            st.success(f"Rapport écrit : `{st.session_state.pop('rb_rapport')}`")
+
+        n_trou = _nb_ruptures(cont)
+        _tuiles(kpi, j, plan, cont, n_trou)
+        if j.motif:
+            st.caption(f"{jour:%d/%m/%Y} = {j.motif} : pas d'intégration attendue.")
+
+        st.markdown("##### Frise de la matinée")
+        for code in ("A", "B"):
+            _frise(j.flux[code])
+
+        if plan:
+            st.markdown("##### 🛠 Plan de reprise")
+            st.error("Rupture de continuité : rejouer ces fichiers **un par un, dans l'ordre**, en attendant la fin de "
+                     "chaque request RBAFBIMP (copier sous `AFB120.txt` dans `data/in`, lancer l'import, vérifier "
+                     "`Relevés chargés`). Puis lancer DKA_SRBCTRLRB.")
+            st.dataframe(pd.DataFrame(plan)[list(rb.COLONNES_PLAN)], hide_index=True, use_container_width=True,
+                         column_config=rb.COLONNES_PLAN)
+
+        st.markdown("##### Chronologie des imports (15 jours)")
+        st.dataframe(ch[list(rb.COLONNES_CHRONO)], hide_index=True, use_container_width=True,
+                     column_config={**rb.COLONNES_CHRONO,
+                                    "request_id": st.column_config.NumberColumn(rb.COLONNES_CHRONO["request_id"], format="%d")})
+        if not ch.empty:
+            _tendance(ch)
+
+        with st.expander(f"Continuité des comptes {cfg['banque_flux_b']} — {n_trou} en rupture (hors comptes connus)", expanded=bool(plan)):
+            if cont.empty:
+                st.caption("Aucun import chargé pour cette banque.")
+            else:
+                vue = cont.sort_values(["trou", "retard_j"], ascending=[False, False])
+                st.dataframe(vue[list(rb.COLONNES_CONTINUITE)], hide_index=True, use_container_width=True, height=320,
+                             column_config=rb.COLONNES_CONTINUITE)
+
+        with st.expander("Rapprochement PFE ↔ EBS"):
+            st.dataframe(pfe[list(rb.COLONNES_PFE)], hide_index=True, use_container_width=True,
+                         column_config={**rb.COLONNES_PFE,
+                                        "request_id": st.column_config.NumberColumn(rb.COLONNES_PFE["request_id"], format="%d")})
+
+        with st.expander("Chaîne Control-M de la matinée"):
+            if j.controlm_df.empty:
+                st.caption("Aucune photo ODAT pour cette matinée (importer les fichiers Report_ctm dans l'onglet Données).")
+            else:
+                d = j.flux["B"].controlm
+                st.caption(f"Photo du {d['photo']} · conflit MOV 05/06 : {'oui' if d['conflit_mov'] else 'non'} · "
+                           f"06_ZIP01 Not OK : {'oui' if d['zip06_not_ok'] else 'non'} · 06_IMP01 exécuté : {'oui' if d['import06_execute'] else 'non'}")
+                st.dataframe(j.controlm_df[["job_name", "group_name", "status", "start_time", "end_time", "rerun"]],
+                             hide_index=True, use_container_width=True)
+
+        with st.expander("Contrôles DKA_SRBCTRLRB"):
+            st.dataframe(ctl, hide_index=True, use_container_width=True)
+            if not ctl.empty:
+                rid = st.selectbox("Détail du contrôle", ctl["request_id"].tolist(), key="rb_ctl")
+                st.dataframe(rb.lignes_controle(con, int(rid)), hide_index=True, use_container_width=True, height=300)
+
+        with st.expander("Comptes connus (anomalies préexistantes ignorées par le verdict)"):
+            df = pd.read_sql_query("SELECT cle, motif FROM rb_comptes_connus ORDER BY cle", con)
+            edite = st.data_editor(df, num_rows="dynamic", hide_index=True, use_container_width=True, key="rb_connus",
+                                   column_config={"cle": "banque/guichet/compte", "motif": "Motif"})
+            if st.button("💾 Enregistrer les comptes connus", key="rb_connus_save"):
+                rb.enregistrer_comptes_connus(edite, con)
+                st.success("Comptes connus enregistrés, anomalies des contrôles recalculées.")
+    finally:
+        con.close()

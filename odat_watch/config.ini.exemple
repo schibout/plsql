@@ -32,3 +32,16 @@ programmes_generiques = DKA_SLAUNCHER
 ; Dossiers locaux ou sont deposes les l<request_id>.req et o<request_id>.out rapatries du serveur EBS
 ; (plusieurs dossiers separes par ; ). Sous-dossiers inclus.
 dossiers = ..\ControleReleveBancaire\import;..\ControleReleveBancaire\controle;logs_ebs
+
+[releves]
+; Onglet Releves bancaires. Dossiers locaux alimentes a la main (copie des executions PFE, copy_ebs_logs.sh).
+; Un sous-dossier <uuid> par execution Talend (SOURCE / TARGET / TALEND)
+dossier_pfe = ..\ControleReleveBancaire\fluxPFE
+; Fichiers AFB120.txt_<AAAAMMJJHHMMSS> recus par EBS (data/traite)
+dossier_ebs = ..\ControleReleveBancaire\fichierBanque
+; Logs l<request_id>.req / o<request_id>.out des imports RBAFBIMP et des controles DKA_SRBCTRLRB (separes par ;)
+dossiers_logs = ..\ControleReleveBancaire\import;..\ControleReleveBancaire\controle
+; Flux B = fichier ne contenant que cette banque (Societe Generale)
+banque_flux_b = 30003
+; Comptes en anomalie preexistante, ignores par le verdict (banque/guichet/compte, separes par ;)
+comptes_connus = 30003/03620/00020137269;16807/00166/31990892212
