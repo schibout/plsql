@@ -290,6 +290,13 @@ def lignes(con: sqlite3.Connection, disparues: bool = False) -> pd.DataFrame:
     controle_lance = bool(con.execute("SELECT 1 FROM fr_oracle LIMIT 1").fetchone())
     df["ecart_nb_calcule"] = df["amont_nb"] - df["nb_oracle"]
     df["ecart_mt_calcule"] = df["amont_debit"] - df["montant_oracle"]
+    # comme le .ps1 : cumul par folio + nom de fichier transmis (Somme Amont Fichier / Somme Ecart Fichier)
+    if not df.empty:
+        grp = df.groupby(["folio", "fichier"])
+        df["somme_amont_fichier"] = grp["amont_debit"].transform("sum")
+        df["somme_ecart_fichier"] = grp["ecart_debit"].transform("sum")
+    else:
+        df["somme_amont_fichier"] = df["somme_ecart_fichier"] = pd.Series(dtype=float)
     df["statut"] = df.apply(_statut, axis=1, controle_lance=controle_lance) if not df.empty else pd.Series(dtype=str)
     return df
 

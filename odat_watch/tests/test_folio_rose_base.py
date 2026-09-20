@@ -206,3 +206,13 @@ def test_mise_a_jour_des_montants_conserve_le_rapprochement(tmp_path):
     l = fr.lignes(con).set_index("empreinte")
     assert l.loc[emps, "rapproche"].all()
     con.close()
+
+
+def test_sommes_par_fichier_comme_le_ps1(tmp_path):
+    con = db.connect(tmp_path / "t.db")
+    fr.importer(fr.lire_export(SAUVEGARDE / "ExportCSV-20-08-2026.csv"), con)
+    l = fr.lignes(con)
+    g = l.groupby(["folio", "fichier"])
+    assert (l["somme_amont_fichier"] == g["amont_debit"].transform("sum")).all()
+    assert (l["somme_ecart_fichier"] == g["ecart_debit"].transform("sum")).all()
+    con.close()

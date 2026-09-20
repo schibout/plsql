@@ -15,17 +15,28 @@ from oracle_refresh import CONFIG
 
 BASE_DIR = Path(__file__).resolve().parent
 DOSSIER_SAUVEGARDE = BASE_DIR.parent / "ControleFolioRose"
-COLS_AFFICHEES = ["folio", "type", "date", "age_j", "fichier", "amont_nb", "amont_debit", "si_nb", "si_debit",
-                  "ecart_nb", "ecart_debit", "ecart_credit", "nb_oracle", "montant_oracle", "montant_interface", "statut",
-                  "erreur", "rapproche", "present", "date_dernier_export", "commentaire"]
-LIBELLES = {"folio": "Folio", "type": "Type", "date": "Date", "age_j": "Âge (j)", "fichier": "Fichier transmis",
-            "amont_nb": "Amont nb", "amont_debit": "Amont débit", "si_nb": "SI nb", "si_debit": "SI débit",
-            "ecart_nb": "Écart nb", "ecart_debit": "Écart débit", "nb_oracle": "Nb Oracle",
-            "montant_oracle": "Montant Oracle", "montant_interface": "Montant interface", "statut": "Statut",
-            "erreur": "Erreur Oracle", "rapproche": "Rapproché", "commentaire": "Commentaire", "ecart_credit": "Écart crédit",
+# Colonnes et ordre du Rapport_Verification_*.csv du .ps1, complétés par l'âge, le statut et le rapprochement
+COLS_AFFICHEES = ["folio", "type", "date", "age_j", "fichier",
+                  "amont_nb", "amont_debit", "amont_credit", "si_nb", "si_debit", "si_credit",
+                  "ecart_nb", "ecart_debit", "ecart_credit", "commentaire",
+                  "somme_amont_fichier", "somme_ecart_fichier",
+                  "montant_interface", "nb_oracle", "montant_oracle", "ecart_nb_calcule", "ecart_mt_calcule",
+                  "statut", "erreur", "rapproche", "present", "date_dernier_export"]
+COLS_ORACLE = ["montant_interface", "nb_oracle", "montant_oracle", "ecart_nb_calcule", "ecart_mt_calcule", "erreur"]
+LIBELLES = {"folio": "Folio", "type": "Type", "date": "Date", "age_j": "Âge (j)", "fichier": "Nom fichier transmis",
+            "amont_nb": "App Amont Nb pièce", "amont_debit": "App Amont Débit", "amont_credit": "App Amont Crédit",
+            "si_nb": "SI Finance Nb pièce", "si_debit": "SI Finance Débit", "si_credit": "SI Finance Crédit",
+            "ecart_nb": "Écarts Nb pièce", "ecart_debit": "Écarts Débit", "ecart_credit": "Écarts Crédit",
+            "commentaire": "Commentaire",
+            "somme_amont_fichier": "Somme Amont Fichier", "somme_ecart_fichier": "Somme Écart Fichier",
+            "montant_interface": "Montant Interface OA", "nb_oracle": "Nb Pièces OA", "montant_oracle": "Montant OA",
+            "ecart_nb_calcule": "Écart Nb Pièce Calculé", "ecart_mt_calcule": "Écart Mt Calculé",
+            "statut": "Statut Vérification", "erreur": "Erreur Oracle", "rapproche": "Rapproché",
             "present": "Présente", "date_dernier_export": "Dernier export"}
-COLS_MONTANTS = ("Amont débit", "SI débit", "Écart débit", "Écart crédit", "Montant Oracle", "Montant interface")
-COLS_NB = ("Âge (j)", "Amont nb", "SI nb", "Écart nb", "Nb Oracle")
+COLS_MONTANTS = ("App Amont Débit", "App Amont Crédit", "SI Finance Débit", "SI Finance Crédit", "Écarts Débit",
+                 "Écarts Crédit", "Somme Amont Fichier", "Somme Écart Fichier", "Montant Interface OA", "Montant OA",
+                 "Écart Mt Calculé")
+COLS_NB = ("Âge (j)", "App Amont Nb pièce", "SI Finance Nb pièce", "Écarts Nb pièce", "Nb Pièces OA", "Écart Nb Pièce Calculé")
 
 
 def _fmt_mt(v) -> str:
@@ -60,7 +71,7 @@ def _style(df: pd.DataFrame):
             return ["background-color: #EAF7EE; color: #7A8794"] * len(r)
         if "Présente" in r and not r["Présente"]:
             return ["color: #9AA3AF; font-style: italic"] * len(r)
-        if r["Statut"] == "KO":
+        if r["Statut Vérification"] == "KO":
             return ["background-color: #FDECEC"] * len(r)
         return [""] * len(r)
     return df.style.apply(ligne, axis=1)
@@ -156,7 +167,7 @@ def render(kpi):
 
         # ------------------------------------------------------------ tableau + sélection
         # colonnes Oracle masquées tant qu'aucun contrôle n'a été lancé (Streamlit afficherait « None »)
-        colonnes = COLS_AFFICHEES if "—" not in set(lignes["statut"]) else             [c for c in COLS_AFFICHEES if c not in ("nb_oracle", "montant_oracle", "montant_interface", "erreur")]
+        colonnes = COLS_AFFICHEES if "—" not in set(lignes["statut"]) else [c for c in COLS_AFFICHEES if c not in COLS_ORACLE]
         aff = vue[colonnes].rename(columns=LIBELLES)
         for c in COLS_MONTANTS + COLS_NB:
             if c in aff.columns:

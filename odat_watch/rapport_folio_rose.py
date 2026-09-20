@@ -12,6 +12,8 @@ from rapport_matin import STYLE as _STYLE_BASE, DOSSIER_RAPPORTS
 
 STYLE = _STYLE_BASE + """
   td.ko { background: #fbdcdc !important; } td.ok { background: #d7f2e3 !important; }
+  span.ko { background: #fbdcdc; color: #9b1c1c; padding: 1px 7px; border-radius: 9px; font-weight: 600; }
+  span.ok { background: #d7f2e3; color: #0b6b3a; padding: 1px 7px; border-radius: 9px; font-weight: 600; }
   tr.rapproche td { color: #8b949e; } .num { text-align: right; font-variant-numeric: tabular-nums; }
 """
 JOURS = ["lundi", "mardi", "mercredi", "jeudi", "vendredi", "samedi", "dimanche"]
@@ -59,24 +61,33 @@ def _synthese(lignes: pd.DataFrame, champ: str, titre: str) -> str:
             f"<th>En écart</th><th>Montant en écart</th><th>KO Oracle</th><th>Rapprochées</th></tr></thead><tbody>{rows}</tbody></table></div>")
 
 
+COLONNES_DETAIL = (
+    "Folio", "Type", "Date", "Âge", "Nom fichier transmis", "App Amont Nb pièce", "App Amont Débit", "App Amont Crédit",
+    "SI Finance Nb pièce", "SI Finance Débit", "SI Finance Crédit", "Écarts Nb pièce", "Écarts Débit", "Écarts Crédit",
+    "Commentaire", "Somme Amont Fichier", "Somme Écart Fichier", "Montant Interface OA", "Nb Pièces OA", "Montant OA",
+    "Écart Nb Pièce Calculé", "Écart Mt Calculé", "Statut Vérification", "Rapproché")
+_NUMERIQUES = {3, 5, 6, 7, 8, 9, 10, 11, 12, 13, 15, 16, 17, 18, 19, 20, 21}
+
+
 def _detail(lignes: pd.DataFrame) -> str:
+    """Détail des lignes, colonnes et ordre du Rapport_Verification_*.csv du .ps1."""
     if lignes.empty:
         return "<div class='vide'>Aucune ligne.</div>"
     rows = []
     for _, r in lignes.iterrows():
-        cls_statut = {"OK": "ok", "KO": "ko"}.get(r["statut"], "")
+        cls = {"OK": "ok", "KO": "ko"}.get(r["statut"], "")
+        statut = f"<span class='{cls}'>{_t(r['statut'])}</span>" if cls else _t(r["statut"])
+        cells = [_t(r["folio"]), _t(r["type"]), _t(r["date"]), _nb(r["age_j"]), _t(r["fichier"]),
+                 _nb(r["amont_nb"]), _mt(r["amont_debit"]), _mt(r["amont_credit"]),
+                 _nb(r["si_nb"]), _mt(r["si_debit"]), _mt(r["si_credit"]),
+                 _nb(r["ecart_nb"]), _mt(r["ecart_debit"]), _mt(r["ecart_credit"]), _t(r["commentaire"]),
+                 _mt(r.get("somme_amont_fichier")), _mt(r.get("somme_ecart_fichier")),
+                 _mt(r["montant_interface"]), _nb(r["nb_oracle"]), _mt(r["montant_oracle"]),
+                 _nb(r["ecart_nb_calcule"]), _mt(r["ecart_mt_calcule"]), statut, "✔" if r["rapproche"] else ""]
         tr = "<tr class='rapproche'>" if r["rapproche"] else "<tr>"
-        rows.append(
-            f"{tr}<td>{_t(r['folio'])}</td><td>{_t(r['type'])}</td>"
-            f"<td>{_t(r['date'])}</td><td class='num'>{_nb(r['age_j'])}</td><td>{_t(r['fichier'])}</td>"
-            f"<td class='num'>{_nb(r['ecart_nb'])}</td><td class='num'>{_mt(r['ecart_debit'])}</td>"
-            f"<td class='num'>{_nb(r['nb_oracle'])}</td><td class='num'>{_mt(r['montant_oracle'])}</td>"
-            f"<td class='num'>{_mt(r['montant_interface'])}</td><td class='num'>{_mt(r['ecart_mt_calcule'])}</td>"
-            f"<td>{_t(r['commentaire'])}</td><td class='{cls_statut}'>{_t(r['statut'])}</td>"
-            f"<td>{'✔' if r['rapproche'] else ''}</td></tr>")
-    head = ("<th>Folio</th><th>Type</th><th>Date</th><th>Âge</th><th>Fichier transmis</th><th>Écart nb</th>"
-            "<th>Écart débit</th><th>Nb Oracle</th><th>Montant Oracle</th><th>Montant interface</th>"
-            "<th>Écart calculé</th><th>Commentaire</th><th>Statut</th><th>Rapproché</th>")
+        rows.append(tr + "".join(f"<td class='num'>{c}</td>" if i in _NUMERIQUES else f"<td>{c}</td>"
+                                 for i, c in enumerate(cells)) + "</tr>")
+    head = "".join(f"<th>{h}</th>" for h in COLONNES_DETAIL)
     return f"<div class='tablewrap'><table><thead><tr>{head}</tr></thead><tbody>{''.join(rows)}</tbody></table></div>"
 
 
