@@ -40,7 +40,9 @@ def test_select_etoile_remplit_et_execute(app):
     at.button(key="sql_select_all").click().run()
     assert not at.exception
     assert at.text_area(key="sql_area").value.startswith("SELECT *\nFROM snapshots")
-    assert at.dataframe                                    # résultat affiché
+    assert not any("ligne(s)" in c.value for c in at.caption)      # rien n'est exécuté avant Exécuter
+    at.button(key="sql_run").click().run()
+    assert not at.exception
     assert any("1 ligne(s)" in c.value for c in at.caption)
 
 
@@ -52,6 +54,8 @@ def test_colonnes_choisies(app):
     assert not at.exception
     sql = at.text_area(key="sql_area").value
     assert sql.startswith("SELECT odate, nb_lignes\nFROM snapshots")
+    at.button(key="sql_run").click().run()
+    assert not at.exception
     df = at.dataframe[-1].value
     assert list(df.columns) == ["odate", "nb_lignes"]
 

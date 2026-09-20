@@ -84,10 +84,12 @@ def _executer(sql: str, limite: int) -> tuple[pd.DataFrame, float]:
     return df.head(limite), dt
 
 
-def _proposer(sql: str) -> None:
-    """Place une requête dans la zone SQL (avant son affichage) et demande son exécution."""
+def _proposer(sql: str, executer: bool = False) -> None:
+    """Place une requête dans la zone SQL (avant son affichage) ; l'utilisateur la relit puis clique Exécuter."""
     st.session_state["sql_area"] = sql
-    st.session_state["sql_a_executer"] = True
+    st.session_state["sql_result"] = None
+    if executer:
+        st.session_state["sql_a_executer"] = True
 
 
 def render(kpi):
@@ -112,14 +114,16 @@ def render(kpi):
         st.dataframe(cols.rename(columns={"name": "colonne", "notnull": "non nul", "pk": "clé"}),
                      hide_index=True, use_container_width=True, height=min(320, 36 * len(cols) + 40))
         choisies = st.multiselect("Colonnes à sélectionner", list(cols["name"]), key="sql_cols",
-                                  placeholder="toutes si vide")
+                                  placeholder="cochez des colonnes, puis SELECT")
         b1, b2, b3 = st.columns(3)
-        if b1.button("Colonnes choisies", key="sql_select_cols", use_container_width=True, disabled=not choisies):
-            _proposer("SELECT " + ", ".join(choisies) + "\nFROM " + table + "\nLIMIT 500")
+        if b1.button("SELECT", key="sql_select_cols", use_container_width=True, type="primary",
+                     help="Écrit la requête avec les colonnes cochées (toutes si aucune) ; cliquez ensuite sur Exécuter"):
+            _proposer("SELECT " + (", ".join(choisies) if choisies else "*") + "\nFROM " + table + "\nLIMIT 500")
         if b2.button("SELECT *", key="sql_select_all", use_container_width=True):
             _proposer("SELECT *\nFROM " + table + "\nLIMIT 200")
         if b3.button("Compter", key="sql_count", use_container_width=True):
             _proposer("SELECT COUNT(*) AS nb\nFROM " + table)
+        st.caption("Les boutons écrivent la requête à droite ; « ▶ Exécuter » la lance.")
 
     # ---------------------------------------------------------------- requêteur
     with droite:
