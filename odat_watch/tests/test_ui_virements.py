@@ -1,0 +1,69 @@
+"""Onglet Virements via AppTest : lecture du rapport, tuiles, tables des doublons ; lancement sur le 18/09."""
+from pathlib import Path
+
+import pandas as pd
+import pytest
+from streamlit.testing.v1 import AppTest
+
+import virements as vr
+
+RACINE = Path(__file__).resolve().parents[2] / "controleVirement"
+DATE = "18092026"
+pytestmark = pytest.mark.skipif(not (RACINE / f"{DATE}_cible").is_dir(), reason="données controleVirement absentes")
+
+
+def test_dates_disponibles_les_plus_recentes_d_abord():
+    dates = vr.dates_disponibles(RACINE)
+    assert DATE in dates and dates == sorted(dates, key=lambda d: d[4:8] + d[2:4] + d[0:2], reverse=True)
+
+
+def test_lancer_puis_lire_rapport():
+    res = vr.lancer(DATE, {"racine": RACINE, "historique_jours": 7})
+    assert res["ok"] is True and res["nb_instances"] == 2
+    rapport = vr.lire_rapport(RACINE / f"rapport_{DATE}")
+    assert rapport is not None and len(rapport["totaux_edf"]) == 46
+    r = vr.resume(rapport)
+    assert r["ok"] and r["nb_envoyes"] == 205 and round(r["montant_envoye"], 2) == 2667877.07
+    assert r["ko"] == 0 and r["ecarts"] == 0 and not r["cible_seul"] and not r["quartz"]
+
+
+def test_lire_rapport_absent(tmp_path):
+    assert vr.lire_rapport(tmp_path / "rapport_x") is None
+
+
+def test_resume_compte_ko_et_a_verifier():
+    rapport = {c: pd.DataFrame() for c, _, _ in vr.CSV_RAPPORT}
+    rapport["synthese"] = "..."
+    rapport["doublons_ack"] = pd.DataFrame([{"fichier": "A"}])
+    rapport["intra"] = pd.DataFrame([{"gravite": "A_VERIFIER"}, {"gravite": "KO"}])
+    rapport["fichiers"] = pd.DataFrame([{"statut": "OK"}, {"statut": "MANQUANT"}, {"statut": "DOUBLON"}])
+    r = vr.resume(rapport)
+    assert (r["ko"], r["a_verifier"], r["ecarts"], r["ok"]) == (2, 1, 1, False)
+
+
+def _script():
+    import sys
+    from pathlib import Path
+    sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+    import ui_virements
+
+    def faux_kpi(col, valeur, libelle, ton=""):
+        assert ton in {"ok", "warn", "err", "run", "neutral", ""}, ton
+        col.markdown(f"{valeur} {libelle} [{ton}]")
+
+    ui_virements.render(faux_kpi)
+
+
+def test_onglet_affiche_le_rapport(monkeypatch):
+    vr.lancer(DATE, {"racine": RACINE, "historique_jours": 7})
+    monkeypatch.setattr(vr, "config_virements", lambda: {"racine": RACINE, "historique_jours": 7})
+    at = AppTest.from_function(_script, default_timeout=120)
+    at.run()
+    assert not at.exception
+    texte = "\n".join(m.value for m in at.markdown) + "\n".join(c.value for c in at.caption)
+    assert "✅ OK résultat global [ok]" in texte and "205 virements envoyés" in texte
+    assert "Rapport généré le" in texte
+    # 18/09 : un seul point à vérifier (virement déjà payé le 15/09) → expander D5 ouvert, sinon message « Aucun doublon »
+    labels = [e.label for e in at.expander]
+    assert any("Déjà transmis un jour précédent" in l for l in labels) or any("Aucun doublon" in s.value for s in at.success)
+    assert any("Contrôles de forme — 0 constat" in l for l in labels)

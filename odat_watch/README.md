@@ -29,10 +29,11 @@ Oracle EBS R12 pour répondre à : **qu'est-ce qui tourne ce soir, et demain ?**
 | `rapport_releves.py` | Rapport HTML Relevés bancaires (même charte que `rapport_matin.py`), écrit dans `rapports/Releves_*.html`. |
 | `ui_releves.py` | Onglet Relevés bancaires : date, scan, tuiles, frise A/B, plan de reprise, chronologie + mini-tendance, continuité, PFE ↔ EBS, Control-M, contrôles, comptes connus éditables, rapport HTML. |
 | `sources.py` | Dossiers d'import choisis par l'utilisateur (boîte de dialogue Windows ou chemin collé), mémorisés dans la table `parametres` d'`odat.db`. |
+| `virements.py` / `ui_virements.py` | **Virements** : onglet pont vers `../controleVirement` (choix de la journée parmi les dossiers `*_cible`, lancement de `controle_virements.executer`, tuiles, doublons D1-D6, contrôles de forme, niveaux 0-3, synthèse). Config `[virements]`. |
 | `referentiel.py` / `ui_profils.py` | **Profils + référentiel** : profil calculé de chaque job (onglet Profils) enrichi du référentiel jobs Control-M ↔ programmes Oracle Applications : alimenté automatiquement (photos ODAT + demandes Oracle : lanceur, filles, script `DKA_X_JOB.sh`), corrigeable à la main (saisie prioritaire partout), export CSV. Table `referentiel_jobs`. |
 | `ui_sql.py` | Onglet SQL : explorateur des tables SQLite (structure, volumes) et requêteur libre en lecture seule, exemples fournis, export CSV. |
 | `mock_oracle.py` | **Poste sans Oracle** : fabrique des demandes simulées à partir des exécutions Control-M (lanceur + programme métier, statuts alignés) et des logs présents. `python mock_oracle.py --reset`. Écrasé par les vraies données au premier `oracle_refresh.py`. |
-| `app.py` | Interface Streamlit : Ce soir, Demain, Maintenant, Matin, Relevés bancaires, Folio Rose, Oracle, Historique, Profils (avec référentiel), Données, SQL. |
+| `app.py` | Interface Streamlit : Ce soir, Demain, Maintenant, Matin, Relevés bancaires, Folio Rose, Virements, Oracle, Historique, Profils (avec référentiel), Données, SQL. |
 | `.streamlit/config.toml` | Thème de l'interface. |
 | `run.bat` | Import ODAT + lancement de l'interface. |
 | `config.ini.exemple` | Modèle de configuration (Oracle, filtres, dossiers de logs, section `[releves]`). Copier en `config.ini` (ignoré par git). |

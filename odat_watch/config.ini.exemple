@@ -45,3 +45,10 @@ dossiers_logs = ..\ControleReleveBancaire\import;..\ControleReleveBancaire\contr
 banque_flux_b = 30003
 ; Comptes en anomalie preexistante, ignores par le verdict (banque/guichet/compte, separes par ;)
 comptes_connus = 30003/03620/00020137269;16807/00166/31990892212
+
+[virements]
+; Onglet Virements. Racine de l'outil controleVirement : dossiers JJMMAAAA_cible (et _source) copies a la main
+; (copier_instances_virement.sh), fichier Quartz "Liste des virements importes du jour<date>.xls", rapports rapport_<date>.
+racine = ..\controleVirement
+; Recherche des envois deja transmis dans les autres dossiers *_cible des N jours precedents (0 = desactive)
+historique_jours = 7
