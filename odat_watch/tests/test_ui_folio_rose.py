@@ -63,3 +63,13 @@ def test_selection_et_rapprochement(app):
     assert fr.lignes(con)["rapproche"].sum() == 2
     assert any("Groupes compensés en attente (0)" in m.value for m in at.markdown)
     con.close()
+
+
+def test_generer_le_rapport(app, tmp_path, monkeypatch):
+    import rapport_folio_rose as rm
+    at, base = app
+    monkeypatch.setattr(rm, "DOSSIER_RAPPORTS", tmp_path / "r")
+    monkeypatch.setattr(rm.ecrire, "__defaults__", (tmp_path / "r",))
+    at.button(key="fr_btn_rapport").click().run()
+    assert not at.exception
+    assert list((tmp_path / "r").glob("Folio_Rose_*.html"))

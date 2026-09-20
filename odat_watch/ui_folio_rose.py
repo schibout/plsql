@@ -115,7 +115,7 @@ def render(kpi):
                     st.error(f"Contrôle impossible : {e}")
         if st.session_state.get("fr_oracle_msg"):
             o1.caption(st.session_state["fr_oracle_msg"])
-        if o2.button("📄 Générer le rapport HTML", use_container_width=True, key="fr_rapport"):
+        if o2.button("📄 Générer le rapport HTML", use_container_width=True, key="fr_btn_rapport"):
             try:
                 chemin = rp.ecrire(export, lignes, groupes, fr.rapprochements(con))
                 st.session_state["fr_rapport"] = str(chemin)
