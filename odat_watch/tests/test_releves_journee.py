@@ -163,7 +163,7 @@ def test_continuite_sg(con):
     r = c[c["compte"] == "30003.01100.00020398294"].iloc[0]
     assert r["dernier_charge"] == "2026-09-11" and r["attendu"] == "2026-09-17" and r["retard_j"] == 6 and r["trou"]
     connu = c[c["compte"] == "30003.03620.00020137269"]
-    assert connu.empty or connu.iloc[0]["connu"]
+    assert len(connu) == 1 and connu.iloc[0]["connu"]
 
 
 def test_plan_reprise(con):
@@ -189,3 +189,52 @@ def test_liste_logs_manquants(con, tmp_path):
     dest = tmp_path / "list.txt"
     msg = rb.liste_logs_manquants(con, dest)
     assert dest.read_text() == "/l/l49999999.req /o/o49999999.out\n" and "1 ligne" in msg
+
+
+def test_liste_logs_manquants_out_absent(tmp_path):
+    """Un import connu par son seul .req reste à rapatrier (le .out manque)."""
+    import shutil
+    d = tmp_path / "logs"
+    d.mkdir()
+    shutil.copy(REF / "import/l49061539.req", d)
+    con = db.connect(tmp_path / "t.db")
+    rb.scanner_logs([d], con)
+    con.execute("INSERT INTO ora_requests(request_id, program_short, phase_code, logfile_name, outfile_name, actual_start) "
+                "VALUES (49061539, 'RBAFBIMP', 'C', '/l/l49061539.req', '/o/o49061539.out', '2026-09-17 08:19:53')")
+    con.commit()
+    dest = tmp_path / "list.txt"
+    rb.liste_logs_manquants(con, dest)
+    assert dest.read_text() == "/l/l49061539.req /o/o49061539.out\n"
+
+
+def test_continuite_trou_rejet_puis_rechargement(tmp_path):
+    """Compte rejeté en 025 puis rechargé par un import postérieur : plus de trou ; retard jamais négatif."""
+    con = db.connect(tmp_path / "t.db")
+    con.execute("INSERT INTO rb_pfe(uuid, flux, date_max, md5) VALUES ('u1', 'B', '2026-09-17', 'm1')")
+    con.execute("INSERT INTO rb_imports(request_id, debut, fin, flux) VALUES (1, '2026-09-17 08:20:00', '2026-09-17 08:20:05', 'B')")
+    con.execute("INSERT INTO rb_imports(request_id, debut, fin, flux) VALUES (2, '2026-09-18 10:00:00', '2026-09-18 10:00:05', 'B')")
+    cpt = ("30003.01100.00000000001", "30003", "01100", "00000000001")
+    con.execute("INSERT INTO rb_import_releves(request_id, num, compte, banque, guichet, numero, date_fin, en_erreur, code_erreur) "
+                "VALUES (1, 1, ?, ?, ?, ?, '2026-09-16', 1, 'Erreur 025')", cpt)
+    con.execute("INSERT INTO rb_import_releves(request_id, num, compte, banque, guichet, numero, date_fin, en_erreur) "
+                "VALUES (2, 1, ?, ?, ?, ?, '2026-09-18', 0)", cpt)
+    con.commit()
+    c = rb.continuite(con, CFG)
+    r = c.iloc[0]
+    assert not r["trou"] and r["dernier_charge"] == "2026-09-18" and r["retard_j"] == 0     # 17 - 18 < 0 -> 0
+    # borne « jour » : l'attendu ne dépasse pas la date demandée
+    con.execute("INSERT INTO rb_ebs(nom, flux, date_max, md5) VALUES ('AFB120.txt_20260920', 'B', '2026-09-19', 'm2')")
+    con.commit()
+    assert rb.continuite(con, CFG).iloc[0]["attendu"] == "2026-09-19"
+    assert rb.continuite(con, CFG, jour=date(2026, 9, 17)).iloc[0]["attendu"] == "2026-09-17"
+
+
+def test_rendu_entiers_et_booleens():
+    import numpy as np
+    import pandas as pd
+    import rapport_releves as rr
+    assert rr._t(6.0) == "6" and rr._t(6.5) == "6.5" and rr._t(np.int64(7)) == "7" and rr._t(float("nan")) == ""
+    assert rr._t(True) == "oui" and rr._t(np.bool_(False)) == "non"
+    df = pd.DataFrame({"n": [np.int64(3)], "b": [True], "t": ["x"]})
+    h = rr._table(df, {"n": "N", "b": "B", "t": "T"})
+    assert "<td class='num'>3</td>" in h and "<td>oui</td>" in h and "<td>x</td>" in h

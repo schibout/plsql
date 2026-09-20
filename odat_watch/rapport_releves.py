@@ -2,10 +2,12 @@
 from __future__ import annotations
 
 import html
+import numbers
 from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
 
+import numpy as np
 import pandas as pd
 
 from rapport_matin import STYLE
@@ -36,8 +38,23 @@ class Bilan:
     controles: pd.DataFrame = field(default_factory=pd.DataFrame)
 
 
+def _bool(v) -> bool:
+    return isinstance(v, (bool, np.bool_))
+
+
+def _num(v) -> bool:
+    return isinstance(v, numbers.Number) and not _bool(v)
+
+
 def _t(v) -> str:
-    return "" if v is None or (isinstance(v, float) and pd.isna(v)) else html.escape(str(v))
+    """Texte échappé d'une cellule : vide pour None/NaN, « oui »/« non » pour les booléens, entiers sans « .0 »."""
+    if v is None or (_num(v) and pd.isna(v)):
+        return ""
+    if _bool(v):
+        return "oui" if v else "non"
+    if isinstance(v, numbers.Real) and not isinstance(v, numbers.Integral) and float(v).is_integer():
+        return str(int(v))
+    return html.escape(str(v))
 
 
 def _table(df: pd.DataFrame, colonnes: dict[str, str]) -> str:
@@ -47,7 +64,7 @@ def _table(df: pd.DataFrame, colonnes: dict[str, str]) -> str:
     rows = []
     for _, r in df.iterrows():
         rows.append("<tr>" + "".join(
-            f"<td class='num'>{_t(r[c])}</td>" if isinstance(r[c], (int, float)) and not isinstance(r[c], bool) else f"<td>{_t(r[c])}</td>"
+            f"<td class='num'>{_t(r[c])}</td>" if _num(r[c]) else f"<td>{_t(r[c])}</td>"
             for c in colonnes) + "</tr>")
     return f"<div class='tablewrap'><table><thead><tr>{head}</tr></thead><tbody>{''.join(rows)}</tbody></table></div>"
 
