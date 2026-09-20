@@ -71,3 +71,53 @@ def test_scanner_logs_controles_et_comptes_connus(tmp_path):
     assert r["executed_at"] == "2026-09-18 08:27:49" and r["date_reference"] == "2026-09-17"
     assert (r["nb_anomalies"], r["nb_sg"], r["nb_hors_connus"]) == (208, 207, 207)   # 16807 connu, SG 03620/…269 connu
     assert con.execute("SELECT COUNT(*) FROM rb_controle_lignes WHERE request_id=49069921").fetchone()[0] == 208
+
+
+def test_parse_import_out_flux_a_comptes_alphanumeriques():
+    """Flux A : comptes suisses CH530/CH260 (codes banque alphanumériques) et erreurs associées par plage d'enregistrements."""
+    p = rb.parse_import_out(logs.lire(REF / "import/o49041437.out"))
+    assert len(p["releves"]) == p["releves_total"] == 160
+    assert sum(r["en_erreur"] for r in p["releves"]) == sum(p["erreurs"].values()) == 19
+    ch = [r for r in p["releves"] if r["banque"].startswith("CH")]
+    assert {r["compte"] for r in ch} == {"CH530.87050.00003064301", "CH260.87050.00003064302"}
+    ko = [r for r in p["releves"] if r["en_erreur"]]
+    assert all(r["code_erreur"] for r in ko)                       # chaque relevé en erreur a son code
+    assert all(r["l1"] <= r["l2"] for r in p["releves"])
+    assert next(r for r in ko if r["compte"] == "CH260.87050.00003064302")["code_erreur"] == "Erreur 001"
+
+
+def test_parse_controle_out_mois_francais():
+    p = rb.parse_controle_out(logs.lire(REF / "controle/o49069921.out"))
+    l = next(l for l in p["lignes"] if l["compte_id"] == "186831")
+    assert (l["date_debut_releve"], l["date_fin_releve"], l["date_dernier_import"]) == ("2026-08-28", "2026-08-31", "2026-09-07")
+    assert rb._date_ctrl("17-SEP-2026 08:19:53") == "2026-09-17 08:19:53" and rb._date_ctrl("") is None
+
+
+def test_enregistrer_comptes_connus_ignore_lignes_vides(tmp_path):
+    import pandas as pd
+    con = db.connect(tmp_path / "t.db")
+    df = pd.DataFrame({"cle": ["30003/03620/00020137269", None, "   ", float("nan"), "16807/00166/31990892212"],
+                       "motif": ["ancien", None, "x", "y", float("nan")]})
+    rb.enregistrer_comptes_connus(df, con)
+    rows = {r["cle"]: r["motif"] for r in con.execute("SELECT cle, motif FROM rb_comptes_connus")}
+    assert rows == {"30003/03620/00020137269": "ancien", "16807/00166/31990892212": ""}
+
+
+def test_scanner_logs_rescan_quand_le_out_arrive(tmp_path):
+    import shutil
+    d = tmp_path / "logs"
+    d.mkdir()
+    shutil.copy(REF / "import/l49061539.req", d)
+    con = db.connect(tmp_path / "t.db")
+    assert rb.scanner_logs([d], con) == 1
+    r = con.execute("SELECT lus, source_req, source_out, releves_erreurs FROM rb_imports WHERE request_id=49061539").fetchone()
+    assert r["lus"] == 8285 and r["source_req"] and r["source_out"] is None
+    assert con.execute("SELECT COUNT(*) FROM rb_import_releves").fetchone()[0] == 0
+    con.execute("UPDATE rb_imports SET md5_ebs='abc' WHERE request_id=49061539")
+    con.commit()
+    shutil.copy(REF / "import/o49061539.out", d)
+    assert rb.scanner_logs([d], con) == 1
+    r = con.execute("SELECT source_out, releves_erreurs, err025, md5_ebs FROM rb_imports WHERE request_id=49061539").fetchone()
+    assert r["source_out"] and r["releves_erreurs"] == 213 and r["err025"] == 208 and r["md5_ebs"] == "abc"
+    assert con.execute("SELECT COUNT(*) FROM rb_import_releves").fetchone()[0] == 213
+    assert rb.scanner_logs([d], con) == 0
