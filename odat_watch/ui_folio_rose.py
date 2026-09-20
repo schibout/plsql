@@ -71,8 +71,9 @@ def _style(df: pd.DataFrame):
             return ["background-color: #EAF7EE; color: #7A8794"] * len(r)
         if "Présente" in r and not r["Présente"]:
             return ["color: #9AA3AF; font-style: italic"] * len(r)
-        fond = fr.COULEURS_LIGNE[fr.couleur_ligne(r["Écarts Débit"], r["Écarts Crédit"], r["Écarts Nb pièce"], r["Statut Vérification"])]
-        return [f"background-color: {fond}"] * len(r)
+        couleur = fr.couleur_ligne(r["Écarts Débit"], r["Écarts Crédit"], r["Écarts Nb pièce"], r["Statut Vérification"],
+                                   r["Commentaire"])
+        return [f"background-color: {fr.COULEURS_LIGNE[couleur]}" if couleur else ""] * len(r)
     return df.style.apply(ligne, axis=1)
 
 
@@ -152,7 +153,7 @@ def render(kpi):
         statuts = f2.multiselect("Statut", sorted(lignes["statut"].unique()), key="fr_statuts")
         folios = f3.multiselect("Folio", sorted(lignes["folio"].unique()), key="fr_folios")
         masquer = f4.checkbox("Masquer les rapprochées", True, key="fr_masquer")
-        st.caption("Couleurs : 🟦 vérification Oracle OK · 🟩 écart de montant nul · 🟥 rose : nombre de pièces égal mais montant différent · 🟨 jaune : autres écarts")
+        st.caption("Couleurs : 🟦 vérification Oracle OK · 🟨 jaune : commentaire renseigné · 🟩 écart de montant nul · 🟥 rose : nombre de pièces égal mais montant différent")
         vue = lignes.copy()
         eid = export.id
         if types:

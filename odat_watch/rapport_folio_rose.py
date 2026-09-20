@@ -87,7 +87,7 @@ def _detail(lignes: pd.DataFrame) -> str:
                  _mt(r["montant_interface"]), _nb(r["nb_oracle"]), _mt(r["montant_oracle"]),
                  _nb(r["ecart_nb_calcule"]), _mt(r["ecart_mt_calcule"]), statut, "✔" if r["rapproche"] else ""]
         tr = ("<tr class='rapproche'>" if r["rapproche"]
-              else f"<tr class='{couleur_ligne(r['ecart_debit'], r['ecart_credit'], r['ecart_nb'], r['statut'])}'>")
+              else f"<tr class='{couleur_ligne(r['ecart_debit'], r['ecart_credit'], r['ecart_nb'], r['statut'], r['commentaire']) or ''}'>")
         rows.append(tr + "".join(f"<td class='num'>{c}</td>" if i in _NUMERIQUES else f"<td>{c}</td>"
                                  for i, c in enumerate(cells)) + "</tr>")
     head = "".join(f"<th>{h}</th>" for h in COLONNES_DETAIL)
@@ -140,7 +140,7 @@ def construire(export: Export, lignes: pd.DataFrame, groupes: pd.DataFrame, rapp
 {_synthese(lignes, "type", "Synthèse par type")}
 {_synthese(lignes, "folio", "Synthèse par folio")}
 <h2>Détail des lignes</h2>
-<div class="legende"><span style="background:#DCEBFF">vérification Oracle OK</span><span style="background:#E3F5E8">écart de montant nul</span><span style="background:#FBE3EC">nombre de pièces égal, montant différent</span><span style="background:#FFF6D6">autres écarts</span></div>
+<div class="legende"><span style="background:#DCEBFF">vérification Oracle OK</span><span style="background:#FFF6D6">commentaire renseigné</span><span style="background:#E3F5E8">écart de montant nul</span><span style="background:#FBE3EC">nombre de pièces égal, montant différent</span></div>
 {_detail(lignes)}
 <h2>Rapprochements</h2>{_rapprochements(rapprochements)}
 <div class="footer">ODAT Watch · Folio Rose · portage de Verifier_Factures.ps1</div>

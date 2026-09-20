@@ -223,7 +223,9 @@ def test_couleur_ligne():
     assert fr.couleur_ligne(0.0, 0.0, 3.0) == "vert"
     assert fr.couleur_ligne(0.004, -0.004, 0.0) == "vert"
     assert fr.couleur_ligne(12.5, 12.5, 0.0) == "rose"
-    assert fr.couleur_ligne(12.5, 12.5, -2.0) == "jaune"
+    assert fr.couleur_ligne(12.5, 12.5, -2.0) is None                    # autres écarts : pas de couleur
+    assert fr.couleur_ligne(12.5, 12.5, -2.0, None, "vu avec la compta") == "jaune"
+    assert fr.couleur_ligne(0.0, 0.0, 0.0, None, "  ") == "vert"           # commentaire vide ignoré
     assert fr.couleur_ligne(0.0, 5.0, 0.0) == "rose"          # crédit non nul : le montant n'est pas à zéro
     assert fr.couleur_ligne(12.5, 12.5, -2.0, "OK") == "bleu"  # le contrôle Oracle OK prime
     assert fr.couleur_ligne(0.0, 0.0, 0.0, "KO") == "vert"
