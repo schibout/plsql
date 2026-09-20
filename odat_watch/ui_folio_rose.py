@@ -115,6 +115,8 @@ def render(kpi):
         lignes = fr.lignes(con, disparues=voir_disparues)
         groupes = fr.groupes_compenses(lignes[lignes["present"]])
 
+        folios_ok = fr.folios_compenses(lignes[lignes["present"]])
+
         # ------------------------------------------------------------ Oracle + rapport
         o1, o2 = st.columns(2)
         if o1.button("🅾 Contrôler dans Oracle", disabled=not CONFIG.exists(), use_container_width=True, key="fr_oracle"):
@@ -140,12 +142,15 @@ def render(kpi):
 
 
         # ------------------------------------------------------------ tuiles
-        c = st.columns(4)
+        c = st.columns(5)
+        controle = "—" not in set(lignes["statut"])
         kpi(c[0], len(lignes), "lignes", "neutral")
         kpi(c[1], lignes["folio"].nunique(), "folios", "neutral")
         kpi(c[2], int(lignes["rapproche"].sum()), "lignes rapprochées", "ok")
+        nb_ok = int((lignes["statut"] == "OK").sum())
+        kpi(c[3], nb_ok if controle else "—", "OK Oracle", "ok" if nb_ok else "neutral")
         nb_ko = int((lignes["statut"] == "KO").sum())
-        kpi(c[3], nb_ko if "—" not in set(lignes["statut"]) else "—", "KO Oracle", "err" if nb_ko else "neutral")
+        kpi(c[4], nb_ko if controle else "—", "KO Oracle", "err" if nb_ko else "neutral")
 
         # ------------------------------------------------------------ filtres
         f1, f2, f3, f4 = st.columns([1, 1, 2, 1])
@@ -229,6 +234,24 @@ def render(kpi):
                     try:
                         fr.rapprocher(list(g["empreintes"]), "groupe compensé", con)
                         st.session_state["fr_msg"] = f"Groupe {g['folio']} rapproché."
+                        st.rerun()
+                    except ValueError as e:
+                        st.error(str(e))
+
+        # ------------------------------------------------------------ folios compensés (tous fichiers confondus)
+        st.markdown(f"#### Folios compensés en attente ({len(folios_ok)})")
+        st.caption("Somme des écarts de toutes les lignes du folio, quel que soit le fichier : débit, crédit et nombre de pièces à 0.")
+        if folios_ok.empty:
+            st.caption("Aucun folio dont l'ensemble des lignes se compense.")
+        else:
+            for i, g in folios_ok.iterrows():
+                a, b = st.columns([5, 1])
+                a.write(f"**{g['folio']}** · {g['nb']} lignes sur {g['nb_fichiers']} fichier(s) · débit {_eur(g['somme'])} · "
+                        f"crédit {_eur(g['somme_credit'])} · pièces {g['somme_nb']:g}")
+                if b.button("Rapprocher", key=f"fr_folio_{i}"):
+                    try:
+                        fr.rapprocher(list(g["empreintes"]), "folio compensé", con)
+                        st.session_state["fr_msg"] = f"Folio {g['folio']} rapproché ({g['nb']} lignes)."
                         st.rerun()
                     except ValueError as e:
                         st.error(str(e))

@@ -349,6 +349,27 @@ def groupes_compenses(lignes: pd.DataFrame) -> pd.DataFrame:
     return g[ok].reset_index(drop=True)[colonnes]
 
 
+def folios_compenses(lignes: pd.DataFrame) -> pd.DataFrame:
+    """Par folio, toutes lignes non rapprochées confondues (quel que soit le fichier) : nb ≥ 2 et les trois
+    écarts ≈ 0. Les folios déjà compensés au sein d'un seul fichier (groupes par fichier) ne sont pas relistés."""
+    libres = lignes[~lignes["rapproche"].astype(bool)]
+    colonnes = ["folio", "nb", "nb_fichiers", "somme", "somme_credit", "somme_nb", "empreintes"]
+    if libres.empty:
+        return pd.DataFrame(columns=colonnes)
+    libres = libres.assign(**{c: libres[c].fillna(0) for c in ECARTS})
+    g = (libres.groupby("folio")
+         .agg(nb=("empreinte", "size"), nb_fichiers=("fichier_base", "nunique"), somme=("ecart_debit", "sum"),
+              somme_credit=("ecart_credit", "sum"), somme_nb=("ecart_nb", "sum"), empreintes=("empreinte", list))
+         .reset_index())
+    ok = (g["nb"] >= 2) & (g["somme"].abs() < TOL) & (g["somme_credit"].abs() < TOL) & (g["somme_nb"].abs() < TOL_NB)
+    g = g[ok]
+    if g.empty:
+        return pd.DataFrame(columns=colonnes)
+    deja = {frozenset(e) for e in groupes_compenses(lignes)["empreintes"]}
+    g = g[[frozenset(e) not in deja for e in g["empreintes"]]]
+    return g.reset_index(drop=True)[colonnes]
+
+
 def sommes_selection(lignes: pd.DataFrame, empreintes: list[str]) -> dict:
     """Écarts débit / crédit / nombre de pièces cumulés sur les lignes sélectionnées."""
     sel = lignes.loc[lignes["empreinte"].isin(empreintes), list(ECARTS)].fillna(0)

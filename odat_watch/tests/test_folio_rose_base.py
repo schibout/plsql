@@ -229,3 +229,15 @@ def test_couleur_ligne():
     assert fr.couleur_ligne(0.0, 5.0, 0.0) == "rose"          # crédit non nul : le montant n'est pas à zéro
     assert fr.couleur_ligne(12.5, 12.5, -2.0, "OK") == "bleu"  # le contrôle Oracle OK prime
     assert fr.couleur_ligne(0.0, 0.0, 0.0, "KO") == "vert"
+
+
+def test_folios_compenses_toutes_lignes_du_folio():
+    # CYC : deux fichiers qui se compensent entre eux (pas au sein d'un même fichier) -> folio compensé
+    # GCA : compensé au sein d'un seul fichier -> déjà couvert par les groupes par fichier, pas relisté
+    # HAF : non compensé
+    df = _df(("a", "CYC", "F1", 100.0, False, 100.0, 2.0), ("b", "CYC", "F2", -100.0, False, -100.0, -2.0),
+             ("c", "GCA", "F1", 10.0, False, 10.0, 1.0), ("d", "GCA", "F1", -10.0, False, -10.0, -1.0),
+             ("e", "HAF", "F1", 5.0, False, 5.0, 1.0), ("f", "HAF", "F2", -4.0, False, -4.0, -1.0))
+    f = fr.folios_compenses(df)
+    assert list(f["folio"]) == ["CYC"] and f.iloc[0]["nb"] == 2 and sorted(f.iloc[0]["empreintes"]) == ["a", "b"]
+    assert f.iloc[0]["nb_fichiers"] == 2
