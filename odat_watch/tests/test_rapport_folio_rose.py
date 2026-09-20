@@ -26,7 +26,7 @@ def test_rapport_complet(tmp_path):
     assert "a &lt;b&gt; &amp; c" in h and "<b>" not in h.split("</style>")[1]
     for titre in ("Synthèse par type", "Synthèse par folio", "Détail des lignes", "Rapprochements"):
         assert f"<h2>{titre}" in h
-    assert h.count("<tr>") >= len(lignes)
+    assert h.count("<tr") - 6 >= len(lignes)          # lignes colorées (<tr class=...>) hors en-têtes des 5 tableaux
     assert 'class="bandeau' in h
     con.close()
 

@@ -307,6 +307,24 @@ ECARTS = ("ecart_debit", "ecart_credit", "ecart_nb")   # les trois écarts qui d
 TOL_NB = 0.5                                              # nombre de pièces : entier, tolérance d'arrondi
 
 
+COULEURS_LIGNE = {"bleu": "#DCEBFF", "vert": "#E3F5E8", "rose": "#FBE3EC", "jaune": "#FFF6D6"}   # fonds des lignes
+
+
+def couleur_ligne(ecart_debit, ecart_credit, ecart_nb, statut: str | None = None) -> str:
+    """Code couleur d'une ligne : bleu si le contrôle Oracle est OK ; sinon vert si l'écart de montant
+    (débit et crédit) est nul ; rose si le nombre de pièces est à zéro mais pas le montant ; jaune sinon."""
+    if statut == "OK":
+        return "bleu"
+    d = 0.0 if pd.isna(ecart_debit) else float(ecart_debit)
+    c = 0.0 if pd.isna(ecart_credit) else float(ecart_credit)
+    n = 0.0 if pd.isna(ecart_nb) else float(ecart_nb)
+    if abs(d) < TOL and abs(c) < TOL:
+        return "vert"
+    if abs(n) < TOL_NB:
+        return "rose"
+    return "jaune"
+
+
 def compensee(sommes: dict) -> bool:
     """Vrai si les trois écarts (débit, crédit, nombre de pièces) sont nuls."""
     return (abs(sommes.get("ecart_debit", 0)) < TOL and abs(sommes.get("ecart_credit", 0)) < TOL

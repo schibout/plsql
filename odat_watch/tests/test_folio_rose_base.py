@@ -216,3 +216,14 @@ def test_sommes_par_fichier_comme_le_ps1(tmp_path):
     assert (l["somme_amont_fichier"] == g["amont_debit"].transform("sum")).all()
     assert (l["somme_ecart_fichier"] == g["ecart_debit"].transform("sum")).all()
     con.close()
+
+
+def test_couleur_ligne():
+    # montant à zéro -> vert ; nb pièces à zéro mais montant non nul -> rose ; sinon jaune
+    assert fr.couleur_ligne(0.0, 0.0, 3.0) == "vert"
+    assert fr.couleur_ligne(0.004, -0.004, 0.0) == "vert"
+    assert fr.couleur_ligne(12.5, 12.5, 0.0) == "rose"
+    assert fr.couleur_ligne(12.5, 12.5, -2.0) == "jaune"
+    assert fr.couleur_ligne(0.0, 5.0, 0.0) == "rose"          # crédit non nul : le montant n'est pas à zéro
+    assert fr.couleur_ligne(12.5, 12.5, -2.0, "OK") == "bleu"  # le contrôle Oracle OK prime
+    assert fr.couleur_ligne(0.0, 0.0, 0.0, "KO") == "vert"
