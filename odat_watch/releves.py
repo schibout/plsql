@@ -328,6 +328,74 @@ def scanner_logs(dossiers: list[Path], con: sqlite3.Connection, banque_b: str = 
     return n
 
 
-def _charger_controle(rid, req, out, con, banque_b):   # provisoire : implémenté en Task 5
-    con.execute("INSERT OR REPLACE INTO rb_controles(request_id, source_out) VALUES (?, ?)",
-                (rid, str(out) if out else None))
+# ---------------------------------------------------------------- logs DKA_SRBCTRLRB
+DATE_REF_RE = re.compile(r"DATE DE REFERENCE\s*:\s*(\d{2})/(\d{2})/(\d{4})")
+ENTETE_CTRL = "ID;NOM_BANQUE;BANQUE;GUICHET;COMPTE;NOM_COMPTE;RAPPRO;COMPTE_LOCAL;DATE_DERNIER_IMPORT"
+
+
+def _date_ctrl(txt: str) -> str | None:
+    txt = txt.strip()
+    if not txt:
+        return None
+    try:
+        return _date_ora_courte(txt) if len(txt) == 9 else _date_ora(txt)
+    except (KeyError, ValueError):
+        return txt
+
+
+def parse_controle_out(text: str) -> dict:
+    date_ref, lignes, en_csv = None, [], False
+    for ligne in text.splitlines():
+        m = DATE_REF_RE.search(ligne)
+        if m:
+            date_ref = f"{m.group(3)}-{m.group(2)}-{m.group(1)}"
+            continue
+        if ligne.startswith(ENTETE_CTRL):
+            en_csv = True
+            continue
+        if en_csv:
+            champs = ligne.strip().split(";")
+            if len(champs) < 11 or not champs[0].isdigit():
+                en_csv = False
+                continue
+            lignes.append(dict(compte_id=champs[0], nom_banque=champs[1], banque=champs[2], guichet=champs[3],
+                               numero=champs[4], nom_compte=champs[5], date_dernier_import=_date_ctrl(champs[8]),
+                               date_debut_releve=_date_ctrl(champs[9]), date_fin_releve=_date_ctrl(champs[10])))
+    return dict(date_reference=date_ref, lignes=lignes)
+
+
+def comptes_connus(con: sqlite3.Connection) -> set[str]:
+    return {r[0] for r in con.execute("SELECT cle FROM rb_comptes_connus")}
+
+
+def comptes_connus_init(con: sqlite3.Connection, cles: list[str]) -> None:
+    """Insère les comptes connus de la config s'ils n'existent pas encore (l'onglet permet ensuite de les éditer)."""
+    con.executemany("INSERT OR IGNORE INTO rb_comptes_connus(cle, motif, ajoute_le) VALUES (?, 'config.ini', ?)",
+                    [(c, maintenant()) for c in cles])
+    con.commit()
+
+
+def enregistrer_comptes_connus(df: pd.DataFrame, con: sqlite3.Connection) -> None:
+    con.execute("DELETE FROM rb_comptes_connus")
+    con.executemany("INSERT OR REPLACE INTO rb_comptes_connus(cle, motif, ajoute_le) VALUES (?,?,?)",
+                    [(str(r["cle"]).strip(), r.get("motif") or "", maintenant())
+                     for _, r in df.iterrows() if str(r["cle"]).strip()])
+    con.commit()
+
+
+def _charger_controle(rid: int, req: Path | None, out: Path | None, con: sqlite3.Connection, banque_b: str) -> None:
+    p_req = logs.parse_req(logs.lire(req)) if req else {}
+    p = parse_controle_out(logs.lire(out)) if out else dict(date_reference=None, lignes=[])
+    connus = comptes_connus(con)
+    executed = _date_ora(p_req["started"]) if p_req.get("started") else None
+    nb_sg = sum(1 for l in p["lignes"] if l["banque"] == banque_b)
+    hors = sum(1 for l in p["lignes"] if f"{l['banque']}/{l['guichet']}/{l['numero']}" not in connus)
+    con.execute("INSERT OR REPLACE INTO rb_controles(request_id,executed_at,date_reference,nb_anomalies,nb_sg,"
+                "nb_hors_connus,source_out) VALUES (?,?,?,?,?,?,?)",
+                (rid, executed, p["date_reference"], len(p["lignes"]), nb_sg, hors, str(out) if out else None))
+    con.execute("DELETE FROM rb_controle_lignes WHERE request_id=?", (rid,))
+    con.executemany(
+        "INSERT OR REPLACE INTO rb_controle_lignes(request_id,compte_id,banque,guichet,numero,nom_compte,"
+        "date_dernier_import,date_debut_releve,date_fin_releve) VALUES (?,?,?,?,?,?,?,?,?)",
+        [(rid, l["compte_id"], l["banque"], l["guichet"], l["numero"], l["nom_compte"], l["date_dernier_import"],
+          l["date_debut_releve"], l["date_fin_releve"]) for l in p["lignes"]])

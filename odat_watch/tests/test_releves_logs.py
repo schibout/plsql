@@ -49,3 +49,25 @@ def test_scanner_logs_imports(tmp_path):
     r = con.execute("SELECT flux, releves_charges FROM rb_imports WHERE request_id=49041437").fetchone()
     assert (r["flux"], r["releves_charges"]) == ("A", 141)
     assert con.execute("SELECT COUNT(*) FROM rb_import_releves WHERE request_id=49029106").fetchone()[0] == 213
+
+
+def test_parse_controle_out():
+    p = rb.parse_controle_out(logs.lire(REF / "controle/o49069921.out"))
+    assert p["date_reference"] == "2026-09-17"
+    assert len(p["lignes"]) == 208
+    sg = [l for l in p["lignes"] if l["banque"] == "30003"]
+    assert len(sg) == 207
+    l = p["lignes"][0]
+    assert l["compte_id"] == "11412" and l["guichet"] == "00370" and l["numero"] == "00025100813"
+    assert (l["date_dernier_import"], l["date_debut_releve"], l["date_fin_releve"]) == ("2026-09-14", "2026-09-10", "2026-09-11")
+
+
+def test_scanner_logs_controles_et_comptes_connus(tmp_path):
+    con = db.connect(tmp_path / "t.db")
+    rb.comptes_connus_init(con, ["30003/03620/00020137269", "16807/00166/31990892212"])
+    n = rb.scanner_logs([REF / "controle"], con)
+    assert n >= 17 and con.execute("SELECT COUNT(*) FROM rb_imports").fetchone()[0] == 0
+    r = con.execute("SELECT * FROM rb_controles WHERE request_id=49069921").fetchone()
+    assert r["executed_at"] == "2026-09-18 08:27:49" and r["date_reference"] == "2026-09-17"
+    assert (r["nb_anomalies"], r["nb_sg"], r["nb_hors_connus"]) == (208, 207, 207)   # 16807 connu, SG 03620/…269 connu
+    assert con.execute("SELECT COUNT(*) FROM rb_controle_lignes WHERE request_id=49069921").fetchone()[0] == 208
