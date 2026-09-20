@@ -98,3 +98,60 @@ def test_chronologie(con):
     r = ch[ch["request_id"] == 49029106].iloc[0]
     assert r["resultat"] == "OK" and r["charges"] == 207
     assert list(ch["debut"]) == sorted(ch["debut"])
+
+
+def test_anomalies_par_flux_18_09(con):
+    """18/09 : le contrôle de 07:49:54 (pendant l'import A) compte 128 anomalies non SG, le dernier 0."""
+    a = rb.journee(con, date(2026, 9, 18), CFG).flux["A"]
+    assert a.controles[0]["request_id"] == 49069846 and a.controles[0]["nb_hors_connus_flux"] == 128
+    assert a.controles[-1]["nb_hors_connus_flux"] == 0 and a.verdict == "OK"
+
+
+def test_journee_14_09_flux_a_ko(con):
+    a = rb.journee(con, date(2026, 9, 14), CFG).flux["A"]
+    assert a.verdict == "KO" and a.import_["request_id"] == 49029055        # 1 relevé, 0 chargé
+
+
+def test_import_sans_out_warn(tmp_path):
+    import shutil
+    d = tmp_path / "logs"
+    d.mkdir()
+    shutil.copy(REF / "import/l49061539.req", d)
+    con = db.connect(tmp_path / "t.db")
+    cfg = dict(CFG, dossiers_logs=[d], dossier_pfe=tmp_path / "x", dossier_ebs=tmp_path / "y")
+    rb.scanner_tout(cfg, con)
+    b = rb.journee(con, date(2026, 9, 17), cfg).flux["B"]
+    imp = next(e for e in b.etapes if e["cle"] == "import")
+    assert imp["ton"] == "warn" and ".out absent" in imp["texte"]
+    assert any("copy_ebs_logs.sh" in c for c in b.causes) and not any("aucun relevé chargé" in c for c in b.causes)
+    assert b.verdict == "WARN"
+
+
+def test_week_end_controle_neutre(con):
+    j = rb.journee(con, date(2026, 9, 13), CFG)           # dimanche : contrôle manuel de 18:46 en base
+    for f in j.flux.values():
+        ctl = next(e for e in f.etapes if e["cle"] == "controle")
+        assert ctl["ton"] == "neutral" and "pas d'intégration attendue" in ctl["texte"]
+
+
+def test_chronologie_fenetre_exacte(con):
+    ch = rb.chronologie(con, jours=1, jour=date(2026, 9, 18))
+    assert set(ch["debut"].str[:10]) == {"2026-09-18"}
+
+
+def test_causes_controlm_propagees(tmp_path):
+    """Photo ODAT du 15/09 08:06 : la chaîne 06 bloquée remonte dans les causes du flux B."""
+    import ingest
+    con = db.connect(tmp_path / "t.db")
+    rb.scanner_tout(CFG, con)
+    path = REF / "FichierODAT" / "Report_ctm_260914_14_8h06.csv"
+    rows = ingest.read_rows(path)
+    cur = con.execute("INSERT INTO snapshots(odate, snap_time, source_file, file_hash, nb_lignes) VALUES (?,?,?,?,?)",
+                      (min(r["odate"] for r in rows if r["odate"]), "2026-09-15 08:06:00", path.name, "h1", len(rows)))
+    con.executemany(f"INSERT OR IGNORE INTO ctm_jobs(snapshot_id,{','.join(ingest.COLS)}) VALUES (?{',?' * len(ingest.COLS)})",
+                    [(cur.lastrowid, *[r[c] for c in ingest.COLS]) for r in rows])
+    con.commit()
+    b = rb.journee(con, date(2026, 9, 15), CFG).flux["B"]
+    assert next(e for e in b.etapes if e["cle"] == "controlm")["ton"] == "ko"
+    assert any("06_ZIP01" in c for c in b.causes) and any("Conflit de chaînes" in c for c in b.causes)
+    assert b.verdict == "KO"

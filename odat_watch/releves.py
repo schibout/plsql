@@ -523,15 +523,18 @@ def scanner_tout(cfg: dict, con: sqlite3.Connection) -> str:
     n_ebs = scanner_ebs(cfg["dossier_ebs"], con, cfg["banque_flux_b"])
     n_logs = scanner_logs(cfg["dossiers_logs"], con, cfg["banque_flux_b"])
     rapprocher_pfe_ebs(con)
-    con.execute("UPDATE rb_imports SET md5_ebs = (SELECT e.md5 FROM rb_ebs e WHERE substr(e.horodatage,1,16) = "
-                "substr(rb_imports.debut,1,16) OR (e.horodatage <= rb_imports.debut AND e.horodatage >= "
-                "datetime(rb_imports.debut, '-3 minutes')) ORDER BY e.horodatage DESC LIMIT 1) WHERE md5_ebs IS NULL")
+    # Fichier EBS de l'import : même minute, ou reçu dans les 3 minutes précédentes — d'abord parmi les fichiers du même
+    # flux, puis sans condition de flux (SQLite n'accepte pas la colonne externe dans l'ORDER BY d'une sous-requête).
+    for cond in ("AND e.flux = rb_imports.flux", ""):
+        con.execute("UPDATE rb_imports SET md5_ebs = (SELECT e.md5 FROM rb_ebs e WHERE (substr(e.horodatage,1,16) = "
+                    "substr(rb_imports.debut,1,16) OR (e.horodatage <= rb_imports.debut AND e.horodatage >= "
+                    f"datetime(rb_imports.debut, '-3 minutes'))) {cond} ORDER BY e.horodatage DESC LIMIT 1) "
+                    "WHERE md5_ebs IS NULL")
     con.commit()
     return f"{n_pfe} exécution(s) PFE, {n_ebs} fichier(s) EBS, {n_logs} log(s) nouveaux."
 
 
 # ---------------------------------------------------------------- journée
-HEURE_ATTENDUE = {"A": "07:50", "B": "08:20"}
 FENETRE = {"A": ("06:30:00", "08:05:00"), "B": ("08:05:00", "10:00:00")}
 TON_VERDICT = {"OK": "ok", "WARN": "warn", "KO": "ko", "—": "neutral"}
 
@@ -602,7 +605,7 @@ def journee(con: sqlite3.Connection, jour: date, cfg: dict) -> Journee:
         # le flux d'un import est déjà déterminé par ses banques : pas de fenêtre horaire (le flux B du 14/09 tourne à 07:49)
         f.import_ = _un(con, "SELECT * FROM rb_imports WHERE flux=? AND substr(debut,1,10)=? ORDER BY debut DESC LIMIT 1", (code, js))
         # contrôles rattachés : tous pour A ; pour B, seulement ceux exécutés après l'import (ou après la fenêtre B)
-        apres = f.import_["fin"] if f.import_ else js + " " + FENETRE["B"][0]
+        apres = (f.import_ or {}).get("fin") or (f.import_ or {}).get("debut") or f"{js} {FENETRE['B'][0]}"
         f.controles = [dict(c, nb_hors_connus_flux=_anomalies_flux(con, c, code, banque_b, connus))
                        for c in j.controles if code == "A" or c["executed_at"] > apres]
         _verdict_flux(f, j.motif)
@@ -631,6 +634,7 @@ def _verdict_flux(f: Flux, motif: str | None) -> None:
         e_ctm = ("neutral", "pas de photo")
     elif f.code == "B" and (d["conflit_mov"] or d["zip06_not_ok"]):
         e_ctm = ("ko", "chaîne 06 bloquée")
+        f.causes.extend(d["causes"])
     else:
         e_ctm = ("ok", f"photo {d['photo'][11:16]}")
     # --- réception EBS
@@ -648,6 +652,9 @@ def _verdict_flux(f: Flux, motif: str | None) -> None:
             e_imp = ("ko", f"req {imp['request_id']} · 0 chargé · {imp['err025']} × Erreur 025")
             f.causes.append(f"Import {imp['request_id']} rejeté en bloc : {imp['err025']} × Erreur 025 « Journée manquante » — "
                             "un relevé antérieur n'a jamais été chargé ; rejouer les fichiers manquants dans l'ordre.")
+        elif not imp.get("source_out"):
+            e_imp = ("warn", f"req {imp['request_id']} · .out absent")
+            f.causes.append(f"Import {imp['request_id']} : log .out absent (résultat inconnu) : lancer copy_ebs_logs.sh.")
         elif (imp["releves_charges"] or 0) == 0:
             e_imp = ("ko", f"req {imp['request_id']} · 0 chargé")
             f.causes.append(f"Import {imp['request_id']} : aucun relevé chargé.")
@@ -660,7 +667,9 @@ def _verdict_flux(f: Flux, motif: str | None) -> None:
     else:
         e_imp = ("neutral", "—")
     # --- contrôle
-    if f.controles:
+    if motif and not (pfe or ebs or imp):
+        e_ctl = ("neutral", "pas d'intégration attendue")
+    elif f.controles:
         c = f.controles[-1]
         nb = c.get("nb_hors_connus_flux", c["nb_hors_connus"]) or 0
         if nb == 0:
@@ -691,7 +700,7 @@ def _verdict_flux(f: Flux, motif: str | None) -> None:
 # ---------------------------------------------------------------- chronologie
 def chronologie(con: sqlite3.Connection, jours: int = 15, jour: date | None = None) -> pd.DataFrame:
     fin = (jour or date.today()) + timedelta(days=1)
-    debut = fin - timedelta(days=jours + 1)
+    debut = fin - timedelta(days=jours)
     df = pd.read_sql_query(
         "SELECT i.request_id, i.debut, e.nom AS fichier, i.flux, i.lus, i.ecrits, i.releves_charges AS charges, "
         "i.releves_erreurs AS erreurs, i.err001, i.err025 FROM rb_imports i LEFT JOIN rb_ebs e ON e.md5 = i.md5_ebs "
