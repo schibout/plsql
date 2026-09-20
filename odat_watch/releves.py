@@ -106,3 +106,79 @@ def lire_afb120(source: Path | bytes, banque_flux_b: str = "30003") -> Afb120:
     if a.banques:
         a.flux = "B" if set(a.banques) == {banque_flux_b} else "A"
     return a
+
+
+# ---------------------------------------------------------------- scan des dossiers
+TARGET_RE = re.compile(r"compt_AFB120_RELEVESDECOMPTE_(\d{6})-(\d{6})\.txt$", re.I)
+EBS_RE = re.compile(r"^AFB120\.txt_(\d{14})", re.I)
+
+
+def _banques_txt(b: dict) -> str:
+    return ";".join(f"{k}:{v}" for k, v in sorted(b.items(), key=lambda kv: -kv[1]))
+
+
+def _d(x: date | None) -> str | None:
+    return x.isoformat() if x else None
+
+
+def scanner_pfe(dossier: Path, con: sqlite3.Connection, banque_b: str) -> int:
+    """Charge les exécutions <uuid> absentes de rb_pfe. Retourne le nombre ajouté."""
+    n = 0
+    if not dossier.is_dir():
+        return 0
+    connus = {r[0] for r in con.execute("SELECT uuid FROM rb_pfe")}
+    for d in sorted(p for p in dossier.iterdir() if p.is_dir()):
+        if d.name in connus:
+            continue
+        targets = [f for f in (d / "TARGET").glob("*.txt")] if (d / "TARGET").is_dir() else []
+        target = next((f for f in targets if TARGET_RE.search(f.name)), None)
+        if target is None:
+            continue
+        m = TARGET_RE.search(target.name)
+        horodatage = datetime.strptime(m.group(1) + m.group(2), "%y%m%d%H%M%S")
+        sources = list((d / "SOURCE").glob("*")) if (d / "SOURCE").is_dir() else []
+        zips = list((d / "TARGET").glob("compteur_*.zip"))
+        zip_ok = False
+        if zips:
+            try:
+                zip_ok = target.name in zipfile.ZipFile(zips[0]).namelist()
+            except zipfile.BadZipFile:
+                zip_ok = False
+        ls_ok = (d / "TALEND" / "LS_IN.OK").exists()
+        a = lire_afb120(target, banque_b)
+        con.execute(
+            "INSERT INTO rb_pfe(uuid,horodatage,fichier_source,fichier_target,zip,ls_in_ok,complete,flux,nb_releves,"
+            "nb_lignes,banques,date_min,date_max,md5,vu_le) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+            (d.name, horodatage.strftime("%Y-%m-%d %H:%M:%S"), str(sources[0]) if sources else None, str(target),
+             str(zips[0]) if zips else None, int(ls_ok), int(bool(sources) and zip_ok and ls_ok), a.flux,
+             a.nb_releves, a.nb_lignes, _banques_txt(a.banques), _d(a.date_min), _d(a.date_max), a.md5, maintenant()))
+        n += 1
+    con.commit()
+    return n
+
+
+def scanner_ebs(dossier: Path, con: sqlite3.Connection, banque_b: str) -> int:
+    """Charge les fichiers AFB120.txt_<horodatage>* absents de rb_ebs."""
+    n = 0
+    if not dossier.is_dir():
+        return 0
+    connus = {r[0] for r in con.execute("SELECT nom FROM rb_ebs")}
+    for f in sorted(dossier.iterdir()):
+        m = EBS_RE.match(f.name)
+        if not f.is_file() or not m or f.name in connus:
+            continue
+        a = lire_afb120(f, banque_b)
+        con.execute(
+            "INSERT INTO rb_ebs(nom,horodatage,flux,nb_releves,nb_lignes,banques,date_min,date_max,md5,vu_le) "
+            "VALUES (?,?,?,?,?,?,?,?,?,?)",
+            (f.name, datetime.strptime(m.group(1), "%Y%m%d%H%M%S").strftime("%Y-%m-%d %H:%M:%S"), a.flux,
+             a.nb_releves, a.nb_lignes, _banques_txt(a.banques), _d(a.date_min), _d(a.date_max), a.md5, maintenant()))
+        n += 1
+    con.commit()
+    return n
+
+
+def rapprocher_pfe_ebs(con: sqlite3.Connection) -> None:
+    """Un TARGET PFE est « reçu » si un fichier EBS a le même md5."""
+    con.execute("UPDATE rb_pfe SET ebs_md5_recu = EXISTS (SELECT 1 FROM rb_ebs e WHERE e.md5 = rb_pfe.md5)")
+    con.commit()
