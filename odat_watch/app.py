@@ -306,12 +306,8 @@ st.markdown(f"""
   <div class="meta">{meta}</div>
 </div>""", unsafe_allow_html=True)
 
-tab_plan, tab_calendriers, tab_soir, tab_demain, tab_now, tab_matin, tab_releves, tab_folio, tab_ora, tab_ref, tab_histo, tab_profils, tab_data, tab_sql = st.tabs(
-    ["🧭 Préparer ma nuit", "📥 Clôtures", "🌙 Ce soir", "📅 Demain", "🔴 Maintenant", "☀️ Matin", "🏦 Relevés bancaires", "🌹 Folio Rose", "🅾 Oracle", "📒 Référentiel", "🔎 Historique", "📈 Profils", "🗂 Données", "⌨ SQL"])
-
-with tab_ref:
-    import ui_referentiel
-    ui_referentiel.render()
+tab_plan, tab_calendriers, tab_soir, tab_demain, tab_now, tab_matin, tab_releves, tab_folio, tab_ora, tab_histo, tab_profils, tab_data, tab_sql = st.tabs(
+    ["🧭 Préparer ma nuit", "📥 Clôtures", "🌙 Ce soir", "📅 Demain", "🔴 Maintenant", "☀️ Matin", "🏦 Relevés bancaires", "🌹 Folio Rose", "🅾 Oracle", "🔎 Historique", "📈 Profils", "🗂 Données", "⌨ SQL"])
 
 with tab_plan:
     con = connect()
@@ -440,17 +436,10 @@ with tab_histo:
                          use_container_width=True, hide_index=True,
                          column_config={"duree_min": st.column_config.NumberColumn("durée (min)", format="%.1f")})
 
-# ------------------------------------------------------------------ profils
+# ------------------------------------------------------------------ profils + référentiel
 with tab_profils:
-    st.caption("Profil calculé pour chaque job à partir de l'historique. Plus il y a de jours, plus c'est fiable.")
-    pdf = filtrer(fc.profils_df(profs))
-    st.dataframe(pdf, use_container_width=True, hide_index=True, height=600,
-                 column_config={"fiabilite": st.column_config.ProgressColumn("fiabilité", min_value=0, max_value=100, format="%d %%"),
-                                "duree_min": st.column_config.NumberColumn("durée (min)", format="%.1f"),
-                                "lendemain": st.column_config.CheckboxColumn("J+1"),
-                                "cyclique": st.column_config.CheckboxColumn("cyclique")})
-    st.download_button("⬇ Exporter les profils (CSV)", pdf.to_csv(index=False, sep=";").encode("utf-8-sig"),
-                       f"profils_{application}_{now:%Y%m%d}.csv", "text/csv")
+    import ui_profils
+    ui_profils.render(fc.profils_df(profs), application, now, filtrer)
 
 # ------------------------------------------------------------------ données
 with tab_data:
