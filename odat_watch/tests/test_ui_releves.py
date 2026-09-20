@@ -23,6 +23,7 @@ def _script():
     import ui_releves
 
     def faux_kpi(col, valeur, libelle, ton=""):
+        assert ton in {"ok", "warn", "err", "run", "neutral", ""}, ton      # tons connus de app.kpi
         col.markdown(f"{valeur} {libelle} [{ton}]")
 
     st.session_state.setdefault("rb_jour", date(2026, 9, 15))
@@ -49,6 +50,7 @@ def _texte(at) -> str:
 def test_avant_scan_invite(app):
     at, _ = app
     assert "Scanner" in "\n".join(b.label for b in at.button)
+    assert any("Aucune donnée" in c.value for c in at.caption)
 
 
 def test_scan_puis_frise_et_plan(app):
@@ -61,6 +63,11 @@ def test_scan_puis_frise_et_plan(app):
     assert "Flux B" in texte and "non reçu" in texte
     assert "Plan de reprise" in texte and "260915-081614" in texte
     assert "KO" in texte
+    assert "KO verdict du jour [err]" in texte and "KO flux B [err]" in texte        # tuile KO en rouge
+    assert "13 exécution(s) PFE" in "\n".join(i.value for i in at.info)
+    assert len(at.get("plotly_chart")) == 1                                         # mini-tendance des imports
+    at.run()                                                                        # relance sans clic : le message ne colle pas
+    assert not any("exécution(s) PFE" in i.value for i in at.info)
 
 
 def test_rapport_html(app, tmp_path, monkeypatch):

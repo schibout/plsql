@@ -49,3 +49,9 @@ def test_accesseurs_tabulaires(tmp_path):
     lignes = rb.lignes_controle(con, 49069921)
     assert len(lignes) == 208 and lignes.iloc[0]["banque"] == "16807"
     assert rb.rapprochement_pfe(db.connect(tmp_path / "vide.db")).empty
+
+
+def test_t_valeurs_manquantes_pandas():
+    import pandas as pd
+    import rapport_releves as rr
+    assert rr._t(pd.NA) == "" and rr._t(pd.NaT) == "" and rr._t(None) == "" and rr._t("x") == "x"

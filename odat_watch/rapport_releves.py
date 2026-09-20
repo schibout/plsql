@@ -46,9 +46,19 @@ def _num(v) -> bool:
     return isinstance(v, numbers.Number) and not _bool(v)
 
 
+def _manquant(v) -> bool:
+    """None, NaN, pd.NA, NaT (pd.isna sur un scalaire ; une liste/série n'est pas « manquante »)."""
+    if v is None:
+        return True
+    try:
+        return bool(pd.isna(v))
+    except (TypeError, ValueError):
+        return False
+
+
 def _t(v) -> str:
-    """Texte échappé d'une cellule : vide pour None/NaN, « oui »/« non » pour les booléens, entiers sans « .0 »."""
-    if v is None or (_num(v) and pd.isna(v)):
+    """Texte échappé d'une cellule : vide pour None/NaN/NA/NaT, « oui »/« non » pour les booléens, entiers sans « .0 »."""
+    if _manquant(v):
         return ""
     if _bool(v):
         return "oui" if v else "non"
