@@ -52,3 +52,40 @@ def test_rapprochement_pfe_ebs(tmp_path):
     absents = {r[0] for r in con.execute("SELECT uuid FROM rb_pfe WHERE ebs_md5_recu=0")}
     assert absents == {"2b6da61b5e384790970e4ab0b536102e", "f067afff37d54178852c7c46a7048ab0"}
     assert con.execute("SELECT COUNT(*) FROM rb_pfe WHERE ebs_md5_recu=1").fetchone()[0] == 11
+
+
+def test_scanner_pfe_cas_incomplets(tmp_path):
+    """Dossier sans SOURCE, zip corrompu, dossier sans TARGET, dossier PFE absent."""
+    pfe = tmp_path / "fluxPFE"
+    modele = REF / "fluxPFE/2b6da61b5e384790970e4ab0b536102e"
+    target_nom = "compt_AFB120_RELEVESDECOMPTE_260915-081614.txt"
+    contenu = (modele / "TARGET" / target_nom).read_bytes()
+
+    sans_source = pfe / "aaaa0000000000000000000000000001"
+    (sans_source / "TARGET").mkdir(parents=True)
+    (sans_source / "TALEND").mkdir()
+    (sans_source / "TARGET" / target_nom).write_bytes(contenu)
+    (sans_source / "TARGET" / "compteur_20260915_0816.zip").write_bytes((modele / "TARGET" / "compteur_20260915_0816.zip").read_bytes())
+    (sans_source / "TALEND" / "LS_IN.OK").write_text("")
+
+    zip_corrompu = pfe / "aaaa0000000000000000000000000002"
+    (zip_corrompu / "SOURCE").mkdir(parents=True)
+    (zip_corrompu / "TARGET").mkdir()
+    (zip_corrompu / "TALEND").mkdir()
+    (zip_corrompu / "SOURCE" / "src.txt").write_text("x")
+    (zip_corrompu / "TARGET" / target_nom).write_bytes(contenu)
+    (zip_corrompu / "TARGET" / "compteur_20260915_0816.zip").write_bytes(b"pas un zip")
+    (zip_corrompu / "TALEND" / "LS_IN.OK").write_text("")
+
+    sans_target = pfe / "aaaa0000000000000000000000000003"
+    (sans_target / "SOURCE").mkdir(parents=True)
+    (sans_target / "SOURCE" / "src.txt").write_text("x")
+
+    con = db.connect(tmp_path / "t.db")
+    assert rb.scanner_pfe(pfe, con, "30003") == 2
+    lignes = {r["uuid"]: r for r in con.execute("SELECT * FROM rb_pfe")}
+    assert set(lignes) == {sans_source.name, zip_corrompu.name}          # sans TARGET : ignoré
+    assert lignes[sans_source.name]["complete"] == 0 and lignes[sans_source.name]["fichier_source"] is None
+    assert lignes[sans_source.name]["ls_in_ok"] == 1
+    assert lignes[zip_corrompu.name]["complete"] == 0 and lignes[zip_corrompu.name]["nb_releves"] == 213
+    assert rb.scanner_pfe(tmp_path / "inexistant", con, "30003") == 0

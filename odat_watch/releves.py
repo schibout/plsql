@@ -130,19 +130,21 @@ def scanner_pfe(dossier: Path, con: sqlite3.Connection, banque_b: str) -> int:
     for d in sorted(p for p in dossier.iterdir() if p.is_dir()):
         if d.name in connus:
             continue
-        targets = [f for f in (d / "TARGET").glob("*.txt")] if (d / "TARGET").is_dir() else []
-        target = next((f for f in targets if TARGET_RE.search(f.name)), None)
-        if target is None:
+        # Plusieurs TARGET / zips possibles dans un même dossier : on prend le plus récent (ordre des noms = horodatage)
+        targets = sorted(f for f in (d / "TARGET").glob("*.txt") if TARGET_RE.search(f.name)) if (d / "TARGET").is_dir() else []
+        if not targets:
             continue
+        target = targets[-1]
         m = TARGET_RE.search(target.name)
         horodatage = datetime.strptime(m.group(1) + m.group(2), "%y%m%d%H%M%S")
-        sources = list((d / "SOURCE").glob("*")) if (d / "SOURCE").is_dir() else []
-        zips = list((d / "TARGET").glob("compteur_*.zip"))
+        sources = sorted((d / "SOURCE").glob("*")) if (d / "SOURCE").is_dir() else []
+        zips = sorted((d / "TARGET").glob("compteur_*.zip"))
         zip_ok = False
         if zips:
             try:
-                zip_ok = target.name in zipfile.ZipFile(zips[0]).namelist()
-            except zipfile.BadZipFile:
+                with zipfile.ZipFile(zips[-1]) as z:
+                    zip_ok = target.name in z.namelist()
+            except (zipfile.BadZipFile, OSError):
                 zip_ok = False
         ls_ok = (d / "TALEND" / "LS_IN.OK").exists()
         a = lire_afb120(target, banque_b)
@@ -150,7 +152,7 @@ def scanner_pfe(dossier: Path, con: sqlite3.Connection, banque_b: str) -> int:
             "INSERT INTO rb_pfe(uuid,horodatage,fichier_source,fichier_target,zip,ls_in_ok,complete,flux,nb_releves,"
             "nb_lignes,banques,date_min,date_max,md5,vu_le) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
             (d.name, horodatage.strftime("%Y-%m-%d %H:%M:%S"), str(sources[0]) if sources else None, str(target),
-             str(zips[0]) if zips else None, int(ls_ok), int(bool(sources) and zip_ok and ls_ok), a.flux,
+             str(zips[-1]) if zips else None, int(ls_ok), int(bool(sources) and zip_ok and ls_ok), a.flux,
              a.nb_releves, a.nb_lignes, _banques_txt(a.banques), _d(a.date_min), _d(a.date_max), a.md5, maintenant()))
         n += 1
     con.commit()
