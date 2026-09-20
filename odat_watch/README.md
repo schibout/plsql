@@ -24,14 +24,18 @@ Oracle EBS R12 pour répondre à : **qu'est-ce qui tourne ce soir, et demain ?**
 | `folio_rose.py` | **Folio Rose** : portage de `Verifier_Factures.ps1` (import des exports `ExportCSV-*.csv`, tables `fr_*`, groupes compensés, rapprochements, contrôle Oracle). |
 | `rapport_folio_rose.py` | Rapport HTML Folio Rose (même charte que `rapport_matin.py`), écrit dans `rapports/`. |
 | `ui_folio_rose.py` | Onglet Folio Rose : import, tableau avec sélection et somme des écarts en direct, rapprochements (manuels et groupes compensés), contrôle Oracle, rapport HTML, historique. |
+| `releves_scan.py` | **Relevés bancaires — acquisition** : section `[releves]` de `config.ini`, lecture des fichiers AFB120 (CFONB 120 : relevés, mouvements, banques, dates, md5, flux A/B), scan des exécutions PFE (`<uuid>/SOURCE,TARGET,TALEND`) et des `AFB120.txt_*` reçus par EBS, parseurs des logs `RBAFBIMP` (synthèse des relevés, erreurs 001/025) et `DKA_SRBCTRLRB` (comptes en anomalie), comptes connus, chaîne Control-M `FINEXT_J14INT_05/06` lue dans les photos ODAT. Tables `rb_*`. |
+| `releves.py` | **Relevés bancaires — métier** : verdict de la matinée par flux (frise PFE · Control-M · Reçu EBS · Import · Contrôle, causes), chronologie des imports, continuité par compte SG (retard, trou), plan de reprise ordonné, `list_releves.txt` des logs manquants, vues PFE ↔ EBS et contrôles. Ré-exporte les noms publics de `releves_scan.py`. |
+| `rapport_releves.py` | Rapport HTML Relevés bancaires (même charte que `rapport_matin.py`), écrit dans `rapports/Releves_*.html`. |
+| `ui_releves.py` | Onglet Relevés bancaires : date, scan, tuiles, frise A/B, plan de reprise, chronologie + mini-tendance, continuité, PFE ↔ EBS, Control-M, contrôles, comptes connus éditables, rapport HTML. |
 | `sources.py` | Dossiers d'import choisis par l'utilisateur (boîte de dialogue Windows ou chemin collé), mémorisés dans la table `parametres` d'`odat.db`. |
 | `referentiel.py` / `ui_referentiel.py` | **Référentiel** jobs Control-M ↔ programmes Oracle Applications : alimenté automatiquement (photos ODAT + demandes Oracle : lanceur, filles, script `DKA_X_JOB.sh`), corrigeable à la main (saisie prioritaire partout), export CSV. Table `referentiel_jobs`. |
 | `ui_sql.py` | Onglet SQL : explorateur des tables SQLite (structure, volumes) et requêteur libre en lecture seule, exemples fournis, export CSV. |
 | `mock_oracle.py` | **Poste sans Oracle** : fabrique des demandes simulées à partir des exécutions Control-M (lanceur + programme métier, statuts alignés) et des logs présents. `python mock_oracle.py --reset`. Écrasé par les vraies données au premier `oracle_refresh.py`. |
-| `app.py` | Interface Streamlit : Ce soir, Demain, Maintenant, Matin, Folio Rose, Oracle, Référentiel, Historique, Profils, Données, SQL. |
+| `app.py` | Interface Streamlit : Ce soir, Demain, Maintenant, Matin, Relevés bancaires, Folio Rose, Oracle, Référentiel, Historique, Profils, Données, SQL. |
 | `.streamlit/config.toml` | Thème de l'interface. |
 | `run.bat` | Import ODAT + lancement de l'interface. |
-| `config.ini.exemple` | Modèle de configuration (Oracle, filtres, dossiers de logs). Copier en `config.ini` (ignoré par git). |
+| `config.ini.exemple` | Modèle de configuration (Oracle, filtres, dossiers de logs, section `[releves]`). Copier en `config.ini` (ignoré par git). |
 
 ## Installation (une fois)
 
@@ -117,6 +121,48 @@ en cours) et les images Xerox manquantes comptent. Case « Contrôler les volume
 ligne de commande) pour forcer. Le lundi, pour contrôler tout le week-end, mettre « Début de nuit » au vendredi 19:00.
 Le rappel « fichier SG » s'affiche chaque lundi. Les tuiles de synthèse sont cliquables : elles ouvrent la section
 de détail correspondante.
+
+## 🏦 Relevés bancaires
+
+Suit chaque matinée la chaîne PFE → Control-M (`FINEXT_J14INT_05_Q` flux A multi-banques ~07:50,
+`FINEXT_J14INT_06_Q` flux B Société Générale ~08:20, chaîne cyclique) → EBS (`RBAFBIMP` puis `DKA_SRBCTRLRB`).
+Le flux d'un fichier est déduit de ses banques : B = uniquement la banque `banque_flux_b` (30003), A = tout le reste
+(les fichiers A contiennent aussi quelques comptes SG).
+
+Sources locales (section `[releves]` de `config.ini`, valeurs par défaut vers `..\ControleReleveBancaire`) :
+- `dossier_pfe` : un sous-dossier `<uuid>` par exécution Talend (`SOURCE/`, `TARGET/compt_AFB120_*.txt` +
+  `compteur_*.zip`, `TALEND/LS_IN.OK`) ; une exécution est « complète » si les trois sont présents et que le zip
+  contient le TARGET ;
+- `dossier_ebs` : les `AFB120.txt_<AAAAMMJJHHMMSS>` reçus par EBS (`data/traite`, suffixe libre toléré) ;
+- `dossiers_logs` : les `l<id>.req` / `o<id>.out` des imports et contrôles, rapatriés avec `copy_ebs_logs.sh` à
+  partir du `list_releves.txt` généré par « 📋 list.txt des logs manquants » (demandes Oracle chargées sans `.out` local).
+  Un log dont seul le `.req` est présent est chargé puis complété au scan suivant quand le `.out` arrive.
+
+Deux modules : `releves_scan.py` (lecture et chargement dans les tables `rb_*`) et `releves.py` (verdict, continuité,
+reprise). « 🔄 Scanner » relit les dossiers (ce qui est déjà en base est ignoré), rapproche PFE ↔ EBS par md5 et
+relie chaque import au fichier EBS reçu dans la même minute (ou les 3 minutes précédentes, même flux de préférence).
+L'onglet affiche ensuite :
+- les tuiles (verdict du jour, flux A, flux B, comptes en rupture, fichiers à rejouer) ;
+- la **frise de la matinée** par flux — PFE · Control-M · Reçu EBS · Import · Contrôle — avec verdict `OK` / `WARN` /
+  `KO` / `—` et causes en français (fichier PFE non reçu, conflit `06_MOV01` / `05_MOV01`, `06_ZIP01` Ended Not OK,
+  import rejeté en bloc en `Erreur 025` « journée manquante », `.out` absent, contrôle non vide hors comptes connus).
+  Pour le flux A, les comptes SG listés par un contrôle lancé avant le flux B ne comptent pas ;
+- le **plan de reprise** quand la continuité est rompue : fichiers à rejouer dans l'ordre (TARGET PFE non reçus, puis
+  fichiers EBS rejetés ou jamais importés), période couverte et résultat attendu (`207 chargés / 6 erreurs` = relevés
+  moins les comptes connus en erreur chaque jour) ;
+- la chronologie des imports sur 15 jours avec une mini-tendance (relevés chargés en vert, en erreur en rouge) ;
+- la continuité par compte SG (dernier relevé chargé, date attendue, retard, trou = rejet 025 postérieur au dernier
+  chargement), le rapprochement PFE ↔ EBS, la chaîne Control-M de la matinée (dernière photo ODAT prise ce jour-là ;
+  une photo de la veille au soir n'est pas utilisée), les contrôles `DKA_SRBCTRLRB` avec le détail des lignes ;
+- les **comptes connus** (anomalies préexistantes, `banque/guichet/compte`) : initialisés depuis `config.ini`, éditables
+  dans l'onglet, ignorés par le verdict — relancer « Scanner » après modification.
+
+« 📄 Rapport HTML » écrit `rapports/Releves_AAAAMMJJ_HHMM.html` (frise, chronologie, continuité, plan, PFE ↔ EBS,
+contrôles). Samedi, dimanche et jours fériés : aucune intégration attendue pour un flux qui n'a rien produit (verdict
+`—`, pas d'alerte) ; le samedi le flux A tourne normalement.
+
+Tests : `tests/test_releves_*.py`, `test_rapport_releves.py`, `test_ui_releves.py` (AppTest), tous sur les fichiers réels
+de `ControleReleveBancaire/` (incident des 15–18/09/2026 : flux B non reçu deux jours puis rejet `Erreur 025`).
 
 ## Folio Rose
 
