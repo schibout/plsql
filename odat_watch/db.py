@@ -303,10 +303,11 @@ def connect(path: Path | str = DB_PATH) -> sqlite3.Connection:
 def _migrate(con: sqlite3.Connection) -> None:
     """Tables Oracle recréées si leur structure a changé (elles se rechargent en un clic)."""
     _migrer_folio_rose(con)
-    cols = [r[1] for r in con.execute("PRAGMA table_info(job_mapping)")]
-    if cols and "programme" not in cols:
-        con.execute("ALTER TABLE job_mapping ADD COLUMN programme TEXT")
-        con.commit()
+    for table, colonne in (("job_mapping", "programme"), ("rb_controles", "source_req")):
+        cols = [r[1] for r in con.execute(f"PRAGMA table_info({table})")]
+        if cols and colonne not in cols:
+            con.execute(f"ALTER TABLE {table} ADD COLUMN {colonne} TEXT")
+            con.commit()
     for table, colonne in (("ora_requests", "job_name"),):
         cols = [r[1] for r in con.execute(f"PRAGMA table_info({table})")]
         if cols and colonne not in cols:
