@@ -786,3 +786,27 @@ def liste_logs_manquants(con: sqlite3.Connection, dest: Path | None = None) -> s
     lignes = [f"{r['logfile_name'] or ''} {r['outfile_name'] or ''}".strip() for r in rows if r["logfile_name"]]
     dest.write_text("\n".join(lignes) + ("\n" if lignes else ""), encoding="utf-8", newline="\n")
     return f"{len(lignes)} ligne(s) écrite(s) dans {dest} (à passer à copy_ebs_logs.sh sur le serveur EBS)."
+
+
+# ---------------------------------------------------------------- vues tabulaires
+def rapprochement_pfe(con: sqlite3.Connection) -> pd.DataFrame:
+    """Exécutions PFE avec leur statut de réception : reçu / non reçu / reçu mais rejeté (Erreur 025)."""
+    df = pd.read_sql_query(
+        "SELECT p.uuid, p.horodatage, p.flux, p.nb_releves, p.nb_lignes, p.date_min, p.date_max, p.complete, p.ebs_md5_recu, "
+        "e.nom AS fichier_ebs, i.request_id, i.releves_charges, i.err025 FROM rb_pfe p "
+        "LEFT JOIN rb_ebs e ON e.md5 = p.md5 LEFT JOIN rb_imports i ON i.md5_ebs = p.md5 ORDER BY p.horodatage", con)
+    if df.empty:
+        return df.assign(statut=None)
+    df["statut"] = df.apply(lambda r: "non reçu" if not r["ebs_md5_recu"] else
+                            ("reçu · rejeté Erreur 025" if rejet_massif(r) else "reçu"), axis=1)
+    return df
+
+
+def controles(con: sqlite3.Connection, jours: int = 30) -> pd.DataFrame:
+    return pd.read_sql_query("SELECT request_id, executed_at, date_reference, nb_anomalies, nb_sg, nb_hors_connus "
+                             "FROM rb_controles ORDER BY executed_at DESC LIMIT ?", con, params=(jours * 3,))
+
+
+def lignes_controle(con: sqlite3.Connection, request_id: int) -> pd.DataFrame:
+    return pd.read_sql_query("SELECT * FROM rb_controle_lignes WHERE request_id=? ORDER BY banque, guichet, numero",
+                             con, params=(request_id,))
