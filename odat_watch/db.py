@@ -112,26 +112,31 @@ CREATE TABLE IF NOT EXISTS fr_exports (
     encodage               TEXT,
     nb_montants_illisibles INTEGER DEFAULT 0
 );
+-- État courant des lignes Folio Rose : une ligne par clé métier folio + date + fichier (+ rang si doublon
+-- strict dans un même export). Un import met à jour la ligne existante, n'en crée pas une nouvelle.
 CREATE TABLE IF NOT EXISTS fr_lignes (
-    id            INTEGER PRIMARY KEY AUTOINCREMENT,
-    export_id     INTEGER NOT NULL REFERENCES fr_exports(id) ON DELETE CASCADE,
-    num           INTEGER NOT NULL,                -- rang dans le fichier
-    empreinte     TEXT NOT NULL,                   -- identité stable d'une ligne entre exports
-    folio         TEXT, date TEXT, type TEXT, fichier TEXT, fichier_base TEXT,
-    amont_nb      REAL, amont_debit REAL, amont_credit REAL,
-    si_nb         REAL, si_debit REAL, si_credit REAL,
-    ecart_nb      REAL, ecart_debit REAL, ecart_credit REAL,
-    commentaire   TEXT, piece_jointe TEXT, lettrage TEXT,
-    age_j         INTEGER
+    id                INTEGER PRIMARY KEY AUTOINCREMENT,
+    empreinte         TEXT NOT NULL UNIQUE,            -- sha1(folio|date|fichier|rang)
+    rang              INTEGER NOT NULL DEFAULT 0,
+    folio             TEXT, date TEXT, type TEXT, fichier TEXT, fichier_base TEXT,
+    amont_nb          REAL, amont_debit REAL, amont_credit REAL,
+    si_nb             REAL, si_debit REAL, si_credit REAL,
+    ecart_nb          REAL, ecart_debit REAL, ecart_credit REAL,
+    commentaire       TEXT, piece_jointe TEXT, lettrage TEXT,
+    age_j             INTEGER,
+    premier_export_id INTEGER REFERENCES fr_exports(id),
+    dernier_export_id INTEGER REFERENCES fr_exports(id),
+    num               INTEGER,                         -- rang dans le dernier fichier
+    present           INTEGER NOT NULL DEFAULT 1,      -- 0 : absente du dernier export couvrant sa date
+    maj_le            TEXT
 );
-CREATE INDEX IF NOT EXISTS ix_fr_lignes_export ON fr_lignes(export_id);
-CREATE INDEX IF NOT EXISTS ix_fr_lignes_empreinte ON fr_lignes(empreinte);
+CREATE INDEX IF NOT EXISTS ix_fr_lignes_cle ON fr_lignes(folio, date, fichier);
+CREATE INDEX IF NOT EXISTS ix_fr_lignes_dernier ON fr_lignes(dernier_export_id);
 CREATE TABLE IF NOT EXISTS fr_oracle (
-    export_id         INTEGER NOT NULL REFERENCES fr_exports(id) ON DELETE CASCADE,
     folio             TEXT NOT NULL, fichier_base TEXT NOT NULL, type TEXT NOT NULL,
     nb_oracle         REAL, montant_oracle REAL, nb_interface REAL, montant_interface REAL,
     erreur            TEXT, controle_le TEXT NOT NULL,
-    PRIMARY KEY (export_id, folio, fichier_base, type)
+    PRIMARY KEY (folio, fichier_base, type)
 );
 CREATE TABLE IF NOT EXISTS fr_rapprochements (
     id          INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -186,6 +191,54 @@ CREATE TABLE IF NOT EXISTS calendar_job_mapping (
 """
 
 
+def _migrer_folio_rose(con: sqlite3.Connection) -> None:
+    """Ancien modèle (une copie des lignes par export, empreinte incluant les montants) -> état courant par clé
+    folio + date + fichier. Les rapprochements sont reportés sur la nouvelle empreinte."""
+    cols = [r[1] for r in con.execute("PRAGMA table_info(fr_lignes)")]
+    if not cols or "present" in cols:
+        return
+    import hashlib
+    anciennes = con.execute("SELECT id, export_id, num, empreinte, folio, date, type, fichier, fichier_base, amont_nb, "
+                            "amont_debit, amont_credit, si_nb, si_debit, si_credit, ecart_nb, ecart_debit, ecart_credit, "
+                            "commentaire, piece_jointe, lettrage, age_j FROM fr_lignes "
+                            "ORDER BY export_id, num").fetchall()
+    con.execute("ALTER TABLE fr_lignes RENAME TO fr_lignes_ancien")
+    con.execute("DROP TABLE IF EXISTS fr_oracle")
+    con.executescript("""
+    CREATE TABLE fr_lignes (
+        id INTEGER PRIMARY KEY AUTOINCREMENT, empreinte TEXT NOT NULL UNIQUE, rang INTEGER NOT NULL DEFAULT 0,
+        folio TEXT, date TEXT, type TEXT, fichier TEXT, fichier_base TEXT,
+        amont_nb REAL, amont_debit REAL, amont_credit REAL, si_nb REAL, si_debit REAL, si_credit REAL,
+        ecart_nb REAL, ecart_debit REAL, ecart_credit REAL, commentaire TEXT, piece_jointe TEXT, lettrage TEXT,
+        age_j INTEGER, premier_export_id INTEGER REFERENCES fr_exports(id), dernier_export_id INTEGER REFERENCES fr_exports(id),
+        num INTEGER, present INTEGER NOT NULL DEFAULT 1, maj_le TEXT);""")
+    correspondance = {}
+    nouvelles = {}
+    rangs: dict[tuple, int] = {}
+    export_courant = None
+    for r in anciennes:
+        (_id, eid, num, anc, folio, date, typ, fichier, base, an, ad, ac, sn, sd, sc, en, ed, ec, com, pj, let, age) = r
+        if eid != export_courant:
+            export_courant, rangs = eid, {}
+        cle = ((folio or "").strip(), (date or "").strip(), (fichier or "").strip())
+        rang = rangs.get(cle, 0)
+        rangs[cle] = rang + 1
+        emp = hashlib.sha1(f"{cle[0]}|{cle[1]}|{cle[2]}|{rang}".encode("utf-8")).hexdigest()
+        correspondance[anc] = emp
+        prem = nouvelles[emp][0] if emp in nouvelles else eid
+        nouvelles[emp] = (prem, eid, num, rang, folio, date, typ, fichier, base, an, ad, ac, sn, sd, sc, en, ed, ec,
+                          com, pj, let, age)
+    con.executemany(
+        "INSERT INTO fr_lignes(empreinte, premier_export_id, dernier_export_id, num, rang, folio, date, type, fichier, "
+        "fichier_base, amont_nb, amont_debit, amont_credit, si_nb, si_debit, si_credit, ecart_nb, ecart_debit, "
+        "ecart_credit, commentaire, piece_jointe, lettrage, age_j) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+        [(emp, *v) for emp, v in nouvelles.items()])
+    for anc, emp in correspondance.items():
+        con.execute("UPDATE OR IGNORE fr_rapprochement_lignes SET empreinte = ? WHERE empreinte = ?", (emp, anc))
+    con.execute("DROP TABLE fr_lignes_ancien")
+    con.commit()
+
+
 def connect(path: Path | str = DB_PATH) -> sqlite3.Connection:
     con = sqlite3.connect(str(path))
     con.row_factory = sqlite3.Row
@@ -197,6 +250,7 @@ def connect(path: Path | str = DB_PATH) -> sqlite3.Connection:
 
 def _migrate(con: sqlite3.Connection) -> None:
     """Tables Oracle recréées si leur structure a changé (elles se rechargent en un clic)."""
+    _migrer_folio_rose(con)
     cols = [r[1] for r in con.execute("PRAGMA table_info(job_mapping)")]
     if cols and "programme" not in cols:
         con.execute("ALTER TABLE job_mapping ADD COLUMN programme TEXT")

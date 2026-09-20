@@ -47,8 +47,7 @@ def test_affichage(app):
 def test_selection_et_rapprochement(app):
     at, base = app
     con = db.connect(base)
-    eid = int(fr.exports(con)["id"].iloc[0])
-    lignes = fr.lignes_export(eid, con)
+    lignes = fr.lignes(con)
     # deux lignes du même folio dont on force la compensation
     a, b = lignes.index[:2]
     con.execute("UPDATE fr_lignes SET folio='ZZZ', fichier_base='F', ecart_debit=100, ecart_credit=100, ecart_nb=1 WHERE empreinte=?", (lignes.loc[a, "empreinte"],))
@@ -61,6 +60,6 @@ def test_selection_et_rapprochement(app):
     # la sélection de lignes dans st.dataframe n'est pas pilotable par AppTest : on rapproche le groupe
     at.button(key="fr_grp_0").click().run()
     assert not at.exception
-    assert fr.lignes_export(eid, con)["rapproche"].sum() == 2
+    assert fr.lignes(con)["rapproche"].sum() == 2
     assert any("Groupes compensés en attente (0)" in m.value for m in at.markdown)
     con.close()

@@ -120,6 +120,11 @@ de détail correspondante.
 
 ## Folio Rose
 
+Clé métier d'une ligne : **folio + date + nom de fichier transmis**. Un nouvel export met à jour les lignes
+existantes (montants, commentaire) et ajoute les inédites ; une ligne de la période couverte qui a disparu est
+marquée « disparue » (masquée par défaut, jamais supprimée). Les rapprochements sont attachés à cette clé et
+survivent aux mises à jour. Le tableau montre l'état courant ; les exports importés forment l'historique.
+
 Onglet **🌹 Folio Rose** : portage de `Verifier_Factures.ps1`. Déposer un ou plusieurs
 `ExportCSV-*.csv` par glisser-déposer, ou importer d'un coup le dossier `ControleFolioRose` (et son
 sous-dossier `sauvegarde`) ; les fichiers déjà importés (même hash) sont ignorés. Le tableau se filtre par

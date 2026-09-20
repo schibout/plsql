@@ -31,7 +31,7 @@ def test_importer_dedoublonne(tmp_path):
     eid = fr.importer(e, con)
     assert eid and e.id == eid
     assert fr.importer(_export(tmp_path), con) is None
-    assert con.execute("SELECT COUNT(*) FROM fr_lignes WHERE export_id=?", (eid,)).fetchone()[0] == len(e.lignes)
+    assert con.execute("SELECT COUNT(*) FROM fr_lignes WHERE dernier_export_id=?", (eid,)).fetchone()[0] == len(e.lignes)
     ex = fr.exports(con)
     assert list(ex.columns)[:3] == ["id", "nom_fichier", "date_export"] and len(ex) == 1
     con.close()
@@ -40,7 +40,7 @@ def test_importer_dedoublonne(tmp_path):
 def test_lignes_export_sans_controle(tmp_path):
     con = db.connect(tmp_path / "t.db")
     eid = fr.importer(_export(tmp_path), con)
-    l = fr.lignes_export(eid, con)
+    l = fr.lignes(con)
     assert "statut" in l.columns and "rapproche" in l.columns
     assert set(l.loc[l["type"] != "AUTRE", "statut"]) == {"—"}
     assert set(l.loc[l["type"] == "AUTRE", "statut"]) <= {"NON CONTROLE"}
@@ -52,7 +52,7 @@ def test_lignes_export_sans_controle(tmp_path):
 def test_importer_valeurs_typees(tmp_path):
     con = db.connect(tmp_path / "t.db")
     eid = fr.importer(_export(tmp_path), con)
-    row = con.execute("SELECT num, age_j, amont_debit FROM fr_lignes WHERE export_id = ? LIMIT 1", (eid,)).fetchone()
+    row = con.execute("SELECT num, age_j, amont_debit FROM fr_lignes WHERE dernier_export_id = ? LIMIT 1", (eid,)).fetchone()
     num, age_j, amont_debit = row
     assert isinstance(num, int)
     assert age_j is None or isinstance(age_j, int)
@@ -78,17 +78,17 @@ def test_groupes_compenses():
 def test_rapprocher_et_annuler(tmp_path):
     con = db.connect(tmp_path / "t.db")
     eid = fr.importer(_export(tmp_path), con)
-    l = fr.lignes_export(eid, con)
+    l = fr.lignes(con)
     g = fr.groupes_compenses(l)
     if g.empty:                                         # on fabrique un groupe si l'export n'en a pas
         con.execute("UPDATE fr_lignes SET ecart_debit = -ecart_debit WHERE id = (SELECT MIN(id) FROM fr_lignes)")
         con.commit()
-        l = fr.lignes_export(eid, con); g = fr.groupes_compenses(l)
+        l = fr.lignes(con); g = fr.groupes_compenses(l)
     empreintes = list(g.iloc[0]["empreintes"]) if not g.empty else []
     if len(empreintes) < 2:
         pytest.skip("aucun groupe compensé exploitable dans cet export")
     rid = fr.rapprocher(empreintes, "test", con)
-    l2 = fr.lignes_export(eid, con)
+    l2 = fr.lignes(con)
     assert l2.loc[l2["empreinte"].isin(empreintes), "rapproche"].all()
     assert fr.groupes_compenses(l2).apply(lambda r: set(r["empreintes"]) != set(empreintes), axis=1).all() if not fr.groupes_compenses(l2).empty else True
     with pytest.raises(ValueError):                      # déjà rapprochées
@@ -96,7 +96,7 @@ def test_rapprocher_et_annuler(tmp_path):
     r = fr.rapprochements(con)
     assert len(r) == 1 and r.iloc[0]["nb_lignes"] == len(empreintes) and r.iloc[0]["commentaire"] == "test"
     fr.annuler_rapprochement(rid, con)
-    assert not fr.lignes_export(eid, con)["rapproche"].any()
+    assert not fr.lignes(con)["rapproche"].any()
     assert fr.rapprochements(con).iloc[0]["annule_le"]
     con.close()
 
@@ -104,7 +104,7 @@ def test_rapprocher_et_annuler(tmp_path):
 def test_rapprocher_refuse_somme_non_nulle(tmp_path):
     con = db.connect(tmp_path / "t.db")
     eid = fr.importer(_export(tmp_path), con)
-    l = fr.lignes_export(eid, con)
+    l = fr.lignes(con)
     deux = l[l["ecart_debit"] > 0]["empreinte"].head(2).tolist()
     with pytest.raises(ValueError, match="somme"):
         fr.rapprocher(deux, "", con)
@@ -156,13 +156,53 @@ def test_controler_oracle_simule(tmp_path, monkeypatch):
     con.commit()
     faux = _FauxCon()
     monkeypatch.setattr(fr, "_connexion_oracle", lambda: (faux, "APPS."))
-    resume = fr.controler_oracle(eid, con)
-    couples = con.execute("SELECT COUNT(*), SUM(erreur IS NOT NULL) FROM fr_oracle WHERE export_id=?", (eid,)).fetchone()
+    resume = fr.controler_oracle(con)
+    couples = con.execute("SELECT COUNT(*), SUM(erreur IS NOT NULL) FROM fr_oracle").fetchone()
     assert couples[0] == len(faux.cur.appels) and couples[1] == 1
     assert "1 en erreur" in resume
     sql, binds = faux.cur.appels[0]
     assert "APPS." in sql and set(binds) == {"folio", "base"} and ":v_" not in sql
-    l = fr.lignes_export(eid, con)
+    l = fr.lignes(con)
     assert set(l.loc[l["type"] != "AUTRE", "statut"]) <= {"OK", "KO", "INDETERMINE"}
     assert (l.loc[l["folio"] == "BOOM", "statut"] == "INDETERMINE").all()
+    con.close()
+
+
+def test_import_successif_met_a_jour_sans_dupliquer(tmp_path):
+    """Deux exports successifs : mêmes clés -> mêmes lignes mises à jour, nouvelles clés ajoutées, disparues marquées."""
+    con = db.connect(tmp_path / "t.db")
+    e1 = fr.lire_export(SAUVEGARDE / "ExportCSV-18-08-2026.csv")
+    e2 = fr.lire_export(SAUVEGARDE / "ExportCSV-19-08-2026.csv")
+    fr.importer(e1, con)
+    n1 = con.execute("SELECT COUNT(*) FROM fr_lignes").fetchone()[0]
+    assert n1 == len(e1.lignes)
+    communes = set(e1.lignes["empreinte"]) & set(e2.lignes["empreinte"])
+    fr.importer(e2, con)
+    n2 = con.execute("SELECT COUNT(*) FROM fr_lignes").fetchone()[0]
+    assert n2 == len(set(e1.lignes["empreinte"]) | set(e2.lignes["empreinte"]))          # pas de doublon
+    l = fr.lignes(con, disparues=True).set_index("empreinte")
+    assert (l.loc[list(communes), "dernier_export_id"] == e2.id).all()
+    assert (l.loc[list(communes), "premier_export_id"] == e1.id).all()
+    disparues = set(e1.lignes["empreinte"]) - set(e2.lignes["empreinte"])
+    fin = fr._date_fr(e2.periode_fin)
+    for emp in disparues:
+        dans_periode = fr._date_fr(l.loc[emp, "date"]) <= fin
+        # absente du 19/08 : disparue si sa date est couverte par l'export, sinon toujours présente
+        assert bool(l.loc[emp, "present"]) == (not dans_periode)
+    assert len(fr.lignes(con)) == len(e2.lignes) + sum(1 for emp in disparues if fr._date_fr(l.loc[emp, "date"]) > fin)
+
+
+def test_mise_a_jour_des_montants_conserve_le_rapprochement(tmp_path):
+    con = db.connect(tmp_path / "t.db")
+    e = fr.lire_export(SAUVEGARDE / "ExportCSV-20-08-2026.csv")
+    fr.importer(e, con)
+    g = fr.groupes_compenses(fr.lignes(con))
+    emps = list(g.iloc[0]["empreintes"])
+    fr.rapprocher(emps, "avant maj", con)
+    # un export ultérieur change le commentaire d'une des lignes : même clé, même rapprochement
+    contenu = (SAUVEGARDE / "ExportCSV-20-08-2026.csv").read_bytes().replace(b";non;", b";oui;", 1)
+    e2 = fr.lire_export(contenu, "ExportCSV-21-08-2026.csv")
+    assert fr.importer(e2, con)
+    l = fr.lignes(con).set_index("empreinte")
+    assert l.loc[emps, "rapproche"].all()
     con.close()

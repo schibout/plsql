@@ -105,8 +105,10 @@ def _date_fr(txt: str | None) -> date | None:
         return None
 
 
-def empreinte(folio, date_txt, fichier, amont_debit, si_debit, rang: int = 0) -> str:
-    cle = f"{(folio or '').strip()}|{(date_txt or '').strip()}|{(fichier or '').strip()}|{amont_debit:.2f}|{si_debit:.2f}"
+def empreinte(folio, date_txt, fichier, rang: int = 0) -> str:
+    """Clé métier d'une ligne : folio + date + nom de fichier transmis (+ rang d'occurrence si doublon strict).
+    Indépendante des montants : un nouvel export met la ligne à jour, il n'en crée pas une autre."""
+    cle = f"{(folio or '').strip()}|{(date_txt or '').strip()}|{(fichier or '').strip()}"
     return hashlib.sha1(f"{cle}|{rang}".encode("utf-8")).hexdigest()
 
 
@@ -185,20 +187,15 @@ def lire_export(source: Path | str | bytes, nom: str | None = None, date_import:
         e["fichier_base"] = fichier_base(e["fichier"])
         d = _date_fr(e["date"])
         e["age_j"] = (date_export - d).days if d else None
-        e["_cle"] = (f"{(e['folio'] or '').strip()}|{(e['date'] or '').strip()}|{(e['fichier'] or '').strip()}|"
-                     f"{e['amont_debit']:.2f}|{e['si_debit']:.2f}")
+        e["_cle"] = f"{(e['folio'] or '').strip()}|{(e['date'] or '').strip()}|{(e['fichier'] or '').strip()}"
         e["num"] = num
         enregs.append(e)
-    colonnes = ["num", "empreinte", "folio", "date", "type", "fichier", "fichier_base", *MONTANTS,
+    colonnes = ["num", "empreinte", "rang", "folio", "date", "type", "fichier", "fichier_base", *MONTANTS,
                 "commentaire", "piece_jointe", "lettrage", "age_j"]
     df = pd.DataFrame(enregs, columns=[*colonnes, "_cle"])
     if not df.empty:
-        rangs = df.groupby("_cle").cumcount()
-        df["empreinte"] = [
-            empreinte(f, d, fi, ad, sd, r)
-            for f, d, fi, ad, sd, r in zip(df["folio"], df["date"], df["fichier"],
-                                           df["amont_debit"], df["si_debit"], rangs)
-        ]
+        df["rang"] = df.groupby("_cle").cumcount()
+        df["empreinte"] = [empreinte(f, d, fi, r) for f, d, fi, r in zip(df["folio"], df["date"], df["fichier"], df["rang"])]
     df = df.drop(columns="_cle")[colonnes]
     return Export(nom=nom, date_export=date_export, periode_debut=periode_debut, periode_fin=periode_fin,
                   encodage=enc, file_hash=hashlib.sha1(octets).hexdigest(), lignes=df,
@@ -207,25 +204,54 @@ def lire_export(source: Path | str | bytes, nom: str | None = None, date_import:
 
 # ------------------------------------------------------------------ import et lecture SQLite
 
+def _valeur(c, v):
+    if pd.isna(v):
+        return None
+    return int(v) if c in ("age_j", "num", "rang") else v
+
+
 def importer(export: Export, con: sqlite3.Connection) -> int | None:
-    """Insère l'export et ses lignes. None si ce fichier (même hash) est déjà en base."""
+    """Enregistre l'export et met à jour l'état courant : une ligne existante (folio + date + fichier) est
+    mise à jour, une ligne inédite est créée, une ligne de la période absente de l'export est marquée disparue.
+    None si ce fichier (même hash) est déjà en base."""
     if con.execute("SELECT 1 FROM fr_exports WHERE file_hash = ?", (export.file_hash,)).fetchone():
         return None
+    now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    cols = [c for c in export.lignes.columns if c != "empreinte"]
+    maj = ", ".join(f"{c}=excluded.{c}" for c in cols)
     with con:
         cur = con.execute(
             "INSERT INTO fr_exports(nom_fichier, file_hash, date_export, periode_debut, periode_fin, importe_le, "
             "nb_lignes, encodage, nb_montants_illisibles) VALUES (?,?,?,?,?,?,?,?,?)",
             (export.nom, export.file_hash, export.date_export.isoformat(), export.periode_debut, export.periode_fin,
-             datetime.now().strftime("%Y-%m-%d %H:%M:%S"), len(export.lignes), export.encodage,
-             export.nb_montants_illisibles))
+             now, len(export.lignes), export.encodage, export.nb_montants_illisibles))
         eid = cur.lastrowid
-        cols = list(export.lignes.columns)
         con.executemany(
-            f"INSERT INTO fr_lignes(export_id, {','.join(cols)}) VALUES (?{',?' * len(cols)})",
-            [(eid, *[None if pd.isna(v) else (int(v) if isinstance(v, float) and c in ('age_j', 'num') else v)
-                     for c, v in zip(cols, row)]) for row in export.lignes.itertuples(index=False)])
+            f"INSERT INTO fr_lignes(empreinte, {','.join(cols)}, premier_export_id, dernier_export_id, present, maj_le) "
+            f"VALUES (?{',?' * len(cols)},?,?,1,?) "
+            f"ON CONFLICT(empreinte) DO UPDATE SET {maj}, dernier_export_id=excluded.dernier_export_id, present=1, "
+            "maj_le=excluded.maj_le",
+            [(row.empreinte, *[_valeur(c, getattr(row, c)) for c in cols], eid, eid, now)
+             for row in export.lignes.itertuples(index=False)])
+        # lignes de la période couverte par l'export qui n'y figurent plus : disparues (pas supprimées)
+        d0, d1 = _date_fr(export.periode_debut), _date_fr(export.periode_fin)
+        if d0 and d1:
+            con.execute(
+                "UPDATE fr_lignes SET present = 0 WHERE dernier_export_id <> ? AND present = 1 "
+                "AND substr(date,7,4)||'-'||substr(date,4,2)||'-'||substr(date,1,2) BETWEEN ? AND ?",
+                (eid, d0.isoformat(), d1.isoformat()))
     export.id = eid
     return eid
+
+
+def dernier_export(con: sqlite3.Connection) -> Export | None:
+    """Métadonnées du dernier export importé (le plus récent par date d'export)."""
+    ex = exports(con)
+    if ex.empty:
+        return None
+    r = ex.iloc[0]
+    return Export(nom=r["nom_fichier"], date_export=date.fromisoformat(r["date_export"]), periode_debut=r["periode_debut"],
+                  periode_fin=r["periode_fin"], encodage="", file_hash="", lignes=pd.DataFrame(), id=int(r["id"]))
 
 
 def exports(con: sqlite3.Connection) -> pd.DataFrame:
@@ -246,19 +272,22 @@ def _statut(r, controle_lance: bool) -> str:
     return "KO"
 
 
-def lignes_export(export_id: int, con: sqlite3.Connection) -> pd.DataFrame:
-    """Lignes d'un export + résultat Oracle + rapproche + statut (règle du .ps1)."""
-    df = pd.read_sql_query("""
-        SELECT l.*, o.nb_oracle, o.montant_oracle, o.nb_interface, o.montant_interface, o.erreur, o.controle_le,
+def lignes(con: sqlite3.Connection, disparues: bool = False) -> pd.DataFrame:
+    """État courant des lignes + résultat Oracle + rapproche + statut (règle du .ps1).
+    disparues=True inclut les lignes absentes du dernier export couvrant leur date."""
+    df = pd.read_sql_query(f"""
+        SELECT l.*, e.nom_fichier AS dernier_export, e.date_export AS date_dernier_export,
+               o.nb_oracle, o.montant_oracle, o.nb_interface, o.montant_interface, o.erreur, o.controle_le,
                EXISTS (SELECT 1 FROM fr_rapprochement_lignes rl JOIN fr_rapprochements r ON r.id = rl.rapprochement_id
                        WHERE rl.empreinte = l.empreinte AND r.annule_le IS NULL) AS rapproche
         FROM fr_lignes l
-        LEFT JOIN fr_oracle o ON o.export_id = l.export_id AND o.folio = l.folio
-                             AND o.fichier_base = l.fichier_base AND o.type = l.type
-        WHERE l.export_id = ?
-        ORDER BY l.num""", con, params=(export_id,))
+        LEFT JOIN fr_exports e ON e.id = l.dernier_export_id
+        LEFT JOIN fr_oracle o ON o.folio = l.folio AND o.fichier_base = l.fichier_base AND o.type = l.type
+        {"" if disparues else "WHERE l.present = 1"}
+        ORDER BY substr(l.date,7,4)||substr(l.date,4,2)||substr(l.date,1,2) DESC, l.folio, l.num""", con)
     df["rapproche"] = df["rapproche"].astype(bool)
-    controle_lance = bool(con.execute("SELECT 1 FROM fr_oracle WHERE export_id = ? LIMIT 1", (export_id,)).fetchone())
+    df["present"] = df["present"].astype(bool)
+    controle_lance = bool(con.execute("SELECT 1 FROM fr_oracle LIMIT 1").fetchone())
     df["ecart_nb_calcule"] = df["amont_nb"] - df["nb_oracle"]
     df["ecart_mt_calcule"] = df["amont_debit"] - df["montant_oracle"]
     df["statut"] = df.apply(_statut, axis=1, controle_lance=controle_lance) if not df.empty else pd.Series(dtype=str)
@@ -410,11 +439,11 @@ def _connexion_oracle():
     return _connect_oracle(cfg), _schema(cfg)
 
 
-def controler_oracle(export_id: int, con: sqlite3.Connection) -> str:
-    """Interroge Oracle pour chaque couple (folio, fichier de base, type) de l'export et mémorise le résultat."""
+def controler_oracle(con: sqlite3.Connection) -> str:
+    """Interroge Oracle pour chaque couple (folio, fichier de base, type) de l'état courant et mémorise le résultat."""
     couples = con.execute(
-        "SELECT DISTINCT folio, fichier_base, type FROM fr_lignes WHERE export_id = ? AND type <> 'AUTRE' "
-        "AND folio <> '' AND fichier_base <> '' ORDER BY 1, 2", (export_id,)).fetchall()
+        "SELECT DISTINCT folio, fichier_base, type FROM fr_lignes WHERE present = 1 AND type <> 'AUTRE' "
+        "AND folio <> '' AND fichier_base <> '' ORDER BY 1, 2").fetchall()
     if not couples:
         return "Aucune ligne contrôlable (types CLIENTS / FOURNISSEURS / GL)."
     ocon, s = _connexion_oracle()
@@ -426,16 +455,16 @@ def controler_oracle(export_id: int, con: sqlite3.Connection) -> str:
             try:
                 cur.execute(SQL_ORACLE[typ].format(s=s), {"folio": folio.strip(), "base": base.strip()})
                 nb_trx, sum_amt, nb_int, sum_int = cur.fetchone() or (None, None, None, None)
-                resultats.append((export_id, folio, base, typ, float(nb_trx or 0), float(sum_amt or 0),
+                resultats.append((folio, base, typ, float(nb_trx or 0), float(sum_amt or 0),
                                   float(nb_int or 0), float(sum_int or 0), None, now))
             except Exception as e:  # noqa: BLE001 — le message Oracle est l'information utile
                 erreurs += 1
-                resultats.append((export_id, folio, base, typ, None, None, None, None, str(e).strip(), now))
+                resultats.append((folio, base, typ, None, None, None, None, str(e).strip(), now))
     with con:
         con.executemany(
-            "INSERT INTO fr_oracle(export_id, folio, fichier_base, type, nb_oracle, montant_oracle, nb_interface, "
-            "montant_interface, erreur, controle_le) VALUES (?,?,?,?,?,?,?,?,?,?) "
-            "ON CONFLICT(export_id, folio, fichier_base, type) DO UPDATE SET nb_oracle=excluded.nb_oracle, "
+            "INSERT INTO fr_oracle(folio, fichier_base, type, nb_oracle, montant_oracle, nb_interface, "
+            "montant_interface, erreur, controle_le) VALUES (?,?,?,?,?,?,?,?,?) "
+            "ON CONFLICT(folio, fichier_base, type) DO UPDATE SET nb_oracle=excluded.nb_oracle, "
             "montant_oracle=excluded.montant_oracle, nb_interface=excluded.nb_interface, "
             "montant_interface=excluded.montant_interface, erreur=excluded.erreur, controle_le=excluded.controle_le",
             resultats)

@@ -14,7 +14,7 @@ def _contexte(tmp_path):
     con = db.connect(tmp_path / "t.db")
     e = fr.lire_export(SAUVEGARDE / "ExportCSV-19-08-2026.csv")
     fr.importer(e, con)
-    lignes = fr.lignes_export(e.id, con)
+    lignes = fr.lignes(con)
     return con, e, lignes
 
 

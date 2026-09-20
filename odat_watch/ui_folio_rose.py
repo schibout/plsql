@@ -3,7 +3,6 @@ rapprochements (manuels et groupes compensés), contrôle Oracle, rapport HTML, 
 from __future__ import annotations
 import contextlib
 import hashlib
-from datetime import date
 from pathlib import Path
 
 import pandas as pd
@@ -17,14 +16,15 @@ from oracle_refresh import CONFIG
 BASE_DIR = Path(__file__).resolve().parent
 DOSSIER_SAUVEGARDE = BASE_DIR.parent / "ControleFolioRose"
 COLS_AFFICHEES = ["folio", "type", "date", "age_j", "fichier", "amont_nb", "amont_debit", "si_nb", "si_debit",
-                  "ecart_nb", "ecart_debit", "nb_oracle", "montant_oracle", "montant_interface", "statut",
-                  "erreur", "rapproche", "commentaire"]
+                  "ecart_nb", "ecart_debit", "ecart_credit", "nb_oracle", "montant_oracle", "montant_interface", "statut",
+                  "erreur", "rapproche", "present", "date_dernier_export", "commentaire"]
 LIBELLES = {"folio": "Folio", "type": "Type", "date": "Date", "age_j": "Âge (j)", "fichier": "Fichier transmis",
             "amont_nb": "Amont nb", "amont_debit": "Amont débit", "si_nb": "SI nb", "si_debit": "SI débit",
             "ecart_nb": "Écart nb", "ecart_debit": "Écart débit", "nb_oracle": "Nb Oracle",
             "montant_oracle": "Montant Oracle", "montant_interface": "Montant interface", "statut": "Statut",
-            "erreur": "Erreur Oracle", "rapproche": "Rapproché", "commentaire": "Commentaire"}
-COLS_MONTANTS = ("Amont débit", "SI débit", "Écart débit", "Montant Oracle", "Montant interface")
+            "erreur": "Erreur Oracle", "rapproche": "Rapproché", "commentaire": "Commentaire", "ecart_credit": "Écart crédit",
+            "present": "Présente", "date_dernier_export": "Dernier export"}
+COLS_MONTANTS = ("Amont débit", "SI débit", "Écart débit", "Écart crédit", "Montant Oracle", "Montant interface")
 COLS_NB = ("Âge (j)", "Amont nb", "SI nb", "Écart nb", "Nb Oracle")
 
 
@@ -58,6 +58,8 @@ def _style(df: pd.DataFrame):
     def ligne(r):
         if r["Rapproché"]:
             return ["background-color: #EAF7EE; color: #7A8794"] * len(r)
+        if "Présente" in r and not r["Présente"]:
+            return ["color: #9AA3AF; font-style: italic"] * len(r)
         if r["Statut"] == "KO":
             return ["background-color: #FDECEC"] * len(r)
         return [""] * len(r)
@@ -68,7 +70,9 @@ def _style(df: pd.DataFrame):
 # donc triables, et les NULL Oracle s'affichent vides (un Styler les rendrait « None »).
 COLONNES_CONFIG = {**{c: st.column_config.NumberColumn(c, format="euro") for c in COLS_MONTANTS},
                    **{c: st.column_config.NumberColumn(c, format="%d") for c in COLS_NB},
-                   "Rapproché": st.column_config.CheckboxColumn("Rapproché", disabled=True)}
+                   "Rapproché": st.column_config.CheckboxColumn("Rapproché", disabled=True),
+                   "Présente": st.column_config.CheckboxColumn("Présente", disabled=True,
+                                                               help="Décochée : absente du dernier export couvrant sa date")}
 
 
 def render(kpi):
@@ -93,12 +97,12 @@ def render(kpi):
         if ex.empty:
             st.info("Aucun export importé. Déposez un fichier ExportCSV-*.csv ci-dessus.")
             return
-        libelles = {int(r.id): f"{r.date_export} · {r.periode_debut} → {r.periode_fin} · {r.nb_lignes} lignes · {r.nom_fichier}"
-                    for r in ex.itertuples()}
-        eid = st.selectbox("Export", list(libelles), format_func=libelles.get, key="fr_export")
-        export = _export_obj(eid, ex)
-        lignes = fr.lignes_export(eid, con)
-        groupes = fr.groupes_compenses(lignes)
+        export = fr.dernier_export(con)
+        st.caption(f"État courant des lignes (clé : folio + date + fichier) · dernier export : {export.date_export:%d/%m/%Y} "
+                   f"· période {export.periode_debut} → {export.periode_fin} · {len(ex)} import(s)")
+        voir_disparues = st.checkbox("Afficher aussi les lignes disparues des derniers exports", False, key="fr_disparues")
+        lignes = fr.lignes(con, disparues=voir_disparues)
+        groupes = fr.groupes_compenses(lignes[lignes["present"]])
 
         # ------------------------------------------------------------ tuiles
         c = st.columns(6)
@@ -117,6 +121,7 @@ def render(kpi):
         folios = f3.multiselect("Folio", sorted(lignes["folio"].unique()), key="fr_folios")
         masquer = f4.checkbox("Masquer les rapprochées", True, key="fr_masquer")
         vue = lignes.copy()
+        eid = export.id
         if types:
             vue = vue[vue["type"].isin(types)]
         if statuts:
@@ -200,7 +205,7 @@ def render(kpi):
         if o1.button("🅾 Contrôler dans Oracle", disabled=not CONFIG.exists(), use_container_width=True, key="fr_oracle"):
             with st.spinner("Interrogation Oracle…"):
                 try:
-                    st.session_state["fr_oracle_msg"] = fr.controler_oracle(eid, con)
+                    st.session_state["fr_oracle_msg"] = fr.controler_oracle(con)
                     st.rerun()
                 except (Exception, SystemExit) as e:  # noqa: BLE001 — même mécanique que l'onglet Matin
                     st.error(f"Contrôle impossible : {e}")
@@ -248,11 +253,3 @@ def _panneau_flottant(n: int, sommes: dict, ok: bool) -> None:
 <tr><td>Écart crédit</td><td class="v">{_eur(sommes['ecart_credit'])}</td></tr>
 <tr><td>Écart nb pièces</td><td class="v">{sommes['ecart_nb']:g}</td></tr></table>
 <div style="margin-top:.35rem">{etat}</div></div>""", unsafe_allow_html=True)
-
-
-def _export_obj(eid: int, ex: pd.DataFrame) -> fr.Export:
-    """Reconstitue un Export (métadonnées) depuis la table, pour le rapport."""
-    r = ex[ex["id"] == eid].iloc[0]
-    return fr.Export(nom=r["nom_fichier"], date_export=date.fromisoformat(r["date_export"]),
-                     periode_debut=r["periode_debut"], periode_fin=r["periode_fin"], encodage="", file_hash="",
-                     lignes=pd.DataFrame(), id=eid)
