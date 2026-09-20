@@ -267,29 +267,48 @@ def lignes_export(export_id: int, con: sqlite3.Connection) -> pd.DataFrame:
 
 # ------------------------------------------------------------------ rapprochements
 
+ECARTS = ("ecart_debit", "ecart_credit", "ecart_nb")   # les trois écarts qui doivent se compenser
+TOL_NB = 0.5                                              # nombre de pièces : entier, tolérance d'arrondi
+
+
+def compensee(sommes: dict) -> bool:
+    """Vrai si les trois écarts (débit, crédit, nombre de pièces) sont nuls."""
+    return (abs(sommes.get("ecart_debit", 0)) < TOL and abs(sommes.get("ecart_credit", 0)) < TOL
+            and abs(sommes.get("ecart_nb", 0)) < TOL_NB)
+
+
 def groupes_compenses(lignes: pd.DataFrame) -> pd.DataFrame:
-    """Par folio + fichier de base, lignes non rapprochées : nb ≥ 2 et somme des écarts débit ≈ 0."""
+    """Par folio + fichier de base, lignes non rapprochées : nb ≥ 2 et les trois écarts ≈ 0."""
     libres = lignes[~lignes["rapproche"].astype(bool)]
+    colonnes = ["folio", "fichier_base", "nb", "somme", "somme_credit", "somme_nb", "empreintes"]
     if libres.empty:
-        return pd.DataFrame(columns=["folio", "fichier_base", "nb", "somme", "empreintes"])
-    libres = libres.assign(ecart_debit=libres["ecart_debit"].fillna(0))
+        return pd.DataFrame(columns=colonnes)
+    libres = libres.assign(**{c: libres[c].fillna(0) for c in ECARTS})
     g = (libres.groupby(["folio", "fichier_base"])
-         .agg(nb=("empreinte", "size"), somme=("ecart_debit", "sum"), empreintes=("empreinte", list))
+         .agg(nb=("empreinte", "size"), somme=("ecart_debit", "sum"), somme_credit=("ecart_credit", "sum"),
+              somme_nb=("ecart_nb", "sum"), empreintes=("empreinte", list))
          .reset_index())
-    g = g[(g["nb"] >= 2) & (g["somme"].abs() < TOL)].reset_index(drop=True)
-    return g
+    ok = (g["nb"] >= 2) & (g["somme"].abs() < TOL) & (g["somme_credit"].abs() < TOL) & (g["somme_nb"].abs() < TOL_NB)
+    return g[ok].reset_index(drop=True)[colonnes]
+
+
+def sommes_selection(lignes: pd.DataFrame, empreintes: list[str]) -> dict:
+    """Écarts débit / crédit / nombre de pièces cumulés sur les lignes sélectionnées."""
+    sel = lignes.loc[lignes["empreinte"].isin(empreintes), list(ECARTS)].fillna(0)
+    return {c: float(sel[c].sum()) for c in ECARTS}
 
 
 def somme_selection(lignes: pd.DataFrame, empreintes: list[str]) -> float:
-    return float(lignes.loc[lignes["empreinte"].isin(empreintes), "ecart_debit"].sum())
+    return sommes_selection(lignes, empreintes)["ecart_debit"]
 
 
-def _ecarts_par_empreinte(empreintes: list[str], con: sqlite3.Connection) -> dict[str, float]:
+def _ecarts_par_empreinte(empreintes: list[str], con: sqlite3.Connection) -> dict[str, dict]:
     q = ",".join("?" * len(empreintes))
     # une empreinte détermine ses montants par construction (folio|date|fichier|amont|si) : n'importe quelle ligne convient
-    rows = con.execute(f"SELECT empreinte, MAX(ecart_debit) FROM fr_lignes WHERE empreinte IN ({q}) "
-                       "GROUP BY empreinte", empreintes).fetchall()
-    return {r[0]: float(r[1] or 0) for r in rows}
+    rows = con.execute(f"SELECT empreinte, MAX(ecart_debit), MAX(ecart_credit), MAX(ecart_nb) FROM fr_lignes "
+                       f"WHERE empreinte IN ({q}) GROUP BY empreinte", empreintes).fetchall()
+    return {r[0]: {"ecart_debit": float(r[1] or 0), "ecart_credit": float(r[2] or 0), "ecart_nb": float(r[3] or 0)}
+            for r in rows}
 
 
 def rapprocher(empreintes: list[str], commentaire: str, con: sqlite3.Connection) -> int:
@@ -299,9 +318,11 @@ def rapprocher(empreintes: list[str], commentaire: str, con: sqlite3.Connection)
     ecarts = _ecarts_par_empreinte(empreintes, con)
     if len(ecarts) != len(empreintes):
         raise ValueError("Ligne inconnue dans la sélection.")
-    somme = sum(ecarts.values())
-    if abs(somme) >= TOL:
-        raise ValueError(f"La somme des écarts n'est pas nulle ({somme:,.2f}).")
+    sommes = {c: sum(e[c] for e in ecarts.values()) for c in ECARTS}
+    somme = sommes["ecart_debit"]
+    if not compensee(sommes):
+        raise ValueError("La somme des écarts n'est pas nulle (débit {:,.2f}, crédit {:,.2f}, pièces {:g}).".format(
+            sommes["ecart_debit"], sommes["ecart_credit"], sommes["ecart_nb"]))
     q = ",".join("?" * len(empreintes))
     deja = con.execute(f"SELECT COUNT(*) FROM fr_rapprochement_lignes rl JOIN fr_rapprochements r "
                        f"ON r.id = rl.rapprochement_id WHERE r.annule_le IS NULL AND rl.empreinte IN ({q})",

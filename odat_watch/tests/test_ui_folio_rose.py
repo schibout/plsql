@@ -51,8 +51,8 @@ def test_selection_et_rapprochement(app):
     lignes = fr.lignes_export(eid, con)
     # deux lignes du même folio dont on force la compensation
     a, b = lignes.index[:2]
-    con.execute("UPDATE fr_lignes SET folio='ZZZ', fichier_base='F', ecart_debit=100 WHERE empreinte=?", (lignes.loc[a, "empreinte"],))
-    con.execute("UPDATE fr_lignes SET folio='ZZZ', fichier_base='F', ecart_debit=-100 WHERE empreinte=?", (lignes.loc[b, "empreinte"],))
+    con.execute("UPDATE fr_lignes SET folio='ZZZ', fichier_base='F', ecart_debit=100, ecart_credit=100, ecart_nb=1 WHERE empreinte=?", (lignes.loc[a, "empreinte"],))
+    con.execute("UPDATE fr_lignes SET folio='ZZZ', fichier_base='F', ecart_debit=-100, ecart_credit=-100, ecart_nb=-1 WHERE empreinte=?", (lignes.loc[b, "empreinte"],))
     con.commit()
     at.session_state["fr_folios"] = ["ZZZ"]
     at.run()

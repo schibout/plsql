@@ -61,8 +61,9 @@ def test_importer_valeurs_typees(tmp_path):
 
 
 def _df(*lignes):
-    """(empreinte, folio, base, ecart, rapproche)"""
-    return pd.DataFrame(lignes, columns=["empreinte", "folio", "fichier_base", "ecart_debit", "rapproche"])
+    """(empreinte, folio, base, ecart_debit, rapproche[, ecart_credit, ecart_nb]) — crédit = débit et nb = 0 par défaut"""
+    rows = [(e, f, b, d, r, *(rest if rest else (d, 0.0))) for e, f, b, d, r, *rest in lignes]
+    return pd.DataFrame(rows, columns=["empreinte", "folio", "fichier_base", "ecart_debit", "rapproche", "ecart_credit", "ecart_nb"])
 
 
 def test_groupes_compenses():
@@ -116,6 +117,17 @@ def test_somme_selection():
     df = _df(("a", "X", "F", 1.5, False), ("b", "X", "F", -1.5, False), ("c", "X", "F", 2.0, False))
     assert fr.somme_selection(df, ["a", "b"]) == pytest.approx(0.0)
     assert fr.somme_selection(df, ["a", "c"]) == pytest.approx(3.5)
+    s = fr.sommes_selection(df, ["a", "b"])
+    assert s == {"ecart_debit": pytest.approx(0.0), "ecart_credit": pytest.approx(0.0), "ecart_nb": 0.0}
+    assert fr.compensee(s) and not fr.compensee({"ecart_debit": 0, "ecart_credit": 0, "ecart_nb": 1})
+
+
+def test_groupe_non_compense_si_credit_ou_pieces_differents():
+    # débit à zéro mais crédit ou nombre de pièces non compensés : pas proposé
+    df = _df(("a", "X", "F", 10.0, False, 10.0, 1.0), ("b", "X", "F", -10.0, False, -5.0, -1.0),
+             ("c", "Y", "F", 10.0, False, 10.0, 1.0), ("d", "Y", "F", -10.0, False, -10.0, 0.0),
+             ("e", "Z", "F", 10.0, False, 10.0, 1.0), ("f", "Z", "F", -10.0, False, -10.0, -1.0))
+    assert list(fr.groupes_compenses(df)["folio"]) == ["Z"]
 
 
 class _FauxCurseur:

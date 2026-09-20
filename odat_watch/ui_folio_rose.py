@@ -143,11 +143,15 @@ def render(kpi):
         rows = list(ev.selection.rows) if ev and ev.selection else []
         sel_idx = [i for i in rows if 0 <= i < len(vue)]
         sel = vue.iloc[sel_idx]
-        somme = fr.somme_selection(vue, sel["empreinte"].tolist())
+        sommes = fr.sommes_selection(vue, sel["empreinte"].tolist())
+        ok = len(sel) >= 2 and fr.compensee(sommes)
+        _panneau_flottant(len(sel), sommes, ok)
         if sel.empty:
-            st.caption("Cochez des lignes : la somme de leurs écarts débit s'affiche ici. À 0, elles peuvent être rapprochées.")
-        elif len(sel) >= 2 and abs(somme) < fr.TOL:
-            st.success(f"✔ {len(sel)} lignes sélectionnées · somme des écarts débit = {_eur(somme)} — compensé, rapprochement possible.")
+            st.caption("Cochez des lignes : les écarts débit, crédit et nombre de pièces se cumulent dans le panneau "
+                       "en bas de l'écran. Quand les trois sont à 0, les lignes peuvent être rapprochées.")
+        elif ok:
+            st.success(f"✔ {len(sel)} lignes sélectionnées · écarts débit {_eur(sommes['ecart_debit'])} · "
+                       f"crédit {_eur(sommes['ecart_credit'])} · pièces {sommes['ecart_nb']:g} — compensé, rapprochement possible.")
             com = st.text_input("Commentaire (optionnel)", key="fr_com")
             if st.button("🔗 Rapprocher ces lignes", type="primary", key="fr_rapprocher"):
                 try:
@@ -157,7 +161,8 @@ def render(kpi):
                 except ValueError as e:
                     st.error(str(e))
         else:
-            st.info(f"{len(sel)} ligne(s) sélectionnée(s) · somme des écarts débit = {_eur(somme)}"
+            st.info(f"{len(sel)} ligne(s) sélectionnée(s) · écarts débit {_eur(sommes['ecart_debit'])} · "
+                    f"crédit {_eur(sommes['ecart_credit'])} · pièces {sommes['ecart_nb']:g}"
                     + ("" if len(sel) >= 2 else " · sélectionnez au moins deux lignes"))
         msg = st.session_state.pop("fr_msg", None)
         if msg:
@@ -179,7 +184,8 @@ def render(kpi):
                 st.rerun()
             for i, g in groupes.iterrows():
                 a, b = st.columns([5, 1])
-                a.write(f"**{g['folio']}** · `{g['fichier_base']}` · {g['nb']} lignes · somme {_eur(g['somme'])}")
+                a.write(f"**{g['folio']}** · `{g['fichier_base']}` · {g['nb']} lignes · débit {_eur(g['somme'])} · "
+                        f"crédit {_eur(g['somme_credit'])} · pièces {g['somme_nb']:g}")
                 if b.button("Rapprocher", key=f"fr_grp_{i}"):
                     try:
                         fr.rapprocher(list(g["empreintes"]), "groupe compensé", con)
@@ -224,6 +230,24 @@ def render(kpi):
                 if not x["annule_le"] and b.button("Annuler", key=f"fr_ann_{x['id']}"):
                     fr.annuler_rapprochement(int(x["id"]), con)
                     st.rerun()
+
+
+def _panneau_flottant(n: int, sommes: dict, ok: bool) -> None:
+    """Compteur toujours visible (position fixe en bas à droite) : les trois écarts de la sélection."""
+    if n == 0:
+        return
+    fond, bord, texte = ("#EAF7EE", "#1F9D55", "#0B6B3A") if ok else ("#FFF8E1", "#D9A400", "#5B4A00")
+    etat = "✔ compensé — rapprochement possible" if ok else ("sélectionnez au moins deux lignes" if n < 2 else "écarts non nuls")
+    st.markdown(f"""
+<style>.fr-flot {{position:fixed; right:24px; bottom:24px; z-index:1000; background:{fond}; border:2px solid {bord};
+  color:{texte}; border-radius:14px; padding:.7rem 1.1rem; box-shadow:0 8px 24px rgba(16,24,40,.18); font-size:.9rem; min-width:300px;}}
+.fr-flot b {{font-size:1.05rem;}} .fr-flot .v {{font-variant-numeric:tabular-nums; font-weight:700;}}
+.fr-flot table {{border-collapse:collapse; margin-top:.3rem;}} .fr-flot td {{padding:.05rem .6rem .05rem 0;}}</style>
+<div class="fr-flot"><b>{n} ligne(s) sélectionnée(s)</b><table>
+<tr><td>Écart débit</td><td class="v">{_eur(sommes['ecart_debit'])}</td></tr>
+<tr><td>Écart crédit</td><td class="v">{_eur(sommes['ecart_credit'])}</td></tr>
+<tr><td>Écart nb pièces</td><td class="v">{sommes['ecart_nb']:g}</td></tr></table>
+<div style="margin-top:.35rem">{etat}</div></div>""", unsafe_allow_html=True)
 
 
 def _export_obj(eid: int, ex: pd.DataFrame) -> fr.Export:
