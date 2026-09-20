@@ -22,7 +22,7 @@ Le contrôle suit chaque virement tout au long de son parcours et s'assure qu'à
 
 **Troisième temps — la trésorerie a-t-elle bien tout reçu ?** On compare la liste des virements transmis à la banque avec la liste des virements que la trésorerie a importés dans son outil (Quartz) le même jour.
 
-**En parallèle — un même envoi a-t-il été transmis plusieurs fois ?** Tous les fichiers transmis à la banque sur la journée sont comparés entre eux : deux envois portant le même compte payeur et exactement les mêmes virements sont signalés comme un doublon, car les bénéficiaires seraient alors payés deux fois.
+**En parallèle — un même envoi a-t-il été transmis plusieurs fois ?** Tous les fichiers transmis à la banque sur la journée sont comparés entre eux : deux envois portant le même compte payeur et exactement les mêmes virements sont signalés comme un doublon, car les bénéficiaires seraient alors payés deux fois. La recherche de doublons est complétée par : les envois qui se recouvrent partiellement, les virements présents dans plusieurs envois du jour, les virements répétés dans un même envoi, les envois déjà transmis un jour précédent, et les fichiers d'origine rejoués. Des contrôles de forme (signature, compte payeur, IBAN, montants) complètent l'ensemble.
 
 ---
 
@@ -35,6 +35,12 @@ Le contrôle suit chaque virement tout au long de son parcours et s'assure qu'à
 | Montants et volumes sur les envois regroupés vers la banque | 320 envois | **À examiner** (2) |
 | Comparaison virement par virement (bénéficiaire, montant, banque) | 3360 virements | **Conforme** |
 | Envois transmis plusieurs fois à la banque | 399 envois | **À examiner** (15) |
+| Envois se recouvrant partiellement | 399 envois | **Conforme** |
+| Virements présents dans plusieurs envois du jour | 399 envois | **Conforme** |
+| Virements en double au sein d'un même envoi | 399 envois | **Conforme** |
+| Envois ou virements déjà transmis un jour précédent | — | *Non réalisé : aucune journée précédente disponible* |
+| Fichiers d'origine rejoués | 399 envois | **Conforme** |
+| Contrôles de forme sur les envois | 399 envois | **Conforme** |
 | Rapprochement avec le retour de la trésorerie | 4229 repris / 4229 envoyés | **Conforme** |
 
 Montant total transmis à la banque sur la journée : **172 517 516,21 EUR** pour **3360 virements**, auxquels s'ajoutent **869 virements** pour **178 172,09 EUR** transmis en double (voir ci-dessous).
@@ -1057,3 +1063,9 @@ Les fichiers ci-dessous accompagnent cette synthèse et contiennent le détail c
 - **`controle_quartz_ecarts.csv`** — les virements qui n'ont pas pu être appariés avec le retour de la trésorerie. **Un fichier vide signifie que le rapprochement est parfait**.
 - **`controle_doublons_ack.csv`** — les envois vers la banque dont le contenu est identique à un envoi déjà transmis sur la journée. **Un fichier vide signifie qu'aucun envoi n'a été transmis en double**.
 - **`controle_doublons_virements.csv`** — le détail, virement par virement (bénéficiaire, IBAN, BIC, montant), des envois transmis en double : la liste à communiquer à la banque pour les demandes de retour de fonds.
+- **`controle_doublons_croises.csv`** — envois se recouvrant partiellement. **Un fichier vide est un bon résultat.**
+- **`controle_doublons_virements_jour.csv`** — virements présents dans plusieurs envois du jour. **Un fichier vide est un bon résultat.**
+- **`controle_doublons_intra_envoi.csv`** — virements en double au sein d'un même envoi. **Un fichier vide est un bon résultat.**
+- **`controle_doublons_historique.csv`** — envois ou virements déjà transmis un jour précédent. **Un fichier vide est un bon résultat.**
+- **`controle_doublons_sources.csv`** — fichiers d'origine rejoués. **Un fichier vide est un bon résultat.**
+- **`controle_sanite.csv`** — contrôles de forme sur les envois. **Un fichier vide est un bon résultat.**

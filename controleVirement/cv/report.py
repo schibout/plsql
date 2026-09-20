@@ -79,13 +79,71 @@ def _ecrit_csv(chemin, lignes):
         writer.writerows(lignes)
 
 
+# Controles complementaires (cle dans `extras`) -> (nom du CSV, titre metier, explication)
+CONTROLES_PLUS = {
+    "chevauchements": ("controle_doublons_croises.csv", "Envois se recouvrant partiellement",
+                       "Deux envois vers la banque, pour le même compte payeur, contiennent des virements "
+                       "identiques (même bénéficiaire, même montant) sans être strictement identiques. "
+                       "Cela ressemble à un rejeu partiel : les virements communs risquent d'être payés deux fois."),
+    "virements_multi": ("controle_doublons_virements_jour.csv", "Virements présents dans plusieurs envois du jour",
+                        "Un même virement (payeur, bénéficiaire, IBAN, montant) figure dans plusieurs envois "
+                        "distincts de la journée. Sauf justification, le bénéficiaire sera payé plusieurs fois."),
+    "intra": ("controle_doublons_intra_envoi.csv", "Virements en double au sein d'un même envoi",
+              "Un même bénéficiaire reçoit deux fois le même montant dans un même envoi. Deux factures de "
+              "même montant sont possibles ; le cas est signalé « à vérifier », et devient bloquant si la "
+              "référence de paiement est la même."),
+    "historique": ("controle_doublons_historique.csv", "Envois ou virements déjà transmis un jour précédent",
+                   "Les envois de la journée ont été comparés aux journées précédentes disponibles dans le "
+                   "dossier de contrôle. Un envoi identique (ou un fichier de même nom) déjà transmis est "
+                   "bloquant ; un virement isolé déjà payé peut être un paiement récurrent : à vérifier."),
+    "sources": ("controle_doublons_sources.csv", "Fichiers d'origine rejoués",
+                "Un fichier préparé (DK_FIN01) apparaît dans plusieurs instances du flux, ou est référencé "
+                "plusieurs fois par Oracle, ou deux fichiers de noms différents ont exactement le même "
+                "contenu : le flux amont a probablement été relancé."),
+    "sanite": ("controle_sanite.csv", "Contrôles de forme sur les envois",
+               "Signature PGP présente, compte payeur conforme à Oracle, date de l'envoi, pied de fichier, "
+               "code retour du traitement, montants positifs, IBAN valides, BIC renseignés."),
+}
+
+
+def _gravite(lignes, gravite):
+    return [l for l in lignes if l.get("gravite") == gravite]
+
+
+def _table_plus(lignes):
+    """Tableau markdown generique d'un controle complementaire (montants *_cts en euros)."""
+    champs = [c for c in lignes[0].keys() if c != "gravite"]
+    out = ["| " + " | ".join(champs) + " |", "|" + "---|" * len(champs)]
+    for l in lignes[:200]:
+        cellules = []
+        for c in champs:
+            v = l.get(c, "")
+            if c.endswith("_cts") and v not in ("", None):
+                v = _euros(int(v))
+            cellules.append(str(v).replace("|", "/"))
+        out.append("| " + " | ".join(cellules) + " |")
+    if len(lignes) > 200:
+        out.append(f"| … | {len(lignes) - 200} ligne(s) supplémentaire(s) dans le CSV |")
+    return out + [""]
+
+
 def write_reports(dossier, fichiers, totaux_source, totaux_edf, ecarts,
-                  quartz_totaux=None, quartz_ecarts=None, doublons=None, doublons_detail=None):
+                  quartz_totaux=None, quartz_ecarts=None, doublons=None, doublons_detail=None,
+                  extras=None):
     quartz_ecarts = quartz_ecarts or []
     doublons = doublons or []
     doublons_detail = doublons_detail or []
+    extras = extras or {}
+    cible_seul = bool(extras.get("cible_seul"))
+    plus = {cle: list(extras.get(cle) or []) for cle in CONTROLES_PLUS}
+    plus_ko = {cle: _gravite(l, "KO") for cle, l in plus.items()}
+    plus_verif = {cle: _gravite(l, "A_VERIFIER") for cle, l in plus.items()}
+    nb_plus_ko = sum(len(l) for l in plus_ko.values())
+    nb_plus_verif = sum(len(l) for l in plus_verif.values())
     dossier = Path(dossier)
     dossier.mkdir(parents=True, exist_ok=True)
+    for cle, (nom_csv, _, _) in CONTROLES_PLUS.items():
+        _ecrit_csv(dossier / nom_csv, plus[cle])
 
     _ecrit_csv(dossier / "controle_fichiers.csv", fichiers)
     _ecrit_csv(dossier / "controle_totaux_source.csv", totaux_source)
@@ -103,7 +161,7 @@ def write_reports(dossier, fichiers, totaux_source, totaux_edf, ecarts,
         quartz_totaux["statut_lignes"] != "OK" or quartz_totaux["statut_montant"] != "OK"
         or bool(quartz_ecarts))
     tout_ok = (not fichiers_ko and not src_ko and not edf_ko and not ecarts and not quartz_ko
-               and not doublons)
+               and not doublons and not nb_plus_ko)
     nb_doublons_vir = sum(int(d["nb_virements"]) for d in doublons)
     montant_doublons = sum(int(d["montant_cts"]) for d in doublons)
 
@@ -144,6 +202,19 @@ def write_reports(dossier, fichiers, totaux_source, totaux_edf, ecarts,
             "« Points d'attention » ci-dessous, avec pour chacun son explication et la "
             "vérification à mener.",
         ]
+    if cible_seul:
+        lignes_md += [
+            "",
+            "> ℹ️ **Contrôle réalisé sur le dossier cible seul** : le dossier source (fichiers DK en "
+            "euros) n'a pas été fourni. Les vérifications portent sur les fichiers préparés (DK_FIN01), "
+            "les envois à la banque, le CSV Oracle et, le cas échéant, le retour de la trésorerie.",
+        ]
+    if nb_plus_verif and tout_ok:
+        lignes_md += [
+            "",
+            f"> 🟠 **{nb_plus_verif} point(s) à vérifier** ont toutefois été relevés (non bloquants) : "
+            "voir la section « Points à vérifier » ci-dessous.",
+        ]
     lignes_md += ["", "---", "", "## 1. Ce que vérifie ce contrôle", ""]
     lignes_md += [
         "Le contrôle suit chaque virement tout au long de son parcours et s'assure qu'à aucune "
@@ -171,7 +242,11 @@ def write_reports(dossier, fichiers, totaux_source, totaux_edf, ecarts,
         "**En parallèle — un même envoi a-t-il été transmis plusieurs fois ?** Tous les "
         "fichiers transmis à la banque sur la journée sont comparés entre eux : deux envois "
         "portant le même compte payeur et exactement les mêmes virements sont signalés comme "
-        "un doublon, car les bénéficiaires seraient alors payés deux fois.",
+        "un doublon, car les bénéficiaires seraient alors payés deux fois. La recherche de doublons "
+        "est complétée par : les envois qui se recouvrent partiellement, les virements présents dans "
+        "plusieurs envois du jour, les virements répétés dans un même envoi, les envois déjà transmis "
+        "un jour précédent, et les fichiers d'origine rejoués. Des contrôles de forme (signature, "
+        "compte payeur, IBAN, montants) complètent l'ensemble.",
         "",
         "---",
         "",
@@ -186,6 +261,16 @@ def write_reports(dossier, fichiers, totaux_source, totaux_edf, ecarts,
         f"{nb_envoye if nb_envoye is not None else len(totaux_edf)} virements | {statut(len(ecarts))} |",
         f"| Envois transmis plusieurs fois à la banque | {len(fichiers_ack)} envois | {statut(len(doublons))} |",
     ]
+    for cle, (_, titre, _) in CONTROLES_PLUS.items():
+        if cle == "historique" and not extras.get("historique_jours"):
+            lignes_md.append(f"| {titre} | — | *Non réalisé : aucune journée précédente disponible* |")
+            continue
+        volume = (f"{extras.get('historique_jours')} journée(s) comparée(s)" if cle == "historique"
+                  else f"{len(fichiers_ack)} envois")
+        res = statut(len(plus_ko[cle]))
+        if plus_verif[cle]:
+            res += f" — 🟠 {len(plus_verif[cle])} à vérifier"
+        lignes_md.append(f"| {titre} | {volume} | {res} |")
     if quartz_totaux:
         lignes_md.append(
             f"| Rapprochement avec le retour de la trésorerie | "
@@ -231,6 +316,15 @@ def write_reports(dossier, fichiers, totaux_source, totaux_edf, ecarts,
 
     if not tout_ok:
         lignes_md += ["---", "", "## 3. Points d'attention", ""]
+
+    for cle, (nom_csv, titre, explication) in CONTROLES_PLUS.items():
+        if plus_ko[cle]:
+            total = _somme(plus_ko[cle], "montant_cts") if cle != "sanite" else None
+            lignes_md += [f"### {titre}", "", explication, "",
+                          f"**{len(plus_ko[cle])} constat(s) bloquant(s)**"
+                          + (f", pour **{_euros(total)}**" if total else "")
+                          + f" — détail complet dans `{nom_csv}`.", ""]
+            lignes_md += _table_plus(plus_ko[cle])
 
     if doublons:
         lignes_md += [
@@ -381,6 +475,17 @@ def write_reports(dossier, fichiers, totaux_source, totaux_edf, ecarts,
         ]
         lignes_md.append("")
 
+    if nb_plus_verif:
+        lignes_md += ["---", "", "## Points à vérifier (non bloquants)", "",
+                      "Les constats ci-dessous ne sont pas des écarts avérés : ils correspondent à des "
+                      "situations qui peuvent être légitimes (paiement récurrent, deux factures de même "
+                      "montant) mais qui méritent un regard. Ils n'empêchent pas la clôture du contrôle.", ""]
+        for cle, (nom_csv, titre, explication) in CONTROLES_PLUS.items():
+            if plus_verif[cle]:
+                lignes_md += [f"### {titre}", "", explication, "",
+                              f"**{len(plus_verif[cle])} constat(s) à vérifier** — détail dans `{nom_csv}`.", ""]
+                lignes_md += _table_plus(plus_verif[cle])
+
     types_presents = {e["type_ecart"] for e in list(ecarts) + list(quartz_ecarts)}
     types_connus = [t for t in types_presents if t in LIBELLES_ECARTS]
     if types_connus:
@@ -443,14 +548,18 @@ def write_reports(dossier, fichiers, totaux_source, totaux_edf, ecarts,
         "- **`controle_doublons_virements.csv`** — le détail, virement par virement "
         "(bénéficiaire, IBAN, BIC, montant), des envois transmis en double : la liste à "
         "communiquer à la banque pour les demandes de retour de fonds.",
-        "",
     ]
+    lignes_md += [f"- **`{nom_csv}`** — {titre.lower()}. **Un fichier vide est un bon résultat.**"
+                  for nom_csv, titre, _ in CONTROLES_PLUS.values()]
+    lignes_md.append("")
 
     (dossier / "synthese.md").write_text("\n".join(lignes_md), encoding="utf-8")
 
     # Version courte : resultat, chiffres cles, un point d'attention par ligne, sans detail
     simple = ["# Contrôle des virements — synthèse rapide", ""]
     simple.append("**Résultat : ✅ Conforme**" if tout_ok else "**Résultat : ⚠️ À examiner**")
+    if cible_seul:
+        simple.append("*(contrôle sur le dossier cible seul : dossier source non fourni)*")
     simple.append("")
     if montant_envoye is not None:
         simple.append(f"- Transmis à la banque : **{nb_envoye} virements** pour "
@@ -481,12 +590,19 @@ def write_reports(dossier, fichiers, totaux_source, totaux_edf, ecarts,
                       f"{_euros(abs(quartz_totaux['montant_quartz_cts'] - quartz_totaux['montant_cible_cts']))}).")
     if anomalies_euro:
         points.append(f"**{len(anomalies_euro)} fichier(s)** avec une anomalie de devise.")
+    for cle, (_, titre, _) in CONTROLES_PLUS.items():
+        if plus_ko[cle]:
+            points.append(f"**{titre}** : {len(plus_ko[cle])} constat(s) bloquant(s).")
     if points:
         simple += ["## Points d'attention", ""] + [f"- {pt}" for pt in points] + [""]
         simple.append("Chaque point est détaillé dans `synthese.md` et dans les fichiers CSV du dossier.")
     else:
         simple.append("Aucune anomalie : tous les virements préparés ont été transmis une seule fois, "
                       "sans perte ni écart. Aucune action attendue.")
+    a_verifier = [f"- {titre} : {len(plus_verif[cle])}" for cle, (_, titre, _) in CONTROLES_PLUS.items()
+                  if plus_verif[cle]]
+    if a_verifier:
+        simple += ["", "## Points à vérifier (non bloquants)", ""] + a_verifier
     simple.append("")
     (dossier / "synthese_simple.md").write_text("\n".join(simple), encoding="utf-8")
     return tout_ok

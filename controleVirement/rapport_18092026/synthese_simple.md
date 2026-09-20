@@ -6,3 +6,7 @@
 - Retour trésorerie : non fourni (rapprochement non réalisé)
 
 Aucune anomalie : tous les virements préparés ont été transmis une seule fois, sans perte ni écart. Aucune action attendue.
+
+## Points à vérifier (non bloquants)
+
+- Envois ou virements déjà transmis un jour précédent : 1

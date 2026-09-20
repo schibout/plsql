@@ -5,7 +5,9 @@ def nom_dk_depuis_fin01(nom: str) -> str:
     return nom.replace("DK_FIN01_", "DK_", 1)
 
 
-def controle_fichiers(guid, dk_names, dkfin01_source, dkfin01_cible, ack_names, oracle_rows):
+def controle_fichiers(guid, dk_names, dkfin01_source, dkfin01_cible, ack_names, oracle_rows,
+                      cible_seul=False):
+    """cible_seul : le dossier source n'est pas fourni, on n'attend ni DK ni DK_FIN01 cote source."""
     lignes = []
 
     def ajoute(categorie, fichier, present, detail=""):
@@ -18,9 +20,10 @@ def controle_fichiers(guid, dk_names, dkfin01_source, dkfin01_cible, ack_names, 
         })
 
     for row in oracle_rows:
-        dk = nom_dk_depuis_fin01(row.nom_fichier_source)
-        ajoute("DK", dk, dk in dk_names, "attendu via Oracle")
-        ajoute("DK_FIN01_source", row.nom_fichier_source, row.nom_fichier_source in dkfin01_source)
+        if not cible_seul:
+            dk = nom_dk_depuis_fin01(row.nom_fichier_source)
+            ajoute("DK", dk, dk in dk_names, "attendu via Oracle")
+            ajoute("DK_FIN01_source", row.nom_fichier_source, row.nom_fichier_source in dkfin01_source)
         ajoute("DK_FIN01_cible", row.nom_fichier_source, row.nom_fichier_source in dkfin01_cible)
         ajoute("ACK", row.nom_fichier_edf, row.nom_fichier_edf in ack_names)
 
@@ -54,26 +57,35 @@ def _tous_egaux(valeurs):
     return len(presentes) == len(valeurs) and len(set(presentes)) == 1
 
 
-def controle_totaux_source(guid, nom_source, dk, dkfin01, oracle_row):
-    """Coherence cote source, par fichier : DK == DK_FIN01 == Oracle (colonnes source)."""
+def controle_totaux_source(guid, nom_source, dk, dkfin01, oracle_row, cible_seul=False):
+    """Coherence cote source, par fichier : DK == DK_FIN01 (en-tete et lignes) == Oracle (colonnes source).
+
+    cible_seul : le DK n'est pas disponible, les colonnes nb_dk / montant_dk* restent vides et
+    n'entrent pas dans le statut ; l'en-tete du DK_FIN01 prend le relais de celui du DK.
+    """
     nb_dk = _nb(dk)
     nb_dkf = _nb(dkfin01)
     nb_ora = oracle_row.nb_source if oracle_row else None
 
     m_dk_entete = dk.montant_entete_cts if dk else None
     m_dk = _somme(dk)
+    m_dkf_entete = dkfin01.montant_entete_cts if dkfin01 else None
     m_dkf = _somme(dkfin01)
     m_ora = oracle_row.montant_source_cts if oracle_row else None
 
+    nbs = [nb_dkf, nb_ora] if cible_seul else [nb_dk, nb_dkf, nb_ora]
+    montants = ([m_dkf_entete, m_dkf, m_ora] if cible_seul
+                else [m_dk_entete, m_dk, m_dkf_entete, m_dkf, m_ora])
     return {
         "guid": guid,
         "fichier_source": nom_source,
         "nb_dk": nb_dk, "nb_dk_fin01": nb_dkf, "nb_oracle_source": nb_ora,
         "montant_dk_entete": m_dk_entete, "montant_dk": m_dk,
-        "montant_dk_fin01": m_dkf, "montant_oracle_source": m_ora,
+        "montant_dk_fin01_entete": m_dkf_entete, "montant_dk_fin01": m_dkf,
+        "montant_oracle_source": m_ora,
         "euro_lines": dkfin01.euro_lines if dkfin01 else None,
-        "statut_lignes": "OK" if _tous_egaux([nb_dk, nb_dkf, nb_ora]) else "KO",
-        "statut_montant": "OK" if _tous_egaux([m_dk_entete, m_dk, m_dkf, m_ora]) else "KO",
+        "statut_lignes": "OK" if _tous_egaux(nbs) else "KO",
+        "statut_montant": "OK" if _tous_egaux(montants) else "KO",
     }
 
 

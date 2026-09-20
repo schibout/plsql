@@ -104,16 +104,20 @@ def parse_ack(path) -> LotAck:
     virements = []
     footer_count = 0
     footer_total_cts = 0
+    date_creation = date_valeur = ""
     for ligne in _read_lines(path):
         rec = ligne[0:2]
         if rec == "03":
             iban_payeur = ligne[80:107].strip()
+            date_valeur = ligne[24:30].strip()
+            date_creation = ligne[54:60].strip()
         elif rec == "06":
             virements.append(Virement(
                 nom=ligne[23:47].strip(),
                 bic=ligne[71:82].strip(),
                 iban=ligne[82:116].strip(),
                 montant_cts=int(ligne[116:132]),
+                libelle=" ".join(ligne[132:202].split()),
             ))
         elif rec == "08":
             footer_count = int(ligne[4:11])
@@ -123,7 +127,18 @@ def parse_ack(path) -> LotAck:
         virements=virements,
         footer_count=footer_count,
         footer_total_cts=footer_total_cts,
+        date_creation=date_creation,
+        date_valeur=date_valeur,
     )
+
+
+def parse_ls_out(path):
+    """Code retour du job Talend (TALEND/LS_OUT.OK). None si le fichier est absent ou vide."""
+    path = Path(path)
+    if not path.is_file():
+        return None
+    contenu = path.read_text(encoding="latin-1").strip()
+    return contenu or None
 
 
 def parse_dk_fin01(path) -> LotDK:
