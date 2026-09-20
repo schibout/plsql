@@ -104,15 +104,37 @@ def render(kpi):
         lignes = fr.lignes(con, disparues=voir_disparues)
         groupes = fr.groupes_compenses(lignes[lignes["present"]])
 
+        # ------------------------------------------------------------ Oracle + rapport
+        o1, o2 = st.columns(2)
+        if o1.button("🅾 Contrôler dans Oracle", disabled=not CONFIG.exists(), use_container_width=True, key="fr_oracle"):
+            with st.spinner("Interrogation Oracle…"):
+                try:
+                    st.session_state["fr_oracle_msg"] = fr.controler_oracle(con)
+                    st.rerun()
+                except (Exception, SystemExit) as e:  # noqa: BLE001 — même mécanique que l'onglet Matin
+                    st.error(f"Contrôle impossible : {e}")
+        if st.session_state.get("fr_oracle_msg"):
+            o1.caption(st.session_state["fr_oracle_msg"])
+        if o2.button("📄 Générer le rapport HTML", use_container_width=True, key="fr_rapport"):
+            try:
+                chemin = rp.ecrire(export, lignes, groupes, fr.rapprochements(con))
+                st.session_state["fr_rapport"] = str(chemin)
+            except OSError as e:
+                st.error(f"Écriture impossible : {e}")
+        if st.session_state.get("fr_rapport"):
+            p = Path(st.session_state["fr_rapport"])
+            if p.exists():
+                o2.download_button("⬇ Télécharger " + p.name, p.read_bytes(), file_name=p.name, mime="text/html",
+                                   key="fr_dl")
+
+
         # ------------------------------------------------------------ tuiles
-        c = st.columns(6)
+        c = st.columns(4)
         kpi(c[0], len(lignes), "lignes", "neutral")
         kpi(c[1], lignes["folio"].nunique(), "folios", "neutral")
-        kpi(c[2], _eur(lignes["ecart_debit"].sum()), "écart débit total", "warn" if abs(lignes["ecart_debit"].sum()) >= fr.TOL else "ok")
-        kpi(c[3], int(lignes["rapproche"].sum()), "lignes rapprochées", "ok")
-        kpi(c[4], len(groupes), "groupes compensés en attente", "warn" if len(groupes) else "ok")
+        kpi(c[2], int(lignes["rapproche"].sum()), "lignes rapprochées", "ok")
         nb_ko = int((lignes["statut"] == "KO").sum())
-        kpi(c[5], nb_ko if "—" not in set(lignes["statut"]) else "—", "KO Oracle", "err" if nb_ko else "neutral")
+        kpi(c[3], nb_ko if "—" not in set(lignes["statut"]) else "—", "KO Oracle", "err" if nb_ko else "neutral")
 
         # ------------------------------------------------------------ filtres
         f1, f2, f3, f4 = st.columns([1, 1, 2, 1])
@@ -198,30 +220,6 @@ def render(kpi):
                         st.rerun()
                     except ValueError as e:
                         st.error(str(e))
-
-        # ------------------------------------------------------------ Oracle + rapport
-        st.markdown("#### Oracle et rapport")
-        o1, o2 = st.columns(2)
-        if o1.button("🅾 Contrôler dans Oracle", disabled=not CONFIG.exists(), use_container_width=True, key="fr_oracle"):
-            with st.spinner("Interrogation Oracle…"):
-                try:
-                    st.session_state["fr_oracle_msg"] = fr.controler_oracle(con)
-                    st.rerun()
-                except (Exception, SystemExit) as e:  # noqa: BLE001 — même mécanique que l'onglet Matin
-                    st.error(f"Contrôle impossible : {e}")
-        if st.session_state.get("fr_oracle_msg"):
-            o1.caption(st.session_state["fr_oracle_msg"])
-        if o2.button("📄 Générer le rapport HTML", use_container_width=True, key="fr_rapport"):
-            try:
-                chemin = rp.ecrire(export, lignes, groupes, fr.rapprochements(con))
-                st.session_state["fr_rapport"] = str(chemin)
-            except OSError as e:
-                st.error(f"Écriture impossible : {e}")
-        if st.session_state.get("fr_rapport"):
-            p = Path(st.session_state["fr_rapport"])
-            if p.exists():
-                o2.download_button("⬇ Télécharger " + p.name, p.read_bytes(), file_name=p.name, mime="text/html",
-                                   key="fr_dl")
 
         # ------------------------------------------------------------ historique
         r = fr.rapprochements(con)
