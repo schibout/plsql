@@ -432,3 +432,58 @@ def _charger_controle(rid: int, req: Path | None, out: Path | None, con: sqlite3
         "date_dernier_import,date_debut_releve,date_fin_releve) VALUES (?,?,?,?,?,?,?,?,?)",
         [(rid, l["compte_id"], l["banque"], l["guichet"], l["numero"], l["nom_compte"], l["date_dernier_import"],
           l["date_debut_releve"], l["date_fin_releve"]) for l in p["lignes"]])
+
+
+# ---------------------------------------------------------------- Control-M (photos ODAT)
+GROUPES_CTM = ("FINEXT_J14INT_05_Q", "FINEXT_J14INT_06_Q")
+JOBS_CTM_LIKE = "FINEXT_J14INT_0[56]_%"
+
+
+def chaine_controlm(con: sqlite3.Connection, jour: date) -> pd.DataFrame:
+    """Jobs des chaînes 05/06 pour la matinée `jour` (odate = veille), dernière photo prise ce jour-là.
+    Colonnes : job_name, group_name, status, start_time, end_time, rerun, order_id, snap_time."""
+    veille = (jour - timedelta(days=1)).isoformat()
+    snap = con.execute(
+        "SELECT id, snap_time FROM snapshots WHERE odate=? AND substr(snap_time,1,10)=? ORDER BY snap_time DESC LIMIT 1",
+        (veille, jour.isoformat())).fetchone()
+    if not snap:   # photo prise plus tard dans la journée ou le lendemain matin : on prend la dernière de l'odate
+        snap = con.execute("SELECT id, snap_time FROM snapshots WHERE odate=? ORDER BY snap_time DESC LIMIT 1",
+                           (veille,)).fetchone()
+    if not snap:
+        return pd.DataFrame(columns=["job_name", "group_name", "status", "start_time", "end_time", "rerun", "order_id", "snap_time"])
+    df = pd.read_sql_query(
+        "SELECT job_name, group_name, status, start_time, end_time, rerun, order_id FROM ctm_jobs "
+        "WHERE snapshot_id=? AND job_name GLOB 'FINEXT_J14INT_0[56]_*' ORDER BY job_name, rerun", con, params=(snap["id"],))
+    df["snap_time"] = snap["snap_time"]
+    # une ligne par job : le dernier rerun
+    df = df.sort_values(["job_name", "rerun"]).groupby("job_name", as_index=False).last()
+    return df
+
+
+def _heure(df: pd.DataFrame, job: str) -> str | None:
+    r = df[df["job_name"] == job]
+    return None if r.empty or pd.isna(r.iloc[0]["start_time"]) else str(r.iloc[0]["start_time"])
+
+
+def diagnostic_controlm(df: pd.DataFrame) -> dict:
+    """conflit_mov : 06_MOV01 démarre à < 60 s de 05_MOV01 ; zip06_not_ok : 06_ZIP01 Ended Not OK ;
+    import06_execute : 06_IMP01 a tourné."""
+    d = dict(photo=None, conflit_mov=False, zip06_not_ok=False, import06_execute=False, causes=[])
+    if df.empty:
+        return d
+    d["photo"] = str(df.iloc[0]["snap_time"])
+    h05, h06 = _heure(df, "FINEXT_J14INT_05_MOV01_Q"), _heure(df, "FINEXT_J14INT_06_MOV01_Q")
+    if h05 and h06:
+        ecart = abs((datetime.fromisoformat(h06) - datetime.fromisoformat(h05)).total_seconds())
+        d["conflit_mov"] = ecart < 60
+    z = df[df["job_name"] == "FINEXT_J14INT_06_ZIP01_Q"]
+    d["zip06_not_ok"] = bool(len(z)) and str(z.iloc[0]["status"]).strip() == "Ended Not OK"
+    i = df[df["job_name"] == "FINEXT_J14INT_06_IMP01_Q"]
+    d["import06_execute"] = bool(len(i)) and str(i.iloc[0]["status"]).startswith("Ended")
+    if d["conflit_mov"]:
+        d["causes"].append(f"Conflit de chaînes : FINEXT_J14INT_06_MOV01_Q a démarré à {h06[11:19]}, en même temps que la "
+                           f"chaîne 05 ({h05[11:19]}) — la chaîne 06 a consommé le Compteur.zip du flux A.")
+    if d["zip06_not_ok"]:
+        d["causes"].append(f"FINEXT_J14INT_06_ZIP01_Q terminé Ended Not OK (rerun {int(z.iloc[0]['rerun'] or 0)}) : "
+                           "la chaîne cyclique 06 est bloquée, le zip de 08:16 ne sera ni mové ni importé.")
+    return d
