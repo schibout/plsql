@@ -514,3 +514,194 @@ def diagnostic_controlm(df: pd.DataFrame) -> dict:
         d["causes"].append(f"FINEXT_J14INT_06_ZIP01_Q terminé Ended Not OK (rerun {_entier(z.iloc[0]['rerun'])}) : "
                            "la chaîne cyclique 06 est bloquée, le zip suivant du flux B (≈ 08:16) ne sera ni mové ni importé.")
     return d
+
+
+# ---------------------------------------------------------------- scan global
+def scanner_tout(cfg: dict, con: sqlite3.Connection) -> str:
+    comptes_connus_init(con, cfg["comptes_connus"])
+    n_pfe = scanner_pfe(cfg["dossier_pfe"], con, cfg["banque_flux_b"])
+    n_ebs = scanner_ebs(cfg["dossier_ebs"], con, cfg["banque_flux_b"])
+    n_logs = scanner_logs(cfg["dossiers_logs"], con, cfg["banque_flux_b"])
+    rapprocher_pfe_ebs(con)
+    con.execute("UPDATE rb_imports SET md5_ebs = (SELECT e.md5 FROM rb_ebs e WHERE substr(e.horodatage,1,16) = "
+                "substr(rb_imports.debut,1,16) OR (e.horodatage <= rb_imports.debut AND e.horodatage >= "
+                "datetime(rb_imports.debut, '-3 minutes')) ORDER BY e.horodatage DESC LIMIT 1) WHERE md5_ebs IS NULL")
+    con.commit()
+    return f"{n_pfe} exécution(s) PFE, {n_ebs} fichier(s) EBS, {n_logs} log(s) nouveaux."
+
+
+# ---------------------------------------------------------------- journée
+HEURE_ATTENDUE = {"A": "07:50", "B": "08:20"}
+FENETRE = {"A": ("06:30:00", "08:05:00"), "B": ("08:05:00", "10:00:00")}
+TON_VERDICT = {"OK": "ok", "WARN": "warn", "KO": "ko", "—": "neutral"}
+
+
+@dataclass
+class Flux:
+    code: str
+    pfe: dict | None = None
+    ebs: dict | None = None
+    import_: dict | None = None
+    controles: list = field(default_factory=list)
+    controlm: dict = field(default_factory=dict)
+    verdict: str = "—"
+    causes: list = field(default_factory=list)
+    etapes: list = field(default_factory=list)      # [{cle, libelle, ton, texte}]
+
+
+@dataclass
+class Journee:
+    jour: date
+    flux: dict = field(default_factory=dict)        # "A" / "B" -> Flux
+    controlm_df: pd.DataFrame = field(default_factory=pd.DataFrame)
+    controles: list = field(default_factory=list)
+    verdict: str = "—"
+    motif: str | None = None                        # samedi / dimanche / jour férié
+
+
+def _un(con, sql, params) -> dict | None:
+    r = con.execute(sql, params).fetchone()
+    return dict(r) if r else None
+
+
+def _tous(con, sql, params) -> list[dict]:
+    return [dict(r) for r in con.execute(sql, params)]
+
+
+def rejet_massif(imp) -> bool:
+    """Import rejeté en bloc : aucun relevé chargé et plusieurs Erreur 025 (dict, sqlite3.Row ou ligne pandas)."""
+    if imp is None:
+        return False
+    charges = imp["releves_charges"] if "releves_charges" in imp.keys() else imp["charges"]
+    return (charges or 0) == 0 and (imp["err025"] or 0) > 1
+
+
+def _anomalies_flux(con: sqlite3.Connection, c: dict, code: str, banque_b: str, connus: set[str]) -> int:
+    """Anomalies d'un contrôle pertinentes pour un flux : toutes (hors comptes connus) pour le flux B ; pour le
+    flux A, seulement celles des autres banques — un contrôle lancé avant le flux B liste normalement les ~207
+    comptes de la banque B, ce qui ne dit rien du flux A."""
+    if code == "B":
+        return c["nb_hors_connus"] or 0
+    return sum(1 for l in con.execute("SELECT banque, guichet, numero FROM rb_controle_lignes WHERE request_id=?",
+                                      (c["request_id"],))
+               if l["banque"] != banque_b and f"{l['banque']}/{l['guichet']}/{l['numero']}" not in connus)
+
+
+def journee(con: sqlite3.Connection, jour: date, cfg: dict) -> Journee:
+    import controle_matin as cm
+    j = Journee(jour=jour, motif=cm.jour_sans_integration(jour))
+    js = jour.isoformat()
+    j.controlm_df = chaine_controlm(con, jour)
+    diag = diagnostic_controlm(j.controlm_df)
+    j.controles = _tous(con, "SELECT * FROM rb_controles WHERE substr(executed_at,1,10)=? ORDER BY executed_at", (js,))
+    banque_b, connus = cfg["banque_flux_b"], comptes_connus(con)
+    for code in ("A", "B"):
+        f = Flux(code=code, controlm=diag)
+        f.pfe = _un(con, "SELECT * FROM rb_pfe WHERE flux=? AND substr(horodatage,1,10)=? ORDER BY horodatage DESC LIMIT 1", (code, js))
+        f.ebs = _un(con, "SELECT * FROM rb_ebs WHERE flux=? AND substr(horodatage,1,10)=? ORDER BY horodatage DESC LIMIT 1", (code, js))
+        # le flux d'un import est déjà déterminé par ses banques : pas de fenêtre horaire (le flux B du 14/09 tourne à 07:49)
+        f.import_ = _un(con, "SELECT * FROM rb_imports WHERE flux=? AND substr(debut,1,10)=? ORDER BY debut DESC LIMIT 1", (code, js))
+        # contrôles rattachés : tous pour A ; pour B, seulement ceux exécutés après l'import (ou après la fenêtre B)
+        apres = f.import_["fin"] if f.import_ else js + " " + FENETRE["B"][0]
+        f.controles = [dict(c, nb_hors_connus_flux=_anomalies_flux(con, c, code, banque_b, connus))
+                       for c in j.controles if code == "A" or c["executed_at"] > apres]
+        _verdict_flux(f, j.motif)
+        j.flux[code] = f
+    if j.motif and not any(f.pfe or f.import_ for f in j.flux.values()):
+        j.verdict = "—"
+    else:
+        ordre = {"KO": 3, "WARN": 2, "OK": 1, "—": 0}
+        j.verdict = max((f.verdict for f in j.flux.values()), key=ordre.get)
+    return j
+
+
+def _verdict_flux(f: Flux, motif: str | None) -> None:
+    d = f.controlm
+    pfe, ebs, imp = f.pfe, f.ebs, f.import_
+    # --- PFE
+    if pfe:
+        e_pfe = ("ok" if pfe["complete"] else "warn",
+                 f"{pfe['horodatage'][11:16]} · {pfe['nb_releves']} relevés ({pfe['date_min']} → {pfe['date_max']})")
+        if not pfe["complete"]:
+            f.causes.append("Exécution PFE incomplète (SOURCE / zip / LS_IN.OK manquant).")
+    else:
+        e_pfe = ("neutral", "aucune exécution")
+    # --- Control-M
+    if not d.get("photo"):
+        e_ctm = ("neutral", "pas de photo")
+    elif f.code == "B" and (d["conflit_mov"] or d["zip06_not_ok"]):
+        e_ctm = ("ko", "chaîne 06 bloquée")
+    else:
+        e_ctm = ("ok", f"photo {d['photo'][11:16]}")
+    # --- réception EBS
+    if ebs:
+        e_ebs = ("ok", f"{ebs['horodatage'][11:16]} · {ebs['nom']}")
+    elif pfe and not pfe["ebs_md5_recu"]:
+        e_ebs = ("ko", "non reçu")
+        f.causes.append(f"Fichier PFE de {pfe['horodatage'][11:16]} non reçu par EBS (aucun AFB120.txt_* de même md5) : "
+                        "les jobs move / dézip de Control-M n'ont pas livré le zip.")
+    else:
+        e_ebs = ("neutral", "—")
+    # --- import
+    if imp:
+        if rejet_massif(imp):
+            e_imp = ("ko", f"req {imp['request_id']} · 0 chargé · {imp['err025']} × Erreur 025")
+            f.causes.append(f"Import {imp['request_id']} rejeté en bloc : {imp['err025']} × Erreur 025 « Journée manquante » — "
+                            "un relevé antérieur n'a jamais été chargé ; rejouer les fichiers manquants dans l'ordre.")
+        elif (imp["releves_charges"] or 0) == 0:
+            e_imp = ("ko", f"req {imp['request_id']} · 0 chargé")
+            f.causes.append(f"Import {imp['request_id']} : aucun relevé chargé.")
+        else:
+            e_imp = ("ok", f"req {imp['request_id']} · {imp['releves_charges']} chargés / {imp['releves_erreurs']} err.")
+    elif pfe or ebs:
+        e_imp = ("ko", "pas d'import")
+        if ebs:
+            f.causes.append("Fichier reçu par EBS mais aucun import RBAFBIMP trouvé (log absent ? lancer copy_ebs_logs.sh).")
+    else:
+        e_imp = ("neutral", "—")
+    # --- contrôle
+    if f.controles:
+        c = f.controles[-1]
+        nb = c.get("nb_hors_connus_flux", c["nb_hors_connus"]) or 0
+        if nb == 0:
+            e_ctl = ("ok", f"req {c['request_id']} · aucune anomalie")
+        elif f.code == "B" and imp and not rejet_massif(imp):
+            e_ctl = ("warn", f"req {c['request_id']} · {nb} anomalie(s)")
+        else:
+            e_ctl = ("ko" if f.code == "B" else "warn", f"req {c['request_id']} · {nb} anomalie(s)")
+    else:
+        e_ctl = ("neutral", "pas de contrôle")
+    f.etapes = [dict(cle=k, libelle=l, ton=t, texte=x) for k, l, (t, x) in
+                (("pfe", "PFE", e_pfe), ("controlm", "Control-M", e_ctm), ("ebs", "Reçu EBS", e_ebs),
+                 ("import", "Import", e_imp), ("controle", "Contrôle", e_ctl))]
+    # --- verdict
+    tons = [e["ton"] for e in f.etapes]
+    if not pfe and not ebs and not imp:
+        f.verdict = "—" if motif else "WARN"
+        if not motif:
+            f.causes.append(f"Aucun fichier PFE pour le flux {f.code} ce jour (banque en retard ?) — à surveiller le lendemain.")
+    elif "ko" in tons:
+        f.verdict = "KO"
+    elif "warn" in tons:
+        f.verdict = "WARN"
+    else:
+        f.verdict = "OK"
+
+
+# ---------------------------------------------------------------- chronologie
+def chronologie(con: sqlite3.Connection, jours: int = 15, jour: date | None = None) -> pd.DataFrame:
+    fin = (jour or date.today()) + timedelta(days=1)
+    debut = fin - timedelta(days=jours + 1)
+    df = pd.read_sql_query(
+        "SELECT i.request_id, i.debut, e.nom AS fichier, i.flux, i.lus, i.ecrits, i.releves_charges AS charges, "
+        "i.releves_erreurs AS erreurs, i.err001, i.err025 FROM rb_imports i LEFT JOIN rb_ebs e ON e.md5 = i.md5_ebs "
+        "WHERE i.debut >= ? AND i.debut < ? ORDER BY i.debut", con, params=(debut.isoformat(), fin.isoformat()))
+
+    def resultat(r):
+        if rejet_massif(r):
+            return f"{int(r['err025'])} × Erreur 025 — rejet total"
+        if (r["charges"] or 0) == 0:
+            return "aucun relevé chargé"
+        return "OK" if (r["err025"] or 0) <= 1 else f"OK mais {int(r['err025'])} × Erreur 025"
+    df["resultat"] = df.apply(resultat, axis=1) if not df.empty else []
+    return df
