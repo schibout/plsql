@@ -1,0 +1,39 @@
+=======================================
+== Calcul du poids ==
+=======================================
+
+------ GROUPE EXP ------
+- Nbre des Virements: 12
+- Montant des Virements: 72743.98
+
+------ TIERS EXPR ------
+- Nbre des Virements: 193
+- Montant des Virements: 2595133.09
+
+------------------------
+- Synthèse
+------------------------
+- Nbre des Virements : 205
+- Montant des Virements : 2667877.07
+
+
+=======================================
+== Fichiers de Contrôles EDF ==
+=======================================
+- Nbre des Virements EUR: 205
+- Montant des Virements EUR: 2667877.07
+
+- Nbre des Virements CHF: 0
+- Montant des Virements CHF: 0
+
+------------------------
+- Synthèse EDF
+------------------------
+- Nbre des Virements : 205
+- Montant des Virements : 2667877.07
+
+========================================
+== Ecarts ==
+========================================
+- Nbre des Virements : 0
+- Montant des Virements : 0.0
