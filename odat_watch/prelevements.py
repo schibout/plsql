@@ -133,6 +133,7 @@ def lire_rapport(racine: Path, reference: date) -> dict | None:
     xlsx = dossier / f"{base}.xlsx"
     return {"base": base, "dossier": dossier, "resume": resume, "rapprochement": rapprochement,
             "justifications": _csv(dossier / f"{base}_justifications.csv"),
+            "doublons": _csv(dossier / f"{base}_doublons.csv"),
             "xlsx": xlsx if xlsx.is_file() else None,
             "genere_le": datetime.fromtimestamp((dossier / f"{base}.csv").stat().st_mtime)}
 
@@ -145,7 +146,9 @@ def resume(rapport: dict) -> dict:
     statut = df["statut"] if not df.empty else pd.Series(dtype=str)
     just = rapport["justifications"]
     a_investiguer = int(just["cause"].isin(CAUSES_A_INVESTIGUER).sum()) if not just.empty else 0
-    return {"statut_global": r.get("statut_global", "INCONNU"), "nb_cles": int(len(df)),
+    dbl = rapport.get("doublons", pd.DataFrame())
+    types = dbl["type"] if not dbl.empty else pd.Series(dtype=str)
+    return {"doublons": int((types == "DOUBLON").sum()), "similitudes": int((types == "SIMILITUDE").sum()),"statut_global": r.get("statut_global", "INCONNU"), "nb_cles": int(len(df)),
             "nb_emis": int(df["nb_oracle"].sum()) if not df.empty else 0,
             "montant_emis": float(df["montant_oracle"].sum()) if not df.empty else 0.0,
             "en_attente": int((statut == "EN_ATTENTE").sum()),

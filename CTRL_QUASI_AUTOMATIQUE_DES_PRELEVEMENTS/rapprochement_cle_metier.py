@@ -52,7 +52,7 @@ from prelevements_rapprochement import (
 NB_COLONNES_ORACLE = 55
 COLONNES_REQUISES = ("TRANSACTIONDATE", "AMOUNT", "ENTITYBANKACCOUNTNUMBER",
                      "SEPAMANDATEID", "COUNTERPARTYBANKACCOUNTNUMBER",
-                     "COUNTERPARTYNAME")
+                     "COUNTERPARTYNAME", "DESCRIPTION/REFERENCE")
 RE_IBAN_FR = re.compile(r"^FR\d{12}")
 # Date d'emission portee par le nom de fichier : DK_..-<AAAAMMJJ>-<id>_<AAAAMMJJ>-<heure>
 RE_DATE_FICHIER = re.compile(r"-(\d{8})-\d+_")
@@ -125,6 +125,9 @@ class LigneOracle:
     nom: str
     emission: date
     fichier: str
+    # Reference de paiement (DESCRIPTION/REFERENCE) : unique par prelevement,
+    # c'est elle qui distingue un doublon de deux factures de meme montant.
+    reference: str = ""
 
 
 @dataclass
@@ -324,7 +327,8 @@ def charger_oracle(oracle_path, motifs, diag):
                 iban_debiteur=champs[cols["COUNTERPARTYBANKACCOUNTNUMBER"]].strip(),
                 nom=champs[cols["COUNTERPARTYNAME"]].strip(),
                 emission=emission,
-                fichier=fichier.name))
+                fichier=fichier.name,
+                reference=champs[cols["DESCRIPTION/REFERENCE"]].strip()))
             diag.lignes_oracle += 1
 
     if not lignes_ok and not lignes_ko:
@@ -479,6 +483,56 @@ def apparier_rejets(lignes_oracle, rejets):
 # ---------------------------------------------------------------------------
 # Machine a etats
 # ---------------------------------------------------------------------------
+def detecter_doublons(lignes_oracle):
+    """Prelevements emis plusieurs fois par Oracle.
+
+    DOUBLON     : meme reference de paiement emise plus d'une fois (meme fichier
+                  ou fichiers differents, par ex. un lot rejoue). Le debiteur
+                  serait preleve deux fois : anomalie.
+    SIMILITUDE  : meme mandat, meme debiteur, meme echeance, meme montant, mais
+                  references differentes (deux factures distinctes de meme
+                  montant). Signale pour verification, non bloquant.
+    Une ligne par groupe, DOUBLON d'abord.
+    """
+    par_reference = defaultdict(list)
+    for lo in lignes_oracle:
+        par_reference[(lo.iban_creancier, lo.reference)].append(lo)
+
+    groupes = []
+    deja = set()
+    for (iban, reference), lignes in par_reference.items():
+        if len(lignes) > 1:
+            groupes.append(("DOUBLON", lignes))
+            deja.update(id(lo) for lo in lignes)
+
+    par_signature = defaultdict(list)
+    for lo in lignes_oracle:
+        if id(lo) not in deja:
+            par_signature[(lo.iban_creancier, lo.rum, lo.iban_debiteur, lo.echeance, lo.montant)].append(lo)
+    for lignes in par_signature.values():
+        if len(lignes) > 1:
+            groupes.append(("SIMILITUDE", lignes))
+
+    resultat = []
+    for type_, lignes in groupes:
+        premiere = lignes[0]
+        resultat.append({
+            "type": type_,
+            "reference": " + ".join(sorted({lo.reference for lo in lignes})),
+            "rum": premiere.rum,
+            "iban_creancier": premiere.iban_creancier,
+            "iban_debiteur": premiere.iban_debiteur,
+            "beneficiaire": premiere.nom,
+            "echeance": premiere.echeance,
+            "montant": premiere.montant,
+            "nb": len(lignes),
+            "fichiers": " + ".join(sorted({lo.fichier for lo in lignes})),
+            "emissions": " + ".join(d.strftime("%d/%m/%Y") for d in sorted({lo.emission for lo in lignes})),
+        })
+    resultat.sort(key=lambda d: (d["type"] != "DOUBLON", d["echeance"], d["rum"]))
+    return resultat
+
+
 def nb_fichiers_edf_depuis(emission, dates_fichiers_edf, reference):
     return sum(1 for d in dates_fichiers_edf if emission < d <= reference)
 
@@ -722,7 +776,7 @@ def _onglet_justification(wb, justifications):
 
 
 def generer_classeur(chemin, rapprochement, rejets, lignes_ko, resume, contexte,
-                     justifications):
+                     justifications, doublons=()):
     wb = Workbook()
 
     # --- Synthese ---
@@ -821,6 +875,34 @@ def generer_classeur(chemin, rapprochement, rejets, lignes_ko, resume, contexte,
     _colonnes_texte(ws3, (1, 2, 3, 4))
     _ajuster_largeurs(ws3, {"A": 30, "B": 38, "C": 30}, maxi=40)
 
+    # --- Doublons d'emission ---
+    ws5 = wb.create_sheet("Doublons")
+    _titre(ws5, "A1", "PRÉLÈVEMENTS ÉMIS PLUSIEURS FOIS PAR ORACLE")
+    ws5.cell(row=2, column=1, value="DOUBLON = même référence de paiement émise plusieurs fois (anomalie). "
+             "SIMILITUDE = même mandat, débiteur, échéance et montant avec des références différentes (à vérifier).")
+    _entetes(ws5, 3, 1, ["Type", "Référence(s)", "RUM", "IBAN Créancier", "IBAN Débiteur", "Bénéficiaire",
+                         "Échéance", "Montant (€)", "Nb", "Fichier(s)", "Émission(s)"], COULEUR_ENTETE)
+    for i, d in enumerate(doublons):
+        lg = 4 + i
+        ws5.cell(row=lg, column=1, value=d["type"])
+        ws5.cell(row=lg, column=2, value=d["reference"])
+        ws5.cell(row=lg, column=3, value=d["rum"])
+        ws5.cell(row=lg, column=4, value=d["iban_creancier"])
+        ws5.cell(row=lg, column=5, value=d["iban_debiteur"])
+        ws5.cell(row=lg, column=6, value=d["beneficiaire"])
+        ws5.cell(row=lg, column=7, value=d["echeance"].strftime("%d/%m/%Y"))
+        ws5.cell(row=lg, column=8, value=_f(d["montant"])).number_format = FORMAT_MONTANT
+        ws5.cell(row=lg, column=9, value=d["nb"]).number_format = FORMAT_NOMBRE
+        ws5.cell(row=lg, column=10, value=d["fichiers"])
+        ws5.cell(row=lg, column=11, value=d["emissions"])
+        if d["type"] == "DOUBLON":
+            for col in range(1, 12):
+                ws5.cell(row=lg, column=col).fill = PatternFill("solid", fgColor=COULEUR_ECART)
+    if not doublons:
+        ws5.cell(row=4, column=1, value="Aucun prélèvement émis en double.")
+    _colonnes_texte(ws5, (2, 3, 4, 5, 7))
+    _ajuster_largeurs(ws5, {"B": 40, "C": 38, "D": 30, "E": 30, "J": 60}, maxi=60)
+
     # --- Lignes non conformes (uniquement si necessaire) ---
     if lignes_ko:
         ws4 = wb.create_sheet("Lignes rejetées")
@@ -858,6 +940,20 @@ def generer_csv_justifications(chemin, justifications):
             ligne = dict(j)
             ligne["echeance"] = j["echeance"].strftime("%d/%m/%Y")
             writer.writerow({c: ligne.get(c, "") for c in colonnes})
+    os.replace(temporaire, chemin)
+
+
+def generer_csv_doublons(chemin, doublons):
+    colonnes = ["type", "reference", "rum", "iban_creancier", "iban_debiteur", "beneficiaire",
+                "echeance", "montant", "nb", "fichiers", "emissions"]
+    temporaire = chemin.with_suffix(".tmp.csv")
+    with temporaire.open("w", newline="", encoding="utf-8-sig") as fh:
+        writer = csv.DictWriter(fh, fieldnames=colonnes, delimiter=";")
+        writer.writeheader()
+        for d in doublons:
+            ligne = dict(d)
+            ligne["echeance"] = d["echeance"].strftime("%d/%m/%Y")
+            writer.writerow({c: ligne[c] for c in colonnes})
     os.replace(temporaire, chemin)
 
 
@@ -944,6 +1040,7 @@ def analyser(args, diag):
           + ".")
 
     rejets_par_cle = apparier_rejets(lignes_oracle, rejets)
+    doublons = detecter_doublons(lignes_oracle)
 
     # Un flux EDF interrompu ferait basculer toutes les cles en NON_RECU.
     if dates_edf:
@@ -973,8 +1070,9 @@ def analyser(args, diag):
         ("Rejets retenus", diag.lignes_rejets),
         ("Rejets appariés Oracle", sum(1 for r in rejets if r.appariee)),
         ("Clés rapprochées", len(rapprochement)),
+        ("Doublons d'émission", sum(1 for d in doublons if d["type"] == "DOUBLON")),
     ]
-    return rapprochement, rejets, lignes_ko, contexte, reference
+    return rapprochement, rejets, lignes_ko, contexte, reference, doublons
 
 
 STATUT_GLOBAL_PAR_CODE = {0: "OK", 1: "ANOMALIES", 2: "ERREUR", 3: "DEGRADE"}
@@ -1000,7 +1098,7 @@ def executer(reference=None, racine=None, sortie=None, jours=10, nom_si="ORACLE"
         motifs_oracle=list(motifs_oracle), motif_edf=motif_edf,
         motif_rejets=motif_rejets, nom_si=nom_si)
     diag = Diagnostic()
-    rapprochement, rejets, lignes_ko, contexte, reference = analyser(args, diag)
+    rapprochement, rejets, lignes_ko, contexte, reference, doublons = analyser(args, diag)
 
     # Les rapports sont toujours regroupes dans un sous-dossier dedie : ils
     # ne se melangent jamais aux fichiers sources analyses.
@@ -1018,21 +1116,25 @@ def executer(reference=None, racine=None, sortie=None, jours=10, nom_si="ORACLE"
 
     print("Génération du rapport...")
     generer_classeur(dossier / f"{base}.xlsx", rapprochement, rejets,
-                     lignes_ko, resume, contexte, justifications)
+                     lignes_ko, resume, contexte, justifications, doublons)
     generer_csv(dossier / f"{base}.csv", rapprochement)
     generer_csv_justifications(dossier / f"{base}_justifications.csv", justifications)
+    generer_csv_doublons(dossier / f"{base}_doublons.csv", doublons)
 
+    nb_doublons = sum(1 for d in doublons if d["type"] == "DOUBLON")
+    nb_similitudes = len(doublons) - nb_doublons
     anomalies = sum(1 for r in rapprochement if r["statut"] in STATUTS_ANOMALIE)
     signales = sum(1 for r in rapprochement if r["statut"] in STATUTS_SIGNALES)
     a_investiguer = sum(1 for j in justifications if j["cause"] in CAUSES_A_INVESTIGUER)
     par_rejet = sum(1 for j in justifications if j["cause"] == "REJET")
-    code = 2 if lignes_ko else 3 if diag.avertissements else 1 if anomalies else 0
+    code = 2 if lignes_ko else 3 if diag.avertissements else 1 if (anomalies or nb_doublons) else 0
 
     res = {
         "code": code, "statut_global": STATUT_GLOBAL_PAR_CODE[code],
         "base": base, "dossier": dossier, "reference": reference,
         "par_statut": {s: dict(e) for s, e in resume.items()},
         "nb_anomalies": anomalies, "nb_signales": signales, "nb_a_investiguer": a_investiguer,
+        "nb_doublons": nb_doublons, "nb_similitudes": nb_similitudes,
         "nb_justifications": len(justifications), "nb_justifie_par_rejet": par_rejet, "nb_lignes_ko": len(lignes_ko),
         "avertissements": list(diag.avertissements),
         "contexte": {k: v for k, v in contexte},
@@ -1075,9 +1177,13 @@ def main(argv=None):
         print(f" {res['nb_lignes_ko']} ligne(s) Oracle non conforme(s) — résultat non fiable.")
     if res["nb_signales"]:
         print(f" {res['nb_signales']} clé(s) à signaler au métier.")
+    if res["nb_doublons"]:
+        print(f" {res['nb_doublons']} DOUBLON(S) d'émission : même référence envoyée plusieurs fois (onglet Doublons).")
+    if res["nb_similitudes"]:
+        print(f" {res['nb_similitudes']} similitude(s) à vérifier (même débiteur, échéance et montant).")
     if res["nb_anomalies"]:
         print(f" {res['nb_anomalies']} ANOMALIE(S) à traiter.")
-    else:
+    elif not res["nb_doublons"]:
         print(" Aucune anomalie : tout est rapproché ou expliqué.")
     if res["avertissements"]:
         print(f" {len(res['avertissements'])} avertissement(s) — exécution dégradée.")

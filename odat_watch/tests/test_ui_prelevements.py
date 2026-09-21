@@ -42,6 +42,8 @@ def test_onglet_affiche_le_rapport(monkeypatch, tmp_path):
     assert any("Rapproché" in l and "1 clé" in l for l in labels)
     assert any("En attente EDF" in l for l in labels)
     assert any("Justification des écarts" in l and "1 à investiguer" in l for l in labels)
+    assert "0 émis en double [ok]" in texte
+    assert any("émis en double — 0 doublon(s), 0 similitude(s)" in l for l in labels)
 
 
 def test_onglet_sans_aucun_rapport(monkeypatch, tmp_path):
@@ -76,3 +78,15 @@ def test_lancer_affiche_message_et_journal(monkeypatch, tmp_path):
     assert any("Journal d'exécution" in e.label for e in at.expander)
     assert any("Oracle : 1 fichier(s)" in c.value for c in at.code)
     assert any("résultat global [ok]" in m.value for m in at.markdown)
+
+
+def test_onglet_signale_les_doublons(monkeypatch, tmp_path):
+    _rapport(tmp_path / "rapport", "Rapprochement_Cle_Metier_20260914_081400",
+             doublons="DOUBLON;P1;RUM1;FR76A;FR76D;X;30/09/2026;100.00;2;f1 + f2;11/09/2026 + 12/09/2026\n")
+    monkeypatch.setattr(pv, "config_prelevements", _cfg(tmp_path))
+    at = AppTest.from_function(_script, default_timeout=60)
+    at.run()
+    at.date_input[0].set_value(date(2026, 9, 14)).run()
+    assert not at.exception
+    assert any("1 émis en double [err]" in m.value for m in at.markdown)
+    assert any("1 doublon(s), 0 similitude(s)" in e.label for e in at.expander)

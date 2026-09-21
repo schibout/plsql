@@ -6,9 +6,13 @@ from pathlib import Path
 import prelevements as pv
 
 
-def _rapport(dossier: Path, base: str, statut_global="OK", par_statut=None, avertissements=(), lignes_ko=0):
-    """Fabrique un rapport complet (csv, justifications, xlsx factice, résumé JSON) au format de l'outil."""
+def _rapport(dossier: Path, base: str, statut_global="OK", par_statut=None, avertissements=(), lignes_ko=0,
+             doublons=""):
+    """Fabrique un rapport complet (csv, justifications, doublons, xlsx factice, résumé JSON) au format de l'outil."""
     dossier.mkdir(parents=True, exist_ok=True)
+    (dossier / f"{base}_doublons.csv").write_text(
+        "type;reference;rum;iban_creancier;iban_debiteur;beneficiaire;echeance;montant;nb;fichiers;emissions\n"
+        + doublons, encoding="utf-8-sig")
     (dossier / f"{base}.csv").write_text(
         "iban_creancier;echeance;nb_oracle;montant_oracle;nb_edf;montant_edf;ecart_nb;ecart_montant;"
         "nb_rejets;montant_rejets;codes_rejets;statut;emissions;tranches_edf\n"
@@ -114,3 +118,21 @@ def test_lancer_capture_le_journal(monkeypatch, tmp_path):
     monkeypatch.setitem(sys.modules, "rapprochement_cle_metier", faux)
     res = pv.lancer(date(2026, 9, 21), {"racine": tmp_path, "jours": 10, "nom_si": "ORACLE"})
     assert res["journal"] == "Oracle : 2 fichier(s)\nAVERTISSEMENT : test"
+
+
+def test_resume_compte_doublons_et_similitudes(tmp_path):
+    r = tmp_path / "rapport"
+    _rapport(r, "Rapprochement_Cle_Metier_20260914_081400",
+             doublons="DOUBLON;P1;RUM1;FR76A;FR76D;X;30/09/2026;100.00;2;f1 + f2;11/09/2026 + 12/09/2026\n"
+                      "SIMILITUDE;P2 + P3;RUM2;FR76A;FR76D;Y;30/09/2026;50.00;2;f1;11/09/2026\n")
+    res = pv.resume(pv.lire_rapport(tmp_path, date(2026, 9, 14)))
+    assert res["doublons"] == 1 and res["similitudes"] == 1
+
+
+def test_resume_sans_fichier_doublons(tmp_path):
+    """Rapports anciens : pas de _doublons.csv → 0, pas d'erreur."""
+    r = tmp_path / "rapport"
+    _rapport(r, "Rapprochement_Cle_Metier_20260914_081400")
+    (r / "Rapprochement_Cle_Metier_20260914_081400_doublons.csv").unlink()
+    res = pv.resume(pv.lire_rapport(tmp_path, date(2026, 9, 14)))
+    assert res["doublons"] == 0 and res["similitudes"] == 0

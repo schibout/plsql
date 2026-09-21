@@ -19,7 +19,7 @@ from rapprochement_cle_metier import (  # noqa: E402
     montant_oracle, statut_cle, AgregatEdf, Tranche, LigneRejet,
     ECART_PARTIEL, EDF_SANS_ORACLE, EN_ATTENTE, EXPLIQUE_PAR_REJET,
     HORS_PERIMETRE_HISTORIQUE, NON_RECU, RAPPROCHE, RAPPROCHE_REJET_POSTERIEUR,
-    REJET_PARTIEL_NON_CONFIRME, REJETE_INTEGRALEMENT, executer,
+    REJET_PARTIEL_NON_CONFIRME, REJETE_INTEGRALEMENT, executer, detecter_doublons,
 )
 
 # --- Construction des jeux d'essai ----------------------------------------
@@ -41,9 +41,16 @@ COLONNES[14] = "COUNTERPARTYNAME"
 IDX = {nom: i for i, nom in enumerate(COLONNES)}
 
 
+_COMPTEUR_REF = [0]
+
+
 def ligne_oracle(iban, echeance_us, montant, rum="NVOA0001", debiteur="FR7611111111111",
-                 nom="BENEF", nb_champs=55):
+                 nom="BENEF", nb_champs=55, reference=None):
     champs = [""] * 55
+    if reference is None:
+        _COMPTEUR_REF[0] += 1
+        reference = f"P{_COMPTEUR_REF[0]:05d} 260906 C00000700 S0001DSW"
+    champs[IDX["DESCRIPTION/REFERENCE"]] = reference
     champs[IDX["FORMAT1ENTITYID"]] = "0001"
     champs[IDX["TRANSACTIONDATE"]] = echeance_us
     champs[IDX["VALUEDATE"]] = echeance_us
@@ -479,3 +486,53 @@ def test_executer_statut_degrade_sans_fichier_edf(tmp_path):
 def test_executer_leve_sur_racine_absente(tmp_path):
     with pytest.raises(ErreurTraitement):
         executer(reference="2026-09-14", racine=tmp_path / "nulle_part", jours=10)
+
+
+# --- Doublons d'emission ----------------------------------------------------
+def test_doublon_meme_reference_dans_deux_fichiers(tmp_path):
+    """Un lot rejoue : la meme reference de paiement part deux fois -> DOUBLON."""
+    ecrire_oracle(tmp_path, "20260910", "DK_x-PCL-20260911-1_20260911-01.txt",
+                  [ligne_oracle(IBAN_A, "09/30/2026", "100.00", reference="P1 REF")])
+    ecrire_oracle(tmp_path, "20260911", "DK_x-PCL-20260912-2_20260912-01.txt",
+                  [ligne_oracle(IBAN_A, "09/30/2026", "100.00", reference="P1 REF")])
+    diag = Diagnostic()
+    lignes, _ = charger_oracle(tmp_path / "ORACLE", MOTIFS, diag)
+    doublons = detecter_doublons(lignes)
+    assert len(doublons) == 1 and doublons[0]["type"] == "DOUBLON"
+    d = doublons[0]
+    assert d["nb"] == 2 and d["reference"] == "P1 REF" and d["montant"] == Decimal("100.00")
+    assert "20260911-1" in d["fichiers"] and "20260912-2" in d["fichiers"]
+    assert d["emissions"] == "11/09/2026 + 12/09/2026"
+
+
+def test_similitude_meme_debiteur_meme_montant_references_differentes(tmp_path):
+    """Deux factures distinctes de meme montant le meme jour : SIMILITUDE, a verifier, pas une anomalie."""
+    ecrire_oracle(tmp_path, "20260910", "DK_x-PCL-20260911-1_20260911-01.txt",
+                  [ligne_oracle(IBAN_A, "09/30/2026", "614.63", reference="P22036"),
+                   ligne_oracle(IBAN_A, "09/30/2026", "614.63", reference="P22037")])
+    lignes, _ = charger_oracle(tmp_path / "ORACLE", MOTIFS, Diagnostic())
+    doublons = detecter_doublons(lignes)
+    assert len(doublons) == 1 and doublons[0]["type"] == "SIMILITUDE"
+    assert doublons[0]["reference"] == "P22036 + P22037" and doublons[0]["nb"] == 2
+
+
+def test_aucun_doublon_quand_les_montants_different(tmp_path):
+    ecrire_oracle(tmp_path, "20260910", "DK_x-PCL-20260911-1_20260911-01.txt",
+                  [ligne_oracle(IBAN_A, "09/30/2026", "10.00"),
+                   ligne_oracle(IBAN_A, "09/30/2026", "20.00")])
+    lignes, _ = charger_oracle(tmp_path / "ORACLE", MOTIFS, Diagnostic())
+    assert detecter_doublons(lignes) == []
+
+
+def test_executer_signale_les_doublons_comme_anomalie(tmp_path):
+    racine = _jeu_minimal(tmp_path)
+    ecrire_oracle(racine, "20260911", "DK_x-PCL-20260912-2_20260912-01.txt",
+                  [ligne_oracle(IBAN_A, "09/30/2026", "100.00", reference="REF DOUBLE"),
+                   ligne_oracle(IBAN_A, "09/30/2026", "100.00", reference="REF DOUBLE")])
+    res = executer(reference="2026-09-14", racine=racine, jours=3)
+    assert res["nb_doublons"] == 1 and res["nb_similitudes"] == 0
+    assert res["code"] == 1 and res["statut_global"] == "ANOMALIES"
+    csv_doublons = (racine / "rapport" / (res["base"] + "_doublons.csv")).read_text(encoding="utf-8-sig")
+    assert "DOUBLON;REF DOUBLE" in csv_doublons
+    resume = json.loads((racine / "rapport" / (res["base"] + "_resume.json")).read_text(encoding="utf-8"))
+    assert resume["nb_doublons"] == 1

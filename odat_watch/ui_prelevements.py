@@ -17,7 +17,7 @@ def _fmt_montant(m) -> str:
 
 
 def _tuiles(kpi, r: dict) -> None:
-    c1, c2, c3, c4, c5, c6, c7 = st.columns(7)
+    c1, c2, c3, c4, c5, c6, c7, c8 = st.columns(8)
     g = r["statut_global"]
     kpi(c1, pv.LIBELLES_GLOBAL.get(g, g), "résultat global", pv.TON_GLOBAL.get(g, "neutral"))
     kpi(c2, _fmt_nb(r["nb_emis"]), "prélèvements émis", "neutral")
@@ -26,6 +26,7 @@ def _tuiles(kpi, r: dict) -> None:
     kpi(c5, _fmt_nb(r["en_attente"]), "en attente EDF", "warn" if r["en_attente"] else "ok")
     kpi(c6, _fmt_nb(r["anomalies"]), "anomalies", "err" if r["anomalies"] else "ok")
     kpi(c7, _fmt_nb(r["a_investiguer"]), "écarts à investiguer", "err" if r["a_investiguer"] else "ok")
+    kpi(c8, _fmt_nb(r["doublons"]), "émis en double", "err" if r["doublons"] else "ok")
 
 
 def _table(df, hauteur: int = 320) -> None:
@@ -101,6 +102,21 @@ def render(kpi):
             st.download_button("⬇ Justifications (CSV)",
                                just.to_csv(index=False, sep=";").encode("utf-8-sig"),
                                f"{rapport['base']}_justifications.csv", "text/csv", key="pv_csv_just")
+
+    dbl = rapport["doublons"]
+    n_dbl, n_sim = r["doublons"], r["similitudes"]
+    with st.expander(f"{'🔴' if n_dbl else '🟠' if n_sim else '🟢'} Prélèvements émis en double — "
+                     f"{n_dbl} doublon(s), {n_sim} similitude(s) à vérifier", expanded=bool(n_dbl)):
+        if dbl.empty:
+            st.caption("Aucun prélèvement émis en double : chaque référence de paiement n'est partie qu'une fois, "
+                       "et aucun couple mandat / débiteur / échéance / montant ne se répète.")
+        else:
+            st.caption("DOUBLON : même référence de paiement émise plusieurs fois (lot rejoué, le débiteur serait "
+                       "prélevé deux fois) → anomalie. SIMILITUDE : même mandat, débiteur, échéance et montant avec "
+                       "des références différentes (souvent deux factures distinctes de même montant) → à vérifier.")
+            _table(dbl, 360)
+            st.download_button("⬇ Doublons (CSV)", dbl.to_csv(index=False, sep=";").encode("utf-8-sig"),
+                               f"{rapport['base']}_doublons.csv", "text/csv", key="pv_csv_dbl")
 
     st.markdown("##### Clés par statut")
     for statut, df in pv.par_statut(rapport["rapprochement"]):
