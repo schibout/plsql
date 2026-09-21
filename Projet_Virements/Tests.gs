@@ -51,12 +51,12 @@ function runVirementUnitTests() {
       },
     },
     {
-      name: 'déclare deux profils prélèvements indépendants',
+      name: 'déclare trois profils prélèvements indépendants',
       run: function() {
         const matches = MAIL_IMPORT_FLOWS.filter(function(flow) {
           return flow.ID.indexOf('prelevements_') === 0;
         });
-        virementAssertEquals_(2, matches.length);
+        virementAssertEquals_(3, matches.length);
         matches.forEach(function(flow) {
           virementAssertTrue_(typeof flow.FOLDER_ID === 'string' &&
             flow.FOLDER_ID.length > 0);

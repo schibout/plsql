@@ -11,10 +11,12 @@ Le premier profil actif est `virements_eur` :
 - extensions : `.xls` et `.xlsx` ;
 - dossier Drive : `1H4J7VFzEXdJ0rLPuihiLow2Ui3nFa3GQ` (valeur de `Config.gs`).
 
-Les prélèvements sont séparés en deux profils :
+Les prélèvements sont séparés en trois profils :
 
 - `prelevements_cashcollection` (actif) pour la synthèse quotidienne
   CashCollection, dossier Drive `1yEjJwQaPdVZ6dFnpASp8xo-Ew99iRYvw` ;
+- `prelevements_rejets` (actif) pour « Dalkia Liste des rejets bancaires du
+  jour - Prélèvements », dossier Drive `1W5woP7yjzwpe9NDfwagWvwhL75MrBHxG` ;
 - `prelevements_oracle_edf` (désactivé, `ENABLED: false`, à réactiver après
   validation) pour les regroupements Oracle EDF, dossier Drive
   `1skW6lJUvX1qlmw6RoLqE_94o5P1yu7o2` ;

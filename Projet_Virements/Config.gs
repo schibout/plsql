@@ -1,6 +1,6 @@
 /** Paramètres communs du moteur multi-flux. */
 const MAIL_IMPORT_ENGINE_CONFIG = Object.freeze({
-  CODE_VERSION: 'MAIL-IMPORTS-2026-09-21.4',
+  CODE_VERSION: 'MAIL-IMPORTS-2026-09-22.1',
   MAX_MESSAGES_PER_FLOW_PER_RUN: 50,
   SEARCH_BATCH_SIZE: 100,
   MAX_THREADS_PER_FLOW_PER_RUN: 500,
@@ -95,6 +95,30 @@ const MAIL_IMPORT_FLOWS = Object.freeze([
     LABEL_NAME: 'Controle_Prelevements_Oracle_EDF_Traite',
     STATE_PROPERTY_KEY: 'PRELEVEMENTS_ORACLE_EDF_IMPORT_STATE_V1',
     DRIVE_MESSAGE_MARKER_PREFIX: 'PRELEVEMENTS_ORACLE_EDF_MESSAGE_ID=',
+    TIME_ZONE: 'Europe/Paris',
+    INITIAL_LOOKBACK_MONTHS: 4,
+    DATE_OFFSET_DAYS: 3,
+    FILE_NAME_MODE: 'timestamp_original',
+    FILE_TIMESTAMP_FORMAT: 'ddMMyyyy',
+  }),
+
+  Object.freeze({
+    ID: 'prelevements_rejets',
+    DISPLAY_NAME: 'Prélèvements - Rejets bancaires du jour',
+    ENABLED: true,
+
+    FOLDER_ID: '1W5woP7yjzwpe9NDfwagWvwhL75MrBHxG',
+    SEARCH_QUERY: 'in:anywhere ' +
+      'subject:"Dalkia Liste des rejets bancaires du jour - Prélèvements"',
+    EXPECTED_SENDERS: Object.freeze(['*']),
+    EXPECTED_SUBJECT_PREFIXES: Object.freeze([
+      'Dalkia Liste des rejets bancaires du jour - Prélèvements',
+    ]),
+    ALLOWED_EXTENSIONS: Object.freeze([]),
+
+    LABEL_NAME: 'Controle_Prelevements_Rejets_Traite',
+    STATE_PROPERTY_KEY: 'PRELEVEMENTS_REJETS_IMPORT_STATE_V1',
+    DRIVE_MESSAGE_MARKER_PREFIX: 'PRELEVEMENTS_REJETS_MESSAGE_ID=',
     TIME_ZONE: 'Europe/Paris',
     INITIAL_LOOKBACK_MONTHS: 4,
     DATE_OFFSET_DAYS: 3,
