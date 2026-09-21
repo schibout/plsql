@@ -51,3 +51,7 @@ CTRL_QUASI_AUTOMATIQUE_DES_PRELEVEMENTS/rapport/
 
 # Caches pytest (odat_watch)
 odat_watch/.pytest_cache/
+
+# clasp : liaison locale au projet Apps Script (propre au poste / au compte)
+Projet_Virements/.clasp.json
+Projet_CTM/.clasp.json

@@ -92,7 +92,17 @@ Dossier_du_flux/
 Le suffixe `_02`, puis `_03`, évite d'écraser deux fichiers de même nom issus
 de messages différents.
 
-## Fichiers à copier dans Apps Script
+## Déploiement depuis VS Code (clasp)
+
+Une fois pour toutes : `npm install -g @google/clasp`, `clasp login`, puis activer
+« Google Apps Script API » sur <https://script.google.com/home/usersettings>.
+Le fichier `.clasp.json` (hors git) contient l'identifiant du projet.
+
+Ensuite, `deploy.bat` lance les tests Node puis `clasp push --force` : les
+fichiers `.gs` et `appsscript.json` remplacent ceux du projet en ligne
+(`.claspignore` garde README, SPEC et `tests/` en local).
+
+## Fichiers à copier dans Apps Script (sans clasp)
 
 Créer un projet sur <https://script.google.com>, puis recopier :
 
