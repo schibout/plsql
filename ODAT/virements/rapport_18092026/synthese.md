@@ -45,9 +45,13 @@ Le contrôle suit chaque virement tout au long de son parcours et s'assure qu'à
 | Envois ou virements déjà transmis un jour précédent | 1 journée(s) comparée(s) | **Conforme** — 🟠 1 à vérifier |
 | Fichiers d'origine rejoués | 59 envois | **Conforme** |
 | Contrôles de forme sur les envois | 59 envois | **Conforme** |
-| Rapprochement avec le retour de la trésorerie | — | *Non réalisé : l'export de la trésorerie n'a pas été fourni* |
+| Rapprochement avec le retour de la trésorerie | 205 repris / 205 envoyés | **Conforme** |
 
 Montant total transmis à la banque sur la journée : **2 667 877,07 EUR** pour **205 virements**.
+
+Montant total repris par la trésorerie : **2 667 877,07 EUR** pour **205 virements**.
+
+Les deux listes correspondent exactement, en nombre de virements comme en montant.
 
 ---
 
