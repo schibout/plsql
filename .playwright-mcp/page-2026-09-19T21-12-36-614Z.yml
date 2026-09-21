@@ -1,0 +1,72 @@
+- generic [ref=f1e2]:
+  - generic [ref=f1e11]:
+    - heading "🕓 ODAT Watch" [level=2] [ref=f1e16]
+    - paragraph [ref=f1e21]: Control-M · Oracle EBS · FIN-FINANCE
+    - generic [ref=f1e23]:
+      - paragraph [ref=f1e27]: Application
+      - group [ref=f1e29]:
+        - combobox "Application" [ref=f1e30]: FIN-FINANCE
+        - button "Open" [ref=f1e31] [cursor=pointer]
+    - generic [ref=f1e36]:
+      - paragraph [ref=f1e40]: Filtre (job, description, script)
+      - textbox "Filtre (job, description, script)" [ref=f1e43]:
+        - /placeholder: ""
+    - separator [ref=f1e48]
+    - group [ref=f1e51]:
+      - generic "keyboard_arrow_right 📂 Sources d'import" [ref=f1e52] [cursor=pointer]:
+        - generic [ref=f1e53]:
+          - generic [ref=f1e54]: keyboard_arrow_right
+          - paragraph [ref=f1e58]: 📂 Sources d'import
+    - button [ref=f1e61] [cursor=pointer]:
+      - paragraph [ref=f1e66]: 📥 Importer les nouveaux fichiers ODAT
+    - separator [ref=f1e71]
+    - paragraph [ref=f1e76]:
+      - strong [ref=f1e77]: Oracle Apps
+    - generic [ref=f1e79]:
+      - button [ref=f1e87] [cursor=pointer]:
+        - paragraph [ref=f1e92]: 🔄 Demandes
+      - button [ref=f1e100] [cursor=pointer]:
+        - paragraph [ref=f1e105]: 📚 Programmes
+    - button [ref=f1e108] [cursor=pointer]:
+      - paragraph [ref=f1e113]: 🧾 Analyser les logs .req / .out
+  - generic [ref=f1e3]:
+    - banner [ref=f1e116]:
+      - generic [ref=f1e119]:
+        - generic [ref=f1e121]:
+          - img "Running..." [ref=f1e122]
+          - button "Stop" [ref=f1e127] [cursor=pointer]
+        - button "Deploy" [ref=f1e129] [cursor=pointer]
+        - button "Main menu" [ref=f1e133] [cursor=pointer]
+    - generic [ref=f1e140]:
+      - generic [ref=f1e145]:
+        - generic [ref=f1e146]:
+          - heading "FIN-FINANCE" [level=1] [ref=f1e148]:
+            - text: FIN-FINANCE
+            - generic [ref=f1e149]:
+              - link "Link to heading":
+                - /url: "#fin-finance"
+          - generic [ref=f1e150]: Samedi 19/09/2026, 23:12 — qu'est-ce qui tourne ce soir, et demain ?
+        - generic [ref=f1e151]: Dernière photo Control-M 19/09 16:46 · odate 2026-09-19il y a 6 h 26 min · 701 photos · 205 jours d'historique
+      - generic [ref=f1e153]:
+        - tablist [ref=f1e154]:
+          - tab [selected] [ref=f1e155] [cursor=pointer]:
+            - paragraph [ref=f1e157]: 🌙 Ce soir
+          - tab [ref=f1e159] [cursor=pointer]:
+            - paragraph [ref=f1e161]: 📅 Demain
+          - tab [ref=f1e162] [cursor=pointer]:
+            - paragraph [ref=f1e164]: 🔴 Maintenant
+          - tab [ref=f1e165] [cursor=pointer]:
+            - paragraph [ref=f1e167]: ☀️ Matin
+          - tab [ref=f1e168] [cursor=pointer]:
+            - paragraph [ref=f1e170]: 🌹 Folio Rose
+          - tab [ref=f1e171] [cursor=pointer]:
+            - paragraph [ref=f1e173]: 🅾 Oracle
+          - tab [ref=f1e174] [cursor=pointer]:
+            - paragraph [ref=f1e176]: 🔎 Historique
+          - tab [ref=f1e177] [cursor=pointer]:
+            - paragraph [ref=f1e179]: 📈 Profils
+          - tab [ref=f1e180] [cursor=pointer]:
+            - paragraph [ref=f1e182]: 🗂 Données
+          - tab [ref=f1e183] [cursor=pointer]:
+            - paragraph [ref=f1e185]: ⌨ SQL
+        - tabpanel "🌙 Ce soir" [ref=f1e186]

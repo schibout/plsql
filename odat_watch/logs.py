@@ -222,6 +222,7 @@ def ecrire_liste(dest: Path | None = None) -> str:
         SELECT r.request_id, r.logfile_name, r.outfile_name
         FROM ora_requests r
         WHERE r.phase_code='C' AND r.status_code IN ('E','G','X')
+          AND r.source='oracle'
           AND NOT EXISTS (SELECT 1 FROM ora_request_logs l WHERE l.request_id=r.request_id AND l.kind='req')
         ORDER BY r.actual_completion DESC""").fetchall()
     con.close()

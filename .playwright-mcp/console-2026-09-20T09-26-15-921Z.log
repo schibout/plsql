@@ -1,0 +1,46 @@
+[   42820ms] [WARNING] WebSocket onclose @ http://localhost:8504/static/js/index.CcFifQPt.js:28
+[   43104ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8504/_stcore/health:0
+[   43104ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8504/_stcore/host-config:0
+[   43217ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8504/_stcore/health:0
+[   43218ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8504/_stcore/host-config:0
+[   43403ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8504/_stcore/health:0
+[   43403ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8504/_stcore/host-config:0
+[   43704ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8504/_stcore/health:0
+[   43704ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8504/_stcore/host-config:0
+[   44354ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8504/_stcore/health:0
+[   44354ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8504/_stcore/host-config:0
+[   45528ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8504/_stcore/health:0
+[   45529ms] [ERROR] Client Error in reaching server endpoint - No response received when attempting to reach /_stcore/health @ http://localhost:8504/static/js/index.CcFifQPt.js:27
+[   45529ms] [ERROR] Is Streamlit still running? If you accidentally stopped Streamlit, just restart it in your terminal: @ http://localhost:8504/static/js/index.CcFifQPt.js:32
+[   45530ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8504/_stcore/host-config:0
+[   48060ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8504/_stcore/health:0
+[   48061ms] [ERROR] Client Error in reaching server endpoint - No response received when attempting to reach /_stcore/health @ http://localhost:8504/static/js/index.CcFifQPt.js:27
+[   48061ms] [ERROR] Is Streamlit still running? If you accidentally stopped Streamlit, just restart it in your terminal: @ http://localhost:8504/static/js/index.CcFifQPt.js:32
+[   48061ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8504/_stcore/host-config:0
+[   51885ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8504/_stcore/health:0
+[   51885ms] [ERROR] Client Error in reaching server endpoint - No response received when attempting to reach /_stcore/health @ http://localhost:8504/static/js/index.CcFifQPt.js:27
+[   51885ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8504/_stcore/host-config:0
+[   54855ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8504/_stcore/health:0
+[   54855ms] [ERROR] Client Error in reaching server endpoint - No response received when attempting to reach /_stcore/health @ http://localhost:8504/static/js/index.CcFifQPt.js:27
+[   54856ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8504/_stcore/host-config:0
+[   57983ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8504/_stcore/health:0
+[   57983ms] [ERROR] Client Error in reaching server endpoint - No response received when attempting to reach /_stcore/health @ http://localhost:8504/static/js/index.CcFifQPt.js:27
+[   57983ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8504/_stcore/host-config:0
+[   61745ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8504/_stcore/health:0
+[   61746ms] [ERROR] Client Error in reaching server endpoint - No response received when attempting to reach /_stcore/health @ http://localhost:8504/static/js/index.CcFifQPt.js:27
+[   61746ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8504/_stcore/host-config:0
+[   65221ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8504/_stcore/health:0
+[   65222ms] [ERROR] Client Error in reaching server endpoint - No response received when attempting to reach /_stcore/health @ http://localhost:8504/static/js/index.CcFifQPt.js:27
+[   65222ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8504/_stcore/host-config:0
+[   68078ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8504/_stcore/health:0
+[   68078ms] [ERROR] Client Error in reaching server endpoint - No response received when attempting to reach /_stcore/health @ http://localhost:8504/static/js/index.CcFifQPt.js:27
+[   68078ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8504/_stcore/host-config:0
+[   71428ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8504/_stcore/health:0
+[   71429ms] [ERROR] Client Error in reaching server endpoint - No response received when attempting to reach /_stcore/health @ http://localhost:8504/static/js/index.CcFifQPt.js:27
+[   71431ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8504/_stcore/host-config:0
+[   74980ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8504/_stcore/health:0
+[   74980ms] [ERROR] Client Error in reaching server endpoint - No response received when attempting to reach /_stcore/health @ http://localhost:8504/static/js/index.CcFifQPt.js:27
+[   74982ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8504/_stcore/host-config:0
+[   78596ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8504/_stcore/health:0
+[   78596ms] [ERROR] Client Error in reaching server endpoint - No response received when attempting to reach /_stcore/health @ http://localhost:8504/static/js/index.CcFifQPt.js:27
+[   78596ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8504/_stcore/host-config:0

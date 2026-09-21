@@ -1,0 +1,89 @@
+- generic [ref=e2]:
+  - generic [ref=e11]:
+    - heading "🕓 ODAT Watch" [level=2] [ref=e16]
+    - paragraph [ref=e21]: Control-M · Oracle EBS · FIN-FINANCE
+    - generic [ref=e23]:
+      - paragraph [ref=e27]: Application
+      - group [ref=e29]:
+        - combobox "Application" [ref=e30]: FIN-FINANCE
+        - button "Open" [ref=e31] [cursor=pointer]
+    - generic [ref=e36]:
+      - paragraph [ref=e40]: Filtre (job, description, script)
+      - textbox "Filtre (job, description, script)" [ref=e43]:
+        - /placeholder: ""
+    - separator [ref=e48]
+    - button [ref=e51] [cursor=pointer]:
+      - paragraph [ref=e56]: 📥 Importer les nouveaux fichiers ODAT
+    - paragraph [ref=e61]: "Sources scannées : dossier ODAT du dépôt et Téléchargements."
+    - separator [ref=e66]
+    - paragraph [ref=e71]:
+      - strong [ref=e72]: Oracle Apps
+    - generic [ref=e74]:
+      - button [ref=e82] [cursor=pointer]:
+        - paragraph [ref=e87]: 🔄 Demandes
+      - button [ref=e95] [cursor=pointer]:
+        - paragraph [ref=e100]: 📚 Programmes
+    - button [ref=e103] [cursor=pointer]:
+      - paragraph [ref=e108]: 🧾 Analyser les logs .req / .out
+  - generic [ref=e3]:
+    - banner [ref=e111]:
+      - generic [ref=e114]:
+        - button "Deploy" [ref=e125] [cursor=pointer]
+        - button "Main menu" [ref=e129] [cursor=pointer]
+    - generic [ref=e133]:
+      - generic [ref=e138]:
+        - generic [ref=e139]:
+          - heading "FIN-FINANCE" [level=1] [ref=e141]:
+            - text: FIN-FINANCE
+            - generic [ref=e142]:
+              - link "Link to heading":
+                - /url: "#fin-finance"
+          - generic [ref=e143]: Samedi 19/09/2026, 21:41 — qu'est-ce qui tourne ce soir, et demain ?
+        - generic [ref=e144]: Dernière photo Control-M 17/09 16:46 · odate 2026-09-17il y a 52 h 55 min · 96 photos · 90 jours d'historique
+      - generic [ref=e146]:
+        - tablist [ref=e147]:
+          - tab [ref=e148] [cursor=pointer]:
+            - paragraph [ref=e150]: 🌙 Ce soir
+          - tab [active] [selected] [ref=e152] [cursor=pointer]:
+            - paragraph [ref=e154]: 📅 Demain
+          - tab [ref=e155] [cursor=pointer]:
+            - paragraph [ref=e157]: 🔴 Maintenant
+          - tab [ref=e158] [cursor=pointer]:
+            - paragraph [ref=e160]: ☀️ Matin
+          - tab [ref=e161] [cursor=pointer]:
+            - paragraph [ref=e163]: 🅾 Oracle
+          - tab [ref=e164] [cursor=pointer]:
+            - paragraph [ref=e166]: 🔎 Historique
+          - tab [ref=e167] [cursor=pointer]:
+            - paragraph [ref=e169]: 📈 Profils
+          - tab [ref=e170] [cursor=pointer]:
+            - paragraph [ref=e172]: 🗂 Données
+          - tab [ref=e173] [cursor=pointer]:
+            - paragraph [ref=e175]: ⌨ SQL
+        - tabpanel "📅 Demain" [ref=e271]:
+          - generic [ref=e272]:
+            - paragraph [ref=e277]:
+              - text: "Plage 20/09 06:00 → 21/09 06:00. Les jobs hebdo et mensuels sont ceux qu'on oublie : filtrez la colonne"
+              - emphasis [ref=e278]: frequence
+              - text: .
+            - generic [ref=e280]:
+              - generic [ref=e287]:
+                - generic [ref=e288]: "80"
+                - generic [ref=e289]: jobs attendus
+              - generic [ref=e296]:
+                - generic [ref=e297]: "40"
+                - generic [ref=e298]: chaînes
+              - generic [ref=e305]:
+                - generic [ref=e306]: "0"
+                - generic [ref=e307]: déjà terminés OK
+              - generic [ref=e314]:
+                - generic [ref=e315]: "0"
+                - generic [ref=e316]: en erreur
+              - generic [ref=e323]:
+                - generic [ref=e324]: "5"
+                - generic [ref=e325]: hebdo / mensuels
+            - generic [ref=e333]:
+              - button "Show/hide columns" [ref=e337] [cursor=pointer]
+              - button "Download as CSV" [ref=e343] [cursor=pointer]
+              - button "Search" [ref=e349] [cursor=pointer]
+              - button "Fullscreen" [ref=e355] [cursor=pointer]

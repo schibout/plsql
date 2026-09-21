@@ -31,7 +31,8 @@ CREATE TABLE IF NOT EXISTS ora_programs (
     program_short     TEXT PRIMARY KEY,
     program_name      TEXT, application_short TEXT, application_name TEXT,
     executable_name   TEXT, execution_method TEXT, execution_file TEXT,
-    enabled           TEXT, description TEXT, refreshed_at TEXT
+    enabled           TEXT, description TEXT, refreshed_at TEXT,
+    source            TEXT NOT NULL DEFAULT 'oracle'
 );
 CREATE TABLE IF NOT EXISTS ora_requests (
     request_id        INTEGER PRIMARY KEY,
@@ -42,7 +43,8 @@ CREATE TABLE IF NOT EXISTS ora_requests (
     resubmit_interval TEXT, resubmit_unit TEXT, argument_text TEXT,
     description       TEXT, completion_text TEXT,
     logfile_name      TEXT, outfile_name TEXT, job_name TEXT,
-    refreshed_at      TEXT
+    refreshed_at      TEXT,
+    source            TEXT NOT NULL DEFAULT 'oracle'
 );
 CREATE INDEX IF NOT EXISTS ix_ora_prog ON ora_requests(program_short, requested_start);
 CREATE INDEX IF NOT EXISTS ix_ora_job ON ora_requests(job_name, actual_start);
@@ -308,6 +310,19 @@ def _migrate(con: sqlite3.Connection) -> None:
         if cols and colonne not in cols:
             con.execute(f"ALTER TABLE {table} ADD COLUMN {colonne} TEXT")
             con.commit()
+    for table in ("ora_requests", "ora_programs"):
+        cols = [r[1] for r in con.execute(f"PRAGMA table_info({table})")]
+        if cols and "source" not in cols:
+            con.execute(f"ALTER TABLE {table} ADD COLUMN source TEXT NOT NULL DEFAULT 'oracle'")
+            con.commit()
+    # Les anciennes versions ne marquaient que les programmes mock. Leur horodatage commun permet
+    # d'identifier le lot de demandes simulées sans toucher aux chargements Oracle réels.
+    if all(con.execute(f"SELECT 1 FROM sqlite_master WHERE type='table' AND name='{table}'").fetchone()
+           for table in ("ora_requests", "ora_programs")):
+        con.execute("UPDATE ora_programs SET source='mock' WHERE description='(mock)' AND source<>'mock'")
+        con.execute("UPDATE ora_requests SET source='mock' WHERE source<>'mock' AND refreshed_at IN "
+                    "(SELECT refreshed_at FROM ora_programs WHERE description='(mock)')")
+        con.commit()
     for table, colonne in (("ora_requests", "job_name"),):
         cols = [r[1] for r in con.execute(f"PRAGMA table_info({table})")]
         if cols and colonne not in cols:

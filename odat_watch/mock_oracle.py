@@ -174,13 +174,16 @@ def main(reset: bool):
     con.executemany("""INSERT OR REPLACE INTO ora_requests(request_id, program_short, program_name, application_short,
         phase_code, status_code, phase, status, request_date, requested_start, actual_start, actual_completion,
         requestor, responsibility, parent_request_id, resubmit_interval, resubmit_unit, argument_text, description,
-        completion_text, logfile_name, outfile_name, job_name, refreshed_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""", reqs)
+        completion_text, logfile_name, outfile_name, job_name, refreshed_at, source)
+        VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""", [(*r, "mock") for r in reqs])
     con.executemany("""INSERT OR REPLACE INTO ora_programs(program_short, program_name, application_short, application_name,
-        executable_name, execution_method, execution_file, enabled, description, refreshed_at) VALUES (?,?,?,?,?,?,?,?,?,?)""",
+        executable_name, execution_method, execution_file, enabled, description, refreshed_at, source)
+        VALUES (?,?,?,?,?,?,?,?,?,?,?)""",
         [(s, n, a, {"DKA": "Application Specifique DKA", "XXRB": "ELSY-RB", "SQLAP": "Payables", "SQLGL": "General Ledger",
                     "FND": "Application Object Library"}.get(a, a),
           s, "Host" if s == "DKA_SLAUNCHER" else ("PL/SQL Stored Procedure" if s.startswith("DKA") else "Oracle Reports"),
-          f"{s}.sh" if s == "DKA_SLAUNCHER" else f"{s}_PKG.MAIN", "Y", "(mock)", refreshed) for s, n, a in progs.values()])
+          f"{s}.sh" if s == "DKA_SLAUNCHER" else f"{s}_PKG.MAIN", "Y", "(mock)", refreshed, "mock")
+         for s, n, a in progs.values()])
     con.executemany("INSERT OR REPLACE INTO job_mapping(job_name, program_short, commentaire) VALUES (?,?,?)",
                     [(j, p, d) for j, (p, d) in mapping.items()])
     con.commit()

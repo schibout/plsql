@@ -1,6 +1,7 @@
 """Recherche multi de l'onglet Oracle."""
 import pandas as pd
 
+import db
 import ui_oracle
 
 
@@ -24,3 +25,24 @@ def test_recherche_multi_cumule_programme_et_statut():
         statuts=["✖ Erreur"],
     )
     assert list(resultat["request_id"]) == [2]
+
+
+def test_chargement_exclut_les_mocks_et_conserve_les_logs_reels(tmp_path):
+    con = db.connect(tmp_path / "oracle.db")
+    con.executemany(
+        "INSERT INTO ora_requests(request_id, program_short, source) VALUES (?,?,?)",
+        [(1, "PROG_REEL", "oracle"), (2, "PROG_MOCK", "mock")],
+    )
+    con.executemany(
+        "INSERT INTO ora_programs(program_short, program_name, source) VALUES (?,?,?)",
+        [("PROG_REEL", "Réel", "oracle"), ("PROG_MOCK", "Simulé", "mock")],
+    )
+    con.execute("INSERT INTO ora_request_logs(request_id, kind, path) VALUES (1, 'req', 'l1.req')")
+    con.commit()
+
+    demandes, logs, programmes = ui_oracle._charger_depuis(con)
+
+    assert list(demandes["request_id"]) == [1]
+    assert list(programmes["program_short"]) == ["PROG_REEL"]
+    assert list(logs["request_id"]) == [1]
+    con.close()

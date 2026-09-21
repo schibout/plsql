@@ -20,6 +20,24 @@ def test_programmes_oracle_prend_le_traitement_lance_par_le_lanceur(tmp_path):
     con.close()
 
 
+def test_programmes_oracle_ignore_les_demandes_et_programmes_mock(tmp_path):
+    con = db.connect(tmp_path / "t.db")
+    con.execute("INSERT INTO job_mapping(job_name, program_short, commentaire) VALUES ('JOB_A', 'DKA_SLAUNCHER', 'x')")
+    con.executemany(
+        "INSERT INTO ora_requests(request_id, program_short, program_name, job_name, source) VALUES (?,?,?,?,?)",
+        [(1, "PROG_REEL", "Programme réel", "JOB_A", "oracle"),
+         (2, "PROG_MOCK", "Programme simulé", "JOB_A", "mock")],
+    )
+    con.executemany(
+        "INSERT INTO ora_programs(program_short, program_name, source) VALUES (?,?,?)",
+        [("PROG_REEL", "Programme réel", "oracle"), ("PROG_MOCK", "Programme simulé", "mock")],
+    )
+    con.commit()
+
+    assert fc.programmes_oracle(con)["JOB_A"] == "PROG_REEL · Programme réel"
+    con.close()
+
+
 def test_programme_depuis_description():
     import oracle_refresh as orf
     assert orf.programme_from_description("FINFIN_J18TRT_04_IMP01_Q : DKA_IPAPROJETHRM_JOB.sh") == "DKA_IPAPROJETHRM"

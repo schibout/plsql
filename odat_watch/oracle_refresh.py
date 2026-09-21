@@ -91,8 +91,8 @@ INSERT INTO ora_requests(request_id, program_short, program_name, application_sh
     phase_code, status_code, phase, status, request_date, requested_start, actual_start,
     actual_completion, requestor, responsibility, parent_request_id, resubmit_interval,
     resubmit_unit, argument_text, description, completion_text, logfile_name, outfile_name,
-    job_name, refreshed_at)
-VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+    job_name, refreshed_at, source)
+VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
 ON CONFLICT(request_id) DO UPDATE SET
     phase_code=excluded.phase_code, status_code=excluded.status_code,
     phase=excluded.phase, status=excluded.status,
@@ -100,18 +100,19 @@ ON CONFLICT(request_id) DO UPDATE SET
     actual_completion=excluded.actual_completion, completion_text=excluded.completion_text,
     logfile_name=excluded.logfile_name, outfile_name=excluded.outfile_name,
     job_name=COALESCE(excluded.job_name, ora_requests.job_name),
-    refreshed_at=excluded.refreshed_at
+    refreshed_at=excluded.refreshed_at, source=excluded.source
 """
 
 UPSERT_PROG = """
 INSERT INTO ora_programs(program_short, program_name, application_short, application_name,
-    executable_name, execution_method, execution_file, enabled, description, refreshed_at)
-VALUES (?,?,?,?,?,?,?,?,?,?)
+    executable_name, execution_method, execution_file, enabled, description, refreshed_at, source)
+VALUES (?,?,?,?,?,?,?,?,?,?,?)
 ON CONFLICT(program_short) DO UPDATE SET
     program_name=excluded.program_name, application_short=excluded.application_short,
     application_name=excluded.application_name, executable_name=excluded.executable_name,
     execution_method=excluded.execution_method, execution_file=excluded.execution_file,
-    enabled=excluded.enabled, description=excluded.description, refreshed_at=excluded.refreshed_at
+    enabled=excluded.enabled, description=excluded.description, refreshed_at=excluded.refreshed_at,
+    source=excluded.source
 """
 
 
@@ -311,9 +312,9 @@ def _signature_memorisee(cle: str, con) -> str | None:
 
 def etat_chargement(con) -> str:
     """Résumé pour l'interface : volume en base et dernier chargement."""
-    n = con.execute("SELECT COUNT(*) FROM ora_requests").fetchone()[0]
+    n = con.execute("SELECT COUNT(*) FROM ora_requests WHERE source='oracle'").fetchone()[0]
     borne = borne_chargement("demandes", con)
-    mn, mx = con.execute("SELECT MIN(request_date), MAX(request_date) FROM ora_requests").fetchone()
+    mn, mx = con.execute("SELECT MIN(request_date), MAX(request_date) FROM ora_requests WHERE source='oracle'").fetchone()
     periode = f", du {mn[:10]} au {mx[:10]}" if mn and mx else ""
     return f"{n} demandes en base{periode} · dernier chargement : {borne:%d/%m %H:%M}" if borne else f"{n} demandes en base · jamais chargé"
 
@@ -336,7 +337,7 @@ def _fenetre(cle: str, cfg, con, cur, heures: float | None, complet: bool) -> tu
     jours_initial = float(ora.get("jours_initial", 365))
     maintenant = _heure_oracle(cur)
     borne = borne_chargement(cle, con)
-    max_id = con.execute("SELECT MAX(request_id) FROM ora_requests").fetchone()[0]
+    max_id = con.execute("SELECT MAX(request_id) FROM ora_requests WHERE source='oracle'").fetchone()[0]
     if heures:
         return maintenant - timedelta(hours=heures), AUCUN_ID, f"fenêtre de {heures:g} h", maintenant
     if complet or borne is None or max_id is None:
@@ -361,7 +362,7 @@ def refresh_programs(complet: bool = False) -> str:
         cur.execute(SQL_PROGRAMS.format(s=_schema(cfg)), {"depuis": depuis})
         rows = cur.fetchall()
     with con:
-        con.executemany(UPSERT_PROG, [(*r, now) for r in rows])
+        con.executemany(UPSERT_PROG, [(*r, now, "oracle") for r in rows])
         _memoriser_borne("programmes", maintenant, con)
     con.close()
     return f"{len(rows)} programmes concurrents chargés ({mode})."
@@ -393,7 +394,8 @@ def refresh_requests(heures: float | None = None, complet: bool = False) -> str:
         # Traitement par lots, dans l'ordre des request_id : un parent (lanceur DKA_SLAUNCHER, dont la
         # description porte le nom du job Control-M) précède toujours ses demandes filles, qui héritent
         # de son job. Les lots précédents sont retrouvés via `connus` (mémoire) ou la base.
-        connus = {r[0]: r[1] for r in con.execute("SELECT request_id, job_name FROM ora_requests WHERE job_name IS NOT NULL")}
+        connus = {r[0]: r[1] for r in con.execute(
+            "SELECT request_id, job_name FROM ora_requests WHERE source='oracle' AND job_name IS NOT NULL")}
         mapping: dict[str, tuple[str, str, str | None]] = {}
         total = pending = running = err = 0
         while True:
@@ -413,7 +415,7 @@ def refresh_requests(heures: float | None = None, complet: bool = False) -> str:
                  user, resp, parent, rint, runit, args, desc, ctext, logf, outf) = r
                 payload.append((rid, pshort, pname, app, ph, st, phase, status, rdate, rstart, astart, acomp,
                                 user, resp, parent, None if rint is None else str(rint), runit, args, desc,
-                                ctext, logf, outf, jobs[rid], now))
+                                ctext, logf, outf, jobs[rid], now, "oracle"))
                 if jobs[rid]:
                     connus[rid] = jobs[rid]
                 j = job_from_description(desc)

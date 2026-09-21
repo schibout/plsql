@@ -1,0 +1,132 @@
+- generic [ref=f1e2]:
+  - generic [ref=f1e11]:
+    - heading "🕓 ODAT Watch" [level=2] [ref=f1e16]
+    - paragraph [ref=f1e21]: Control-M · Oracle EBS · FIN-FINANCE
+    - generic [ref=f1e23]:
+      - paragraph [ref=f1e27]: Application
+      - group [ref=f1e29]:
+        - combobox "Application" [ref=f1e30]: FIN-FINANCE
+        - button "Open" [ref=f1e31] [cursor=pointer]
+    - generic [ref=f1e36]:
+      - paragraph [ref=f1e40]: Filtre (job, description, script)
+      - textbox "Filtre (job, description, script)" [ref=f1e43]:
+        - /placeholder: ""
+    - separator [ref=f1e48]
+    - group [ref=f1e51]:
+      - generic "keyboard_arrow_right 📂 Sources d'import" [ref=f1e52] [cursor=pointer]:
+        - generic [ref=f1e53]:
+          - generic [ref=f1e54]: keyboard_arrow_right
+          - paragraph [ref=f1e58]: 📂 Sources d'import
+    - button [ref=f1e61] [cursor=pointer]:
+      - paragraph [ref=f1e66]: 📥 Importer les nouveaux fichiers ODAT
+    - separator [ref=f1e71]
+    - paragraph [ref=f1e76]:
+      - strong [ref=f1e77]: Oracle Apps
+    - generic [ref=f1e79]:
+      - button [ref=f1e87] [cursor=pointer]:
+        - paragraph [ref=f1e92]: 🔄 Demandes
+      - button [ref=f1e100] [cursor=pointer]:
+        - paragraph [ref=f1e105]: 📚 Programmes
+    - button [ref=f1e108] [cursor=pointer]:
+      - paragraph [ref=f1e113]: 🧾 Analyser les logs .req / .out
+  - generic [ref=f1e3]:
+    - banner [ref=f1e116]:
+      - generic [ref=f1e119]:
+        - generic [ref=f1e859]:
+          - img "Running..." [ref=f1e860]
+          - button "Stop" [ref=f1e865] [cursor=pointer]
+        - button "Deploy" [ref=f1e129] [cursor=pointer]
+        - button "Main menu" [ref=f1e133] [cursor=pointer]
+    - generic [ref=f1e137]:
+      - generic [ref=f1e142]:
+        - generic [ref=f1e143]:
+          - heading "FIN-FINANCE" [level=1] [ref=f1e145]:
+            - text: FIN-FINANCE
+            - generic [ref=f1e146]:
+              - link "Link to heading":
+                - /url: "#fin-finance"
+          - generic [ref=f1e147]: Dimanche 20/09/2026, 00:04 — qu'est-ce qui tourne ce soir, et demain ?
+        - generic [ref=f1e148]: Dernière photo Control-M 19/09 16:46 · odate 2026-09-19il y a 7 h 18 min · 701 photos · 205 jours d'historique
+      - generic [ref=f1e150]:
+        - tablist [ref=f1e151]:
+          - tab [ref=f1e152] [cursor=pointer]:
+            - paragraph [ref=f1e154]: 🧭 Préparer ma nuit
+          - tab [selected] [ref=f1e156] [cursor=pointer]:
+            - paragraph [ref=f1e158]: 📥 Clôtures
+          - tab [ref=f1e159] [cursor=pointer]:
+            - paragraph [ref=f1e161]: 🌙 Ce soir
+          - tab [ref=f1e162] [cursor=pointer]:
+            - paragraph [ref=f1e164]: 📅 Demain
+          - tab [ref=f1e165] [cursor=pointer]:
+            - paragraph [ref=f1e167]: 🔴 Maintenant
+          - tab [ref=f1e168] [cursor=pointer]:
+            - paragraph [ref=f1e170]: ☀️ Matin
+          - tab [ref=f1e171] [cursor=pointer]:
+            - paragraph [ref=f1e173]: 🌹 Folio Rose
+          - tab [ref=f1e174] [cursor=pointer]:
+            - paragraph [ref=f1e176]: 🅾 Oracle
+          - tab [ref=f1e177] [cursor=pointer]:
+            - paragraph [ref=f1e179]: 🔎 Historique
+          - tab [ref=f1e180] [cursor=pointer]:
+            - paragraph [ref=f1e182]: 📈 Profils
+          - tab [ref=f1e183] [cursor=pointer]:
+            - paragraph [ref=f1e185]: 🗂 Données
+          - tab [ref=f1e186] [cursor=pointer]:
+            - paragraph [ref=f1e188]: ⌨ SQL
+        - tabpanel "📥 Clôtures" [ref=f1e797]:
+          - generic [ref=f1e798]:
+            - heading "Calendriers de clôture" [level=3] [ref=f1e803]:
+              - text: Calendriers de clôture
+              - generic [ref=f1e804]:
+                - link "Link to heading":
+                  - /url: "#calendriers-de-cloture"
+            - paragraph [ref=f1e809]: "Chargez un classeur trimestriel .xlsx : trois feuilles métier mensuelles sont requises. Le dépôt ne modifie rien avant validation explicite."
+            - generic [ref=f1e811]:
+              - generic [ref=f1e812]:
+                - paragraph [ref=f1e815]: Classeur trimestriel
+                - button "Help for Classeur trimestriel" [ref=f1e819] [cursor=pointer]
+              - region "Classeur trimestriel" [ref=f1e823] [cursor=pointer]:
+                - button "file upload"
+                - generic [ref=f1e868]:
+                  - generic "Planning Clôtures T1-2026.xlsx, 82.4KB" [ref=f1e871]:
+                    - generic [ref=f1e876]:
+                      - generic "Planning Clôtures T1-2026.xlsx" [ref=f1e877]: Planni...1-2026.xlsx
+                      - generic [ref=f1e878]: 82.4KB
+                    - button "Remove Planning Clôtures T1-2026.xlsx" [ref=f1e880]
+                  - button "Add files" [ref=f1e884]:
+                    - generic [ref=f1e885]: add
+            - generic [ref=f1e890]:
+              - generic [ref=f1e895]:
+                - paragraph [ref=f1e899]: Mois reconnus
+                - paragraph [ref=f1e902]: "3"
+              - generic [ref=f1e907]:
+                - paragraph [ref=f1e911]: Opérations datées
+                - paragraph [ref=f1e914]: "201"
+              - generic [ref=f1e919]:
+                - paragraph [ref=f1e923]: Feuilles annexes ignorées
+                - paragraph [ref=f1e926]: "2"
+            - paragraph [ref=f1e927]: "Feuilles ignorées comme opérations : Feuil1, Feuille 1"
+            - generic [ref=f1e929]:
+              - tablist [ref=f1e930]:
+                - tab [selected] [ref=f1e931] [cursor=pointer]:
+                  - paragraph [ref=f1e933]: 2026-01
+                - tab [ref=f1e935] [cursor=pointer]:
+                  - paragraph [ref=f1e937]: 2026-02
+                - tab [ref=f1e938] [cursor=pointer]:
+                  - paragraph [ref=f1e940]: 2026-03
+              - tabpanel "2026-01" [ref=f1e941]:
+                - generic [ref=f1e947]:
+                  - button "Show/hide columns" [ref=f1e951] [cursor=pointer]
+                  - button "Download as CSV" [ref=f1e957] [cursor=pointer]
+                  - button "Search" [ref=f1e963] [cursor=pointer]
+                  - button "Fullscreen" [ref=f1e969] [cursor=pointer]
+            - button [ref=f1e983] [cursor=pointer]:
+              - paragraph [ref=f1e988]: Enregistrer et activer ce calendrier
+            - separator [ref=f1e993]
+            - heading "Historique des imports" [level=4] [ref=f1e999]:
+              - text: Historique des imports
+              - generic [ref=f1e1000]:
+                - link "Link to heading":
+                  - /url: "#historique-des-imports"
+            - status [ref=f1e1003]:
+              - paragraph [ref=f1e1007]: Aucun calendrier chargé. Les nuits ordinaires restent utilisables sans calendrier.

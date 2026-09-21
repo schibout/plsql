@@ -1,0 +1,11 @@
+[   50551ms] [WARNING] WebSocket onclose @ http://localhost:8504/static/js/index.CcFifQPt.js:28
+[   51121ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8504/_stcore/health:0
+[   51121ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8504/_stcore/host-config:0
+[   51239ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8504/_stcore/health:0
+[   51239ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8504/_stcore/host-config:0
+[   51408ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8504/_stcore/health:0
+[   51409ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8504/_stcore/host-config:0
+[   51721ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8504/_stcore/health:0
+[   51721ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8504/_stcore/host-config:0
+[   52398ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8504/_stcore/health:0
+[   52400ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8504/_stcore/host-config:0

@@ -1,0 +1,113 @@
+- generic [ref=e2]:
+  - generic [ref=e33]:
+    - heading "🕓 ODAT Watch" [level=2] [ref=e38]
+    - paragraph [ref=e43]: Control-M · Oracle EBS · FIN-FINANCE
+    - generic [ref=e45]:
+      - paragraph [ref=e49]: Application
+      - group [ref=e51]:
+        - combobox "Application" [ref=e52]: FIN-FINANCE
+        - button "Open" [ref=e53] [cursor=pointer]
+    - generic [ref=e58]:
+      - paragraph [ref=e62]: Filtre (job, description, script)
+      - textbox "Filtre (job, description, script)" [ref=e65]:
+        - /placeholder: ""
+    - separator [ref=e70]
+    - group [ref=e73]:
+      - generic "keyboard_arrow_right 📂 Sources d'import" [ref=e74] [cursor=pointer]:
+        - generic [ref=e75]:
+          - generic [ref=e76]: keyboard_arrow_right
+          - paragraph [ref=e80]: 📂 Sources d'import
+    - button [ref=e83] [cursor=pointer]:
+      - paragraph [ref=e88]: 📥 Importer les nouveaux fichiers ODAT
+    - separator [ref=e93]
+    - paragraph [ref=e98]:
+      - strong [ref=e99]: Oracle Apps
+    - paragraph [ref=e104]: "6331 demandes en base, du 2026-08-15 au 2026-09-20 · dernier chargement : 20/09 01:20"
+    - generic [ref=e107] [cursor=pointer]:
+      - checkbox "Tout recharger (chargement initial)" [ref=e109]
+      - generic [ref=e111]:
+        - paragraph [ref=e115]: Tout recharger (chargement initial)
+        - button "Help for Tout recharger (chargement initial)" [ref=e119]
+    - generic [ref=e124]:
+      - button [ref=e132] [cursor=pointer]:
+        - paragraph [ref=e137]: 🔄 Demandes
+      - button [ref=e145] [cursor=pointer]:
+        - paragraph [ref=e150]: 📚 Programmes
+    - button [ref=e153] [cursor=pointer]:
+      - paragraph [ref=e158]: 🧾 Analyser les logs .req / .out
+  - generic [ref=e3]:
+    - banner [ref=e6]:
+      - generic [ref=e9]:
+        - button "Deploy" [ref=e20] [cursor=pointer]
+        - button "Main menu" [ref=e24] [cursor=pointer]
+    - generic [ref=e168]:
+      - generic [ref=e173]:
+        - generic [ref=e174]:
+          - heading "FIN-FINANCE" [level=1] [ref=e176]:
+            - text: FIN-FINANCE
+            - generic [ref=e177]:
+              - link "Link to heading":
+                - /url: "#fin-finance"
+          - generic [ref=e178]: Dimanche 20/09/2026, 15:35 — qu'est-ce qui tourne ce soir, et demain ?
+        - generic [ref=e179]: Dernière photo Control-M 19/09 16:46 · odate 2026-09-19il y a 22 h 49 min · 701 photos · 205 jours d'historique
+      - generic [ref=e180]:
+        - generic [ref=e181]:
+          - tablist [ref=e182]:
+            - tab [ref=e183] [cursor=pointer]:
+              - paragraph [ref=e185]: 🧭 Préparer ma nuit
+            - tab [ref=e187] [cursor=pointer]:
+              - paragraph [ref=e189]: 📥 Clôtures
+            - tab [ref=e190] [cursor=pointer]:
+              - paragraph [ref=e192]: 🌙 Ce soir
+            - tab [ref=e193] [cursor=pointer]:
+              - paragraph [ref=e195]: 📅 Demain
+            - tab [ref=e196] [cursor=pointer]:
+              - paragraph [ref=e198]: 🔴 Maintenant
+            - tab [ref=e199] [cursor=pointer]:
+              - paragraph [ref=e201]: ☀️ Matin
+            - tab [active] [selected] [ref=e202] [cursor=pointer]:
+              - paragraph [ref=e204]: 🏦 Relevés bancaires
+            - tab [ref=e205] [cursor=pointer]:
+              - paragraph [ref=e207]: 🌹 Folio Rose
+            - tab [ref=e208] [cursor=pointer]:
+              - paragraph [ref=e210]: 🅾 Oracle
+            - tab [ref=e211] [cursor=pointer]:
+              - paragraph [ref=e213]: 📒 Référentiel
+            - tab [ref=e214] [cursor=pointer]:
+              - paragraph [ref=e216]: 🔎 Historique
+            - tab [ref=e217] [cursor=pointer]:
+              - paragraph [ref=e219]: 📈 Profils
+            - tab [ref=e220] [cursor=pointer]:
+              - paragraph [ref=e222]: 🗂 Données
+            - tab [ref=e223] [cursor=pointer]:
+              - paragraph [ref=e225]: ⌨ SQL
+          - tabpanel "🏦 Relevés bancaires" [ref=e612]:
+            - generic [ref=e613]:
+              - heading "Chaîne des relevés bancaires · PFE → Control-M (FINEXT_J14INT_05/06) → EBS (RBAFBIMP → DKA_SRBCTRLRB)" [level=4] [ref=e619]:
+                - text: Chaîne des relevés bancaires · PFE → Control-M (FINEXT_J14INT_05/06) → EBS (RBAFBIMP → DKA_SRBCTRLRB)
+                - generic [ref=e620]:
+                  - link "Link to heading":
+                    - /url: "#chaine-des-releves-bancaires-pfe-control-m-finext-j14-int-05-06-ebs-rbafbimp-dka-srbctrlrb"
+              - generic [ref=e622]:
+                - generic [ref=e626]:
+                  - paragraph [ref=e630]: Matinée
+                  - generic [ref=e633]:
+                    - group "Matinée" [ref=e635]:
+                      - spinbutton "day, Matinée" [ref=e636]: "20"
+                      - generic [aria-hidden] [ref=e637]: /
+                      - spinbutton "month, Matinée" [ref=e638]: "09"
+                      - generic [aria-hidden] [ref=e639]: /
+                      - spinbutton "year, Matinée" [ref=e640]: "2026"
+                    - textbox [ref=e642]: 2026-09-20
+                - button [ref=e650] [cursor=pointer]:
+                  - paragraph [ref=e655]: 🔄 Scanner les dossiers
+                - button [ref=e660] [cursor=pointer]:
+                  - generic "📋 list.txt des logs manquants" [ref=e661]:
+                    - paragraph [ref=e665]: 📋 list.txt des logs manquants
+              - paragraph [ref=e672]:
+                - text: "Aucune donnée : copiez les exécutions PFE (dossiers <uuid>), les fichiers AFB120.txt_* et les logs .req/.out dans les dossiers de"
+                - code [ref=e673]: config.ini [releves]
+                - text: ", puis cliquez sur"
+                - strong [ref=e674]: Scanner
+                - text: .
+        - button "Scroll tabs right" [ref=e607] [cursor=pointer]

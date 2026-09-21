@@ -1,0 +1,5 @@
+[
+  "FichierControleFluxCoteUnix/tests/test_verifier_oracle_gl.py::test_lanceur_execute_controle_local_puis_oracle",
+  "FichierControleFluxCoteUnix/tests/test_verifier_oracle_gl.py::test_rapport_excel_reprend_la_palette_de_prelevements",
+  "FichierControleFluxCoteUnix/tests/test_verifier_oracle_gl.py::test_requete_gl_reutilise_les_cles_controle_folio_rose"
+]

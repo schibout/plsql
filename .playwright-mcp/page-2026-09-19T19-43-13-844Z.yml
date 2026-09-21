@@ -1,0 +1,162 @@
+- generic [ref=e2]:
+  - generic [ref=e11]:
+    - heading "🕓 ODAT Watch" [level=2] [ref=e16]
+    - paragraph [ref=e21]: Control-M · Oracle EBS · FIN-FINANCE
+    - generic [ref=e23]:
+      - paragraph [ref=e27]: Application
+      - group [ref=e29]:
+        - combobox "Application" [ref=e30]: FIN-FINANCE
+        - button "Open" [ref=e31] [cursor=pointer]
+    - generic [ref=e36]:
+      - paragraph [ref=e40]: Filtre (job, description, script)
+      - textbox "Filtre (job, description, script)" [ref=e43]:
+        - /placeholder: ""
+    - separator [ref=e48]
+    - button [ref=e51] [cursor=pointer]:
+      - paragraph [ref=e56]: 📥 Importer les nouveaux fichiers ODAT
+    - paragraph [ref=e61]: "Sources scannées : dossier ODAT du dépôt et Téléchargements."
+    - separator [ref=e66]
+    - paragraph [ref=e71]:
+      - strong [ref=e72]: Oracle Apps
+    - generic [ref=e74]:
+      - button [ref=e82] [cursor=pointer]:
+        - paragraph [ref=e87]: 🔄 Demandes
+      - button [ref=e95] [cursor=pointer]:
+        - paragraph [ref=e100]: 📚 Programmes
+    - button [ref=e103] [cursor=pointer]:
+      - paragraph [ref=e108]: 🧾 Analyser les logs .req / .out
+  - generic [ref=e3]:
+    - banner [ref=e111]:
+      - generic [ref=e114]:
+        - button "Deploy" [ref=e125] [cursor=pointer]
+        - button "Main menu" [ref=e129] [cursor=pointer]
+    - generic [ref=e133]:
+      - generic [ref=e138]:
+        - generic [ref=e139]:
+          - heading "FIN-FINANCE" [level=1] [ref=e141]:
+            - text: FIN-FINANCE
+            - generic [ref=e142]:
+              - link "Link to heading":
+                - /url: "#fin-finance"
+          - generic [ref=e143]: Samedi 19/09/2026, 21:41 — qu'est-ce qui tourne ce soir, et demain ?
+        - generic [ref=e144]: Dernière photo Control-M 17/09 16:46 · odate 2026-09-17il y a 52 h 55 min · 96 photos · 90 jours d'historique
+      - generic [ref=e146]:
+        - tablist [ref=e147]:
+          - tab [ref=e148] [cursor=pointer]:
+            - paragraph [ref=e150]: 🌙 Ce soir
+          - tab [ref=e152] [cursor=pointer]:
+            - paragraph [ref=e154]: 📅 Demain
+          - tab [ref=e155] [cursor=pointer]:
+            - paragraph [ref=e157]: 🔴 Maintenant
+          - tab [ref=e158] [cursor=pointer]:
+            - paragraph [ref=e160]: ☀️ Matin
+          - tab [ref=e161] [cursor=pointer]:
+            - paragraph [ref=e163]: 🅾 Oracle
+          - tab [ref=e164] [cursor=pointer]:
+            - paragraph [ref=e166]: 🔎 Historique
+          - tab [ref=e167] [cursor=pointer]:
+            - paragraph [ref=e169]: 📈 Profils
+          - tab [ref=e170] [cursor=pointer]:
+            - paragraph [ref=e172]: 🗂 Données
+          - tab [active] [selected] [ref=e173] [cursor=pointer]:
+            - paragraph [ref=e175]: ⌨ SQL
+        - tabpanel "⌨ SQL" [ref=e1377]:
+          - generic [ref=e1378]:
+            - generic [ref=e1380]:
+              - generic [ref=e1387]:
+                - generic [ref=e1388]: "7"
+                - generic [ref=e1389]: tables
+              - generic [ref=e1396]:
+                - generic [ref=e1397]: 118 108
+                - generic [ref=e1398]: lignes au total
+              - generic [ref=e1405]:
+                - generic [ref=e1406]: 48.1 Mo
+                - generic [ref=e1407]: taille du fichier
+              - generic [ref=e1414]:
+                - generic [ref=e1415]: odat.db
+                - generic [ref=e1416]: base SQLite
+            - generic [ref=e1418]:
+              - generic [ref=e1420]:
+                - heading "🗄 Tables" [level=4] [ref=e1426]:
+                  - text: 🗄 Tables
+                  - generic [ref=e1427]:
+                    - link "Link to heading":
+                      - /url: "#tables"
+                - group [ref=e1430]:
+                  - generic "keyboard_arrow_right controle_matin_histo · 0 lignes" [ref=e1431] [cursor=pointer]:
+                    - generic [ref=e1432]:
+                      - generic [ref=e1433]: keyboard_arrow_right
+                      - paragraph [ref=e1437]:
+                        - strong [ref=e1438]: controle_matin_histo
+                        - text: · 0 lignes
+                - group [ref=e1441]:
+                  - generic "keyboard_arrow_right ctm_jobs · 115 271 lignes" [ref=e1442] [cursor=pointer]:
+                    - generic [ref=e1443]:
+                      - generic [ref=e1444]: keyboard_arrow_right
+                      - paragraph [ref=e1448]:
+                        - strong [ref=e1449]: ctm_jobs
+                        - text: · 115 271 lignes
+                - group [ref=e1452]:
+                  - generic "keyboard_arrow_right job_mapping · 109 lignes" [ref=e1453] [cursor=pointer]:
+                    - generic [ref=e1454]:
+                      - generic [ref=e1455]: keyboard_arrow_right
+                      - paragraph [ref=e1459]:
+                        - strong [ref=e1460]: job_mapping
+                        - text: · 109 lignes
+                - group [ref=e1463]:
+                  - generic "keyboard_arrow_right ora_programs · 2 102 lignes" [ref=e1464] [cursor=pointer]:
+                    - generic [ref=e1465]:
+                      - generic [ref=e1466]: keyboard_arrow_right
+                      - paragraph [ref=e1470]:
+                        - strong [ref=e1471]: ora_programs
+                        - text: · 2 102 lignes
+                - group [ref=e1474]:
+                  - generic "keyboard_arrow_right ora_request_logs · 68 lignes" [ref=e1475] [cursor=pointer]:
+                    - generic [ref=e1476]:
+                      - generic [ref=e1477]: keyboard_arrow_right
+                      - paragraph [ref=e1481]:
+                        - strong [ref=e1482]: ora_request_logs
+                        - text: · 68 lignes
+                - group [ref=e1485]:
+                  - generic "keyboard_arrow_right ora_requests · 462 lignes" [ref=e1486] [cursor=pointer]:
+                    - generic [ref=e1487]:
+                      - generic [ref=e1488]: keyboard_arrow_right
+                      - paragraph [ref=e1492]:
+                        - strong [ref=e1493]: ora_requests
+                        - text: · 462 lignes
+                - group [ref=e1496]:
+                  - generic "keyboard_arrow_right snapshots · 96 lignes" [ref=e1497] [cursor=pointer]:
+                    - generic [ref=e1498]:
+                      - generic [ref=e1499]: keyboard_arrow_right
+                      - paragraph [ref=e1503]:
+                        - strong [ref=e1504]: snapshots
+                        - text: · 96 lignes
+              - generic [ref=e1506]:
+                - heading "⌨ Requêteur (lecture seule)" [level=4] [ref=e1512]:
+                  - text: ⌨ Requêteur (lecture seule)
+                  - generic [ref=e1513]:
+                    - link "Link to heading":
+                      - /url: "#requeteur-lecture-seule"
+                - group [ref=e1517]:
+                  - combobox "Exemples" [ref=e1518]: — choisir un exemple —
+                  - button "Open" [ref=e1519] [cursor=pointer]
+                - textbox "SQL" [ref=e1526]:
+                  - /placeholder: ""
+                  - text: SELECT * FROM snapshots ORDER BY snap_time DESC
+                - generic [ref=e1528]:
+                  - button [ref=e1533] [cursor=pointer]:
+                    - generic "▶ Exécuter" [ref=e1534]:
+                      - paragraph [ref=e1538]: ▶ Exécuter
+                  - group [ref=e1544]:
+                    - combobox "Lignes max" [ref=e1545]: "500"
+                    - button "Open" [ref=e1546] [cursor=pointer]
+                  - paragraph [ref=e1556]:
+                    - text: "Ctrl+Entrée dans la zone puis Exécuter. SQLite :"
+                    - code [ref=e1557]: date()
+                    - text: ","
+                    - code [ref=e1558]: time()
+                    - text: ","
+                    - code [ref=e1559]: julianday()
+                    - text: ","
+                    - code [ref=e1560]: json_each()
+                    - text: .

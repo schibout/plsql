@@ -1,0 +1,167 @@
+- generic [ref=f4e2]:
+  - generic [ref=f4e11]:
+    - heading "🕓 ODAT Watch" [level=2] [ref=f4e16]
+    - paragraph [ref=f4e21]: Control-M · Oracle EBS · FIN-FINANCE
+    - generic [ref=f4e23]:
+      - paragraph [ref=f4e27]: Application
+      - group [ref=f4e29]:
+        - combobox "Application" [ref=f4e30]: FIN-FINANCE
+        - button "Open" [ref=f4e31] [cursor=pointer]
+    - generic [ref=f4e36]:
+      - paragraph [ref=f4e40]: Filtre (job, description, script)
+      - textbox "Filtre (job, description, script)" [ref=f4e43]:
+        - /placeholder: ""
+    - separator [ref=f4e48]
+    - group [ref=f4e51]:
+      - generic "keyboard_arrow_right 📂 Sources d'import" [ref=f4e52] [cursor=pointer]:
+        - generic [ref=f4e53]:
+          - generic [ref=f4e54]: keyboard_arrow_right
+          - paragraph [ref=f4e58]: 📂 Sources d'import
+    - button [ref=f4e61] [cursor=pointer]:
+      - paragraph [ref=f4e66]: 📥 Importer les nouveaux fichiers ODAT
+    - separator [ref=f4e71]
+    - paragraph [ref=f4e76]:
+      - strong [ref=f4e77]: Oracle Apps
+    - generic [ref=f4e79]:
+      - button [ref=f4e87] [cursor=pointer]:
+        - paragraph [ref=f4e92]: 🔄 Demandes
+      - button [ref=f4e100] [cursor=pointer]:
+        - paragraph [ref=f4e105]: 📚 Programmes
+    - button [ref=f4e108] [cursor=pointer]:
+      - paragraph [ref=f4e113]: 🧾 Analyser les logs .req / .out
+  - generic [ref=f4e3]:
+    - banner [ref=f4e116]:
+      - generic [ref=f4e119]:
+        - button "Deploy" [ref=f4e121] [cursor=pointer]
+        - button "Main menu" [ref=f4e125] [cursor=pointer]
+    - generic [ref=f4e129]:
+      - generic [ref=f4e134]:
+        - generic [ref=f4e135]:
+          - heading "FIN-FINANCE" [level=1] [ref=f4e137]:
+            - text: FIN-FINANCE
+            - generic [ref=f4e138]:
+              - link "Link to heading":
+                - /url: "#fin-finance"
+          - generic [ref=f4e139]: Samedi 19/09/2026, 23:34 — qu'est-ce qui tourne ce soir, et demain ?
+        - generic [ref=f4e140]: Dernière photo Control-M 19/09 16:46 · odate 2026-09-19il y a 6 h 48 min · 701 photos · 205 jours d'historique
+      - generic [ref=f4e142]:
+        - tablist [ref=f4e143]:
+          - tab [ref=f4e144] [cursor=pointer]:
+            - paragraph [ref=f4e146]: 🌙 Ce soir
+          - tab [ref=f4e148] [cursor=pointer]:
+            - paragraph [ref=f4e150]: 📅 Demain
+          - tab [ref=f4e151] [cursor=pointer]:
+            - paragraph [ref=f4e153]: 🔴 Maintenant
+          - tab [ref=f4e154] [cursor=pointer]:
+            - paragraph [ref=f4e156]: ☀️ Matin
+          - tab [active] [selected] [ref=f4e157] [cursor=pointer]:
+            - paragraph [ref=f4e159]: 🌹 Folio Rose
+          - tab [ref=f4e160] [cursor=pointer]:
+            - paragraph [ref=f4e162]: 🅾 Oracle
+          - tab [ref=f4e163] [cursor=pointer]:
+            - paragraph [ref=f4e165]: 🔎 Historique
+          - tab [ref=f4e166] [cursor=pointer]:
+            - paragraph [ref=f4e168]: 📈 Profils
+          - tab [ref=f4e169] [cursor=pointer]:
+            - paragraph [ref=f4e171]: 🗂 Données
+          - tab [ref=f4e172] [cursor=pointer]:
+            - paragraph [ref=f4e174]: ⌨ SQL
+        - tabpanel "🌹 Folio Rose" [ref=f4e329]:
+          - generic [ref=f4e330]:
+            - group [ref=f4e333]:
+              - generic "keyboard_arrow_right 📥 Importer des exports Folio Rose" [ref=f4e334] [cursor=pointer]:
+                - generic [ref=f4e335]:
+                  - generic [ref=f4e336]: keyboard_arrow_right
+                  - paragraph [ref=f4e340]: 📥 Importer des exports Folio Rose
+            - generic [ref=f4e342]:
+              - paragraph [ref=f4e346]: Export
+              - group [ref=f4e348]:
+                - combobox "Export" [ref=f4e349]: 2026-08-27 · 27/06/2026 → 27/08/2026 · 43 lignes · ExportCSV-27-08-2026_07h00.csv
+                - button "Open" [ref=f4e350] [cursor=pointer]
+            - generic [ref=f4e355]:
+              - generic [ref=f4e362]:
+                - generic [ref=f4e363]: "43"
+                - generic [ref=f4e364]: lignes
+              - generic [ref=f4e371]:
+                - generic [ref=f4e372]: "22"
+                - generic [ref=f4e373]: folios
+              - generic [ref=f4e380]:
+                - generic [ref=f4e381]: 116 668 395,32 €
+                - generic [ref=f4e382]: écart débit total
+              - generic [ref=f4e389]:
+                - generic [ref=f4e390]: "0"
+                - generic [ref=f4e391]: lignes rapprochées
+              - generic [ref=f4e398]:
+                - generic [ref=f4e399]: "2"
+                - generic [ref=f4e400]: groupes compensés en attente
+              - generic [ref=f4e407]:
+                - generic [ref=f4e408]: —
+                - generic [ref=f4e409]: KO Oracle
+            - generic [ref=f4e411]:
+              - generic [ref=f4e415]:
+                - paragraph [ref=f4e419]: Type
+                - group [ref=f4e421]:
+                  - combobox "Type" [ref=f4e423]
+                  - button "Open" [ref=f4e424] [cursor=pointer]
+              - generic [ref=f4e431]:
+                - paragraph [ref=f4e435]: Statut
+                - group [ref=f4e437]:
+                  - combobox "Statut" [ref=f4e439]
+                  - button "Open" [ref=f4e440] [cursor=pointer]
+              - generic [ref=f4e447]:
+                - paragraph [ref=f4e451]: Folio
+                - group [ref=f4e453]:
+                  - combobox "Folio" [ref=f4e455]
+                  - button "Open" [ref=f4e456] [cursor=pointer]
+              - generic [ref=f4e464] [cursor=pointer]:
+                - checkbox "Masquer les rapprochées" [checked] [ref=f4e466]
+                - generic "Masquer les rapprochées" [ref=f4e471]:
+                  - paragraph [ref=f4e474]: Masquer les rapprochées
+            - generic [ref=f4e479]:
+              - button "Show/hide columns" [ref=f4e483] [cursor=pointer]
+              - button "Download as CSV" [ref=f4e489] [cursor=pointer]
+              - button "Search" [ref=f4e495] [cursor=pointer]
+              - button "Fullscreen" [ref=f4e501] [cursor=pointer]
+            - paragraph [ref=f4e517]: "Cochez des lignes : la somme de leurs écarts débit s'affiche ici. À 0, elles peuvent être rapprochées."
+            - heading "Groupes compensés en attente (2)" [level=4] [ref=f4e523]:
+              - text: Groupes compensés en attente (2)
+              - generic [ref=f4e524]:
+                - link "Link to heading":
+                  - /url: "#groupes-compenses-en-attente-2"
+            - button [ref=f4e527] [cursor=pointer]:
+              - paragraph [ref=f4e532]: 🔗 Tout rapprocher
+            - generic [ref=f4e534]:
+              - paragraph [ref=f4e541]:
+                - strong [ref=f4e542]: KVI
+                - text: ·
+                - code [ref=f4e543]: CDPG.NC4.EXPORT.2026080414530255520.COMP.E_COMP_DALKIA.E_COMPTA_1
+                - text: · 2 lignes · somme 0,00 €
+              - button [ref=f4e548] [cursor=pointer]:
+                - generic "Rapprocher" [ref=f4e549]:
+                  - paragraph [ref=f4e553]: Rapprocher
+            - generic [ref=f4e555]:
+              - paragraph [ref=f4e562]:
+                - strong [ref=f4e563]: THO
+                - text: ·
+                - code [ref=f4e564]: VCH01_SRC_ECRITURESGL_270726-160000
+                - text: · 2 lignes · somme 0,00 €
+              - button [ref=f4e569] [cursor=pointer]:
+                - generic "Rapprocher" [ref=f4e570]:
+                  - paragraph [ref=f4e574]: Rapprocher
+            - heading "Oracle et rapport" [level=4] [ref=f4e580]:
+              - text: Oracle et rapport
+              - generic [ref=f4e581]:
+                - link "Link to heading":
+                  - /url: "#oracle-et-rapport"
+            - generic [ref=f4e583]:
+              - button [ref=f4e588] [cursor=pointer]:
+                - generic "🅾 Contrôler dans Oracle" [ref=f4e589]:
+                  - paragraph [ref=f4e593]: 🅾 Contrôler dans Oracle
+              - button [ref=f4e598] [cursor=pointer]:
+                - generic "📄 Générer le rapport HTML" [ref=f4e599]:
+                  - paragraph [ref=f4e603]: 📄 Générer le rapport HTML
+            - group [ref=f4e606]:
+              - generic "keyboard_arrow_right Historique des rapprochements (0 actifs)" [ref=f4e607] [cursor=pointer]:
+                - generic [ref=f4e608]:
+                  - generic [ref=f4e609]: keyboard_arrow_right
+                  - paragraph [ref=f4e613]: Historique des rapprochements (0 actifs)

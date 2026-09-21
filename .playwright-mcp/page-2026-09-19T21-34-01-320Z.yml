@@ -1,0 +1,30 @@
+- generic [ref=f3e3]:
+  - banner [ref=f3e6]:
+    - generic [ref=f3e9]:
+      - button "Deploy" [ref=f3e11] [cursor=pointer]
+      - button "Main menu" [ref=f3e15] [cursor=pointer]
+  - generic [ref=f3e19]:
+    - paragraph [ref=f3e24]: A brut
+    - generic [ref=f3e29]:
+      - button "Show/hide columns" [ref=f3e33] [cursor=pointer]
+      - button "Download as CSV" [ref=f3e39] [cursor=pointer]
+      - button "Search" [ref=f3e45] [cursor=pointer]
+      - button "Fullscreen" [ref=f3e51] [cursor=pointer]
+    - paragraph [ref=f3e67]: B styler apply
+    - generic [ref=f3e72]:
+      - button "Show/hide columns" [ref=f3e76] [cursor=pointer]
+      - button "Download as CSV" [ref=f3e82] [cursor=pointer]
+      - button "Search" [ref=f3e88] [cursor=pointer]
+      - button "Fullscreen" [ref=f3e94] [cursor=pointer]
+    - paragraph [ref=f3e110]: C styler + format na_rep
+    - generic [ref=f3e115]:
+      - button "Show/hide columns" [ref=f3e119] [cursor=pointer]
+      - button "Download as CSV" [ref=f3e125] [cursor=pointer]
+      - button "Search" [ref=f3e131] [cursor=pointer]
+      - button "Fullscreen" [ref=f3e137] [cursor=pointer]
+    - paragraph [ref=f3e153]: D styler + astype object None->pd.NA
+    - generic [ref=f3e158]:
+      - button "Show/hide columns" [ref=f3e162] [cursor=pointer]
+      - button "Download as CSV" [ref=f3e168] [cursor=pointer]
+      - button "Search" [ref=f3e174] [cursor=pointer]
+      - button "Fullscreen" [ref=f3e180] [cursor=pointer]

@@ -247,10 +247,11 @@ def programmes_oracle(con, generiques: set[str] = GENERIQUES) -> dict[str, str]:
         lanceurs[job] = short
         if prog:
             scripts[job] = prog
-    noms = {r[0]: r[1] or "" for r in con.execute("SELECT program_short, program_name FROM ora_programs")}
+    noms = {r[0]: r[1] or "" for r in con.execute(
+        "SELECT program_short, program_name FROM ora_programs WHERE source='oracle'")}
     rows = con.execute("""
         SELECT job_name, program_short, COALESCE(program_name, ''), COUNT(*) AS n
-        FROM ora_requests WHERE job_name IS NOT NULL AND program_short IS NOT NULL
+        FROM ora_requests WHERE source='oracle' AND job_name IS NOT NULL AND program_short IS NOT NULL
         GROUP BY job_name, program_short, program_name ORDER BY job_name, n DESC""").fetchall()
     par_job: dict[str, list[tuple[str, str]]] = {}
     for job, short, name, _n in rows:

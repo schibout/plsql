@@ -1,0 +1,166 @@
+- generic [ref=e2]:
+  - generic [ref=e7]:
+    - button "keyboard_double_arrow_left" [ref=e378] [cursor=pointer]
+    - generic [ref=e11]:
+      - heading "🕓 ODAT Watch" [level=2] [ref=e16]
+      - paragraph [ref=e21]: Control-M · Oracle EBS · FIN-FINANCE
+      - generic [ref=e23]:
+        - paragraph [ref=e27]: Application
+        - group [ref=e29]:
+          - combobox "Application" [ref=e30]: FIN-FINANCE
+          - button "Open" [ref=e31] [cursor=pointer]
+      - generic [ref=e36]:
+        - paragraph [ref=e40]: Filtre (job, description, script)
+        - textbox "Filtre (job, description, script)" [ref=e43]:
+          - /placeholder: ""
+      - separator [ref=e48]
+      - group [ref=e51]:
+        - generic "keyboard_arrow_right 📂 Sources d'import" [ref=e381] [cursor=pointer]:
+          - generic [ref=e53]:
+            - generic [ref=e382]: keyboard_arrow_right
+            - paragraph [ref=e58]: 📂 Sources d'import
+        - generic [ref=e60]:
+          - generic [ref=e63] [cursor=pointer]:
+            - checkbox "Scanner aussi ODAT et Téléchargements" [checked] [ref=e65]
+            - generic [ref=e69]:
+              - paragraph [ref=e73]: Scanner aussi ODAT et Téléchargements
+              - button "Help for Scanner aussi ODAT et Téléchargements" [ref=e77]
+          - generic [ref=e82]:
+            - textbox "Dossier à ajouter" [ref=e89]:
+              - /placeholder: C:\chemin\vers\les\ODAT
+              - text: C:\Users\samir.chibout\Documents\Project\plsql\ODAT\Report_ctm_260915_15_September_2026 (1)
+            - button [ref=e97] [cursor=pointer]:
+              - paragraph [ref=e102]: Parcourir…
+          - generic [ref=e385]:
+            - paragraph [ref=e392]: ✅ C:\Users\samir.chibout\Documents\Project\plsql\ODAT\Report_ctm_260915_15_September_2026 (1)
+            - button [ref=e400] [cursor=pointer]:
+              - paragraph [ref=e405]: ✖
+      - button [ref=e105] [cursor=pointer]:
+        - paragraph [ref=e110]: 📥 Importer les nouveaux fichiers ODAT
+      - separator [ref=e115]
+      - paragraph [ref=e120]:
+        - strong [ref=e121]: Oracle Apps
+      - generic [ref=e123]:
+        - button [ref=e131] [cursor=pointer]:
+          - paragraph [ref=e136]: 🔄 Demandes
+        - button [ref=e144] [cursor=pointer]:
+          - paragraph [ref=e149]: 📚 Programmes
+      - button [ref=e152] [cursor=pointer]:
+        - paragraph [ref=e157]: 🧾 Analyser les logs .req / .out
+  - generic [ref=e3]:
+    - banner [ref=e168]:
+      - generic [ref=e171]:
+        - button "Deploy" [ref=e173] [cursor=pointer]
+        - button "Main menu" [ref=e177] [cursor=pointer]
+    - generic [ref=e181]:
+      - generic [ref=e186]:
+        - generic [ref=e187]:
+          - heading "FIN-FINANCE" [level=1] [ref=e189]:
+            - text: FIN-FINANCE
+            - generic [ref=e190]:
+              - link "Link to heading":
+                - /url: "#fin-finance"
+          - generic [ref=e191]: Samedi 19/09/2026, 22:14 — qu'est-ce qui tourne ce soir, et demain ?
+        - generic [ref=e192]: Dernière photo Control-M 17/09 16:46 · odate 2026-09-17il y a 53 h 28 min · 96 photos · 90 jours d'historique
+      - generic [ref=e194]:
+        - tablist [ref=e195]:
+          - tab [selected] [ref=e196] [cursor=pointer]:
+            - paragraph [ref=e198]: 🌙 Ce soir
+          - tab [ref=e200] [cursor=pointer]:
+            - paragraph [ref=e202]: 📅 Demain
+          - tab [ref=e203] [cursor=pointer]:
+            - paragraph [ref=e205]: 🔴 Maintenant
+          - tab [ref=e206] [cursor=pointer]:
+            - paragraph [ref=e208]: ☀️ Matin
+          - tab [ref=e209] [cursor=pointer]:
+            - paragraph [ref=e211]: 🅾 Oracle
+          - tab [ref=e212] [cursor=pointer]:
+            - paragraph [ref=e214]: 🔎 Historique
+          - tab [ref=e215] [cursor=pointer]:
+            - paragraph [ref=e217]: 📈 Profils
+          - tab [ref=e218] [cursor=pointer]:
+            - paragraph [ref=e220]: 🗂 Données
+          - tab [ref=e221] [cursor=pointer]:
+            - paragraph [ref=e223]: ⌨ SQL
+        - tabpanel "🌙 Ce soir" [ref=e224]:
+          - generic [ref=e225]:
+            - paragraph [ref=e230]: Plage 19/09 17:00 → 20/09 06:00. Heures prévues = médiane des exécutions observées.
+            - generic [ref=e232]:
+              - generic [ref=e239]:
+                - generic [ref=e240]: "115"
+                - generic [ref=e241]: jobs attendus
+              - generic [ref=e248]:
+                - generic [ref=e249]: "28"
+                - generic [ref=e250]: chaînes
+              - generic [ref=e257]:
+                - generic [ref=e258]: "0"
+                - generic [ref=e259]: déjà terminés OK
+              - generic [ref=e266]:
+                - generic [ref=e267]: "0"
+                - generic [ref=e268]: en erreur
+              - generic [ref=e275]:
+                - generic [ref=e276]: "51"
+                - generic [ref=e277]: hebdo / mensuels
+            - generic [ref=e411]:
+              - img:
+                - generic:
+                  - generic:
+                    - generic:
+                      - generic: 18:00Sep 19, 2026
+                      - generic: 20:00
+                      - generic: 22:00
+                      - generic: 00:00Sep 20, 2026
+                      - generic: 02:00
+                      - generic: 04:00
+                    - generic:
+                      - generic: FINEXT_J18GEN_06_Q
+                      - generic: FINFIN_J11TEC_04_FCL01_Q
+                      - generic: FINFIN_J23TRT_06_Q
+                      - generic: FINFIN_J11TEC_04_FRE01_Q
+                      - generic: FINFIN_E11REB_00_M
+                      - generic: FINFIN_J11TEC_04_FJA06_Q
+                      - generic: FINFIN_J11TEC_04_FJA05_Q
+                      - generic: FINFIN_J11TEC_04_FPE01_Q
+                      - generic: FINFIN_J11TEC_04_FJA04_Q
+                      - generic: FINFIN_J11TEC_04_FJA03_Q
+                      - generic: FINFIN_J11TEC_04_FJA02_Q
+                      - generic: FINFIN_J11TEC_04_DEB02_Q
+                      - generic: FINFIN_J11TEC_04_FJA01_Q
+                      - generic: FINFIN_J11TRT_04_H
+                      - generic: FINFIN_J12TRT_04_H
+                      - generic: FINEXT_J20GEN_06_Q
+                      - generic: FINFIN_J11TEC_04_FJO01_Q
+                      - generic: FINFIN_E12STR_02_Q
+                      - generic: FINEXT_J20INT_05_Q
+                      - generic: FINEXT_J12INT_05_Q
+                      - generic: FINXXX_J14INT_05_Q
+                      - generic: FINFIN_J11TEC_04_DEB01_Q
+                      - generic: FINFIN_J12TRT_04_Q
+                      - generic: FINFIN_J13TRT_04_Q
+                      - generic: FINFIN_J19TRT_04_Q
+                      - generic: FINFIN_J23TRT_04_Q
+                      - generic: FINEXT_J11INT_05_Q
+                      - generic: FINFIN_E11STP_01_Q
+              - img:
+                - generic:
+                  - generic [ref=e429]:
+                    - generic [ref=e430]: à venir
+                    - generic [ref=e435] [cursor=pointer]
+                  - generic: Chaînes attendues ce soir
+                  - generic: maintenant
+              - toolbar [ref=e436]:
+                - button "Download plot as a PNG" [ref=e438] [cursor=pointer]
+                - generic [ref=e441]:
+                  - button "Zoom" [ref=e442] [cursor=pointer]
+                  - button "Pan" [ref=e445] [cursor=pointer]
+                - generic [ref=e448]:
+                  - button "Zoom in" [ref=e449] [cursor=pointer]
+                  - button "Zoom out" [ref=e452] [cursor=pointer]
+                  - button "Autoscale" [ref=e455] [cursor=pointer]
+                  - button "Reset axes" [ref=e458] [cursor=pointer]
+                - button "Fullscreen" [ref=e462] [cursor=pointer]
+            - generic [ref=e341]:
+              - button "Show/hide columns" [ref=e345] [cursor=pointer]
+              - button "Download as CSV" [ref=e351] [cursor=pointer]
+              - button "Search" [ref=e357] [cursor=pointer]
+              - button "Fullscreen" [ref=e363] [cursor=pointer]

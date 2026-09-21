@@ -1,0 +1,144 @@
+- generic [ref=f9e2]:
+  - generic [ref=f9e11]:
+    - heading "🕓 ODAT Watch" [level=2] [ref=f9e16]
+    - paragraph [ref=f9e21]: Control-M · Oracle EBS · FIN-FINANCE
+    - generic [ref=f9e23]:
+      - paragraph [ref=f9e27]: Application
+      - group [ref=f9e29]:
+        - combobox "Application" [ref=f9e30]: FIN-FINANCE
+        - button "Open" [ref=f9e31] [cursor=pointer]
+    - generic [ref=f9e36]:
+      - paragraph [ref=f9e40]: Filtre (job, description, script)
+      - textbox "Filtre (job, description, script)" [ref=f9e43]:
+        - /placeholder: ""
+    - separator [ref=f9e48]
+    - button [ref=f9e51] [cursor=pointer]:
+      - paragraph [ref=f9e56]: 📥 Importer les nouveaux fichiers ODAT
+    - paragraph [ref=f9e61]: "Sources scannées : dossier ODAT du dépôt et Téléchargements."
+    - separator [ref=f9e66]
+    - paragraph [ref=f9e71]:
+      - strong [ref=f9e72]: Oracle Apps
+    - generic [ref=f9e74]:
+      - button [ref=f9e82] [cursor=pointer]:
+        - paragraph [ref=f9e87]: 🔄 Demandes
+      - button [ref=f9e95] [cursor=pointer]:
+        - paragraph [ref=f9e100]: 📚 Programmes
+    - button [ref=f9e103] [cursor=pointer]:
+      - paragraph [ref=f9e108]: 🧾 Analyser les logs .req / .out
+  - generic [ref=f9e3]:
+    - banner [ref=f9e111]:
+      - generic [ref=f9e114]:
+        - button "Deploy" [ref=f9e116] [cursor=pointer]
+        - button "Main menu" [ref=f9e120] [cursor=pointer]
+    - generic [ref=f9e124]:
+      - generic [ref=f9e129]:
+        - generic [ref=f9e130]:
+          - heading "FIN-FINANCE" [level=1] [ref=f9e132]:
+            - text: FIN-FINANCE
+            - generic [ref=f9e133]:
+              - link "Link to heading":
+                - /url: "#fin-finance"
+          - generic [ref=f9e134]: Samedi 19/09/2026, 21:23 — qu'est-ce qui tourne ce soir, et demain ?
+        - generic [ref=f9e135]: Dernière photo Control-M 17/09 16:46 · odate 2026-09-17il y a 52 h 37 min · 96 photos · 90 jours d'historique
+      - generic [ref=f9e137]:
+        - tablist [ref=f9e138]:
+          - tab [selected] [ref=f9e139] [cursor=pointer]:
+            - paragraph [ref=f9e141]: 🌙 Ce soir
+          - tab [ref=f9e143] [cursor=pointer]:
+            - paragraph [ref=f9e145]: 📅 Demain
+          - tab [ref=f9e146] [cursor=pointer]:
+            - paragraph [ref=f9e148]: 🔴 Maintenant
+          - tab [ref=f9e149] [cursor=pointer]:
+            - paragraph [ref=f9e151]: ☀️ Matin
+          - tab [ref=f9e152] [cursor=pointer]:
+            - paragraph [ref=f9e154]: 🅾 Oracle
+          - tab [ref=f9e155] [cursor=pointer]:
+            - paragraph [ref=f9e157]: 🔎 Historique
+          - tab [ref=f9e158] [cursor=pointer]:
+            - paragraph [ref=f9e160]: 📈 Profils
+          - tab [ref=f9e161] [cursor=pointer]:
+            - paragraph [ref=f9e163]: 🗂 Données
+          - tab [ref=f9e164] [cursor=pointer]:
+            - paragraph [ref=f9e166]: ⌨ SQL
+        - tabpanel "🌙 Ce soir" [ref=f9e167]:
+          - generic [ref=f9e168]:
+            - paragraph [ref=f9e173]: Plage 19/09 17:00 → 20/09 06:00. Heures prévues = médiane des exécutions observées.
+            - generic [ref=f9e175]:
+              - generic [ref=f9e182]:
+                - generic [ref=f9e183]: "115"
+                - generic [ref=f9e184]: jobs attendus
+              - generic [ref=f9e191]:
+                - generic [ref=f9e192]: "28"
+                - generic [ref=f9e193]: chaînes
+              - generic [ref=f9e200]:
+                - generic [ref=f9e201]: "0"
+                - generic [ref=f9e202]: déjà terminés OK
+              - generic [ref=f9e209]:
+                - generic [ref=f9e210]: "0"
+                - generic [ref=f9e211]: en erreur
+              - generic [ref=f9e218]:
+                - generic [ref=f9e219]: "51"
+                - generic [ref=f9e220]: hebdo / mensuels
+            - generic [ref=f9e226]:
+              - img:
+                - generic:
+                  - generic:
+                    - generic:
+                      - generic: 18:00Sep 19, 2026
+                      - generic: 20:00
+                      - generic: 22:00
+                      - generic: 00:00Sep 20, 2026
+                      - generic: 02:00
+                      - generic: 04:00
+                    - generic:
+                      - generic: FINEXT_J18GEN_06_Q
+                      - generic: FINFIN_J11TEC_04_FCL01_Q
+                      - generic: FINFIN_J23TRT_06_Q
+                      - generic: FINFIN_J11TEC_04_FRE01_Q
+                      - generic: FINFIN_E11REB_00_M
+                      - generic: FINFIN_J11TEC_04_FJA06_Q
+                      - generic: FINFIN_J11TEC_04_FJA05_Q
+                      - generic: FINFIN_J11TEC_04_FPE01_Q
+                      - generic: FINFIN_J11TEC_04_FJA04_Q
+                      - generic: FINFIN_J11TEC_04_FJA03_Q
+                      - generic: FINFIN_J11TEC_04_FJA02_Q
+                      - generic: FINFIN_J11TEC_04_DEB02_Q
+                      - generic: FINFIN_J11TEC_04_FJA01_Q
+                      - generic: FINFIN_J11TRT_04_H
+                      - generic: FINFIN_J12TRT_04_H
+                      - generic: FINEXT_J20GEN_06_Q
+                      - generic: FINFIN_J11TEC_04_FJO01_Q
+                      - generic: FINFIN_E12STR_02_Q
+                      - generic: FINEXT_J20INT_05_Q
+                      - generic: FINEXT_J12INT_05_Q
+                      - generic: FINXXX_J14INT_05_Q
+                      - generic: FINFIN_J11TEC_04_DEB01_Q
+                      - generic: FINFIN_J12TRT_04_Q
+                      - generic: FINFIN_J13TRT_04_Q
+                      - generic: FINFIN_J19TRT_04_Q
+                      - generic: FINFIN_J23TRT_04_Q
+                      - generic: FINEXT_J11INT_05_Q
+                      - generic: FINFIN_E11STP_01_Q
+              - img:
+                - generic:
+                  - generic [ref=f9e244]:
+                    - generic [ref=f9e245]: à venir
+                    - generic [ref=f9e250] [cursor=pointer]
+                  - generic: Chaînes attendues ce soir
+                  - generic: maintenant
+              - toolbar [ref=f9e251]:
+                - button "Download plot as a PNG" [ref=f9e253] [cursor=pointer]
+                - generic [ref=f9e256]:
+                  - button "Zoom" [ref=f9e257] [cursor=pointer]
+                  - button "Pan" [ref=f9e260] [cursor=pointer]
+                - generic [ref=f9e263]:
+                  - button "Zoom in" [ref=f9e264] [cursor=pointer]
+                  - button "Zoom out" [ref=f9e267] [cursor=pointer]
+                  - button "Autoscale" [ref=f9e270] [cursor=pointer]
+                  - button "Reset axes" [ref=f9e273] [cursor=pointer]
+                - button "Fullscreen" [ref=f9e277] [cursor=pointer]
+            - generic [ref=f9e284]:
+              - button "Show/hide columns" [ref=f9e288] [cursor=pointer]
+              - button "Download as CSV" [ref=f9e294] [cursor=pointer]
+              - button "Search" [ref=f9e300] [cursor=pointer]
+              - button "Fullscreen" [ref=f9e306] [cursor=pointer]

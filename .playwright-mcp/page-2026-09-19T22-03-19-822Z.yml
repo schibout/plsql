@@ -1,0 +1,277 @@
+- generic [ref=e2]:
+  - generic [ref=e11]:
+    - heading "🕓 ODAT Watch" [level=2] [ref=e16]
+    - paragraph [ref=e21]: Control-M · Oracle EBS · FIN-FINANCE
+    - generic [ref=e313]:
+      - paragraph [ref=e317]: Application
+      - group [ref=e319]:
+        - combobox "Application" [ref=e320]: FIN-FINANCE
+        - button "Open" [ref=e321] [cursor=pointer]
+    - generic [ref=e325]:
+      - paragraph [ref=e329]: Filtre (job, description, script)
+      - textbox "Filtre (job, description, script)" [ref=e332]:
+        - /placeholder: ""
+    - separator [ref=e30]
+    - group [ref=e33]:
+      - generic "keyboard_arrow_right 📂 Sources d'import" [ref=e34] [cursor=pointer]:
+        - generic [ref=e35]:
+          - generic [ref=e36]: keyboard_arrow_right
+          - paragraph [ref=e40]: 📂 Sources d'import
+    - button [ref=e334] [cursor=pointer]:
+      - paragraph [ref=e339]: 📥 Importer les nouveaux fichiers ODAT
+    - separator [ref=e47]
+    - paragraph [ref=e52]:
+      - strong [ref=e53]: Oracle Apps
+    - generic [ref=e55]:
+      - button [ref=e344] [cursor=pointer]:
+        - paragraph [ref=e349]: 🔄 Demandes
+      - button [ref=e354] [cursor=pointer]:
+        - paragraph [ref=e359]: 📚 Programmes
+    - button [ref=e361] [cursor=pointer]:
+      - paragraph [ref=e366]: 🧾 Analyser les logs .req / .out
+  - generic [ref=e3]:
+    - banner [ref=e68]:
+      - generic [ref=e71]:
+        - button "Deploy" [ref=e81] [cursor=pointer]
+        - button "Main menu" [ref=e85] [cursor=pointer]
+    - generic [ref=e89]:
+      - generic [ref=e94]:
+        - generic [ref=e95]:
+          - heading "FIN-FINANCE" [level=1] [ref=e97]:
+            - text: FIN-FINANCE
+            - generic [ref=e98]:
+              - link "Link to heading":
+                - /url: "#fin-finance"
+          - generic [ref=e99]: Dimanche 20/09/2026, 00:03 — qu'est-ce qui tourne ce soir, et demain ?
+        - generic [ref=e100]: Dernière photo Control-M 19/09 16:46 · odate 2026-09-19il y a 7 h 17 min · 701 photos · 205 jours d'historique
+      - generic [ref=e102]:
+        - tablist [ref=e103]:
+          - tab [selected] [ref=e104] [cursor=pointer]:
+            - paragraph [ref=e106]: 🧭 Préparer ma nuit
+          - tab [ref=e108] [cursor=pointer]:
+            - paragraph [ref=e110]: 📥 Clôtures
+          - tab [ref=e111] [cursor=pointer]:
+            - paragraph [ref=e113]: 🌙 Ce soir
+          - tab [ref=e114] [cursor=pointer]:
+            - paragraph [ref=e116]: 📅 Demain
+          - tab [ref=e117] [cursor=pointer]:
+            - paragraph [ref=e119]: 🔴 Maintenant
+          - tab [ref=e120] [cursor=pointer]:
+            - paragraph [ref=e122]: ☀️ Matin
+          - tab [ref=e123] [cursor=pointer]:
+            - paragraph [ref=e125]: 🌹 Folio Rose
+          - tab [ref=e126] [cursor=pointer]:
+            - paragraph [ref=e128]: 🅾 Oracle
+          - tab [ref=e129] [cursor=pointer]:
+            - paragraph [ref=e131]: 🔎 Historique
+          - tab [ref=e132] [cursor=pointer]:
+            - paragraph [ref=e134]: 📈 Profils
+          - tab [ref=e135] [cursor=pointer]:
+            - paragraph [ref=e137]: 🗂 Données
+          - tab [ref=e138] [cursor=pointer]:
+            - paragraph [ref=e140]: ⌨ SQL
+        - tabpanel "🧭 Préparer ma nuit" [ref=e141]:
+          - generic [ref=e142]:
+            - heading "Préparer ma nuit" [level=3] [ref=e147]:
+              - text: Préparer ma nuit
+              - generic [ref=e148]:
+                - link "Link to heading":
+                  - /url: "#preparer-ma-nuit"
+            - paragraph [ref=e153]: Prévision issue de l'historique Control-M ; le suivi utilise la dernière photo importée et n'est pas une supervision temps réel.
+            - generic [ref=e155]:
+              - generic [ref=e367]:
+                - paragraph [ref=e371]: Date de début
+                - generic [ref=e374]:
+                  - group "Date de début" [ref=e376]:
+                    - spinbutton "year, Date de début" [ref=e377]: "2026"
+                    - generic [aria-hidden] [ref=e378]: /
+                    - spinbutton "month, Date de début" [ref=e379]: "09"
+                    - generic [aria-hidden] [ref=e380]: /
+                    - spinbutton "day, Date de début" [ref=e381]: "19"
+                  - textbox [ref=e383]: 2026-09-19
+              - generic [ref=e384]:
+                - paragraph [ref=e388]: Début
+                - group "Début" [ref=e392]:
+                  - spinbutton "heure, Début" [ref=e393]: "19"
+                  - generic [aria-hidden] [ref=e394]: ":"
+                  - spinbutton "minute, Début" [ref=e395]: "00"
+              - generic [ref=e396]:
+                - paragraph [ref=e400]: Fin
+                - group "Fin" [ref=e404]:
+                  - spinbutton "heure, Fin" [ref=e405]: "07"
+                  - generic [aria-hidden] [ref=e406]: ":"
+                  - spinbutton "minute, Fin" [ref=e407]: "00"
+              - generic [ref=e408]:
+                - paragraph [ref=e412]: Mode
+                - radiogroup "Mode" [ref=e413]:
+                  - generic [ref=e415] [cursor=pointer]:
+                    - radio "Préparer" [checked] [ref=e417]
+                    - paragraph [ref=e422]: Préparer
+                  - generic [ref=e424] [cursor=pointer]:
+                    - radio "Suivre la nuit" [ref=e426]
+                    - paragraph [ref=e431]: Suivre la nuit
+                  - generic [ref=e433] [cursor=pointer]:
+                    - radio "Bilan" [ref=e435]
+                    - paragraph [ref=e440]: Bilan
+            - generic [ref=e441]:
+              - generic [ref=e442]:
+                - paragraph [ref=e445]: Contexte
+                - button "Help for Contexte" [ref=e449] [cursor=pointer]
+              - radiogroup "Contexte" [ref=e453]:
+                - generic [ref=e455] [cursor=pointer]:
+                  - radio "Toutes" [checked] [ref=e457]
+                  - paragraph [ref=e462]: Toutes
+                - generic [ref=e464] [cursor=pointer]:
+                  - radio "Hors clôture" [ref=e466]
+                  - paragraph [ref=e471]: Hors clôture
+                - generic [ref=e473] [cursor=pointer]:
+                  - radio "Clôture" [ref=e475]
+                  - paragraph [ref=e480]: Clôture
+                - generic [ref=e482] [cursor=pointer]:
+                  - radio "Inconnu" [ref=e484]
+                  - paragraph [ref=e489]: Inconnu
+            - paragraph [ref=e178]: "19/09 19:00 → 20/09 07:00 · Nuit ordinaire / calendrier non renseigné · filtre : Toutes"
+            - generic [ref=e180]:
+              - generic [ref=e187]:
+                - generic [ref=e188]: "124"
+                - generic [ref=e189]: jobs attendus
+              - generic [ref=e196]:
+                - generic [ref=e197]: "34"
+                - generic [ref=e198]: chaînes
+              - generic [ref=e205]:
+                - generic [ref=e206]: "0"
+                - generic [ref=e207]: terminés OK
+              - generic [ref=e214]:
+                - generic [ref=e215]: "0"
+                - generic [ref=e216]: erreurs
+              - generic [ref=e223]:
+                - generic [ref=e224]: "0"
+                - generic [ref=e225]: à vérifier
+            - generic [ref=e227]:
+              - generic [ref=e229]:
+                - heading "Chaînes attendues" [level=5] [ref=e235]:
+                  - text: Chaînes attendues
+                  - generic [ref=e236]:
+                    - link "Link to heading":
+                      - /url: "#chaines-attendues"
+                - generic [ref=e493]:
+                  - button "Show/hide columns" [ref=e497] [cursor=pointer]
+                  - button "Download as CSV" [ref=e503] [cursor=pointer]
+                  - button "Search" [ref=e509] [cursor=pointer]
+                  - button "Fullscreen" [ref=e515] [cursor=pointer]
+                - heading "Assistant de nuit" [level=4] [ref=e244]:
+                  - text: Assistant de nuit
+                  - generic [ref=e245]:
+                    - link "Link to heading":
+                      - /url: "#assistant-de-nuit"
+                - paragraph [ref=e250]: "Questions guidées : les réponses s'appuient sur le plan affiché, sans IA externe."
+                - generic [ref=e252]:
+                  - button [ref=e528] [cursor=pointer]:
+                    - generic "Prévu" [ref=e529]:
+                      - paragraph [ref=e533]: Prévu
+                  - button [active] [ref=e261] [cursor=pointer]:
+                    - generic "Les plus longs" [ref=e262]:
+                      - paragraph [ref=e266]: Les plus longs
+                  - button [ref=e271] [cursor=pointer]:
+                    - generic "À surveiller" [ref=e272]:
+                      - paragraph [ref=e276]: À surveiller
+                  - button [ref=e281] [cursor=pointer]:
+                    - generic "Pourquoi ?" [ref=e282]:
+                      - paragraph [ref=e286]: Pourquoi ?
+                - generic [ref=e288]:
+                  - paragraph [ref=e292]: Votre question
+                  - textbox "Votre question" [ref=e295]:
+                    - /placeholder: Ex. Quels traitements sont les plus longs ?
+              - generic [ref=e538]:
+                - img:
+                  - generic:
+                    - generic:
+                      - generic:
+                        - generic: 20:00Sep 19, 2026
+                        - generic: 22:00
+                        - generic: 00:00Sep 20, 2026
+                        - generic: 02:00
+                        - generic: 04:00
+                        - generic: 06:00
+                      - generic:
+                        - generic: FINEXT_J19GEN_06_Q
+                        - generic: FINFIN_E11STP_01_Q
+                        - generic: FINEXT_J11INT_05_Q
+                        - generic: FINEXT_J12INT_05_Q
+                        - generic: FINEXT_J20INT_05_Q
+                        - generic: FINFIN_E12STR_02_Q
+                        - generic: FINFIN_J11TEC_04_DEB01_Q
+                        - generic: FINFIN_J12TRT_04_Q
+                        - generic: FINFIN_J13TRT_04_Q
+                        - generic: FINFIN_J19TRT_04_Q
+                        - generic: FINFIN_J23TRT_04_Q
+                        - generic: FINFIN_J23TRT_04_H
+                        - generic: FINXXX_J14INT_05_Q
+                        - generic: FINEXT_J20GEN_06_Q
+                        - generic: FINFIN_J11TEC_04_FJO01_Q
+                        - generic: FINFIN_J11TRT_04_H
+                        - generic: FINFIN_J12TRT_04_H
+                        - generic: FINFIN_J11TEC_04_FJA01_Q
+                        - generic: FINFIN_J11TEC_04_DEB02_Q
+                        - generic: FINFIN_J11TEC_04_FJA02_Q
+                        - generic: FINFIN_J11TEC_04_FJA03_Q
+                        - generic: FINFIN_J11TEC_04_FJA04_Q
+                        - generic: FINFIN_J1HTRT_04_M
+                        - generic: FINFIN_J11TEC_04_FJA05_Q
+                        - generic: FINFIN_J11TEC_04_FPE01_Q
+                        - generic: FINFIN_J11TEC_04_FJA06_Q
+                        - generic: FINFIN_E11REB_00_M
+                        - generic: FINFIN_J11TEC_04_FCL01_Q
+                        - generic: FINFIN_J11TEC_04_FRE01_Q
+                        - generic: FINFIN_J23TRT_06_Q
+                        - generic: FINEXT_J18GEN_06_Q
+                        - generic: FINEXT_J19INT_05_Q
+                        - generic: FINFIN_J12TEC_04_Q
+                        - generic: FINFIN_J34TRT_04_H
+                - img:
+                  - generic [ref=e554]:
+                    - generic [ref=e556]:
+                      - generic [ref=e557]: à venir
+                      - generic [ref=e562] [cursor=pointer]
+                    - generic [ref=e564]:
+                      - generic [ref=e565]: Ended OK
+                      - generic [ref=e570] [cursor=pointer]
+                    - generic [ref=e572]:
+                      - generic [ref=e573]: Executing
+                      - generic [ref=e578] [cursor=pointer]
+                - toolbar [ref=e579]:
+                  - button "Download plot as a PNG" [ref=e581] [cursor=pointer]
+                  - generic [ref=e584]:
+                    - button "Zoom" [ref=e585] [cursor=pointer]
+                    - button "Pan" [ref=e588] [cursor=pointer]
+                  - generic [ref=e591]:
+                    - button "Zoom in" [ref=e592] [cursor=pointer]
+                    - button "Zoom out" [ref=e595] [cursor=pointer]
+                    - button "Autoscale" [ref=e598] [cursor=pointer]
+                    - button "Reset axes" [ref=e601] [cursor=pointer]
+                  - button "Fullscreen" [ref=e605] [cursor=pointer]
+            - heading "Détail des traitements" [level=5] [ref=e305]:
+              - text: Détail des traitements
+              - generic [ref=e306]:
+                - link "Link to heading":
+                  - /url: "#detail-des-traitements"
+            - generic [ref=e611]:
+              - button "Show/hide columns" [ref=e615] [cursor=pointer]
+              - button "Download as CSV" [ref=e621] [cursor=pointer]
+              - button "Search" [ref=e627] [cursor=pointer]
+              - button "Fullscreen" [ref=e633] [cursor=pointer]
+      - alert [ref=e648]:
+        - generic [ref=e650]:
+          - generic [ref=e651]: "ValueError: NaTType does not support strftime"
+          - generic [ref=e652]:
+            - generic [ref=e653]: "Traceback:"
+            - code [ref=e656]:
+              - generic [ref=e657]: File "C:\Users\samir.chibout\Documents\Project\plsql\odat_watch\app.py", line 309, in <module> table_prevision(prev) ~~~~~~~~~~~~~~~^^^^^^
+              - generic [ref=e658]: "File \"C:\\Users\\samir.chibout\\Documents\\Project\\plsql\\odat_watch\\app.py\", line 234, in table_prevision t[\"réel\"] = [f\"{pd.to_datetime(a):%H:%M}\" + (f\" → {pd.to_datetime(b):%H:%M}\" if b else \"\") if a else \"\" ^^^^^^^^^^^^^^^^^^^^^^^^^"
+              - generic [ref=e659]: File "pandas/_libs/tslibs/nattype.pyx", line 54, in pandas._libs.tslibs.nattype._make_error_func.f
+          - generic [ref=e660]:
+            - button "Copy" [ref=e661] [cursor=pointer]
+            - link "Ask Google" [ref=e662] [cursor=pointer]:
+              - /url: https://www.google.com/search?q=ValueError%3A%20NaTType%20does%20not%20support%20strftime
+            - link "Ask ChatGPT" [ref=e663] [cursor=pointer]:
+              - /url: https://chatgpt.com/?q=ValueError%3A%20NaTType%20does%20not%20support%20strftime%0A%0AFile%20%22C%3A%5CUsers%5Csamir.chibout%5CDocuments%5CProject%5Cplsql%5Codat_watch%5Capp.py%22%2C%20line%20309%2C%20in%20%3Cmodule%3E%0A%20%20%20%20table_prevision(prev)%0A%20%20%20%20~~~~~~~~~~~~~~~%5E%5E%5E%5E%5E%5E%0AFile%20%22C%3A%5CUsers%5Csamir.chibout%5CDocuments%5CProject%5Cplsql%5Codat_watch%5Capp.py%22%2C%20line%20234%2C%20in%20table_prevision%0A%20%20%20%20t%5B%22r%C3%A9el%22%5D%20%3D%20%5Bf%22%7Bpd.to_datetime(a)%3A%25H%3A%25M%7D%22%20%2B%20(f%22%20%E2%86%92%20%7Bpd.to_datetime(b)%3A%25H%3A%25M%7D%22%20if%20b%20else%20%22%22)%20if%20a%20else%20%22%22%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%5E%5E%5E%5E%5E%5E%5E%5E%5E%5E%5E%5E%5E%5E%5E%5E%5E%5E%5E%5E%5E%5E%5E%5E%5E%0AFile%20%22pandas%2F_libs%2Ftslibs%2Fnattype.pyx%22%2C%20line%2054%2C%20in%20pandas._libs.tslibs.nattype._make_error_func.f

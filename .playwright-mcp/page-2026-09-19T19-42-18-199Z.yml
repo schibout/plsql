@@ -1,0 +1,155 @@
+- generic [ref=e2]:
+  - generic [ref=e11]:
+    - heading "🕓 ODAT Watch" [level=2] [ref=e16]
+    - paragraph [ref=e21]: Control-M · Oracle EBS · FIN-FINANCE
+    - generic [ref=e23]:
+      - paragraph [ref=e27]: Application
+      - group [ref=e29]:
+        - combobox "Application" [ref=e30]: FIN-FINANCE
+        - button "Open" [ref=e31] [cursor=pointer]
+    - generic [ref=e36]:
+      - paragraph [ref=e40]: Filtre (job, description, script)
+      - textbox "Filtre (job, description, script)" [ref=e43]:
+        - /placeholder: ""
+    - separator [ref=e48]
+    - button [ref=e51] [cursor=pointer]:
+      - paragraph [ref=e56]: 📥 Importer les nouveaux fichiers ODAT
+    - paragraph [ref=e61]: "Sources scannées : dossier ODAT du dépôt et Téléchargements."
+    - separator [ref=e66]
+    - paragraph [ref=e71]:
+      - strong [ref=e72]: Oracle Apps
+    - generic [ref=e74]:
+      - button [ref=e82] [cursor=pointer]:
+        - paragraph [ref=e87]: 🔄 Demandes
+      - button [ref=e95] [cursor=pointer]:
+        - paragraph [ref=e100]: 📚 Programmes
+    - button [ref=e103] [cursor=pointer]:
+      - paragraph [ref=e108]: 🧾 Analyser les logs .req / .out
+  - generic [ref=e3]:
+    - banner [ref=e111]:
+      - generic [ref=e114]:
+        - button "Deploy" [ref=e125] [cursor=pointer]
+        - button "Main menu" [ref=e129] [cursor=pointer]
+    - generic [ref=e133]:
+      - generic [ref=e138]:
+        - generic [ref=e139]:
+          - heading "FIN-FINANCE" [level=1] [ref=e141]:
+            - text: FIN-FINANCE
+            - generic [ref=e142]:
+              - link "Link to heading":
+                - /url: "#fin-finance"
+          - generic [ref=e143]: Samedi 19/09/2026, 21:41 — qu'est-ce qui tourne ce soir, et demain ?
+        - generic [ref=e144]: Dernière photo Control-M 17/09 16:46 · odate 2026-09-17il y a 52 h 55 min · 96 photos · 90 jours d'historique
+      - generic [ref=e146]:
+        - tablist [ref=e147]:
+          - tab [ref=e148] [cursor=pointer]:
+            - paragraph [ref=e150]: 🌙 Ce soir
+          - tab [ref=e152] [cursor=pointer]:
+            - paragraph [ref=e154]: 📅 Demain
+          - tab [ref=e155] [cursor=pointer]:
+            - paragraph [ref=e157]: 🔴 Maintenant
+          - tab [ref=e158] [cursor=pointer]:
+            - paragraph [ref=e160]: ☀️ Matin
+          - tab [active] [selected] [ref=e161] [cursor=pointer]:
+            - paragraph [ref=e163]: 🅾 Oracle
+          - tab [ref=e164] [cursor=pointer]:
+            - paragraph [ref=e166]: 🔎 Historique
+          - tab [ref=e167] [cursor=pointer]:
+            - paragraph [ref=e169]: 📈 Profils
+          - tab [ref=e170] [cursor=pointer]:
+            - paragraph [ref=e172]: 🗂 Données
+          - tab [ref=e173] [cursor=pointer]:
+            - paragraph [ref=e175]: ⌨ SQL
+        - tabpanel "🅾 Oracle" [ref=e733]:
+          - generic [ref=e734]:
+            - alert [ref=e737]:
+              - generic [ref=e739]:
+                - generic [aria-hidden] [ref=e742]: 🧪
+                - paragraph [ref=e744]:
+                  - text: Données Oracle
+                  - strong [ref=e745]: simulées
+                  - text: "(mock_oracle.py) : programmes et statuts indicatifs. Sur le poste Dalkia, « Demandes » + « Programmes » les remplacent par les vraies données."
+            - generic [ref=e747]:
+              - generic [ref=e754]:
+                - generic [ref=e755]: "20"
+                - generic [ref=e756]: ▶ en cours
+              - generic [ref=e763]:
+                - generic [ref=e764]: "4"
+                - generic [ref=e765]: ⏳ en attente / planifiées
+              - generic [ref=e772]:
+                - generic [ref=e773]: "55"
+                - generic [ref=e774]: ✖ en erreur / avertissement
+              - generic [ref=e781]:
+                - generic [ref=e782]: "458"
+                - generic [ref=e783]: liées à un job Control-M
+              - generic [ref=e790]:
+                - generic [ref=e791]: "68"
+                - generic [ref=e792]: logs analysés
+              - generic [ref=e799]:
+                - generic [ref=e800]: 18/09 22:30
+                - generic [ref=e801]: dernier rafraîchissement
+            - generic [ref=e803]:
+              - tablist [ref=e804]:
+                - tab [selected] [ref=e805] [cursor=pointer]:
+                  - paragraph [ref=e807]: ✖ Erreurs et logs
+                - tab [ref=e809] [cursor=pointer]:
+                  - paragraph [ref=e811]: ⏳ Ce soir / demain côté Oracle
+                - tab [ref=e812] [cursor=pointer]:
+                  - paragraph [ref=e814]: 📋 Toutes les demandes
+                - tab [ref=e815] [cursor=pointer]:
+                  - paragraph [ref=e817]: 🧾 Logs chargés
+                - tab [ref=e818] [cursor=pointer]:
+                  - paragraph [ref=e820]: 📚 Programmes
+              - tabpanel "✖ Erreurs et logs" [ref=e821]:
+                - generic [ref=e822]:
+                  - heading "Demandes terminées en erreur ou avertissement" [level=4] [ref=e828]:
+                    - text: Demandes terminées en erreur ou avertissement
+                    - generic [ref=e829]:
+                      - link "Link to heading":
+                        - /url: "#demandes-terminees-en-erreur-ou-avertissement"
+                  - generic [ref=e834]:
+                    - button "Show/hide columns" [ref=e838] [cursor=pointer]
+                    - button "Download as CSV" [ref=e844] [cursor=pointer]
+                    - button "Search" [ref=e850] [cursor=pointer]
+                    - button "Fullscreen" [ref=e856] [cursor=pointer]
+                  - heading "Diagnostic d'une demande" [level=4] [ref=e873]:
+                    - text: Diagnostic d'une demande
+                    - generic [ref=e874]:
+                      - link "Link to heading":
+                        - /url: "#diagnostic-d-une-demande"
+                  - generic [ref=e876]:
+                    - paragraph [ref=e880]: Request id
+                    - group [ref=e882]:
+                      - combobox "Request id" [ref=e883]: 49070405 — FINFIN_J32TRT_05_WRK06_Q DKA_APPRELEVAUTO — ⚠ Avertissement
+                      - button "Open" [ref=e884] [cursor=pointer]
+                  - generic [ref=e889]:
+                    - paragraph [ref=e896]:
+                      - strong [ref=e897]: Job Control-M
+                      - text: ":"
+                      - code [ref=e898]: FINFIN_J32TRT_05_WRK06_Q
+                    - paragraph [ref=e905]:
+                      - strong [ref=e906]: Programme
+                      - text: ":"
+                      - code [ref=e907]: DKA_APPRELEVAUTO
+                      - text: "DKA : Automatisation des prélèvements fournisseurs"
+                    - paragraph [ref=e914]:
+                      - strong [ref=e915]: Début / fin
+                      - text: ": 2026-09-17 07:28:21 → 2026-09-17 07:30:56"
+                    - paragraph [ref=e922]:
+                      - strong [ref=e923]: Statut
+                      - text: ": ⚠ Avertissement Avertissement : 3 lignes rejetées"
+                  - paragraph [ref=e928]: "Arguments : 2026-09-16, N"
+                  - paragraph [ref=e933]:
+                    - text: "Log :"
+                    - code [ref=e934]: /u01/app/PDBFINP1/inst/apps/PDBFINP1_ldkfinp01/logs/appl/conc/log/l49070405.req
+                    - text: "· Sortie :"
+                    - code [ref=e935]: /u01/app/PDBFINP1/inst/apps/PDBFINP1_ldkfinp01/logs/appl/conc/out/o49070405.out
+                  - alert [ref=e938]:
+                    - paragraph [ref=e942]: Aucun log local pour cette demande. Rapatriez l<id>.req et o<id>.out puis « Analyser les logs ».
+                  - separator [ref=e947]
+                  - paragraph [ref=e952]:
+                    - text: Logs absents en local ? Générez la liste des chemins pour
+                    - code [ref=e953]: copy_ebs_logs.sh
+                    - text: ":"
+                  - button [ref=e956] [cursor=pointer]:
+                    - paragraph [ref=e961]: 📝 Générer list.txt des logs manquants

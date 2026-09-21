@@ -1,0 +1,342 @@
+- generic:
+  - generic [ref=e1062]:
+    - log [ref=e1063]:
+      - generic [ref=e1064]: "15"
+    - log [ref=e1065]:
+      - generic [ref=e1066]: "Date sélectionnée : mardi 15 septembre 2026"
+  - generic [ref=e2]:
+    - generic [ref=e33]:
+      - heading "🕓 ODAT Watch" [level=2] [ref=e38]
+      - paragraph [ref=e43]: Control-M · Oracle EBS · FIN-FINANCE
+      - generic [ref=e45]:
+        - paragraph [ref=e49]: Application
+        - group [ref=e51]:
+          - combobox "Application" [ref=e52]: FIN-FINANCE
+          - button "Open" [ref=e53] [cursor=pointer]
+      - generic [ref=e58]:
+        - paragraph [ref=e62]: Filtre (job, description, script)
+        - textbox "Filtre (job, description, script)" [ref=e65]:
+          - /placeholder: ""
+      - separator [ref=e70]
+      - group [ref=e73]:
+        - generic "keyboard_arrow_right 📂 Sources d'import" [ref=e74] [cursor=pointer]:
+          - generic [ref=e75]:
+            - generic [ref=e76]: keyboard_arrow_right
+            - paragraph [ref=e80]: 📂 Sources d'import
+      - button [ref=e83] [cursor=pointer]:
+        - paragraph [ref=e88]: 📥 Importer les nouveaux fichiers ODAT
+      - separator [ref=e93]
+      - paragraph [ref=e98]:
+        - strong [ref=e99]: Oracle Apps
+      - paragraph [ref=e104]: "6331 demandes en base, du 2026-08-15 au 2026-09-20 · dernier chargement : 20/09 01:20"
+      - generic [ref=e107] [cursor=pointer]:
+        - checkbox "Tout recharger (chargement initial)" [ref=e109]
+        - generic [ref=e111]:
+          - paragraph [ref=e115]: Tout recharger (chargement initial)
+          - button "Help for Tout recharger (chargement initial)" [ref=e119]
+      - generic [ref=e124]:
+        - button [ref=e132] [cursor=pointer]:
+          - paragraph [ref=e137]: 🔄 Demandes
+        - button [ref=e145] [cursor=pointer]:
+          - paragraph [ref=e150]: 📚 Programmes
+      - button [ref=e153] [cursor=pointer]:
+        - paragraph [ref=e158]: 🧾 Analyser les logs .req / .out
+    - generic [ref=e3]:
+      - banner [ref=e6]:
+        - generic [ref=e9]:
+          - generic [ref=e1068]:
+            - img "Running..." [ref=e1069]
+            - button "Stop" [ref=e1074] [cursor=pointer]
+          - button "Deploy" [ref=e20] [cursor=pointer]
+          - button "Main menu" [ref=e24] [cursor=pointer]
+      - generic [ref=e168]:
+        - generic [ref=e173]:
+          - generic [ref=e174]:
+            - heading "FIN-FINANCE" [level=1] [ref=e176]:
+              - text: FIN-FINANCE
+              - generic [ref=e177]:
+                - link "Link to heading":
+                  - /url: "#fin-finance"
+            - generic [ref=e178]: Dimanche 20/09/2026, 15:37 — qu'est-ce qui tourne ce soir, et demain ?
+          - generic [ref=e179]: Dernière photo Control-M 19/09 16:46 · odate 2026-09-19il y a 22 h 51 min · 701 photos · 205 jours d'historique
+        - generic [ref=e180]:
+          - generic [ref=e181]:
+            - tablist [ref=e182]:
+              - tab [ref=e183] [cursor=pointer]:
+                - paragraph [ref=e185]: 🧭 Préparer ma nuit
+              - tab [ref=e187] [cursor=pointer]:
+                - paragraph [ref=e189]: 📥 Clôtures
+              - tab [ref=e190] [cursor=pointer]:
+                - paragraph [ref=e192]: 🌙 Ce soir
+              - tab [ref=e193] [cursor=pointer]:
+                - paragraph [ref=e195]: 📅 Demain
+              - tab [ref=e196] [cursor=pointer]:
+                - paragraph [ref=e198]: 🔴 Maintenant
+              - tab [ref=e199] [cursor=pointer]:
+                - paragraph [ref=e201]: ☀️ Matin
+              - tab [selected] [ref=e202] [cursor=pointer]:
+                - paragraph [ref=e204]: 🏦 Relevés bancaires
+              - tab [ref=e205] [cursor=pointer]:
+                - paragraph [ref=e207]: 🌹 Folio Rose
+              - tab [ref=e208] [cursor=pointer]:
+                - paragraph [ref=e210]: 🅾 Oracle
+              - tab [ref=e211] [cursor=pointer]:
+                - paragraph [ref=e213]: 📒 Référentiel
+              - tab [ref=e214] [cursor=pointer]:
+                - paragraph [ref=e216]: 🔎 Historique
+              - tab [ref=e217] [cursor=pointer]:
+                - paragraph [ref=e219]: 📈 Profils
+              - tab [ref=e220] [cursor=pointer]:
+                - paragraph [ref=e222]: 🗂 Données
+              - tab [ref=e223] [cursor=pointer]:
+                - paragraph [ref=e225]: ⌨ SQL
+            - tabpanel "🏦 Relevés bancaires" [ref=e612]:
+              - generic [ref=e613]:
+                - heading "Chaîne des relevés bancaires · PFE → Control-M (FINEXT_J14INT_05/06) → EBS (RBAFBIMP → DKA_SRBCTRLRB)" [level=4] [ref=e619]:
+                  - text: Chaîne des relevés bancaires · PFE → Control-M (FINEXT_J14INT_05/06) → EBS (RBAFBIMP → DKA_SRBCTRLRB)
+                  - generic [ref=e620]:
+                    - link "Link to heading":
+                      - /url: "#chaine-des-releves-bancaires-pfe-control-m-finext-j14-int-05-06-ebs-rbafbimp-dka-srbctrlrb"
+                - generic [ref=e622]:
+                  - generic [ref=e626]:
+                    - paragraph [ref=e630]: Matinée
+                    - generic [ref=e633]:
+                      - group "Matinée" [ref=e635]:
+                        - spinbutton "day, Matinée" [active] [ref=e636]: "15"
+                        - generic [aria-hidden] [ref=e637]: /
+                        - spinbutton "month, Matinée" [ref=e638]: "09"
+                        - generic [aria-hidden] [ref=e639]: /
+                        - spinbutton "year, Matinée" [ref=e640]: "2026"
+                      - textbox [ref=e642]: 2026-09-15
+                  - button [ref=e650] [cursor=pointer]:
+                    - paragraph [ref=e655]: 🔄 Scanner les dossiers
+                  - button [ref=e660] [cursor=pointer]:
+                    - generic "📋 list.txt des logs manquants" [ref=e661]:
+                      - paragraph [ref=e665]: 📋 list.txt des logs manquants
+                  - button [ref=e694] [cursor=pointer]:
+                    - generic "📄 Rapport HTML" [ref=e695]:
+                      - paragraph [ref=e699]: 📄 Rapport HTML
+                - status [ref=e701]:
+                  - paragraph [ref=e705]: 13 exécution(s) PFE, 22 fichier(s) EBS, 34 log(s) nouveaux.
+                - generic [ref=e707]:
+                  - generic [ref=e714]:
+                    - generic [ref=e715]: ⚪ —
+                    - generic [ref=e716]: verdict du jour
+                  - generic [ref=e723]:
+                    - generic [ref=e724]: —
+                    - generic [ref=e725]: flux A
+                  - generic [ref=e732]:
+                    - generic [ref=e733]: —
+                    - generic [ref=e734]: flux B
+                  - generic [ref=e741]:
+                    - generic [ref=e742]: "208"
+                    - generic [ref=e743]: comptes en rupture
+                  - generic [ref=e750]:
+                    - generic [ref=e751]: "4"
+                    - generic [ref=e752]: fichiers à rejouer
+                - paragraph [ref=e757]: "20/09/2026 = dimanche : pas d'intégration attendue."
+                - heading "Frise de la matinée" [level=5] [ref=e763]:
+                  - text: Frise de la matinée
+                  - generic [ref=e764]:
+                    - link "Link to heading":
+                      - /url: "#frise-de-la-matinee"
+                - paragraph [ref=e769]:
+                  - strong [ref=e770]: Flux A
+                  - text: — multi-banques, import ~07:50 ⚪ —
+                - generic [ref=e772]:
+                  - generic [ref=e779]:
+                    - generic [ref=e780]: PFE
+                    - generic [ref=e781]: aucune exécution
+                  - generic [ref=e788]:
+                    - generic [ref=e789]: Control-M
+                    - generic [ref=e790]: pas de photo
+                  - generic [ref=e797]:
+                    - generic [ref=e798]: Reçu EBS
+                    - generic [ref=e799]: —
+                  - generic [ref=e806]:
+                    - generic [ref=e807]: Import
+                    - generic [ref=e808]: —
+                  - generic [ref=e815]:
+                    - generic [ref=e816]: Contrôle
+                    - generic [ref=e817]: pas d'intégration attendue
+                - paragraph [ref=e822]:
+                  - strong [ref=e823]: Flux B
+                  - text: — Société Générale, import ~08:20 ⚪ —
+                - generic [ref=e825]:
+                  - generic [ref=e832]:
+                    - generic [ref=e833]: PFE
+                    - generic [ref=e834]: aucune exécution
+                  - generic [ref=e841]:
+                    - generic [ref=e842]: Control-M
+                    - generic [ref=e843]: pas de photo
+                  - generic [ref=e850]:
+                    - generic [ref=e851]: Reçu EBS
+                    - generic [ref=e852]: —
+                  - generic [ref=e859]:
+                    - generic [ref=e860]: Import
+                    - generic [ref=e861]: —
+                  - generic [ref=e868]:
+                    - generic [ref=e869]: Contrôle
+                    - generic [ref=e870]: pas d'intégration attendue
+                - heading "🛠 Plan de reprise" [level=5] [ref=e876]:
+                  - text: 🛠 Plan de reprise
+                  - generic [ref=e877]:
+                    - link "Link to heading":
+                      - /url: "#plan-de-reprise"
+                - alert [ref=e880]:
+                  - paragraph [ref=e884]:
+                    - text: "Rupture de continuité : rejouer ces fichiers"
+                    - strong [ref=e885]: un par un, dans l'ordre
+                    - text: ", en attendant la fin de chaque request RBAFBIMP (copier sous"
+                    - code [ref=e886]: AFB120.txt
+                    - text: dans
+                    - code [ref=e887]: data/in
+                    - text: ", lancer l'import, vérifier"
+                    - code [ref=e888]: Relevés chargés
+                    - text: ). Puis lancer DKA_SRBCTRLRB.
+                - generic [ref=e893]:
+                  - button "Show/hide columns" [ref=e897] [cursor=pointer]
+                  - button "Download as CSV" [ref=e903] [cursor=pointer]
+                  - button "Search" [ref=e909] [cursor=pointer]
+                  - button "Fullscreen" [ref=e915] [cursor=pointer]
+                - heading "Chronologie des imports (15 jours)" [level=5] [ref=e932]:
+                  - text: Chronologie des imports (15 jours)
+                  - generic [ref=e933]:
+                    - link "Link to heading":
+                      - /url: "#chronologie-des-imports-15-jours"
+                - generic [ref=e938]:
+                  - button "Show/hide columns" [ref=e942] [cursor=pointer]
+                  - button "Download as CSV" [ref=e948] [cursor=pointer]
+                  - button "Search" [ref=e954] [cursor=pointer]
+                  - button "Fullscreen" [ref=e960] [cursor=pointer]
+                - group [ref=e974]:
+                  - generic "keyboard_arrow_down Continuité des comptes 30003 — 208 en rupture" [ref=e975] [cursor=pointer]:
+                    - generic [ref=e976]:
+                      - generic [ref=e977]: keyboard_arrow_down
+                      - paragraph [ref=e981]: Continuité des comptes 30003 — 208 en rupture
+                  - generic [ref=e988]:
+                    - button "Show/hide columns" [ref=e992] [cursor=pointer]
+                    - button "Download as CSV" [ref=e998] [cursor=pointer]
+                    - button "Search" [ref=e1004] [cursor=pointer]
+                    - button "Fullscreen" [ref=e1010] [cursor=pointer]
+                - group [ref=e1024]:
+                  - generic "keyboard_arrow_right Rapprochement PFE ↔ EBS" [ref=e1025] [cursor=pointer]:
+                    - generic [ref=e1026]:
+                      - generic [ref=e1027]: keyboard_arrow_right
+                      - paragraph [ref=e1031]: Rapprochement PFE ↔ EBS
+                - group [ref=e1034]:
+                  - generic "keyboard_arrow_right Chaîne Control-M de la matinée" [ref=e1035] [cursor=pointer]:
+                    - generic [ref=e1036]:
+                      - generic [ref=e1037]: keyboard_arrow_right
+                      - paragraph [ref=e1041]: Chaîne Control-M de la matinée
+                - group [ref=e1044]:
+                  - generic "keyboard_arrow_right Contrôles DKA_SRBCTRLRB" [ref=e1045] [cursor=pointer]:
+                    - generic [ref=e1046]:
+                      - generic [ref=e1047]: keyboard_arrow_right
+                      - paragraph [ref=e1051]: Contrôles DKA_SRBCTRLRB
+                - group [ref=e1054]:
+                  - generic "keyboard_arrow_right Comptes connus (anomalies préexistantes ignorées par le verdict)" [ref=e1055] [cursor=pointer]:
+                    - generic [ref=e1056]:
+                      - generic [ref=e1057]: keyboard_arrow_right
+                      - paragraph [ref=e1061]: Comptes connus (anomalies préexistantes ignorées par le verdict)
+          - button "Scroll tabs right" [ref=e607] [cursor=pointer]
+  - application "Choose date, septembre 2026" [ref=e1076]:
+    - heading "Choose date, septembre 2026" [level=2] [ref=e1078]
+    - banner [ref=e1079]:
+      - button "Previous month" [ref=e1080] [cursor=pointer]
+      - generic [ref=e1084]:
+        - generic [ref=e1085]:
+          - button "mois" [ref=e1086] [cursor=pointer]: septembre
+          - combobox [ref=e1093]
+        - generic [ref=e1094]:
+          - button "année" [ref=e1095] [cursor=pointer]: "2026"
+          - combobox [ref=e1102]
+        - heading [level=2] [aria-hidden] [ref=e1104]: septembre 2026
+      - button "Next month" [ref=e1105] [cursor=pointer]
+    - grid "Choose date, septembre 2026" [ref=e1109]:
+      - rowgroup [aria-hidden] [ref=e1110]:
+        - row [ref=e1111]:
+          - columnheader [ref=e1112]: L
+          - columnheader [ref=e1113]: M
+          - columnheader [ref=e1114]: M
+          - columnheader [ref=e1115]: J
+          - columnheader [ref=e1116]: V
+          - columnheader [ref=e1117]: S
+          - columnheader [ref=e1118]: D
+      - rowgroup [ref=e1119]:
+        - row [ref=e1120]:
+          - gridcell [disabled] [ref=e1121]:
+            - button "lundi 31 août 2026" [disabled] [ref=e1122]: "31"
+          - gridcell [ref=e1123]:
+            - button "mardi 1 septembre 2026" [ref=e1124] [cursor=pointer]: "1"
+          - gridcell [ref=e1125]:
+            - button "mercredi 2 septembre 2026" [ref=e1126] [cursor=pointer]: "2"
+          - gridcell [ref=e1127]:
+            - button "jeudi 3 septembre 2026" [ref=e1128] [cursor=pointer]: "3"
+          - gridcell [ref=e1129]:
+            - button "vendredi 4 septembre 2026" [ref=e1130] [cursor=pointer]: "4"
+          - gridcell [ref=e1131]:
+            - button "samedi 5 septembre 2026" [ref=e1132] [cursor=pointer]: "5"
+          - gridcell [ref=e1133]:
+            - button "dimanche 6 septembre 2026" [ref=e1134] [cursor=pointer]: "6"
+        - row [ref=e1135]:
+          - gridcell [ref=e1136]:
+            - button "lundi 7 septembre 2026" [ref=e1137] [cursor=pointer]: "7"
+          - gridcell [ref=e1138]:
+            - button "mardi 8 septembre 2026" [ref=e1139] [cursor=pointer]: "8"
+          - gridcell [ref=e1140]:
+            - button "mercredi 9 septembre 2026" [ref=e1141] [cursor=pointer]: "9"
+          - gridcell [ref=e1142]:
+            - button "jeudi 10 septembre 2026" [ref=e1143] [cursor=pointer]: "10"
+          - gridcell [ref=e1144]:
+            - button "vendredi 11 septembre 2026" [ref=e1145] [cursor=pointer]: "11"
+          - gridcell [ref=e1146]:
+            - button "samedi 12 septembre 2026" [ref=e1147] [cursor=pointer]: "12"
+          - gridcell [ref=e1148]:
+            - button "dimanche 13 septembre 2026" [ref=e1149] [cursor=pointer]: "13"
+        - row [ref=e1150]:
+          - gridcell [ref=e1151]:
+            - button "lundi 14 septembre 2026" [ref=e1152] [cursor=pointer]: "14"
+          - gridcell [selected] [ref=e1153]:
+            - button "mardi 15 septembre 2026 sélectionné" [ref=e1154] [cursor=pointer]: "15"
+          - gridcell [ref=e1155]:
+            - button "mercredi 16 septembre 2026" [ref=e1156] [cursor=pointer]: "16"
+          - gridcell [ref=e1157]:
+            - button "jeudi 17 septembre 2026" [ref=e1158] [cursor=pointer]: "17"
+          - gridcell [ref=e1159]:
+            - button "vendredi 18 septembre 2026" [ref=e1160] [cursor=pointer]: "18"
+          - gridcell [ref=e1161]:
+            - button "samedi 19 septembre 2026" [ref=e1162] [cursor=pointer]: "19"
+          - gridcell [ref=e1163]:
+            - button "Aujourd'hui, dimanche 20 septembre 2026" [ref=e1164] [cursor=pointer]: "20"
+        - row [ref=e1165]:
+          - gridcell [ref=e1166]:
+            - button "lundi 21 septembre 2026" [ref=e1167] [cursor=pointer]: "21"
+          - gridcell [ref=e1168]:
+            - button "mardi 22 septembre 2026" [ref=e1169] [cursor=pointer]: "22"
+          - gridcell [ref=e1170]:
+            - button "mercredi 23 septembre 2026" [ref=e1171] [cursor=pointer]: "23"
+          - gridcell [ref=e1172]:
+            - button "jeudi 24 septembre 2026" [ref=e1173] [cursor=pointer]: "24"
+          - gridcell [ref=e1174]:
+            - button "vendredi 25 septembre 2026" [ref=e1175] [cursor=pointer]: "25"
+          - gridcell [ref=e1176]:
+            - button "samedi 26 septembre 2026" [ref=e1177] [cursor=pointer]: "26"
+          - gridcell [ref=e1178]:
+            - button "dimanche 27 septembre 2026" [ref=e1179] [cursor=pointer]: "27"
+        - row [ref=e1180]:
+          - gridcell [ref=e1181]:
+            - button "lundi 28 septembre 2026" [ref=e1182] [cursor=pointer]: "28"
+          - gridcell [ref=e1183]:
+            - button "mardi 29 septembre 2026" [ref=e1184] [cursor=pointer]: "29"
+          - gridcell [ref=e1185]:
+            - button "mercredi 30 septembre 2026" [ref=e1186] [cursor=pointer]: "30"
+          - gridcell [disabled] [ref=e1187]:
+            - button "jeudi 1 octobre 2026" [disabled] [ref=e1188]: "1"
+          - gridcell [disabled] [ref=e1189]:
+            - button "vendredi 2 octobre 2026" [disabled] [ref=e1190]: "2"
+          - gridcell [disabled] [ref=e1191]:
+            - button "samedi 3 octobre 2026" [disabled] [ref=e1192]: "3"
+          - gridcell [disabled] [ref=e1193]:
+            - button "dimanche 4 octobre 2026" [disabled] [ref=e1194]: "4"
+    - button "Suivant" [ref=e1196] [cursor=pointer]

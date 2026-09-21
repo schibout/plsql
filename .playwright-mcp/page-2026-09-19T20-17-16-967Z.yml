@@ -1,0 +1,162 @@
+- generic [ref=f1e2]:
+  - generic [ref=f1e11]:
+    - heading "🕓 ODAT Watch" [level=2] [ref=f1e16]
+    - paragraph [ref=f1e21]: Control-M · Oracle EBS · FIN-FINANCE
+    - generic [ref=f1e23]:
+      - paragraph [ref=f1e27]: Application
+      - group [ref=f1e29]:
+        - combobox "Application" [ref=f1e30]: FIN-FINANCE
+        - button "Open" [ref=f1e31] [cursor=pointer]
+    - generic [ref=f1e36]:
+      - paragraph [ref=f1e40]: Filtre (job, description, script)
+      - textbox "Filtre (job, description, script)" [ref=f1e43]:
+        - /placeholder: ""
+    - separator [ref=f1e48]
+    - group [ref=f1e51]:
+      - generic "keyboard_arrow_down 📂 Sources d'import" [ref=f1e52] [cursor=pointer]:
+        - generic [ref=f1e53]:
+          - generic [ref=f1e54]: keyboard_arrow_down
+          - paragraph [ref=f1e58]: 📂 Sources d'import
+      - generic [ref=f1e60]:
+        - generic [ref=f1e63] [cursor=pointer]:
+          - checkbox "Scanner aussi ODAT et Téléchargements" [checked] [ref=f1e65]
+          - generic [ref=f1e69]:
+            - paragraph [ref=f1e73]: Scanner aussi ODAT et Téléchargements
+            - button "Help for Scanner aussi ODAT et Téléchargements" [ref=f1e77]
+        - button [ref=f1e86] [cursor=pointer]:
+          - paragraph [ref=f1e91]: 📂 Parcourir…
+        - generic [ref=f1e96]:
+          - textbox "Dossier à ajouter" [ref=f1e103]:
+            - /placeholder: …ou coller un chemin
+          - button [ref=f1e109] [cursor=pointer]:
+            - generic "Ajouter" [ref=f1e110]:
+              - paragraph [ref=f1e114]: Ajouter
+    - button [ref=f1e117] [cursor=pointer]:
+      - paragraph [ref=f1e122]: 📥 Importer les nouveaux fichiers ODAT
+    - separator [ref=f1e127]
+    - paragraph [ref=f1e132]:
+      - strong [ref=f1e133]: Oracle Apps
+    - generic [ref=f1e135]:
+      - button [ref=f1e143] [cursor=pointer]:
+        - paragraph [ref=f1e148]: 🔄 Demandes
+      - button [ref=f1e156] [cursor=pointer]:
+        - paragraph [ref=f1e161]: 📚 Programmes
+    - button [ref=f1e164] [cursor=pointer]:
+      - paragraph [ref=f1e169]: 🧾 Analyser les logs .req / .out
+  - generic [ref=f1e3]:
+    - banner [ref=f1e172]:
+      - generic [ref=f1e175]:
+        - button "Deploy" [ref=f1e177] [cursor=pointer]
+        - button "Main menu" [ref=f1e181] [cursor=pointer]
+    - generic [ref=f1e185]:
+      - generic [ref=f1e190]:
+        - generic [ref=f1e191]:
+          - heading "FIN-FINANCE" [level=1] [ref=f1e193]:
+            - text: FIN-FINANCE
+            - generic [ref=f1e194]:
+              - link "Link to heading":
+                - /url: "#fin-finance"
+          - generic [ref=f1e195]: Samedi 19/09/2026, 22:17 — qu'est-ce qui tourne ce soir, et demain ?
+        - generic [ref=f1e196]: Dernière photo Control-M 17/09 16:46 · odate 2026-09-17il y a 53 h 31 min · 96 photos · 90 jours d'historique
+      - generic [ref=f1e198]:
+        - tablist [ref=f1e199]:
+          - tab [selected] [ref=f1e200] [cursor=pointer]:
+            - paragraph [ref=f1e202]: 🌙 Ce soir
+          - tab [ref=f1e204] [cursor=pointer]:
+            - paragraph [ref=f1e206]: 📅 Demain
+          - tab [ref=f1e207] [cursor=pointer]:
+            - paragraph [ref=f1e209]: 🔴 Maintenant
+          - tab [ref=f1e210] [cursor=pointer]:
+            - paragraph [ref=f1e212]: ☀️ Matin
+          - tab [ref=f1e213] [cursor=pointer]:
+            - paragraph [ref=f1e215]: 🅾 Oracle
+          - tab [ref=f1e216] [cursor=pointer]:
+            - paragraph [ref=f1e218]: 🔎 Historique
+          - tab [ref=f1e219] [cursor=pointer]:
+            - paragraph [ref=f1e221]: 📈 Profils
+          - tab [ref=f1e222] [cursor=pointer]:
+            - paragraph [ref=f1e224]: 🗂 Données
+          - tab [ref=f1e225] [cursor=pointer]:
+            - paragraph [ref=f1e227]: ⌨ SQL
+        - tabpanel "🌙 Ce soir" [ref=f1e228]:
+          - generic [ref=f1e229]:
+            - paragraph [ref=f1e234]: Plage 19/09 17:00 → 20/09 06:00. Heures prévues = médiane des exécutions observées.
+            - generic [ref=f1e236]:
+              - generic [ref=f1e243]:
+                - generic [ref=f1e244]: "115"
+                - generic [ref=f1e245]: jobs attendus
+              - generic [ref=f1e252]:
+                - generic [ref=f1e253]: "28"
+                - generic [ref=f1e254]: chaînes
+              - generic [ref=f1e261]:
+                - generic [ref=f1e262]: "0"
+                - generic [ref=f1e263]: déjà terminés OK
+              - generic [ref=f1e270]:
+                - generic [ref=f1e271]: "0"
+                - generic [ref=f1e272]: en erreur
+              - generic [ref=f1e279]:
+                - generic [ref=f1e280]: "51"
+                - generic [ref=f1e281]: hebdo / mensuels
+            - generic [ref=f1e287]:
+              - img:
+                - generic:
+                  - generic:
+                    - generic:
+                      - generic: 18:00Sep 19, 2026
+                      - generic: 20:00
+                      - generic: 22:00
+                      - generic: 00:00Sep 20, 2026
+                      - generic: 02:00
+                      - generic: 04:00
+                    - generic:
+                      - generic: FINEXT_J18GEN_06_Q
+                      - generic: FINFIN_J11TEC_04_FCL01_Q
+                      - generic: FINFIN_J23TRT_06_Q
+                      - generic: FINFIN_J11TEC_04_FRE01_Q
+                      - generic: FINFIN_E11REB_00_M
+                      - generic: FINFIN_J11TEC_04_FJA06_Q
+                      - generic: FINFIN_J11TEC_04_FJA05_Q
+                      - generic: FINFIN_J11TEC_04_FPE01_Q
+                      - generic: FINFIN_J11TEC_04_FJA04_Q
+                      - generic: FINFIN_J11TEC_04_FJA03_Q
+                      - generic: FINFIN_J11TEC_04_FJA02_Q
+                      - generic: FINFIN_J11TEC_04_DEB02_Q
+                      - generic: FINFIN_J11TEC_04_FJA01_Q
+                      - generic: FINFIN_J11TRT_04_H
+                      - generic: FINFIN_J12TRT_04_H
+                      - generic: FINEXT_J20GEN_06_Q
+                      - generic: FINFIN_J11TEC_04_FJO01_Q
+                      - generic: FINFIN_E12STR_02_Q
+                      - generic: FINEXT_J20INT_05_Q
+                      - generic: FINEXT_J12INT_05_Q
+                      - generic: FINXXX_J14INT_05_Q
+                      - generic: FINFIN_J11TEC_04_DEB01_Q
+                      - generic: FINFIN_J12TRT_04_Q
+                      - generic: FINFIN_J13TRT_04_Q
+                      - generic: FINFIN_J19TRT_04_Q
+                      - generic: FINFIN_J23TRT_04_Q
+                      - generic: FINEXT_J11INT_05_Q
+                      - generic: FINFIN_E11STP_01_Q
+              - img:
+                - generic:
+                  - generic [ref=f1e305]:
+                    - generic [ref=f1e306]: à venir
+                    - generic [ref=f1e311] [cursor=pointer]
+                  - generic: Chaînes attendues ce soir
+                  - generic: maintenant
+              - toolbar [ref=f1e312]:
+                - button "Download plot as a PNG" [ref=f1e314] [cursor=pointer]
+                - generic [ref=f1e317]:
+                  - button "Zoom" [ref=f1e318] [cursor=pointer]
+                  - button "Pan" [ref=f1e321] [cursor=pointer]
+                - generic [ref=f1e324]:
+                  - button "Zoom in" [ref=f1e325] [cursor=pointer]
+                  - button "Zoom out" [ref=f1e328] [cursor=pointer]
+                  - button "Autoscale" [ref=f1e331] [cursor=pointer]
+                  - button "Reset axes" [ref=f1e334] [cursor=pointer]
+                - button "Fullscreen" [ref=f1e338] [cursor=pointer]
+            - generic [ref=f1e345]:
+              - button "Show/hide columns" [ref=f1e349] [cursor=pointer]
+              - button "Download as CSV" [ref=f1e355] [cursor=pointer]
+              - button "Search" [ref=f1e361] [cursor=pointer]
+              - button "Fullscreen" [ref=f1e367] [cursor=pointer]

@@ -1,0 +1,102 @@
+- generic [ref=f3e2]:
+  - heading "Contrôle quotidien FIN-FINANCE — 19/09/2026" [level=1] [ref=f3e3]
+  - generic [ref=f3e4]:
+    - generic [ref=f3e5]: 📅 Samedi 19/09/2026 à 07:30
+    - generic [ref=f3e6]: "Plage contrôlée : 18/09/2026 19:00 → 19/09/2026 07:00"
+    - generic [ref=f3e7]: "Historique : 3 j"
+    - generic [ref=f3e8]: "Durée : 4.2 s"
+    - generic [ref=f3e9]: "Dernier import RB : 18/09/2026"
+  - generic [ref=f3e10]:
+    - strong [ref=f3e11]: "Statut global : ALERTE"
+    - text: "Traitements en erreur ou factures Xerox sans image : action requise."
+  - generic [ref=f3e12]:
+    - generic [ref=f3e13]:
+      - generic [ref=f3e14]: "6"
+      - generic [ref=f3e15]: Flux DSP (fichiers)
+      - generic [ref=f3e16]: OK
+    - generic [ref=f3e17]:
+      - generic [ref=f3e18]: "3"
+      - generic [ref=f3e19]: Notes de frais Notilus
+      - generic [ref=f3e20]: OK
+    - generic [ref=f3e21]:
+      - generic [ref=f3e22]: "10"
+      - generic [ref=f3e23]: Factures Xerox
+      - generic [ref=f3e24]: OK
+    - generic [ref=f3e25]:
+      - generic [ref=f3e26]: "4"
+      - generic [ref=f3e27]: Factures Tradeshift
+      - generic [ref=f3e28]: OK
+    - generic [ref=f3e29]:
+      - generic [ref=f3e30]: "0"
+      - generic [ref=f3e31]: Factures DSP
+      - generic [ref=f3e32]: OK
+    - generic [ref=f3e33]:
+      - generic [ref=f3e34]: "12"
+      - generic [ref=f3e35]: Écritures GL (interface)
+      - generic [ref=f3e36]: OK
+    - generic [ref=f3e37]:
+      - generic [ref=f3e38]: "250"
+      - generic [ref=f3e39]: Lignes GL créées
+      - generic [ref=f3e40]: OK
+    - generic [ref=f3e41]:
+      - generic [ref=f3e42]: "80"
+      - generic [ref=f3e43]: Traitements nuit
+    - generic [ref=f3e44]:
+      - generic [ref=f3e45]: "0"
+      - generic [ref=f3e46]: Erreurs
+      - generic [ref=f3e47]: OK
+    - generic [ref=f3e48]:
+      - generic [ref=f3e49]: "0"
+      - generic [ref=f3e50]: Avertissements
+      - generic [ref=f3e51]: OK
+    - generic [ref=f3e52]:
+      - generic [ref=f3e53]: "2"
+      - generic [ref=f3e54]: Imports RB
+      - generic [ref=f3e55]: OK
+    - generic [ref=f3e56]:
+      - generic [ref=f3e57]: "0"
+      - generic [ref=f3e58]: Images manquantes
+      - generic [ref=f3e59]: OK
+  - heading "DSP — Détail des flux (fichiers)" [level=2] [ref=f3e60]
+  - generic [ref=f3e61]: Aucune ligne.
+  - heading "DSP — Synthèse par jour et type" [level=2] [ref=f3e62]
+  - generic [ref=f3e63]: Aucune ligne.
+  - heading "NOTILUS — Notes de frais" [level=2] [ref=f3e64]
+  - generic [ref=f3e65]: Aucune ligne.
+  - heading "FACTURES — Synthèse par source" [level=2] [ref=f3e66]
+  - generic [ref=f3e67]: Aucune ligne.
+  - heading "XEROX — Factures SANS images" [level=2] [ref=f3e68]
+  - generic [ref=f3e69]: Aucune ligne.
+  - heading "XEROX — Factures AVEC images (compteur)" [level=2] [ref=f3e70]
+  - generic [ref=f3e71]: Aucune ligne.
+  - heading "GL — Interface (en attente)" [level=2] [ref=f3e72]
+  - generic [ref=f3e73]: Aucune ligne.
+  - heading "GL — Lignes créées" [level=2] [ref=f3e74]
+  - generic [ref=f3e75]: Aucune ligne.
+  - heading "NUIT — Synthèse par statut" [level=2] [ref=f3e76]
+  - generic [ref=f3e77]: Aucune ligne.
+  - heading "NUIT — Erreurs regroupées par programme" [level=2] [ref=f3e78]
+  - generic [ref=f3e79]: Aucune ligne.
+  - heading "NUIT — Détail des erreurs (30 plus récentes) 1" [level=2] [ref=f3e80]:
+    - text: NUIT — Détail des erreurs (30 plus récentes)
+    - generic [ref=f3e81]: "1"
+  - table [ref=f3e83]:
+    - rowgroup [ref=f3e84]:
+      - row [ref=f3e85]:
+        - columnheader "REQ_ID" [ref=f3e86]
+        - columnheader "JOB_CTM" [ref=f3e87]
+        - columnheader "MSG" [ref=f3e88]
+    - rowgroup [ref=f3e89]:
+      - row [ref=f3e90]:
+        - cell "1" [ref=f3e91]
+        - cell "FINFIN_J18TRT_04_IMP01_Q" [ref=f3e92]
+        - cell "a < b & c" [ref=f3e93]
+  - heading "NUIT — Détail des warnings" [level=2] [ref=f3e94]
+  - generic [ref=f3e95]: Aucune ligne.
+  - heading "NUIT — Traitements longs (> 30 min)" [level=2] [ref=f3e96]
+  - generic [ref=f3e97]: Aucune ligne.
+  - heading "NUIT — Traitements en cours (potentiellement bloqués)" [level=2] [ref=f3e98]
+  - generic [ref=f3e99]: Aucune ligne.
+  - heading "Rapprochement bancaire (RB)" [level=2] [ref=f3e100]
+  - generic [ref=f3e101]: Aucune ligne.
+  - generic [ref=f3e102]: ODAT Watch · contrôle du matin · portage de Controle_Quotidien_Complet.sql

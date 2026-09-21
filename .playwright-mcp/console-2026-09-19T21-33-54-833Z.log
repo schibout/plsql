@@ -1,0 +1,16 @@
+[   55921ms] [WARNING] WebSocket onclose @ http://localhost:8505/static/js/index.CcFifQPt.js:28
+[   56410ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8505/_stcore/health:0
+[   56411ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8505/_stcore/host-config:0
+[   56523ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8505/_stcore/health:0
+[   56527ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8505/_stcore/host-config:0
+[   56737ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8505/_stcore/health:0
+[   56737ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8505/_stcore/host-config:0
+[   57140ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8505/_stcore/health:0
+[   57151ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8505/_stcore/host-config:0
+[   57875ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8505/_stcore/health:0
+[   57888ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8505/_stcore/host-config:0
+[   59076ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8505/_stcore/health:0
+[   59077ms] [ERROR] Client Error in reaching server endpoint - No response received when attempting to reach /_stcore/health @ http://localhost:8505/static/js/index.CcFifQPt.js:27
+[   59078ms] [ERROR] Is Streamlit still running? If you accidentally stopped Streamlit, just restart it in your terminal: @ http://localhost:8505/static/js/index.CcFifQPt.js:32
+[   59079ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8505/_stcore/host-config:0
+[   59121ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8505/static/media/SourceCodeVF-Upright.ttf.BjWn63N-.woff2:0

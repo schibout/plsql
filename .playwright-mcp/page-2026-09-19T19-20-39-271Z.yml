@@ -1,0 +1,135 @@
+- generic [ref=f8e2]:
+  - generic [ref=f8e11]:
+    - heading "🕓 ODAT Watch" [level=2] [ref=f8e16]
+    - paragraph [ref=f8e21]: Control-M · Oracle EBS · FIN-FINANCE
+    - generic [ref=f8e23]:
+      - paragraph [ref=f8e27]: Application
+      - group [ref=f8e29]:
+        - combobox "Application" [ref=f8e30]: FIN-FINANCE
+        - button "Open" [ref=f8e31] [cursor=pointer]
+    - generic [ref=f8e36]:
+      - paragraph [ref=f8e40]: Filtre (job, description, script)
+      - textbox "Filtre (job, description, script)" [ref=f8e43]:
+        - /placeholder: ""
+    - separator [ref=f8e48]
+    - button [ref=f8e51] [cursor=pointer]:
+      - paragraph [ref=f8e56]: 📥 Importer les nouveaux fichiers ODAT
+    - paragraph [ref=f8e61]: "Sources scannées : dossier ODAT du dépôt et Téléchargements."
+    - separator [ref=f8e66]
+    - paragraph [ref=f8e71]:
+      - strong [ref=f8e72]: Oracle Apps
+    - generic [ref=f8e74]:
+      - button [ref=f8e82] [cursor=pointer]:
+        - paragraph [ref=f8e87]: 🔄 Demandes
+      - button [ref=f8e95] [cursor=pointer]:
+        - paragraph [ref=f8e100]: 📚 Programmes
+    - button [ref=f8e103] [cursor=pointer]:
+      - paragraph [ref=f8e108]: 🧾 Analyser les logs .req / .out
+  - generic [ref=f8e3]:
+    - banner [ref=f8e111]:
+      - generic [ref=f8e114]:
+        - button "Deploy" [ref=f8e125] [cursor=pointer]
+        - button "Main menu" [ref=f8e129] [cursor=pointer]
+    - generic [ref=f8e133]:
+      - generic [ref=f8e138]:
+        - generic [ref=f8e139]:
+          - heading "FIN-FINANCE" [level=1] [ref=f8e141]:
+            - text: FIN-FINANCE
+            - generic [ref=f8e142]:
+              - link "Link to heading":
+                - /url: "#fin-finance"
+          - generic [ref=f8e143]: Samedi 19/09/2026, 21:20 — qu'est-ce qui tourne ce soir, et demain ?
+        - generic [ref=f8e144]: Dernière photo Control-M 17/09 16:46 · odate 2026-09-17il y a 52 h 34 min · 96 photos · 90 jours d'historique
+      - generic [ref=f8e146]:
+        - tablist [ref=f8e147]:
+          - tab [ref=f8e148] [cursor=pointer]:
+            - paragraph [ref=f8e150]: 🌙 Ce soir
+          - tab [ref=f8e152] [cursor=pointer]:
+            - paragraph [ref=f8e154]: 📅 Demain
+          - tab [ref=f8e155] [cursor=pointer]:
+            - paragraph [ref=f8e157]: 🔴 Maintenant
+          - tab [selected] [ref=f8e158] [cursor=pointer]:
+            - paragraph [ref=f8e160]: ☀️ Matin
+          - tab [ref=f8e161] [cursor=pointer]:
+            - paragraph [ref=f8e163]: 🅾 Oracle
+          - tab [ref=f8e164] [cursor=pointer]:
+            - paragraph [ref=f8e166]: 🔎 Historique
+          - tab [ref=f8e167] [cursor=pointer]:
+            - paragraph [ref=f8e169]: 📈 Profils
+          - tab [ref=f8e170] [cursor=pointer]:
+            - paragraph [ref=f8e172]: 🗂 Données
+          - tab [ref=f8e173] [cursor=pointer]:
+            - paragraph [ref=f8e175]: ⌨ SQL
+        - tabpanel "☀️ Matin" [ref=f8e267]:
+          - generic [ref=f8e268]:
+            - generic [ref=f8e270]:
+              - generic [ref=f8e272]:
+                - heading "Plage contrôlée" [level=4] [ref=f8e278]:
+                  - text: Plage contrôlée
+                  - generic [ref=f8e279]:
+                    - link "Link to heading":
+                      - /url: "#plage-controlee"
+                - generic [ref=f8e281]:
+                  - generic [ref=f8e285]:
+                    - paragraph [ref=f8e289]: Début de nuit
+                    - generic [ref=f8e292]:
+                      - group "Début de nuit" [ref=f8e294]:
+                        - spinbutton "year, Début de nuit" [ref=f8e295]: "2026"
+                        - generic [aria-hidden] [ref=f8e296]: /
+                        - spinbutton "month, Début de nuit" [ref=f8e297]: "09"
+                        - generic [aria-hidden] [ref=f8e298]: /
+                        - spinbutton "day, Début de nuit" [ref=f8e299]: "18"
+                      - textbox [ref=f8e301]: 2026-09-18
+                  - generic [ref=f8e305]:
+                    - paragraph [ref=f8e309]: Heure
+                    - group "Heure" [ref=f8e313]:
+                      - spinbutton "heure, Heure" [ref=f8e314]: "19"
+                      - generic [aria-hidden] [ref=f8e315]: ":"
+                      - spinbutton "minute, Heure" [ref=f8e316]: "00"
+                  - generic [ref=f8e320]:
+                    - paragraph [ref=f8e324]: Fin de nuit
+                    - generic [ref=f8e327]:
+                      - group "Fin de nuit" [ref=f8e329]:
+                        - spinbutton "year, Fin de nuit" [ref=f8e330]: "2026"
+                        - generic [aria-hidden] [ref=f8e331]: /
+                        - spinbutton "month, Fin de nuit" [ref=f8e332]: "09"
+                        - generic [aria-hidden] [ref=f8e333]: /
+                        - spinbutton "day, Fin de nuit" [ref=f8e334]: "19"
+                      - textbox [ref=f8e336]: 2026-09-19
+                  - generic [ref=f8e340]:
+                    - paragraph [ref=f8e344]: Heure
+                    - group "Heure" [ref=f8e348]:
+                      - spinbutton "heure, Heure" [ref=f8e349]: "07"
+                      - generic [aria-hidden] [ref=f8e350]: ":"
+                      - spinbutton "minute, Heure" [ref=f8e351]: "00"
+                  - generic [ref=f8e355]:
+                    - paragraph [ref=f8e359]: Histo (j)
+                    - spinbutton "Histo (j)" [ref=f8e362]: "3"
+                - paragraph [ref=f8e367]: Traitements de nuit du 18/09 19:00 au 19/09 07:00 · veille = 18/09 · jour = 19/09
+                - button [active] [ref=f8e370] [cursor=pointer]:
+                  - generic "▶ Lancer le contrôle" [ref=f8e371]:
+                    - paragraph [ref=f8e375]: ▶ Lancer le contrôle
+              - generic [ref=f8e377]:
+                - heading "⏰ Programmer chaque matin" [level=4] [ref=f8e383]:
+                  - text: ⏰ Programmer chaque matin
+                  - generic [ref=f8e384]:
+                    - link "Link to heading":
+                      - /url: "#programmer-chaque-matin"
+                - paragraph [ref=f8e389]:
+                  - text: Aucune tâche planifiée. La tâche lance
+                  - code [ref=f8e390]: controle_matin.py --rapport
+                  - text: (plage par défaut 19h → 7h), poste allumé et session ouverte.
+                - generic [ref=f8e392]:
+                  - generic [ref=f8e396]:
+                    - paragraph [ref=f8e400]: Heure
+                    - group "Heure" [ref=f8e404]:
+                      - spinbutton "heure, Heure" [ref=f8e405]: "07"
+                      - generic [aria-hidden] [ref=f8e406]: ":"
+                      - spinbutton "minute, Heure" [ref=f8e407]: "15"
+                  - button [ref=f8e412] [cursor=pointer]:
+                    - generic "Programmer" [ref=f8e413]:
+                      - paragraph [ref=f8e417]: Programmer
+                  - button [disabled] [ref=f8e422]:
+                    - generic "Supprimer" [ref=f8e423]:
+                      - paragraph [ref=f8e427]: Supprimer
+            - paragraph [ref=f8e432]: Aucune exécution dans cette session. Les rapports déjà générés sont listés en bas de page.
