@@ -306,8 +306,8 @@ st.markdown(f"""
   <div class="meta">{meta}</div>
 </div>""", unsafe_allow_html=True)
 
-tab_plan, tab_calendriers, tab_soir, tab_demain, tab_now, tab_matin, tab_releves, tab_folio, tab_vir, tab_ora, tab_histo, tab_profils, tab_data, tab_sql = st.tabs(
-    ["🧭 Préparer ma nuit", "📥 Clôtures", "🌙 Ce soir", "📅 Demain", "🔴 Maintenant", "☀️ Matin", "🏦 Relevés bancaires", "🌹 Folio Rose", "💸 Virements", "🅾 Oracle", "🔎 Historique", "📈 Profils", "🗂 Données", "⌨ SQL"])
+tab_plan, tab_calendriers, tab_soir, tab_demain, tab_now, tab_matin, tab_releves, tab_folio, tab_vir, tab_prel, tab_ora, tab_histo, tab_profils, tab_data, tab_sql = st.tabs(
+    ["🧭 Préparer ma nuit", "📥 Clôtures", "🌙 Ce soir", "📅 Demain", "🔴 Maintenant", "☀️ Matin", "🏦 Relevés bancaires", "🌹 Folio Rose", "💸 Virements", "💳 Prélèvements", "🅾 Oracle", "🔎 Historique", "📈 Profils", "🗂 Données", "⌨ SQL"])
 
 with tab_plan:
     con = connect()
@@ -334,6 +334,10 @@ with tab_folio:
 with tab_vir:
     import ui_virements
     ui_virements.render(kpi)
+
+with tab_prel:
+    import ui_prelevements
+    ui_prelevements.render(kpi)
 
 with tab_ora:
     import ui_oracle

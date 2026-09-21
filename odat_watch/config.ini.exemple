@@ -52,3 +52,14 @@ comptes_connus = 30003/03620/00020137269;16807/00166/31990892212
 racine = ..\controleVirement
 ; Recherche des envois deja transmis dans les autres dossiers *_cible des N jours precedents (0 = desactive)
 historique_jours = 7
+
+[prelevements]
+; Onglet Prelevements. Racine de l'outil CTRL_QUASI_AUTOMATIQUE_DES_PRELEVEMENTS : dossiers ORACLE\<AAAAMMJJ>
+; (fichiers *PCX* / *PCL* archives depuis DATA/Traite/OUT_SEPA), EDF (IMPORT_AVP_DK.*.csv, pieces jointes du mail
+; "Synthese quotidienne des prelevements Dalkia recus par CashCollection") et EDF\REJETS (REJETS_INTERNES_DK.*.csv).
+; Rapports ecrits dans rapport\Rapprochement_Cle_Metier_<AAAAMMJJ>_<HHMMSS>.*
+racine = ..\CTRL_QUASI_AUTOMATIQUE_DES_PRELEVEMENTS
+; Profondeur du perimetre en jours calendaires (echeances de reference - jours a reference + 25 j)
+jours = 10
+; Nom du SI dans les etats EDF (l'autre SI est CIF)
+nom_si = ORACLE
