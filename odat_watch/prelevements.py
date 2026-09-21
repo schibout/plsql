@@ -95,7 +95,7 @@ def _outil(outil: Path) -> None:
         sys.path.insert(0, r)
     for nom in ("prelevements_rapprochement", "rapprochement_cle_metier"):
         module = sys.modules.get(nom)
-        if module is not None:
+        if module is not None and getattr(module, "__spec__", None) is not None:
             importlib.reload(module)
 
 
