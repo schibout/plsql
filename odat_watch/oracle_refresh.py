@@ -261,7 +261,8 @@ def job_from_description(desc: str | None) -> str | None:
 
 # « FINFIN_J18TRT_04_IMP01_Q : DKA_IPAPROJETHRM_JOB.sh » : le script lancé par concsub nomme le programme
 # concurrent (DKA_IPAPROJETHRM), cf. ChaineControleM/Analyse_Chaine_ControlM_Concsub.md.
-SCRIPT_RE = re.compile(r":\s*([A-Za-z0-9_\-]+?)(?:_JOB)?\.(?:sh|ksh)(?![A-Za-z0-9])", re.I)
+# Écritures rencontrées : « X_JOB.sh », « X_JOB..sh » (double point), « X_JOB » (sans extension), « x.ksh ».
+SCRIPT_RE = re.compile(r":\s*([A-Za-z0-9_\-]+?)(?:_JOB)?(?:\.+(?:sh|ksh))?(?![A-Za-z0-9_.])", re.I)
 
 
 def programme_from_description(desc: str | None) -> str | None:

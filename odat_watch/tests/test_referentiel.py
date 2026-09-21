@@ -56,3 +56,21 @@ def test_programmes_fusionne_manuel_et_auto(tmp_path):
     assert p["FINFIN_J11TEC_04_DEB01_Q"] == "(jalon, pas de programme)"
     assert p["FINFIN_J18TRT_04_IMP01_Q"].startswith("DKA_IPAPROJETHRM")
     con.close()
+
+
+def test_synchroniser_relit_les_descriptions_de_lanceur_deja_en_base(tmp_path):
+    """Les demandes Oracle chargées avant la règle « script -> programme » n'avaient pas alimenté job_mapping :
+    la synchronisation relit toutes les descriptions de lanceur présentes en base."""
+    con = _base(tmp_path)
+    con.execute("INSERT INTO ctm_jobs(snapshot_id, application, group_name, job_name, description, member, task_type) "
+                "VALUES (1,'FIN-FINANCE','FINEXT_J11GEN_06_Q','FINEXT_J11GEN_06_EXP01_Q','Export commandes','','Job')")
+    con.execute("INSERT INTO ora_programs(program_short, program_name, application_short) VALUES ('DKA_IPOEXTRACTCDE','Extraction des commandes','DKA')")
+    con.execute("INSERT INTO ora_requests(request_id, program_short, description, job_name, source) VALUES "
+                "(1, 'DKA_SLAUNCHER', 'FINEXT_J11GEN_06_EXP01_Q : DKA_IPOEXTRACTCDE_JOB.sh', 'FINEXT_J11GEN_06_EXP01_Q', 'oracle')")
+    con.commit()
+    assert con.execute("SELECT COUNT(*) FROM job_mapping WHERE job_name='FINEXT_J11GEN_06_EXP01_Q'").fetchone()[0] == 0
+    ref.synchroniser(con)
+    t = ref.table(con).set_index("job_name")
+    assert t.loc["FINEXT_J11GEN_06_EXP01_Q", "programme_auto"] == "DKA_IPOEXTRACTCDE · Extraction des commandes"
+    assert con.execute("SELECT programme FROM job_mapping WHERE job_name='FINEXT_J11GEN_06_EXP01_Q'").fetchone()[0] == "DKA_IPOEXTRACTCDE"
+    con.close()

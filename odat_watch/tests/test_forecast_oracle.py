@@ -43,6 +43,9 @@ def test_programme_depuis_description():
     assert orf.programme_from_description("FINFIN_J18TRT_04_IMP01_Q : DKA_IPAPROJETHRM_JOB.sh") == "DKA_IPAPROJETHRM"
     assert orf.programme_from_description("FINEXT_J11GEN_06_EXP01_Q : DKA_APEXPCDE_JOB.sh (DKA : Lanceur (SHELL))") == "DKA_APEXPCDE"
     assert orf.programme_from_description("FINFIN_X : ebsstop.ksh") == "EBSSTOP"
+    # écritures rencontrées en base : sans extension, ou avec un double point
+    assert orf.programme_from_description("FINFIN_J34TRT_04_WRK01_H : DKA_FNDGSCST_JOB") == "DKA_FNDGSCST"
+    assert orf.programme_from_description("FINEXT_J22INT_05_WRK05_Q : DKA_IAPCTRFLUX_IVALUA_REPORT_JOB..sh") == "DKA_IAPCTRFLUX_IVALUA_REPORT"
     assert orf.programme_from_description("Import des projets") is None
 
 

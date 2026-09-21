@@ -13,8 +13,37 @@ import pandas as pd
 import forecast
 
 
+def completer_mapping(con: sqlite3.Connection) -> int:
+    """Relit toutes les descriptions de lanceur en base (« JOB : DKA_X_JOB.sh ») et complète job_mapping.
+
+    Le chargement Oracle n'alimente job_mapping que pour les demandes qu'il vient de lire : les demandes
+    chargées avant l'ajout de la règle script -> programme n'ont jamais été exploitées. Renvoie le nombre
+    de jobs dont le programme a été trouvé ou complété. Une valeur déjà présente n'est pas écrasée."""
+    from oracle_refresh import job_from_description, programme_from_description
+    rows = con.execute("""
+        SELECT description, program_short, MAX(request_id)
+        FROM ora_requests WHERE source='oracle' AND description LIKE '% : %'
+        GROUP BY description, program_short""").fetchall()
+    trouves: dict[str, tuple[str, str, str]] = {}
+    for desc, pshort, _rid in rows:
+        job, prog = job_from_description(desc), programme_from_description(desc)
+        if job and prog:
+            trouves[job] = (pshort, (desc or "").strip(), prog)
+    if not trouves:
+        return 0
+    with con:
+        con.executemany(
+            "INSERT INTO job_mapping(job_name, program_short, commentaire, programme) VALUES (?,?,?,?) "
+            "ON CONFLICT(job_name) DO UPDATE SET program_short=COALESCE(job_mapping.program_short, excluded.program_short), "
+            "commentaire=COALESCE(job_mapping.commentaire, excluded.commentaire), "
+            "programme=COALESCE(NULLIF(job_mapping.programme, ''), excluded.programme)",
+            [(j, p, d, prog) for j, (p, d, prog) in trouves.items()])
+    return len(trouves)
+
+
 def synchroniser(con: sqlite3.Connection) -> int:
     """Ajoute les jobs inconnus, rafraîchit description / chaîne / programme auto. Renvoie le nb de nouveaux jobs."""
+    completer_mapping(con)
     jobs = con.execute("""
         SELECT j.job_name, j.application, j.group_name, j.description, j.member, MAX(s.snap_time) AS vu_le
         FROM ctm_jobs j JOIN snapshots s ON s.id = j.snapshot_id
