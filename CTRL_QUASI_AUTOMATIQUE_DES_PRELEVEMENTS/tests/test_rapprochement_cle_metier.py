@@ -3,6 +3,7 @@
 Chaque test est adosse a un cas reellement present dans les donnees de
 production : les jeux d'essai reproduisent la structure exacte des fichiers.
 """
+import json
 import sys
 from datetime import date
 from decimal import Decimal
@@ -18,7 +19,7 @@ from rapprochement_cle_metier import (  # noqa: E402
     montant_oracle, statut_cle, AgregatEdf, Tranche, LigneRejet,
     ECART_PARTIEL, EDF_SANS_ORACLE, EN_ATTENTE, EXPLIQUE_PAR_REJET,
     HORS_PERIMETRE_HISTORIQUE, NON_RECU, RAPPROCHE, RAPPROCHE_REJET_POSTERIEUR,
-    REJET_PARTIEL_NON_CONFIRME, REJETE_INTEGRALEMENT,
+    REJET_PARTIEL_NON_CONFIRME, REJETE_INTEGRALEMENT, executer,
 )
 
 # --- Construction des jeux d'essai ----------------------------------------
@@ -440,3 +441,41 @@ def test_les_justifications_couvrent_exactement_l_ecart():
     assert sum(j["montant"] for j in just) == -res[0]["ecart_montant"] == Decimal("70.00")
     assert sum(j["nb"] for j in just) == -res[0]["ecart_nb"] == 2
     assert sorted(j["cause"] for j in just) == ["INEXPLIQUE", "REJET"]
+
+
+# --- executer() : point d'entree importable (ODAT Watch) --------------------
+def _jeu_minimal(tmp_path):
+    """Un prelevement emis le 11/09 (echeance 30/09/2026), confirme par l'etat EDF du 13/09."""
+    ecrire_oracle(tmp_path, "20260910", "DK_x-PCL-20260911-1_20260911-01.txt",
+                  [ligne_oracle(IBAN_A, "09/30/2026", "100.00")])
+    ecrire_edf(tmp_path, "20260913", [f"ORACLE;{IBAN_A};30/09/2026;1;100,00;"])
+    (tmp_path / "EDF" / "REJETS").mkdir(parents=True, exist_ok=True)
+    return tmp_path
+
+
+def test_executer_ecrit_les_quatre_fichiers_et_le_resume(tmp_path):
+    racine = _jeu_minimal(tmp_path)
+    # jours=3 : l'historique Oracle (emission du 11/09) couvre tout le perimetre, pas d'avertissement
+    res = executer(reference="2026-09-14", racine=racine, jours=3)
+    assert res["code"] == 0 and res["statut_global"] == "OK"
+    assert res["par_statut"][RAPPROCHE]["cles"] == 1
+    dossier = racine / "rapport"
+    for suffixe in (".xlsx", ".csv", "_justifications.csv", "_resume.json"):
+        assert (dossier / (res["base"] + suffixe)).is_file(), suffixe
+    resume = json.loads((dossier / (res["base"] + "_resume.json")).read_text(encoding="utf-8"))
+    assert resume["reference"] == "2026-09-14" and resume["statut_global"] == "OK"
+    assert resume["contexte"]["Lignes Oracle"] == 1 and resume["avertissements"] == []
+    assert resume["par_statut"][RAPPROCHE]["montant"] == "100.00"
+
+
+def test_executer_statut_degrade_sans_fichier_edf(tmp_path):
+    racine = _jeu_minimal(tmp_path)
+    (racine / "EDF" / "IMPORT_AVP_DK.20260913.070100.csv").unlink()
+    res = executer(reference="2026-09-14", racine=racine, jours=10)
+    assert res["code"] == 3 and res["statut_global"] == "DEGRADE"
+    assert any("Aucun fichier EDF" in a for a in res["avertissements"])
+
+
+def test_executer_leve_sur_racine_absente(tmp_path):
+    with pytest.raises(ErreurTraitement):
+        executer(reference="2026-09-14", racine=tmp_path / "nulle_part", jours=10)

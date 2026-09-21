@@ -24,6 +24,7 @@ Codes retour :
 import argparse
 import csv
 import fnmatch
+import json
 import os
 import re
 import sys
@@ -976,35 +977,83 @@ def analyser(args, diag):
     return rapprochement, rejets, lignes_ko, contexte, reference
 
 
+STATUT_GLOBAL_PAR_CODE = {0: "OK", 1: "ANOMALIES", 2: "ERREUR", 3: "DEGRADE"}
+
+
+def executer(reference=None, racine=None, sortie=None, jours=10, nom_si="ORACLE",
+             dossier_oracle="ORACLE", dossier_edf="EDF",
+             motifs_oracle=("*PCX*", "*PCL*"), motif_edf="IMPORT_AVP_DK.*.*.csv",
+             motif_rejets="REJETS_INTERNES_DK.*.csv"):
+    """Lance le rapprochement et ecrit rapport/<base>.xlsx, .csv, _justifications.csv, _resume.json.
+
+    Point d'entree importable (ODAT Watch). Retourne un dict :
+    code (0 OK, 1 anomalies, 2 lignes Oracle non conformes, 3 degrade), statut_global,
+    base (nom des fichiers sans extension), dossier (Path), reference (date),
+    par_statut {statut: {cles, nb, montant}}, nb_anomalies, nb_signales, nb_a_investiguer,
+    nb_lignes_ko, avertissements (list[str]), contexte (dict).
+    Leve ErreurTraitement (racine absente, date invalide) et OSError.
+    """
+    args = argparse.Namespace(
+        racine=Path(racine) if racine else Path(__file__).resolve().parent,
+        sortie=Path(sortie) if sortie else None, date=reference, jours=int(jours),
+        dossier_oracle=dossier_oracle, dossier_edf=dossier_edf,
+        motifs_oracle=list(motifs_oracle), motif_edf=motif_edf,
+        motif_rejets=motif_rejets, nom_si=nom_si)
+    diag = Diagnostic()
+    rapprochement, rejets, lignes_ko, contexte, reference = analyser(args, diag)
+
+    # Les rapports sont toujours regroupes dans un sous-dossier dedie : ils
+    # ne se melangent jamais aux fichiers sources analyses.
+    dossier = (args.sortie or args.racine).resolve() / DOSSIER_RAPPORT
+    dossier.mkdir(parents=True, exist_ok=True)
+    base = f"Rapprochement_Cle_Metier_{reference.strftime('%Y%m%d')}_"            f"{datetime.now().strftime('%H%M%S')}"
+
+    resume = {}
+    for r in rapprochement:
+        e = resume.setdefault(r["statut"], {"cles": 0, "nb": 0, "montant": Decimal(0)})
+        e["cles"] += 1
+        e["nb"] += r["nb_oracle"] or r["nb_edf"]
+        e["montant"] += r["montant_oracle"] or r["montant_edf"]
+    justifications = construire_justifications(rapprochement)
+
+    print("Génération du rapport...")
+    generer_classeur(dossier / f"{base}.xlsx", rapprochement, rejets,
+                     lignes_ko, resume, contexte, justifications)
+    generer_csv(dossier / f"{base}.csv", rapprochement)
+    generer_csv_justifications(dossier / f"{base}_justifications.csv", justifications)
+
+    anomalies = sum(1 for r in rapprochement if r["statut"] in STATUTS_ANOMALIE)
+    signales = sum(1 for r in rapprochement if r["statut"] in STATUTS_SIGNALES)
+    a_investiguer = sum(1 for j in justifications if j["cause"] in CAUSES_A_INVESTIGUER)
+    par_rejet = sum(1 for j in justifications if j["cause"] == "REJET")
+    code = 2 if lignes_ko else 3 if diag.avertissements else 1 if anomalies else 0
+
+    res = {
+        "code": code, "statut_global": STATUT_GLOBAL_PAR_CODE[code],
+        "base": base, "dossier": dossier, "reference": reference,
+        "par_statut": {s: dict(e) for s, e in resume.items()},
+        "nb_anomalies": anomalies, "nb_signales": signales, "nb_a_investiguer": a_investiguer,
+        "nb_justifications": len(justifications), "nb_justifie_par_rejet": par_rejet, "nb_lignes_ko": len(lignes_ko),
+        "avertissements": list(diag.avertissements),
+        "contexte": {k: v for k, v in contexte},
+    }
+    serialisable = dict(
+        res, dossier=str(dossier), reference=reference.isoformat(),
+        par_statut={s: dict(e, montant=str(e["montant"])) for s, e in res["par_statut"].items()},
+        genere_le=datetime.now().isoformat(timespec="seconds"))
+    temporaire = dossier / f"{base}_resume.tmp.json"
+    temporaire.write_text(json.dumps(serialisable, ensure_ascii=False, indent=2), encoding="utf-8")
+    os.replace(temporaire, dossier / f"{base}_resume.json")
+    return res
+
+
 def main(argv=None):
     args = construire_parser().parse_args(argv)
-    diag = Diagnostic()
-
     try:
-        rapprochement, rejets, lignes_ko, contexte, reference = analyser(args, diag)
-
-        # Les rapports sont toujours regroupes dans un sous-dossier dedie : ils
-        # ne se melangent jamais aux fichiers sources analyses.
-        sortie = (args.sortie or args.racine).resolve() / DOSSIER_RAPPORT
-        sortie.mkdir(parents=True, exist_ok=True)
-        base = f"Rapprochement_Cle_Metier_{reference.strftime('%Y%m%d')}_" \
-               f"{datetime.now().strftime('%H%M%S')}"
-
-        resume = {}
-        for r in rapprochement:
-            e = resume.setdefault(r["statut"], {"cles": 0, "nb": 0, "montant": Decimal(0)})
-            e["cles"] += 1
-            e["nb"] += r["nb_oracle"] or r["nb_edf"]
-            e["montant"] += r["montant_oracle"] or r["montant_edf"]
-
-        justifications = construire_justifications(rapprochement)
-
-        print("Génération du rapport...")
-        generer_classeur(sortie / f"{base}.xlsx", rapprochement, rejets,
-                         lignes_ko, resume, contexte, justifications)
-        generer_csv(sortie / f"{base}.csv", rapprochement)
-        generer_csv_justifications(sortie / f"{base}_justifications.csv", justifications)
-
+        res = executer(reference=args.date, racine=args.racine, sortie=args.sortie, jours=args.jours,
+                       nom_si=args.nom_si, dossier_oracle=args.dossier_oracle,
+                       dossier_edf=args.dossier_edf, motifs_oracle=args.motifs_oracle,
+                       motif_edf=args.motif_edf, motif_rejets=args.motif_rejets)
     except ErreurTraitement as exc:
         print(f"Erreur critique : {exc}", file=sys.stderr)
         return 2
@@ -1012,39 +1061,28 @@ def main(argv=None):
         print(f"Erreur d'acces fichier : {exc}", file=sys.stderr)
         return 2
 
-    anomalies = sum(1 for r in rapprochement if r["statut"] in STATUTS_ANOMALIE)
-    signales = sum(1 for r in rapprochement if r["statut"] in STATUTS_SIGNALES)
-
-    a_investiguer = [j for j in justifications if j["cause"] in CAUSES_A_INVESTIGUER]
-
     print("\n=======================================================")
-    print(f" Rapport : {sortie / (base + '.xlsx')}")
+    print(f" Rapport : {res['dossier'] / (res['base'] + '.xlsx')}")
     for statut in ORDRE_STATUTS:
-        if statut in resume:
-            print(f"   {resume[statut]['cles']:5}  {statut}")
+        if statut in res["par_statut"]:
+            print(f"   {res['par_statut'][statut]['cles']:5}  {statut}")
     print("-------------------------------------------------------")
-    if justifications:
-        justifie = sum(1 for j in justifications if j["cause"] == "REJET")
-        print(f" {len(justifications)} écart(s) à justifier, dont {justifie} par un rejet"
-              f" et {len(a_investiguer)} à investiguer.")
+    if res["nb_justifications"]:
+        print(f" {res['nb_justifications']} écart(s) à justifier, dont {res['nb_justifie_par_rejet']} par un rejet"
+              f" et {res['nb_a_investiguer']} à investiguer.")
         print(" Détail et fichiers d'origine : onglet « Justification des écarts ».")
-    if lignes_ko:
-        print(f" {len(lignes_ko)} ligne(s) Oracle non conforme(s) — résultat non fiable.")
-    if signales:
-        print(f" {signales} clé(s) à signaler au métier.")
-    if anomalies:
-        print(f" {anomalies} ANOMALIE(S) à traiter.")
+    if res["nb_lignes_ko"]:
+        print(f" {res['nb_lignes_ko']} ligne(s) Oracle non conforme(s) — résultat non fiable.")
+    if res["nb_signales"]:
+        print(f" {res['nb_signales']} clé(s) à signaler au métier.")
+    if res["nb_anomalies"]:
+        print(f" {res['nb_anomalies']} ANOMALIE(S) à traiter.")
     else:
         print(" Aucune anomalie : tout est rapproché ou expliqué.")
-    if diag.avertissements:
-        print(f" {len(diag.avertissements)} avertissement(s) — exécution dégradée.")
+    if res["avertissements"]:
+        print(f" {len(res['avertissements'])} avertissement(s) — exécution dégradée.")
     print("=======================================================")
-
-    if lignes_ko:
-        return 2
-    if diag.avertissements:
-        return 3
-    return 1 if anomalies else 0
+    return res["code"]
 
 
 if __name__ == "__main__":
