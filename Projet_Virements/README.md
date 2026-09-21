@@ -80,8 +80,12 @@ Règles particulières :
 
 - `EXPECTED_SENDERS: ['*']` désactive le filtre d'expéditeur ;
 - `ALLOWED_EXTENSIONS: []` accepte toutes les extensions ;
-- `DATE_OFFSET_DAYS: 3` cible exactement J‑3 ; `null` utilise la fenêtre des
-  derniers mois ;
+- `DATE_OFFSET_DAYS: 3` cible exactement J‑3 **une fois le profil rodé** : tant
+  qu'aucun lancement réussi n'est mémorisé dans son état, la recherche couvre
+  toute la fenêtre `INITIAL_LOOKBACK_MONTHS` (premier lancement = rattrapage de
+  l'historique, par lots de 50 messages) ; `null` utilise toujours la fenêtre
+  des derniers mois. `resetMailImportStates()` remet un profil en premier
+  lancement ;
 - `FILE_NAME_MODE: 'timestamp_original'` avec `FILE_TIMESTAMP_FORMAT: 'ddMMyyyy'`
   produit `DDMMYYYY_nom-original.ext`.
 

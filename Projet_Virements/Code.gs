@@ -57,20 +57,24 @@ function mailImportProcessFlow_(flow) {
   const state = virementLoadState_(flow);
   const now = new Date();
   const cutoff = virementCutoffDate_(now, flow.INITIAL_LOOKBACK_MONTHS);
-  const query = virementBuildSearchQuery_(flow, now);
+  const referenceDate = mailImportReferenceDate_(flow, state, now);
+  const query = virementBuildSearchQuery_(flow, referenceDate);
   const searchResult = virementSearchThreads_(query);
   const collection = virementCollectMessages_(
     searchResult.threads,
     cutoff,
     report,
     flow,
-    now
+    referenceDate
   );
 
   report.threads = searchResult.threads.length;
   report.matched = collection.items.length;
+  report.initialRun = referenceDate === null &&
+    Number.isInteger(flow.DATE_OFFSET_DAYS);
   mailImportFlowLog_(flow, 'INFO', 'Début du traitement du flux.', {
     version: MAIL_IMPORT_ENGINE_CONFIG.CODE_VERSION,
+    initialRun: report.initialRun,
     query: query,
     folder: parentFolder.getName(),
     matched: report.matched,
@@ -127,7 +131,7 @@ function mailImportProcessFlow_(flow) {
     cutoff,
     report,
     flow,
-    now
+    referenceDate
   );
 
   if (searchResult.hasMore) {
@@ -169,13 +173,16 @@ function mailImportDiagnoseFlow_(flow) {
   const folder = DriveApp.getFolderById(flow.FOLDER_ID);
   const now = new Date();
   const cutoff = virementCutoffDate_(now, flow.INITIAL_LOOKBACK_MONTHS);
-  const query = virementBuildSearchQuery_(flow, now);
+  const state = virementLoadState_(flow);
+  const referenceDate = mailImportReferenceDate_(flow, state, now);
+  const query = virementBuildSearchQuery_(flow, referenceDate);
   const searchResult = virementSearchThreads_(query);
   const result = {
     flowId: flow.ID,
     flowName: flow.DISPLAY_NAME,
     version: MAIL_IMPORT_ENGINE_CONFIG.CODE_VERSION,
     folderName: folder.getName(),
+    initialRun: referenceDate === null && Number.isInteger(flow.DATE_OFFSET_DAYS),
     query: query,
     threads: searchResult.threads.length,
     matchedMessages: 0,
@@ -186,7 +193,7 @@ function mailImportDiagnoseFlow_(flow) {
   searchResult.threads.forEach(function(thread) {
     try {
       thread.getMessages().forEach(function(message) {
-        const match = virementGetMessageMatchResult_(message, cutoff, flow, now);
+        const match = virementGetMessageMatchResult_(message, cutoff, flow, referenceDate);
         if (!match.matches) {
           result.rejectedByReason[match.reason] =
             (result.rejectedByReason[match.reason] || 0) + 1;
@@ -333,6 +340,7 @@ function mailImportEmptyReport_(flow) {
     recoveredFiles: 0,
     skippedFiles: 0,
     deferred: 0,
+    initialRun: false,
     errors: 0,
     labelsApplied: 0,
   };

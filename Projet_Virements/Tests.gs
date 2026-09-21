@@ -95,6 +95,29 @@ function runVirementUnitTests() {
       },
     },
     {
+      name: 'premier lancement : tout l’historique, ensuite J-3',
+      run: function() {
+        const flow = virementTestFlow_('premier_lancement');
+        flow.DATE_OFFSET_DAYS = 3;
+        const now = new Date('2026-09-21T12:00:00.000Z');
+        const vide = {lastSuccessfulRunIso: null, processed: {}};
+        const rode = {lastSuccessfulRunIso: '2026-09-20T07:00:00.000Z', processed: {}};
+        virementAssertEquals_(null, mailImportReferenceDate_(flow, vide, now));
+        virementAssertEquals_(now, mailImportReferenceDate_(flow, rode, now));
+        const initiale = virementBuildSearchQuery_(flow, null);
+        virementAssertContains_(initiale, 'newer_than:4m');
+        virementAssertTrue_(initiale.indexOf('after:') === -1);
+        virementAssertContains_(virementBuildSearchQuery_(flow, now), 'after:2026/09/18');
+        // sans référence, aucune date n'est écartée ; avec référence, seul J-3 passe
+        const vieux = new Date('2026-07-01T09:00:00.000Z');
+        virementAssertTrue_(mailImportMessageDateMatches_(vieux, flow, null));
+        virementAssertFalse_(mailImportMessageDateMatches_(vieux, flow, now));
+        // un profil sans J-N n'a jamais de date de référence
+        flow.DATE_OFFSET_DAYS = null;
+        virementAssertEquals_(null, mailImportReferenceDate_(flow, rode, now));
+      },
+    },
+    {
       name: 'le profil prélèvements accepte tout expéditeur mais seulement J-3',
       run: function() {
         const flow = MAIL_IMPORT_FLOWS.filter(function(candidate) {

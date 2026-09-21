@@ -58,11 +58,27 @@ function virementAddCollisionSuffix_(fileName, collisionIndex) {
 }
 
 /** @private */
+/**
+ * Date de référence du filtre J-N : null tant que le profil n'a jamais connu de
+ * lancement réussi (premier lancement = tout l'historique INITIAL_LOOKBACK_MONTHS),
+ * sinon la date courante.
+ */
+function mailImportReferenceDate_(flow, state, now) {
+  if (!Number.isInteger(flow.DATE_OFFSET_DAYS) || flow.DATE_OFFSET_DAYS < 0) {
+    return null;
+  }
+  if (!state || !state.lastSuccessfulRunIso) return null;
+  return now || new Date();
+}
+
+/** @private */
 function virementBuildSearchQuery_(config, referenceDate) {
   // Le libellé n'est volontairement pas exclu : Gmail peut regrouper plusieurs
   // envois quotidiens dans une conversation déjà labellisée.
-  if (Number.isInteger(config.DATE_OFFSET_DAYS) && config.DATE_OFFSET_DAYS >= 0) {
-    const target = new Date((referenceDate || new Date()).getTime());
+  // Sans date de référence (premier lancement), la fenêtre glissante s'applique.
+  if (referenceDate &&
+      Number.isInteger(config.DATE_OFFSET_DAYS) && config.DATE_OFFSET_DAYS >= 0) {
+    const target = new Date(referenceDate.getTime());
     target.setDate(target.getDate() - config.DATE_OFFSET_DAYS);
     const nextDay = new Date(target.getTime());
     nextDay.setDate(nextDay.getDate() + 1);
@@ -76,10 +92,11 @@ function virementBuildSearchQuery_(config, referenceDate) {
 
 /** @private */
 function mailImportMessageDateMatches_(messageDate, flow, referenceDate) {
-  if (!Number.isInteger(flow.DATE_OFFSET_DAYS) || flow.DATE_OFFSET_DAYS < 0) {
+  if (!referenceDate ||
+      !Number.isInteger(flow.DATE_OFFSET_DAYS) || flow.DATE_OFFSET_DAYS < 0) {
     return true;
   }
-  const target = new Date((referenceDate || new Date()).getTime());
+  const target = new Date(referenceDate.getTime());
   target.setDate(target.getDate() - flow.DATE_OFFSET_DAYS);
   return Utilities.formatDate(messageDate, flow.TIME_ZONE, 'yyyyMMdd') ===
     Utilities.formatDate(target, flow.TIME_ZONE, 'yyyyMMdd');
