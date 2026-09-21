@@ -12,4 +12,5 @@
 7. Ajouter un second profil de recette avec un autre état et une autre extension,
    puis vérifier que les deux bilans et destinations restent indépendants.
 8. Exécuter `createMailImportTimeDrivenTrigger` deux fois : un seul déclencheur
-   compatible doit exister.
+   horaire compatible doit exister. Un ancien déclencheur de 15 minutes doit
+   avoir été remplacé au premier appel.

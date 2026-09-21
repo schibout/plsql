@@ -268,26 +268,54 @@ function resetVirementImportState() {
   return resetMailImportStates();
 }
 
-/** Crée un unique déclencheur global toutes les quinze minutes. */
+/** Crée un unique déclencheur global toutes les heures. */
 function createMailImportTimeDrivenTrigger() {
   mailImportValidateConfigs_(MAIL_IMPORT_FLOWS);
   const compatibleHandlers = [
     MAIL_IMPORT_ENGINE_CONFIG.TRIGGER_FUNCTION,
     'processVirementEmails',
   ];
-  const exists = ScriptApp.getProjectTriggers().some(function(trigger) {
-    return compatibleHandlers.indexOf(trigger.getHandlerFunction()) !== -1;
+  const triggers = ScriptApp.getProjectTriggers();
+  const properties = PropertiesService.getScriptProperties();
+  const expectedStatePrefix =
+    MAIL_IMPORT_ENGINE_CONFIG.TRIGGER_SCHEDULE_VERSION + ':';
+  const storedState = String(properties.getProperty(
+    MAIL_IMPORT_ENGINE_CONFIG.TRIGGER_STATE_PROPERTY_KEY
+  ) || '');
+  const storedTriggerId = storedState.indexOf(expectedStatePrefix) === 0
+    ? storedState.slice(expectedStatePrefix.length)
+    : '';
+  const currentTriggerExists = !!storedTriggerId && triggers.some(function(trigger) {
+    return trigger.getUniqueId() === storedTriggerId &&
+      trigger.getHandlerFunction() === MAIL_IMPORT_ENGINE_CONFIG.TRIGGER_FUNCTION;
   });
-  if (exists) {
-    virementLog_('INFO', 'Un déclencheur multi-flux compatible existe déjà.');
+
+  if (currentTriggerExists) {
+    virementLog_('INFO', 'Le déclencheur multi-flux horaire existe déjà.', {
+      triggerId: storedTriggerId,
+    });
     return;
   }
-  ScriptApp.newTrigger(MAIL_IMPORT_ENGINE_CONFIG.TRIGGER_FUNCTION)
+
+  let deleted = 0;
+  triggers.forEach(function(trigger) {
+    if (compatibleHandlers.indexOf(trigger.getHandlerFunction()) === -1) return;
+    ScriptApp.deleteTrigger(trigger);
+    deleted++;
+  });
+
+  const created = ScriptApp.newTrigger(MAIL_IMPORT_ENGINE_CONFIG.TRIGGER_FUNCTION)
     .timeBased()
-    .everyMinutes(MAIL_IMPORT_ENGINE_CONFIG.TRIGGER_INTERVAL_MINUTES)
+    .everyHours(MAIL_IMPORT_ENGINE_CONFIG.TRIGGER_INTERVAL_HOURS)
     .create();
-  virementLog_('INFO', 'Déclencheur multi-flux créé.', {
-    intervalMinutes: MAIL_IMPORT_ENGINE_CONFIG.TRIGGER_INTERVAL_MINUTES,
+  properties.setProperty(
+    MAIL_IMPORT_ENGINE_CONFIG.TRIGGER_STATE_PROPERTY_KEY,
+    expectedStatePrefix + created.getUniqueId()
+  );
+  virementLog_('INFO', 'Déclencheur multi-flux horaire créé.', {
+    intervalHours: MAIL_IMPORT_ENGINE_CONFIG.TRIGGER_INTERVAL_HOURS,
+    triggerId: created.getUniqueId(),
+    replacedTriggers: deleted,
   });
 }
 

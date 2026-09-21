@@ -118,9 +118,15 @@ Créer un projet sur <https://script.google.com>, puis recopier :
 6. Exécuter `processMailImports()` et vérifier les fichiers Drive.
 7. Exécuter une seule fois `createMailImportTimeDrivenTrigger()`.
 
-Le déclencheur global appelle `processMailImports` toutes les 15 minutes et
+Le déclencheur global appelle `processMailImports` toutes les heures et
 traite successivement tous les profils actifs. Si un profil échoue, les suivants
 sont quand même traités, puis l'exécution signale l'erreur récapitulative.
+
+Lors du premier appel à `createMailImportTimeDrivenTrigger()` avec cette version,
+les anciens déclencheurs associés à `processMailImports` ou
+`processVirementEmails` sont remplacés par le déclencheur horaire. Les autres
+déclencheurs du projet ne sont pas touchés. L'identifiant créé est mémorisé dans
+`MAIL_IMPORT_TRIGGER_STATE`, ce qui rend les appels suivants idempotents.
 
 ## Points d'entrée
 
@@ -129,7 +135,7 @@ sont quand même traités, puis l'exécution signale l'erreur récapitulative.
 | `processMailImports()` | Traite tous les profils actifs |
 | `diagnoseMailImports()` | Diagnostic en lecture seule de chaque profil |
 | `setupMailImportProject()` | Vérifie les dossiers et crée les libellés |
-| `createMailImportTimeDrivenTrigger()` | Crée le déclencheur global |
+| `createMailImportTimeDrivenTrigger()` | Crée ou migre le déclencheur global horaire |
 | `resetMailImportStates()` | Efface les états de tous les profils sans supprimer de fichiers |
 | `runVirementUnitTests()` | Lance les tests purs dans Apps Script |
 

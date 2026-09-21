@@ -89,6 +89,14 @@ class MockMessage {
 
 const propertyStore = {};
 let lockReleased = false;
+let triggerSequence = 1;
+let lastTriggerIntervalHours = null;
+const scriptTriggers = [
+  {
+    getUniqueId: () => 'legacy-trigger',
+    getHandlerFunction: () => 'processVirementEmails',
+  },
+];
 const context = vm.createContext({
   console, Date, JSON, Object, String, Number, Array, RegExp, Error, isNaN,
   Logger: {log: () => {}},
@@ -103,6 +111,29 @@ const context = vm.createContext({
     getScriptLock: () => ({
       tryLock: () => true,
       releaseLock: () => { lockReleased = true; },
+    }),
+  },
+  ScriptApp: {
+    getProjectTriggers: () => scriptTriggers.slice(),
+    deleteTrigger: trigger => {
+      const index = scriptTriggers.indexOf(trigger);
+      if (index !== -1) scriptTriggers.splice(index, 1);
+    },
+    newTrigger: handler => ({
+      timeBased: function() { return this; },
+      everyHours: function(hours) {
+        lastTriggerIntervalHours = hours;
+        return this;
+      },
+      create: function() {
+        const id = 'trigger-' + triggerSequence++;
+        const trigger = {
+          getUniqueId: () => id,
+          getHandlerFunction: () => handler,
+        };
+        scriptTriggers.push(trigger);
+        return trigger;
+      },
     }),
   },
 });
@@ -123,6 +154,12 @@ context.MockFolder = MockFolder;
 context.MockMessage = MockMessage;
 context.propertyStore = propertyStore;
 context.getLockReleased = () => lockReleased;
+context.getTriggerSnapshot = () => ({
+  count: scriptTriggers.length,
+  handler: scriptTriggers[0] ? scriptTriggers[0].getHandlerFunction() : '',
+  id: scriptTriggers[0] ? scriptTriggers[0].getUniqueId() : '',
+  intervalHours: lastTriggerIntervalHours,
+});
 
 vm.runInContext(`
   function assert(condition, message) {
@@ -260,6 +297,21 @@ vm.runInContext(`
   const aliasResult = processVirementEmails();
   assert(aliasCalls === 1 && aliasResult[0] === 'delegated',
     'l’ancien point d’entrée doit déléguer au moteur multi-flux');
+
+  createMailImportTimeDrivenTrigger();
+  const firstTrigger = getTriggerSnapshot();
+  assert(firstTrigger.count === 1, 'l’ancien déclencheur doit être remplacé');
+  assert(firstTrigger.handler === 'processMailImports',
+    'le nouveau déclencheur doit appeler le moteur multi-flux');
+  assert(firstTrigger.intervalHours === 1, 'le déclencheur doit être horaire');
+  const storedTriggerState = propertyStore.MAIL_IMPORT_TRIGGER_STATE;
+  assert(storedTriggerState === 'HOURLY_V1:' + firstTrigger.id,
+    'l’identifiant du déclencheur horaire doit être mémorisé');
+
+  createMailImportTimeDrivenTrigger();
+  const secondTrigger = getTriggerSnapshot();
+  assert(secondTrigger.count === 1 && secondTrigger.id === firstTrigger.id,
+    'un second appel ne doit pas recréer le déclencheur horaire');
 
   console.log('SERVICE TESTS: tous réussis.');
 `, context, {filename: 'service-tests'});

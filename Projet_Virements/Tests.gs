@@ -23,6 +23,11 @@ function runVirementUnitTests() {
         virementAssertEquals_(5000, MAIL_IMPORT_ENGINE_CONFIG.LOCK_WAIT_MS);
         virementAssertEquals_(8000, MAIL_IMPORT_ENGINE_CONFIG.MAX_STATE_JSON_CHARS);
         virementAssertEquals_(500, MAIL_IMPORT_ENGINE_CONFIG.MAX_PROCESSED_IDS);
+        virementAssertEquals_(1, MAIL_IMPORT_ENGINE_CONFIG.TRIGGER_INTERVAL_HOURS);
+        virementAssertEquals_(
+          'HOURLY_V1',
+          MAIL_IMPORT_ENGINE_CONFIG.TRIGGER_SCHEDULE_VERSION
+        );
       },
     },
     {
