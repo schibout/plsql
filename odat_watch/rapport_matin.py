@@ -20,7 +20,7 @@ CLASSE_STATUT = {"OK": "ok", "WARNING": "warn", "ALERTE": "ko", "ERREUR": "ko"}
 MESSAGE_STATUT = {
     "OK": "Tous les indicateurs sont au vert.",
     "WARNING": "Des indicateurs sont sous leur seuil ou des traitements sont en avertissement : à vérifier.",
-    "ALERTE": "Traitements en erreur ou factures Xerox sans image : action requise.",
+    "ALERTE": "Traitements en erreur, factures Xerox sans image ou factures AR rejetées par AutoInvoice : action requise.",
     "ERREUR": "Une partie du contrôle n'a pas pu être exécutée (erreur Oracle) : les compteurs concernés ne sont pas fiables.",
 }
 
@@ -92,7 +92,7 @@ def _tuile(cle: str, res: Resultat) -> str:
     elif cle in res.statuts:
         cls = {"OK": "ok", "N/A": "na"}.get(res.statuts[cle], "warn")
         pill = f'<span class="pill {cls}">{_t(res.statuts[cle])}</span>'
-    elif cle in ("nb_erreurs", "nb_images_manq"):
+    elif cle in ("nb_erreurs", "nb_images_manq", "nb_fac_ar_rejet"):
         pill = f'<span class="pill {"ko" if (val or 0) > 0 else "ok"}">{"ALERTE" if (val or 0) > 0 else "OK"}</span>'
     elif cle == "nb_warnings":
         pill = f'<span class="pill {"warn" if (val or 0) > 0 else "ok"}">{"W" if (val or 0) > 0 else "OK"}</span>'

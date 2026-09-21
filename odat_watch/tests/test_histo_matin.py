@@ -22,7 +22,7 @@ import controle_matin as cm
 def _resultat(executed_at, **maj):
     c = dict(nb_flux_dsp=6, nb_ndf=3, nb_fac_xerox=10, nb_fac_tradeshift=4, nb_fac_dsp=0,
              nb_gl_interface=12, nb_gl_lignes=250, nb_traitements=80, nb_erreurs=0,
-             nb_warnings=0, nb_rb_imports=2, nb_images_manq=0)
+             nb_warnings=0, nb_rb_imports=2, nb_images_manq=0, nb_fac_ar=15, nb_fac_ar_rejet=0)
     c.update(maj)
     debut, fin = cm.plage_par_defaut(executed_at)
     return cm.Resultat(executed_at=executed_at, debut=debut, fin=fin, nb_jours_histo=3,
@@ -84,4 +84,23 @@ def test_historique_une_ligne_par_jour(tmp_path):
     assert list(h["date_ctrl"]) == ["2026-09-18", "2026-09-19"]
     assert list(h["nb_erreurs"]) == [1, 0]
     assert list(h["statut_global"]) == ["ALERTE", "OK"]
+    con.close()
+
+
+def test_migration_ajoute_les_colonnes_factures_ar(tmp_path):
+    """Une base créée avant l'ajout des compteurs AR reçoit les colonnes à l'ouverture."""
+    import sqlite3
+    chemin = tmp_path / "ancienne.db"
+    con = sqlite3.connect(chemin)
+    con.execute("""CREATE TABLE controle_matin_histo (id INTEGER PRIMARY KEY AUTOINCREMENT, date_ctrl TEXT NOT NULL,
+        executed_at TEXT NOT NULL, plage_debut TEXT NOT NULL, plage_fin TEXT NOT NULL, statut_global TEXT NOT NULL,
+        nb_flux_dsp INTEGER, nb_ndf INTEGER, nb_fac_xerox INTEGER, nb_fac_tradeshift INTEGER, nb_fac_dsp INTEGER,
+        nb_gl_interface INTEGER, nb_gl_lignes INTEGER, nb_traitements INTEGER, nb_erreurs INTEGER, nb_warnings INTEGER,
+        nb_rb_imports INTEGER, nb_images_manq INTEGER, duree_s REAL, fichier_rapport TEXT)""")
+    con.commit(); con.close()
+    con = db.connect(chemin)
+    cols = _cols(con, "controle_matin_histo")
+    assert "nb_fac_ar" in cols and "nb_fac_ar_rejet" in cols
+    cm.enregistrer_histo(_resultat(datetime(2026, 9, 21, 7, 30), nb_fac_ar_rejet=2), con)
+    assert tuple(con.execute("SELECT nb_fac_ar, nb_fac_ar_rejet FROM controle_matin_histo").fetchone()) == (15, 2)
     con.close()

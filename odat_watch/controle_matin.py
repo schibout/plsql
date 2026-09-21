@@ -32,13 +32,15 @@ from oracle_refresh import _connect_oracle, _schema, load_config
 # ------------------------------------------------------------------ modèles
 
 COMPTEURS = ["nb_flux_dsp", "nb_ndf", "nb_fac_xerox", "nb_fac_tradeshift", "nb_fac_dsp",
+             "nb_fac_ar", "nb_fac_ar_rejet",
              "nb_gl_interface", "nb_gl_lignes", "nb_traitements", "nb_erreurs", "nb_warnings",
              "nb_rb_imports", "nb_images_manq"]
 
 LIBELLES = {
     "nb_flux_dsp": "Flux DSP (fichiers)", "nb_ndf": "Notes de frais Notilus",
     "nb_fac_xerox": "Factures Xerox", "nb_fac_tradeshift": "Factures Tradeshift",
-    "nb_fac_dsp": "Factures DSP", "nb_gl_interface": "Écritures GL (interface)",
+    "nb_fac_dsp": "Factures DSP", "nb_fac_ar": "Factures AR reçues (24 h)",
+    "nb_fac_ar_rejet": "Factures AR rejetées", "nb_gl_interface": "Écritures GL (interface)",
     "nb_gl_lignes": "Lignes GL créées", "nb_traitements": "Traitements nuit",
     "nb_erreurs": "Erreurs", "nb_warnings": "Avertissements",
     "nb_rb_imports": "Imports RB", "nb_images_manq": "Images manquantes",
@@ -135,7 +137,7 @@ def statuts(compteurs: dict, volumes_controles: bool = True) -> dict:
     c = {k: compteurs.get(k) for k in COMPTEURS}
     if not volumes_controles:
         return {k: "N/A" for k in ("nb_flux_dsp", "nb_ndf", "nb_fac_xerox", "nb_fac_tradeshift", "nb_fac_dsp",
-                                   "nb_gl_interface", "nb_gl_lignes", "nb_rb_imports")}
+                                   "nb_fac_ar", "nb_gl_interface", "nb_gl_lignes", "nb_rb_imports")}
     def pos(k): return c[k] is not None and c[k] > 0
     dsp_ok = c["nb_flux_dsp"] is not None and c["nb_flux_dsp"] >= 5
     return {
@@ -145,6 +147,7 @@ def statuts(compteurs: dict, volumes_controles: bool = True) -> dict:
         "nb_fac_tradeshift": "OK" if pos("nb_fac_tradeshift") else "W",
         # Une facture DSP dans le reporting Xerox est une anomalie : OK = 0 facture ET flux DSP présents.
         "nb_fac_dsp": "OK" if (c["nb_fac_dsp"] == 0 and dsp_ok) else "W",
+        "nb_fac_ar": "OK" if pos("nb_fac_ar") else "W",
         "nb_gl_interface": "OK" if pos("nb_gl_interface") else "W",
         "nb_gl_lignes": "OK" if pos("nb_gl_lignes") else "W",
         "nb_rb_imports": "OK" if pos("nb_rb_imports") else "W",
@@ -152,11 +155,12 @@ def statuts(compteurs: dict, volumes_controles: bool = True) -> dict:
 
 
 def statut_global(compteurs: dict, sections: list[Section], volumes_controles: bool = True) -> str:
-    """ERREUR (contrôle indisponible) > ALERTE (erreurs nuit, images manquantes) > WARNING > OK.
+    """ERREUR (contrôle indisponible) > ALERTE (erreurs nuit, images manquantes, factures AR rejetées) > WARNING > OK.
     Sans intégration la veille, les volumes (statut N/A) ne pèsent pas : seuls la nuit et les images comptent."""
     if any(s.erreur for s in sections) or any(compteurs.get(k) is None for k in COMPTEURS):
         return "ERREUR"
-    if (compteurs["nb_erreurs"] or 0) > 0 or (compteurs["nb_images_manq"] or 0) > 0:
+    if ((compteurs["nb_erreurs"] or 0) > 0 or (compteurs["nb_images_manq"] or 0) > 0
+            or (compteurs.get("nb_fac_ar_rejet") or 0) > 0):
         return "ALERTE"
     en_cours = next((s for s in sections if s.cle == "nuit_en_cours"), None)
     if ((compteurs["nb_warnings"] or 0) > 0 or "W" in statuts(compteurs, volumes_controles).values()
@@ -282,6 +286,33 @@ JOIN   {{s}}fnd_documents fd ON fd.creation_date > {FIN} - 30
 WHERE  dir.nom_fichier LIKE 'VE1_DAL%'
 AND    dir.date_creation = TO_CHAR({DEB}, 'YYYYMMDD')""", False),
 
+    ("fac_ar", "FACTURES AR — Reçues dans DKA_IARPAFAC_INTERFACE (24 h) par origine et statut", f"""
+SELECT dii.origin AS ORIGINE, dii.oa_status AS STATUT_OA,
+       COUNT(DISTINCT dii.invoice_number) AS NB_FACTURES, COUNT(*) AS NB_LIGNES,
+       ROUND(SUM(dii.fmt_amount)) AS MONTANT,
+       TO_CHAR(MIN(dii.creation_date), 'DD/MM HH24:MI') AS PREMIERE, TO_CHAR(MAX(dii.creation_date), 'DD/MM HH24:MI') AS DERNIERE,
+       SUM(CASE WHEN EXISTS (SELECT 1 FROM {{s}}ra_interface_lines_all ril WHERE ril.trx_number = dii.invoice_number)
+                THEN 1 ELSE 0 END) AS LIGNES_ENCORE_EN_INTERFACE
+FROM   {{s}}dka_iarpafac_interface dii
+WHERE  dii.creation_date >= {FIN} - 1
+AND    dii.creation_date <  {FIN}
+GROUP BY dii.origin, dii.oa_status
+ORDER BY dii.origin, dii.oa_status""", False),
+
+    ("fac_ar_rejets", "FACTURES AR — Rejetées par AutoInvoice (RA_INTERFACE_LINES_ALL)", f"""
+SELECT ril.trx_number AS FACTURE, ril.batch_source_name AS SOURCE, ril.interface_line_context AS CONTEXTE,
+       TO_CHAR(MIN(ril.creation_date), 'DD/MM HH24:MI') AS EN_INTERFACE_DEPUIS,
+       COUNT(*) AS NB_LIGNES, ROUND(SUM(ril.amount)) AS MONTANT,
+       NVL((SELECT MAX(rie.message_text) FROM {{s}}ra_interface_errors_all rie
+            WHERE rie.interface_line_id IN (SELECT r2.interface_line_id FROM {{s}}ra_interface_lines_all r2
+                                            WHERE r2.trx_number = ril.trx_number)),
+           'Aucun message : en attente du prochain AutoInvoice') AS ERREUR
+FROM   {{s}}ra_interface_lines_all ril
+WHERE  ril.trx_number IN (SELECT dii.invoice_number FROM {{s}}dka_iarpafac_interface dii
+                          WHERE dii.creation_date >= {FIN} - 1 AND dii.creation_date < {FIN})
+GROUP BY ril.trx_number, ril.batch_source_name, ril.interface_line_context
+ORDER BY MIN(ril.creation_date)""", True),
+
     ("gl_interface", "GL — Interface (en attente)", f"""
 SELECT SUBSTR(attribute10, 1, 40) AS SOURCE, SUBSTR(attribute9, 1, 15) AS TYPE_GL, status AS STATUS_GL,
        COUNT(*) AS NB_LIGNES, ROUND(SUM(entered_dr)) AS TOT_DEBIT, ROUND(SUM(entered_cr)) AS TOT_CREDIT,
@@ -396,6 +427,14 @@ SELECT NVL(SUM(CASE WHEN SUBSTR(imagefile, 1, 3) = 'VE1' THEN 1 ELSE 0 END), 0),
        NVL(SUM(CASE WHEN SUBSTR(imagefile, 1, 3) = 'DSP' THEN 1 ELSE 0 END), 0)
 FROM   {{s}}dka_iapfacxgs_reporting_all
 WHERE  date_creation = TO_CHAR({DEB}, 'YYYYMMDD')"""),
+    (("nb_fac_ar",), f"""
+SELECT COUNT(DISTINCT invoice_number) FROM {{s}}dka_iarpafac_interface
+WHERE  creation_date >= {FIN} - 1 AND creation_date < {FIN}"""),
+    (("nb_fac_ar_rejet",), f"""
+SELECT COUNT(DISTINCT ril.trx_number)
+FROM   {{s}}ra_interface_lines_all ril
+WHERE  ril.trx_number IN (SELECT dii.invoice_number FROM {{s}}dka_iarpafac_interface dii
+                          WHERE dii.creation_date >= {FIN} - 1 AND dii.creation_date < {FIN})"""),
     (("nb_gl_interface",), f"SELECT COUNT(*) FROM {{s}}gl_interface WHERE date_created > TRUNC({DEB})"),
     (("nb_gl_lignes",), f"SELECT COUNT(*) FROM {{s}}gl_je_lines WHERE TRUNC(creation_date) = TRUNC({DEB})"),
     (("nb_traitements", "nb_erreurs", "nb_warnings"), f"""

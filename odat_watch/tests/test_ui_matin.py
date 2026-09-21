@@ -91,7 +91,7 @@ def test_resultats(app):
     assert at.button(key="m_tuile_nb_erreurs").label.startswith("**2**") and "+2 vs" in at.button(key="m_tuile_nb_erreurs").label
     assert "Images manquantes" in at.button(key="m_tuile_nb_images_manq").label
     labels = [x.label for x in at.expander]
-    assert len(labels) == len(cm.CATALOGUE) == 15
+    assert len(labels) == len(cm.CATALOGUE) == 17
     assert labels[0].startswith("⚠️") and labels[0].endswith("2 ligne(s)")
     assert labels[1].startswith("🔴")
     assert len(at.dataframe) == 1

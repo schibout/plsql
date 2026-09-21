@@ -77,7 +77,8 @@ CREATE TABLE IF NOT EXISTS controle_matin_histo (
     plage_fin         TEXT NOT NULL,
     statut_global     TEXT NOT NULL,      -- OK | WARNING | ALERTE | ERREUR
     nb_flux_dsp       INTEGER, nb_ndf INTEGER, nb_fac_xerox INTEGER, nb_fac_tradeshift INTEGER,
-    nb_fac_dsp        INTEGER, nb_gl_interface INTEGER, nb_gl_lignes INTEGER,
+    nb_fac_dsp        INTEGER, nb_fac_ar INTEGER, nb_fac_ar_rejet INTEGER,
+    nb_gl_interface   INTEGER, nb_gl_lignes INTEGER,
     nb_traitements    INTEGER, nb_erreurs INTEGER, nb_warnings INTEGER,
     nb_rb_imports     INTEGER, nb_images_manq INTEGER,
     duree_s           REAL,
@@ -309,6 +310,12 @@ def _migrate(con: sqlite3.Connection) -> None:
         cols = [r[1] for r in con.execute(f"PRAGMA table_info({table})")]
         if cols and colonne not in cols:
             con.execute(f"ALTER TABLE {table} ADD COLUMN {colonne} TEXT")
+            con.commit()
+    # Contrôle du matin : compteurs ajoutés après la création de l'historique (factures AR, 21/09/2026)
+    cols = [r[1] for r in con.execute("PRAGMA table_info(controle_matin_histo)")]
+    for colonne in ("nb_fac_ar", "nb_fac_ar_rejet"):
+        if cols and colonne not in cols:
+            con.execute(f"ALTER TABLE controle_matin_histo ADD COLUMN {colonne} INTEGER")
             con.commit()
     for table in ("ora_requests", "ora_programs"):
         cols = [r[1] for r in con.execute(f"PRAGMA table_info({table})")]

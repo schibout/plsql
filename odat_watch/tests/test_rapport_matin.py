@@ -22,7 +22,7 @@ def _sections(**maj):
 def _resultat(statut="OK", executed_at=datetime(2026, 9, 19, 7, 30), **maj):
     c = dict(nb_flux_dsp=6, nb_ndf=3, nb_fac_xerox=10, nb_fac_tradeshift=4, nb_fac_dsp=0,
              nb_gl_interface=12, nb_gl_lignes=250, nb_traitements=80, nb_erreurs=0,
-             nb_warnings=0, nb_rb_imports=2, nb_images_manq=0)
+             nb_warnings=0, nb_rb_imports=2, nb_images_manq=0, nb_fac_ar=15, nb_fac_ar_rejet=0)
     debut, fin = cm.plage_par_defaut(executed_at)
     return cm.Resultat(executed_at=executed_at, debut=debut, fin=fin, nb_jours_histo=3,
                        compteurs=c, statuts=cm.statuts(c), statut_global=statut,
@@ -31,7 +31,7 @@ def _resultat(statut="OK", executed_at=datetime(2026, 9, 19, 7, 30), **maj):
 
 def test_structure_generale():
     h = rm.construire(_resultat())
-    assert h.count("<h2>") == 15
+    assert h.count("<h2>") == 17
     assert "Contrôle quotidien FIN-FINANCE — 19/09/2026" in h
     assert "18/09/2026 19:00" in h and "19/09/2026 07:00" in h      # plage contrôlée
     assert 'class="bandeau ok"' in h
@@ -88,5 +88,14 @@ def test_rapport_jour_sans_integration():
     r.sans_integration = "dimanche"
     r.statuts = cm.statuts(r.compteurs, volumes_controles=False)
     h = rm.construire(r)
-    assert "pill na" in h and h.count(">N/A<") == 8
+    assert "pill na" in h and h.count(">N/A<") == 9
     assert "pas d'intégration ce jour-là" in h and "fichier SG" in h
+
+
+def test_tuile_factures_ar_rejetees_en_alerte():
+    res = _resultat("ALERTE")
+    res.compteurs["nb_fac_ar_rejet"] = 2
+    html = rm.construire(res)
+    i = html.index("Factures AR rejetées")
+    assert 'pill ko">ALERTE' in html[i:i + 120]
+    assert "Factures AR reçues (24 h)" in html

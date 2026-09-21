@@ -21,7 +21,8 @@ from oracle_refresh import CONFIG
 
 AFFICHE = {"OK": st.success, "WARNING": st.warning, "ALERTE": st.error, "ERREUR": st.error}
 # Palette des KPI de app.py (ok / warn / err / run) + violet pour les images manquantes.
-COULEURS = {"nb_erreurs": "#D23F31", "nb_warnings": "#D9A400", "nb_images_manq": "#7B3FBF", "nb_flux_dsp": "#2F6FED"}
+COULEURS = {"nb_erreurs": "#D23F31", "nb_warnings": "#D9A400", "nb_images_manq": "#7B3FBF", "nb_flux_dsp": "#2F6FED",
+            "nb_fac_ar_rejet": "#B8336A"}
 COULEUR_STATUT = {"OK": "#1F9D55", "WARNING": "#D9A400", "ALERTE": "#D23F31", "ERREUR": "#8A94A6"}
 
 
@@ -35,7 +36,8 @@ def _delta_txt(delta: dict, cle: str) -> str:
 
 # Section de détail ouverte par un clic sur la tuile
 SECTION_TUILE = {"nb_flux_dsp": "dsp_detail", "nb_ndf": "notilus", "nb_fac_xerox": "fact_source",
-                 "nb_fac_tradeshift": "fact_source", "nb_fac_dsp": "fact_source", "nb_gl_interface": "gl_interface",
+                 "nb_fac_tradeshift": "fact_source", "nb_fac_dsp": "fact_source", "nb_fac_ar": "fac_ar",
+                 "nb_fac_ar_rejet": "fac_ar_rejets", "nb_gl_interface": "gl_interface",
                  "nb_gl_lignes": "gl_lignes", "nb_traitements": "nuit_synthese", "nb_erreurs": "nuit_err_detail",
                  "nb_warnings": "nuit_warnings", "nb_rb_imports": "rb", "nb_images_manq": "xerox_sans_img"}
 COULEUR_TON = {"ok": "#1F9D55", "warn": "#D9A400", "err": "#D23F31", "neutral": "#8A94A6", "run": "#2F6FED"}
@@ -61,7 +63,7 @@ def _ton_tuile(res: cm.Resultat, cle: str) -> str:
         return "err"
     if cle in res.statuts:
         return "neutral" if res.statuts[cle] == "N/A" else ("ok" if res.statuts[cle] == "OK" else "warn")
-    if cle in ("nb_erreurs", "nb_images_manq"):
+    if cle in ("nb_erreurs", "nb_images_manq", "nb_fac_ar_rejet"):
         return "err" if v > 0 else "ok"
     if cle == "nb_warnings":
         return "warn" if v > 0 else "ok"

@@ -478,6 +478,67 @@ AND    dir.date_creation = TO_CHAR(SYSDATE - 1, 'YYYYMMDD');
 CLEAR COLUMNS
 
 -- =============================================================================
+-- SECTION 5 bis : FACTURES AR (DKA_IARPAFAC_INTERFACE -> AutoInvoice)
+-- =============================================================================
+-- Factures clients recues dans l'interface specifique sur les 24 dernieres
+-- heures, et celles qu'AutoInvoice a rejetees : elles restent dans
+-- RA_INTERFACE_LINES_ALL (TRX_NUMBER = INVOICE_NUMBER) avec, le cas echeant,
+-- le message d'erreur dans RA_INTERFACE_ERRORS_ALL. Repris dans ODAT Watch
+-- (controle_matin.py : nb_fac_ar, nb_fac_ar_rejet, sections fac_ar / fac_ar_rejets).
+
+PROMPT
+PROMPT === FACTURES AR - Recues (24 h) par origine et statut ===
+
+COLUMN ORIGINE  FORMAT A12
+COLUMN STATUT_OA FORMAT A10 HEADING "STATUT OA"
+COLUMN NB_FACTURES FORMAT 99999 HEADING "NB FACT"
+COLUMN NB_LIGNES FORMAT 999999 HEADING "NB LIGNES"
+COLUMN MONTANT   FORMAT 999999999
+COLUMN PREMIERE  FORMAT A12
+COLUMN DERNIERE  FORMAT A12
+COLUMN LIGNES_ENCORE_EN_INTERFACE FORMAT 99999 HEADING "ENCORE EN|INTERFACE"
+
+SELECT dii.origin AS ORIGINE, dii.oa_status AS STATUT_OA,
+       COUNT(DISTINCT dii.invoice_number) AS NB_FACTURES, COUNT(*) AS NB_LIGNES,
+       ROUND(SUM(dii.fmt_amount)) AS MONTANT,
+       TO_CHAR(MIN(dii.creation_date), 'DD/MM HH24:MI') AS PREMIERE,
+       TO_CHAR(MAX(dii.creation_date), 'DD/MM HH24:MI') AS DERNIERE,
+       SUM(CASE WHEN EXISTS (SELECT 1 FROM ra_interface_lines_all ril WHERE ril.trx_number = dii.invoice_number)
+                THEN 1 ELSE 0 END) AS LIGNES_ENCORE_EN_INTERFACE
+FROM   dka_iarpafac_interface dii
+WHERE  dii.creation_date >= SYSDATE - 1
+GROUP BY dii.origin, dii.oa_status
+ORDER BY dii.origin, dii.oa_status;
+
+CLEAR COLUMNS
+
+PROMPT
+PROMPT === FACTURES AR - Rejetees par AutoInvoice (ALERTE si lignes) ===
+
+COLUMN FACTURE  FORMAT A20
+COLUMN SOURCE   FORMAT A20
+COLUMN CONTEXTE FORMAT A15
+COLUMN EN_INTERFACE_DEPUIS FORMAT A12 HEADING "DEPUIS"
+COLUMN NB_LIGNES FORMAT 99999 HEADING "NB LIGNES"
+COLUMN MONTANT  FORMAT 999999999
+COLUMN ERREUR   FORMAT A80
+
+SELECT ril.trx_number AS FACTURE, ril.batch_source_name AS SOURCE, ril.interface_line_context AS CONTEXTE,
+       TO_CHAR(MIN(ril.creation_date), 'DD/MM HH24:MI') AS EN_INTERFACE_DEPUIS,
+       COUNT(*) AS NB_LIGNES, ROUND(SUM(ril.amount)) AS MONTANT,
+       NVL((SELECT MAX(rie.message_text) FROM ra_interface_errors_all rie
+            WHERE rie.interface_line_id IN (SELECT r2.interface_line_id FROM ra_interface_lines_all r2
+                                            WHERE r2.trx_number = ril.trx_number)),
+           'Aucun message : en attente du prochain AutoInvoice') AS ERREUR
+FROM   ra_interface_lines_all ril
+WHERE  ril.trx_number IN (SELECT dii.invoice_number FROM dka_iarpafac_interface dii
+                          WHERE dii.creation_date >= SYSDATE - 1)
+GROUP BY ril.trx_number, ril.batch_source_name, ril.interface_line_context
+ORDER BY MIN(ril.creation_date);
+
+CLEAR COLUMNS
+
+-- =============================================================================
 -- SECTION 6 : ECRITURES GL
 -- =============================================================================
 

@@ -9,7 +9,7 @@ import controle_matin as cm
 def compteurs_ok(**maj):
     c = dict(nb_flux_dsp=6, nb_ndf=3, nb_fac_xerox=10, nb_fac_tradeshift=4, nb_fac_dsp=0,
              nb_gl_interface=12, nb_gl_lignes=250, nb_traitements=80, nb_erreurs=0,
-             nb_warnings=0, nb_rb_imports=2, nb_images_manq=0)
+             nb_warnings=0, nb_rb_imports=2, nb_images_manq=0, nb_fac_ar=15, nb_fac_ar_rejet=0)
     c.update(maj)
     return c
 
@@ -24,7 +24,7 @@ def test_statuts_tout_ok():
     s = cm.statuts(compteurs_ok())
     assert set(s.values()) == {"OK"}
     assert set(s) == {"nb_flux_dsp", "nb_ndf", "nb_fac_xerox", "nb_fac_tradeshift", "nb_fac_dsp",
-                      "nb_gl_interface", "nb_gl_lignes", "nb_rb_imports"}
+                      "nb_gl_interface", "nb_gl_lignes", "nb_rb_imports", "nb_fac_ar"}
 
 
 def test_statuts_seuil_dsp_et_factures_dsp():
@@ -94,7 +94,7 @@ def test_binds_ne_garde_que_les_variables_presentes():
 
 def test_catalogue_15_sections_sans_sysdate_de_fenetre():
     cles = [c[0] for c in cm.CATALOGUE]
-    assert len(cles) == 15 and len(set(cles)) == 15
+    assert len(cles) == 17 and len(set(cles)) == 17
     assert cles[0] == "dsp_detail" and cles[-1] == "rb"
     for cle, _t, sql, _a in cm.CATALOGUE:
         if cle != "nuit_en_cours":      # seule la durée des traitements en cours lit l'horloge
@@ -175,3 +175,27 @@ def test_requetes_nuit_excluent_les_programmes_generiques():
             assert ":generiques" in sql
     assert cm.regex_generiques(["DKA_SLAUNCHER", "XX_LANCEUR"]) == "^(DKA_SLAUNCHER|XX_LANCEUR)$"
     assert cm.regex_generiques([]) == "^$"
+
+
+# --- Factures AR (DKA_IARPAFAC_INTERFACE -> AutoInvoice) ---------------------
+def test_factures_ar_recues_est_un_volume():
+    assert cm.statuts(compteurs_ok(nb_fac_ar=0))["nb_fac_ar"] == "W"
+    assert cm.statuts(compteurs_ok(nb_fac_ar=15))["nb_fac_ar"] == "OK"
+    assert cm.statuts(compteurs_ok(), volumes_controles=False)["nb_fac_ar"] == "N/A"
+
+
+def test_factures_ar_rejetees_donne_alerte():
+    assert cm.statut_global(compteurs_ok(nb_fac_ar_rejet=2), _sections()) == "ALERTE"
+    assert cm.statut_global(compteurs_ok(nb_fac_ar_rejet=0), _sections()) == "OK"
+
+
+def test_catalogue_et_synthese_factures_ar():
+    cles = [c for c, *_ in cm.CATALOGUE]
+    assert "fac_ar" in cles and "fac_ar_rejets" in cles
+    sql_rejets = next(sql for c, _t, sql, _a in cm.CATALOGUE if c == "fac_ar_rejets")
+    assert "ra_interface_lines_all" in sql_rejets and "trx_number" in sql_rejets and "invoice_number" in sql_rejets
+    assert next(a for c, _t, _s, a in cm.CATALOGUE if c == "fac_ar_rejets") is True   # lignes = alerte
+    cles_synthese = [k for cles_, _ in cm.SYNTHESE for k in cles_]
+    assert "nb_fac_ar" in cles_synthese and "nb_fac_ar_rejet" in cles_synthese
+    for _cles, sql in cm.SYNTHESE:
+        sql.format(s="APPS.")            # aucune accolade résiduelle (cf. régression HORS_GENERIQUES)
