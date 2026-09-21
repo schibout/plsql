@@ -1,0 +1,5 @@
+# Dépendances pour le rapport de contrôle quotidien
+# Installer avec : pip install -r requirements.txt
+
+oracledb>=2.0.0       # Driver Oracle (remplace cx_Oracle, supporte thin & thick mode)
+fpdf2>=2.8.0          # Génération de PDF (fork moderne de PyFPDF, support Unicode)

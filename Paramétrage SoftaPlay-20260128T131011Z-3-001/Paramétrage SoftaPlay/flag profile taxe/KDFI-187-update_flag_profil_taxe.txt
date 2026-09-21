@@ -1,0 +1,18 @@
+select * from zx_party_tax_profile where party_type_code = 'OU' 
+and use_le_as_subscriber_flag is null 
+
+
+
+
+
+
+use_le_as_subscriber_flag = 'Y'
+
+
+
+-----req update -----
+
+update zx_party_tax_profile
+set  use_le_as_subscriber_flag='Y'
+where party_type_code = 'OU' 
+and use_le_as_subscriber_flag is null 
