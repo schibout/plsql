@@ -118,11 +118,41 @@ def resoudreConnexion(config, configBDD=None, envOracle=None):
 #   Oracle
 # =============================================================================
 
-def ouvrirConnexion(bdd, oracleClientHome):
+def _initialiserClientOracle(oracledb, mode, clientDir, oracleClientHome):
+    """Mode thick (client Oracle) si demande ou si un client est disponible.
+
+    Meme logique que odat_watch/oracle_refresh.py : le mode thin suffit en
+    general, mais un compte dont le mot de passe a un verificateur 10g
+    (erreur DPY-3015) impose le mode thick avec un Instant Client 64 bits.
+    """
+    if mode == "thin":
+        log("Pilote : python-oracledb (mode thin)")
+        return
+    candidats = [d for d in (clientDir, os.path.join(oracleClientHome or "", "bin"))
+                 if d and os.path.isdir(d)]
+    if candidats:
+        try:
+            oracledb.init_oracle_client(lib_dir=candidats[0])
+            log("Pilote : python-oracledb (mode thick, client %s)" % candidats[0])
+            return
+        except Exception as err:
+            if mode == "thick":
+                raise
+            log("Client Oracle %s inutilisable (%s) : passage en mode thin"
+                % (candidats[0], err), niveau="WARN")
+    elif mode == "thick":
+        oracledb.init_oracle_client()  # cherche dans le PATH
+        log("Pilote : python-oracledb (mode thick, client du PATH)")
+        return
+    log("Pilote : python-oracledb (mode thin)")
+
+
+def ouvrirConnexion(bdd, oracleClientHome, mode="auto", clientDir=""):
     """Ouvre une connexion Oracle.
 
-    Prefere python-oracledb (mode thin, sans client Oracle) s'il est installe,
-    sinon cx_Oracle avec le client indique par [paths] ORACLE_CLIENT_HOME.
+    Prefere python-oracledb (comme ODAT Watch : pip install oracledb, sans
+    client Oracle en mode thin), sinon cx_Oracle avec le client indique par
+    [paths] ORACLE_CLIENT_HOME.
     """
     for cle in ("NLS_LANG", "NLS_DATE_FORMAT"):
         if bdd.get(cle) and cle not in os.environ:
@@ -132,19 +162,35 @@ def ouvrirConnexion(bdd, oracleClientHome):
 
     try:
         import oracledb
-        log("Pilote : python-oracledb (mode thin)")
-        return oracledb.connect(user=bdd["DB_USER"], password=bdd["DB_PASSWORD"], dsn=dsn)
     except ImportError:
-        pass
+        oracledb = None
 
-    import cx_Oracle
-    if oracleClientHome:
-        libDir = os.path.join(oracleClientHome, "bin")
-        if os.path.isdir(libDir):
-            try:
-                cx_Oracle.init_oracle_client(lib_dir=libDir)
-            except cx_Oracle.ProgrammingError:
-                pass  # deja initialise
+    if oracledb is not None:
+        _initialiserClientOracle(oracledb, mode, clientDir, oracleClientHome)
+        try:
+            return oracledb.connect(user=bdd["DB_USER"], password=bdd["DB_PASSWORD"], dsn=dsn)
+        except oracledb.NotSupportedError as err:
+            if "DPY-3015" in str(err):
+                raise RuntimeError(
+                    "DPY-3015 : le mot de passe de ce compte utilise un verificateur 10g, "
+                    "non supporte en mode thin. Dezipper un Instant Client 64 bits (Basic "
+                    "Light suffit) et renseigner [connexion] CLIENT_DIR dans le .ini, "
+                    "ou demander au DBA de regenerer le mot de passe.")
+            raise
+
+    try:
+        import cx_Oracle
+    except ImportError:
+        raise RuntimeError(
+            "Aucun pilote Oracle : installer python-oracledb dans le Python utilise "
+            "(pip install oracledb), ou lancer avec le venv d'ODAT Watch : "
+            "C:/tmp/odatenv/Scripts/python.exe CapAppro_UN_SQL.py ...")
+    libDir = clientDir or os.path.join(oracleClientHome or "", "bin")
+    if libDir and os.path.isdir(libDir):
+        try:
+            cx_Oracle.init_oracle_client(lib_dir=libDir)
+        except cx_Oracle.ProgrammingError:
+            pass  # deja initialise
     log("Pilote : cx_Oracle")
     dsnCx = cx_Oracle.makedsn(bdd["BASE_URL"], int(bdd["BASE_PORT"]),
                               service_name=bdd["BASE_SERVICE_NAME"])
@@ -252,6 +298,10 @@ def main(argv=None):
         bdd = resoudreConnexion(config, args.configBDD, args.envOracle)
         arraysize = config.getInt("execution", "ARRAYSIZE", 1000) or 1000
         oracleClientHome = config.get("paths", "ORACLE_CLIENT_HOME", "")
+        modeClient = (config.get("connexion", "MODE", "auto") if "connexion" in config
+                      else "auto").strip().lower() or "auto"
+        clientDir = (config.get("connexion", "CLIENT_DIR", "") if "connexion" in config
+                     else "").strip()
 
         dsn = "%s:%s/%s" % (bdd["BASE_URL"], bdd["BASE_PORT"], bdd["BASE_SERVICE_NAME"])
         log("Connexion Oracle : %s/%s@%s  (identifiants : %s)"
@@ -267,7 +317,7 @@ def main(argv=None):
             logFin("execution", debut, "DRY-RUN")
             return 0
 
-        connexion = ouvrirConnexion(bdd, oracleClientHome)
+        connexion = ouvrirConnexion(bdd, oracleClientHome, modeClient, clientDir)
 
         t0 = time.time()
         df = executerRequete(connexion, requete, arraysize)
