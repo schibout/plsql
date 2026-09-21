@@ -9,17 +9,22 @@ Le premier profil actif est `virements_eur` :
 - expéditeur : `quartz.messenger@treasury-factory.com` ;
 - objet : `Dalkia Virements importés du jour EUR` ;
 - extensions : `.xls` et `.xlsx` ;
-- dossier Drive : `1KFQvMNyQEy2H4niTTWg9jSeyCrJCS51Q`.
+- dossier Drive : `1H4J7VFzEXdJ0rLPuihiLow2Ui3nFa3GQ` (valeur de `Config.gs`).
 
-Le second profil actif est `prelevements` et reprend l'ancien `CONFIG` :
+Les prélèvements sont séparés en deux profils, **désactivés pour l'instant** (`ENABLED: false`) le temps
+de valider `virements_eur` seul ; les repasser à `true` pour les activer :
 
 - dossier Drive : `1skW6lJUvX1qlmw6RoLqE_94o5P1yu7o2` ;
-- objets CashCollection et regroupements Oracle EDF ;
+- `prelevements_cashcollection` pour la synthèse quotidienne CashCollection ;
+- `prelevements_oracle_edf` pour les regroupements Oracle EDF ;
 - aucun filtre d'expéditeur ;
 - toutes les extensions autorisées ;
 - mails reçus exactement à J‑3 ;
 - fichiers déposés dans le dossier racine sous
-  `yyyyMMdd_HHmm_nom-original`.
+  `DDMMYYYY_nom-original`.
+
+Les deux profils utilisent le même dossier Drive, mais chacun possède sa propre
+requête Gmail, son propre libellé, sa clé d'état et son marqueur anti-doublon.
 
 `Projet_CTM` reste indépendant et n'est pas modifié.
 
@@ -49,10 +54,8 @@ Object.freeze({
   TIME_ZONE: 'Europe/Paris',
   INITIAL_LOOKBACK_MONTHS: 4,
   DATE_OFFSET_DAYS: null,
-  CREATE_DATE_SUBFOLDER: true,
-  SUBFOLDER_DATE_FORMAT: 'ddMMyyyy',
-  FILE_NAME_MODE: 'original',
-  FILE_TIMESTAMP_FORMAT: 'yyyyMMdd_HHmm',
+  FILE_NAME_MODE: 'timestamp_original',
+  FILE_TIMESTAMP_FORMAT: 'ddMMyyyy',
 }),
 ```
 
@@ -72,25 +75,22 @@ Règles particulières :
 - `ALLOWED_EXTENSIONS: []` accepte toutes les extensions ;
 - `DATE_OFFSET_DAYS: 3` cible exactement J‑3 ; `null` utilise la fenêtre des
   derniers mois ;
-- `CREATE_DATE_SUBFOLDER: false` écrit directement dans le dossier racine ;
-- `FILE_NAME_MODE: 'timestamp_original'` ajoute `FILE_TIMESTAMP_FORMAT` devant
-  le nom original.
+- `FILE_NAME_MODE: 'timestamp_original'` avec `FILE_TIMESTAMP_FORMAT: 'ddMMyyyy'`
+  produit `DDMMYYYY_nom-original.ext`.
 
 ## Organisation dans Drive
 
-Chaque profil choisit son propre dossier racine, sa stratégie de nommage et
-l'utilisation éventuelle d'un sous-dossier daté. Le profil Virements produit :
+Chaque profil écrit directement dans son dossier racine. Aucun sous-dossier
+n'est créé. Les fichiers sont préfixés par la date de réception :
 
 ```text
 Dossier_du_flux/
-└── 21092026/
-    ├── rapport.xls
-    └── rapport_02.xls
+├── 21092026_rapport.xls
+└── 21092026_rapport_02.xls
 ```
 
 Le suffixe `_02`, puis `_03`, évite d'écraser deux fichiers de même nom issus
-de messages différents. Le profil Prélèvements écrit directement dans son
-dossier racine avec un préfixe horodaté.
+de messages différents.
 
 ## Fichiers à copier dans Apps Script
 

@@ -1,6 +1,6 @@
 /** Paramètres communs du moteur multi-flux. */
 const MAIL_IMPORT_ENGINE_CONFIG = Object.freeze({
-  CODE_VERSION: 'MAIL-IMPORTS-2026-09-21.2',
+  CODE_VERSION: 'MAIL-IMPORTS-2026-09-21.3',
   MAX_MESSAGES_PER_FLOW_PER_RUN: 50,
   SEARCH_BATCH_SIZE: 100,
   MAX_THREADS_PER_FLOW_PER_RUN: 500,
@@ -28,7 +28,7 @@ const MAIL_IMPORT_FLOWS = Object.freeze([
     DISPLAY_NAME: 'Virements EUR',
     ENABLED: true,
 
-    FOLDER_ID: '1KFQvMNyQEy2H4niTTWg9jSeyCrJCS51Q',
+    FOLDER_ID: '1H4J7VFzEXdJ0rLPuihiLow2Ui3nFa3GQ',
     SEARCH_QUERY: 'in:anywhere from:quartz.messenger@treasury-factory.com ' +
       'subject:"Dalkia Virements importés du jour EUR"',
     EXPECTED_SENDERS: Object.freeze([
@@ -46,41 +46,61 @@ const MAIL_IMPORT_FLOWS = Object.freeze([
     TIME_ZONE: 'Europe/Paris',
     INITIAL_LOOKBACK_MONTHS: 4,
     DATE_OFFSET_DAYS: null,
-    CREATE_DATE_SUBFOLDER: true,
-    SUBFOLDER_DATE_FORMAT: 'ddMMyyyy',
-    FILE_NAME_MODE: 'original',
-    FILE_TIMESTAMP_FORMAT: 'yyyyMMdd_HHmm',
+    FILE_NAME_MODE: 'timestamp_original',
+    FILE_TIMESTAMP_FORMAT: 'ddMMyyyy',
   }),
 
   Object.freeze({
-    ID: 'prelevements',
-    DISPLAY_NAME: 'Prélèvements Dalkia et regroupements Oracle',
-    ENABLED: true,
+    ID: 'prelevements_cashcollection',
+    DISPLAY_NAME: 'Prélèvements Dalkia CashCollection',
+    // Désactivé le temps de valider virements_eur seul ; repasser à true pour l'activer.
+    ENABLED: false,
 
     FOLDER_ID: '1skW6lJUvX1qlmw6RoLqE_94o5P1yu7o2',
-    SEARCH_QUERY: 'in:anywhere {' +
-      'subject:"[PRD] Synthèse quotidienne des prélèvements Dalkia reçus par CashCollection" ' +
-      'subject:"[PROD] [PRELEVEMENTS ORACLE] - Regroupements effectués pour EDF"' +
-      '}',
+    SEARCH_QUERY: 'in:anywhere ' +
+      'subject:"[PRD] Synthèse quotidienne des prélèvements Dalkia reçus par CashCollection"',
     // Le script historique ne filtrait pas l'expéditeur.
     EXPECTED_SENDERS: Object.freeze(['*']),
     EXPECTED_SUBJECT_PREFIXES: Object.freeze([
       '[PRD] Synthèse quotidienne des prélèvements Dalkia reçus par CashCollection',
-      '[PROD] [PRELEVEMENTS ORACLE] - Regroupements effectués pour EDF',
     ]),
     // Une liste vide signifie : accepter toutes les extensions.
     ALLOWED_EXTENSIONS: Object.freeze([]),
 
-    LABEL_NAME: 'Controle_Transfert_Traité',
-    STATE_PROPERTY_KEY: 'PRELEVEMENTS_IMPORT_STATE_V1',
-    DRIVE_MESSAGE_MARKER_PREFIX: 'PRELEVEMENT_MESSAGE_ID=',
+    LABEL_NAME: 'Controle_Prelevements_CashCollection_Traite',
+    STATE_PROPERTY_KEY: 'PRELEVEMENTS_CASHCOLLECTION_IMPORT_STATE_V1',
+    DRIVE_MESSAGE_MARKER_PREFIX: 'PRELEVEMENTS_CASHCOLLECTION_MESSAGE_ID=',
     TIME_ZONE: 'Europe/Paris',
     INITIAL_LOOKBACK_MONTHS: 4,
     DATE_OFFSET_DAYS: 3,
-    CREATE_DATE_SUBFOLDER: false,
-    SUBFOLDER_DATE_FORMAT: 'ddMMyyyy',
     FILE_NAME_MODE: 'timestamp_original',
-    FILE_TIMESTAMP_FORMAT: 'yyyyMMdd_HHmm',
+    FILE_TIMESTAMP_FORMAT: 'ddMMyyyy',
+  }),
+
+  Object.freeze({
+    ID: 'prelevements_oracle_edf',
+    DISPLAY_NAME: 'Prélèvements Oracle - Regroupements EDF',
+    // Désactivé le temps de valider virements_eur seul ; repasser à true pour l'activer.
+    ENABLED: false,
+
+    FOLDER_ID: '1skW6lJUvX1qlmw6RoLqE_94o5P1yu7o2',
+    SEARCH_QUERY: 'in:anywhere ' +
+      'subject:"[PROD] [PRELEVEMENTS ORACLE] - Regroupements effectués pour EDF"',
+    // Le script historique ne filtrait pas l'expéditeur.
+    EXPECTED_SENDERS: Object.freeze(['*']),
+    EXPECTED_SUBJECT_PREFIXES: Object.freeze([
+      '[PROD] [PRELEVEMENTS ORACLE] - Regroupements effectués pour EDF',
+    ]),
+    ALLOWED_EXTENSIONS: Object.freeze([]),
+
+    LABEL_NAME: 'Controle_Prelevements_Oracle_EDF_Traite',
+    STATE_PROPERTY_KEY: 'PRELEVEMENTS_ORACLE_EDF_IMPORT_STATE_V1',
+    DRIVE_MESSAGE_MARKER_PREFIX: 'PRELEVEMENTS_ORACLE_EDF_MESSAGE_ID=',
+    TIME_ZONE: 'Europe/Paris',
+    INITIAL_LOOKBACK_MONTHS: 4,
+    DATE_OFFSET_DAYS: 3,
+    FILE_NAME_MODE: 'timestamp_original',
+    FILE_TIMESTAMP_FORMAT: 'ddMMyyyy',
   }),
 
   /*
@@ -101,10 +121,8 @@ const MAIL_IMPORT_FLOWS = Object.freeze([
    *   TIME_ZONE: 'Europe/Paris',
    *   INITIAL_LOOKBACK_MONTHS: 4,
    *   DATE_OFFSET_DAYS: null,
-   *   CREATE_DATE_SUBFOLDER: true,
-   *   SUBFOLDER_DATE_FORMAT: 'ddMMyyyy',
-   *   FILE_NAME_MODE: 'original',
-   *   FILE_TIMESTAMP_FORMAT: 'yyyyMMdd_HHmm',
+   *   FILE_NAME_MODE: 'timestamp_original',
+   *   FILE_TIMESTAMP_FORMAT: 'ddMMyyyy',
    * }),
    */
 ]);
