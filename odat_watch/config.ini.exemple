@@ -67,3 +67,14 @@ racine = ..\ODAT\prelevements
 jours = 10
 ; Nom du SI dans les etats EDF (l'autre SI est CIF)
 nom_si = ORACLE
+
+[mail]
+; Rapports envoyes par mail depuis les onglets Virements et Prelevements. Sans smtp_hote, l'onglet propose
+; seulement le brouillon .eml (a ouvrir dans Outlook, destinataires a completer). Avec smtp_hote (relais interne,
+; sans authentification), un bouton Envoyer apparait quand des destinataires sont renseignes.
+smtp_hote =
+smtp_port = 25
+expediteur = odat.watch@dalkia.fr
+; Adresses separees par ;
+destinataires_virements =
+destinataires_prelevements =

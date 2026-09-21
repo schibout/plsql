@@ -6,6 +6,7 @@ from pathlib import Path
 
 import streamlit as st
 
+import mail
 import prelevements as pv
 import rapport_prelevements as rp
 
@@ -148,9 +149,27 @@ def render(kpi):
                            use_container_width=True)
     chemin = st.session_state.get("pv_rapport_html")
     if chemin and Path(chemin).is_file() and rapport["base"][len(pv.PREFIXE):len(pv.PREFIXE) + 8] in Path(chemin).name:
-        d1, d2 = st.columns([1, 2])
+        d1, d2, d3 = st.columns(3)
         d1.download_button("⬇ Rapport HTML", Path(chemin).read_bytes(), Path(chemin).name, "text/html",
                            key="pv_html", use_container_width=True)
-        d2.caption(f"Écrit dans `{chemin}` — à joindre au mail ou à ouvrir dans le navigateur.")
+        cfg_mail = mail.config_mail()
+        dest = mail.destinataires(cfg_mail, "prelevements")
+        texte = rp.texte_court(rapport)
+        pieces = [Path(chemin)] + ([rapport["xlsx"]] if rapport["xlsx"] else []) + [
+            rapport["dossier"] / f"{rapport['base']}{suffixe}" for suffixe in ("_justifications.csv", "_doublons.csv")]
+        msg = mail.composer(texte.splitlines()[0], Path(chemin).read_text(encoding="utf-8"), texte, pieces,
+                            expediteur=cfg_mail["expediteur"], destinataires=dest)
+        d2.download_button("✉ Mail prêt à envoyer (.eml)", mail.eml(msg),
+                           mail.nom_fichier("Prelevements", rapport["base"][len(pv.PREFIXE):len(pv.PREFIXE) + 8]),
+                           "message/rfc822", key="pv_eml", use_container_width=True,
+                           help="S'ouvre dans Outlook en mode composition : rapport HTML dans le corps, classeur et CSV en pièces jointes.")
+        if cfg_mail["smtp_hote"] and dest:
+            if d3.button(f"📤 Envoyer à {len(dest)} destinataire(s)", key="pv_envoyer", use_container_width=True):
+                try:
+                    st.success(mail.envoyer(msg, cfg_mail))
+                except Exception as e:  # noqa: BLE001
+                    st.error(f"Envoi impossible : {e}")
+        else:
+            d3.caption("Envoi direct : renseigner `[mail] smtp_hote` et `destinataires_prelevements` dans config.ini.")
     with st.expander("✉ Texte court à coller dans un mail ou Teams"):
         st.code(rp.texte_court(rapport), language=None)

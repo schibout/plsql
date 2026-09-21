@@ -29,8 +29,10 @@ Oracle EBS R12 pour répondre à : **qu'est-ce qui tourne ce soir, et demain ?**
 | `rapport_releves.py` | Rapport HTML Relevés bancaires (même charte que `rapport_matin.py`), écrit dans `rapports/Releves_*.html`. |
 | `ui_releves.py` | Onglet Relevés bancaires : date, scan, tuiles, frise A/B, plan de reprise, chronologie + mini-tendance, continuité, PFE ↔ EBS, Control-M, contrôles, comptes connus éditables, rapport HTML. |
 | `sources.py` | Dossiers d'import choisis par l'utilisateur (boîte de dialogue Windows ou chemin collé), mémorisés dans la table `parametres` d'`odat.db`. |
-| `virements.py` / `ui_virements.py` | **Virements** : onglet pont vers l'outil `../controleVirement`, données dans `../ODAT/virements` (choix de la journée parmi les dossiers `JJMMAAAA`, lancement de `controle_virements.executer`, tuiles, doublons D1-D6, contrôles de forme, niveaux 0-3, synthèse). Config `[virements]`. |
+| `virements.py` / `ui_virements.py` | **Virements** : onglet pont vers l'outil `../controleVirement`, données dans `../ODAT/virements` (choix de la journée parmi les dossiers `JJMMAAAA`, lancement de `controle_virements.executer`, tuiles, doublons D1-D6, contrôles de forme, niveaux 0-3, synthèse). Chaque lancement enregistre l'instance lue (`vir_imports`), les envois vers la banque (`vir_envois`) et le contrôle (`vir_histo`) ; rapport HTML, mail `.eml`, historique 60 jours. Config `[virements]`, `[mail]`. |
 | `prelevements.py` / `ui_prelevements.py` | **Prélèvements** : onglet pont vers l'outil `../CTRL_QUASI_AUTOMATIQUE_DES_PRELEVEMENTS`, données et rapports dans `../ODAT/prelevements` (rapprochement Oracle ↔ EDF par clé IBAN créancier × échéance, `rapprochement_cle_metier.executer`) : date de référence et profondeur, tuiles (statut global, émis, en attente, anomalies, écarts à investiguer), justification des écarts, clés par statut, téléchargement CSV / classeur, contrôle des doublons d'émission, rapport HTML et texte court pour le mail. Config `[prelevements]`. |
+| `rapport_virements.py` | Rapport HTML Virements (même charte) : synthèse en haut (résultat, tuiles, points d'attention), doublons, contrôles de forme et niveaux 0 à 3 en bas. Écrit dans `rapports/Virements_*.html`. |
+| `mail.py` | Mail de rapport commun aux onglets Virements et Prélèvements : brouillon `.eml` (Outlook, mode composition, rapport HTML dans le corps, CSV / classeur en pièces jointes) ou envoi SMTP direct via `[mail]`. |
 | `rapport_prelevements.py` | Rapport HTML Prélèvements (même charte que `rapport_matin.py`) : synthèse en haut (bandeau, tuiles, statuts, « À faire aujourd'hui »), tableaux de détail en bas. Écrit dans `rapports/Prelevements_*.html`. |
 | `referentiel.py` / `ui_profils.py` | **Profils + référentiel** : profil calculé de chaque job (onglet Profils) enrichi du référentiel jobs Control-M ↔ programmes Oracle Applications : alimenté automatiquement (photos ODAT + demandes Oracle : lanceur, filles, script `DKA_X_JOB.sh`), corrigeable à la main (saisie prioritaire partout), export CSV. Table `referentiel_jobs`. |
 | `ui_sql.py` | Onglet SQL : explorateur des tables SQLite (structure, volumes) et requêteur libre en lecture seule, exemples fournis, export CSV. |
@@ -182,8 +184,11 @@ type, statut et folio ; cocher des lignes affiche la somme de leurs écarts déb
 deux lignes) propose « 🔗 Rapprocher ces lignes ». Les groupes folio + fichier dont la somme des écarts fait
 déjà 0 sont listés à part (« Groupes compensés en attente ») avec un rapprochement à l'unité ou « Tout
 rapprocher ». « 🅾 Contrôler dans Oracle » interroge Oracle par couple (folio, fichier de base, type) et
-mémorise nombre/montant côté Oracle, avec l'erreur affichée en clair (colonne « Erreur Oracle ») quand la
-requête échoue. « 📄 Générer le rapport HTML » produit `rapports/Folio_Rose_AAAAMMJJ_HHMM.html` (même charte
+mémorise nombre/montant côté Oracle (interface et tables définitives), avec l'erreur affichée en clair
+(colonne « Erreur Oracle ») quand la requête échoue. Couleurs des lignes, par priorité : orange quand
+l'interface Oracle contient des données absentes des tables définitives (ou dont le montant diffère), bleu
+si le contrôle Oracle est OK, jaune si un commentaire est renseigné, vert si l'écart de montant est nul, rose
+si le nombre de pièces est égal mais pas le montant. « 📄 Générer le rapport HTML » produit `rapports/Folio_Rose_AAAAMMJJ_HHMM.html` (même charte
 que le rapport du matin). Les rapprochements sont historisés (annulables) et les données vivent dans les
 tables `fr_lignes`, `fr_oracle`, `fr_rapprochements`, `fr_rapprochement_lignes`.
 

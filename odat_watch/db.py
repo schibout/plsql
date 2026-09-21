@@ -86,6 +86,42 @@ CREATE TABLE IF NOT EXISTS controle_matin_histo (
 );
 CREATE INDEX IF NOT EXISTS ix_cm_histo_date ON controle_matin_histo(date_ctrl, executed_at);
 
+-- Virements : instances importées (ODAT/virements/JJMMAAAA/<uuid>), envois vers la banque, historique des contrôles.
+-- Alimentées à chaque lancement du contrôle depuis l'onglet ; les fichiers restent la source de vérité.
+CREATE TABLE IF NOT EXISTS vir_imports (
+    guid          TEXT PRIMARY KEY,       -- instance Talend (uuid)
+    date_ctrl     TEXT NOT NULL,          -- AAAA-MM-JJ, journée du dossier
+    dossier       TEXT,                   -- dossier rapport du dernier contrôle l'ayant lue
+    nb_fichiers   INTEGER,                -- fichiers vus par le contrôle (DK_FIN01, ACK, CSV…)
+    nb_envois     INTEGER,                -- fichiers ACK envoyés à la banque
+    cible_seul    INTEGER,                -- 1 = sans dossier _source (DK en euros)
+    importe_le    TEXT NOT NULL,          -- première prise en compte
+    controle_le   TEXT NOT NULL           -- dernier contrôle
+);
+CREATE TABLE IF NOT EXISTS vir_histo (
+    id              INTEGER PRIMARY KEY AUTOINCREMENT,
+    date_ctrl       TEXT NOT NULL,
+    executed_at     TEXT NOT NULL,
+    ok              INTEGER NOT NULL,
+    nb_instances    INTEGER, nb_envoyes INTEGER, montant_envoye REAL,
+    ko              INTEGER, a_verifier INTEGER, ecarts INTEGER,
+    quartz          INTEGER, cible_seul INTEGER,
+    dossier_rapport TEXT,
+    fichier_rapport TEXT                  -- rapport HTML généré depuis l'onglet, s'il existe
+);
+CREATE INDEX IF NOT EXISTS ix_vir_histo_date ON vir_histo(date_ctrl, executed_at);
+CREATE TABLE IF NOT EXISTS vir_envois (
+    id            INTEGER PRIMARY KEY AUTOINCREMENT,
+    histo_id      INTEGER NOT NULL,
+    date_ctrl     TEXT NOT NULL,
+    guid          TEXT NOT NULL,
+    fichier_ack   TEXT NOT NULL,          -- CDPG.NC4.IMPORT_ACK.*
+    nb            INTEGER,                -- virements (pied de fichier)
+    montant       REAL,                   -- euros
+    statut        TEXT                    -- OK, ou statut_lignes/statut_montant en écart
+);
+CREATE INDEX IF NOT EXISTS ix_vir_envois_date ON vir_envois(date_ctrl, fichier_ack);
+
 -- Référentiel jobs Control-M <-> programmes Oracle Applications (auto + saisie manuelle prioritaire)
 CREATE TABLE IF NOT EXISTS referentiel_jobs (
     job_name         TEXT PRIMARY KEY,

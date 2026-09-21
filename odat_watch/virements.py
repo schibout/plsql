@@ -149,3 +149,73 @@ def resume(rapport: dict) -> dict:
     return {"ok": ok, "nb_envoyes": nb, "montant_envoye": montant, "ko": ko, "a_verifier": a_verifier,
             "ecarts": ecarts, "cible_seul": "cible seul" in rapport["synthese"],
             "quartz": "Non réalisé : l'export de la trésorerie" not in rapport["synthese"]}
+
+
+# ------------------------------------------------------------------ base : instances, envois, historique
+
+def _date_iso(date: str) -> str:
+    return datetime.strptime(date, "%d%m%Y").strftime("%Y-%m-%d")
+
+
+def enregistrer(date: str, res: dict, con, quand: datetime | None = None) -> int:
+    """Après un lancement : historise le contrôle (vir_histo), les instances lues (vir_imports, une ligne par uuid,
+    conservée d'un lancement à l'autre) et les envois vers la banque (vir_envois, remplacés pour la journée).
+    `res` est le dict de controle_virements.executer. Renvoie l'id de l'historique."""
+    quand = quand or datetime.now()
+    date_iso, maintenant = _date_iso(date), quand.strftime("%Y-%m-%d %H:%M:%S")
+    rapport = lire_rapport(Path(res["dossier"]))
+    r = resume(rapport) if rapport else {"ok": res["ok"], "nb_envoyes": 0, "montant_envoye": 0.0, "ko": 0,
+                                         "a_verifier": 0, "ecarts": 0, "quartz": res.get("quartz", False)}
+    with con:
+        cur = con.execute(
+            "INSERT INTO vir_histo(date_ctrl, executed_at, ok, nb_instances, nb_envoyes, montant_envoye, ko, a_verifier, "
+            "ecarts, quartz, cible_seul, dossier_rapport) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)",
+            (date_iso, maintenant, int(bool(r["ok"])), res.get("nb_instances"), r["nb_envoyes"], r["montant_envoye"],
+             r["ko"], r["a_verifier"], r["ecarts"], int(bool(res.get("quartz"))), int(bool(res.get("cible_seul"))),
+             str(res["dossier"])))
+        histo_id = cur.lastrowid
+        par_guid: dict[str, dict] = {}
+        for f in res.get("fichiers", []):
+            g = par_guid.setdefault(f["guid"], {"nb_fichiers": 0, "nb_envois": 0})
+            if f.get("categorie") != "INSTANCE":
+                g["nb_fichiers"] += 1
+            if f.get("categorie") == "ACK":
+                g["nb_envois"] += 1
+        for guid, g in par_guid.items():
+            con.execute(
+                "INSERT INTO vir_imports(guid, date_ctrl, dossier, nb_fichiers, nb_envois, cible_seul, importe_le, controle_le) "
+                "VALUES (?,?,?,?,?,?,?,?) ON CONFLICT(guid) DO UPDATE SET date_ctrl=excluded.date_ctrl, dossier=excluded.dossier, "
+                "nb_fichiers=excluded.nb_fichiers, nb_envois=excluded.nb_envois, cible_seul=excluded.cible_seul, "
+                "controle_le=excluded.controle_le",
+                (guid, date_iso, str(res["dossier"]), g["nb_fichiers"], g["nb_envois"], int(bool(res.get("cible_seul"))),
+                 maintenant, maintenant))
+        con.execute("DELETE FROM vir_envois WHERE date_ctrl = ?", (date_iso,))
+        con.executemany(
+            "INSERT INTO vir_envois(histo_id, date_ctrl, guid, fichier_ack, nb, montant, statut) VALUES (?,?,?,?,?,?,?)",
+            [(histo_id, date_iso, t["guid"], t["fichier_edf"], int(t.get("nb_ack_footer") or 0),
+              round(float(t.get("montant_ack_footer") or 0) / 100, 2),
+              "OK" if t.get("statut_lignes") == "OK" and t.get("statut_montant") == "OK"
+              else f"{t.get('statut_lignes')}/{t.get('statut_montant')}")
+             for t in res.get("totaux_edf", [])])
+    return histo_id
+
+
+def maj_fichier_rapport(histo_id: int, fichier: str, con) -> None:
+    with con:
+        con.execute("UPDATE vir_histo SET fichier_rapport = ? WHERE id = ?", (fichier, histo_id))
+
+
+def historique(jours: int, con) -> pd.DataFrame:
+    """Une ligne par journée contrôlée (dernière exécution), sur les N derniers jours."""
+    sql = """
+    SELECT date_ctrl, executed_at, ok, nb_instances, nb_envoyes, montant_envoye, ko, a_verifier, ecarts, quartz, fichier_rapport
+    FROM vir_histo h
+    WHERE executed_at = (SELECT MAX(executed_at) FROM vir_histo WHERE date_ctrl = h.date_ctrl)
+      AND date_ctrl >= date('now', ?)
+    ORDER BY date_ctrl DESC"""
+    return pd.read_sql_query(sql, con, params=(f"-{int(jours)} days",))
+
+
+def imports_connus(con) -> dict[str, str]:
+    """uuid -> journée (AAAA-MM-JJ) des instances déjà enregistrées."""
+    return {r[0]: r[1] for r in con.execute("SELECT guid, date_ctrl FROM vir_imports")}

@@ -1,10 +1,15 @@
 """Onglet Virements : choix de la journée (dossiers *_cible chargés à la main), lancement du contrôle
 controleVirement, tuiles, synthèse et tables des doublons / écarts."""
 from __future__ import annotations
+from pathlib import Path
 
+import pandas as pd
 import streamlit as st
 
+import mail
+import rapport_virements as rp
 import virements as vr
+from db import connect
 
 
 def _tuiles(kpi, r: dict) -> None:
@@ -38,8 +43,14 @@ def render(kpi):
         with st.spinner("Contrôle des virements…"):
             try:
                 res = vr.lancer(date, cfg)
+                con = connect()
+                try:
+                    st.session_state["vir_histo_id"] = vr.enregistrer(date, res, con)
+                finally:
+                    con.close()
                 st.session_state["vir_msg"] = (f"Contrôle du {vr.date_lisible(date)} terminé : "
-                                               f"{'OK' if res['ok'] else 'KO'} · {res['nb_instances']} instance(s)")
+                                               f"{'OK' if res['ok'] else 'KO'} · {res['nb_instances']} instance(s) · "
+                                               f"enregistré en base")
             except Exception as e:  # noqa: BLE001 — l'outil externe peut échouer sur un fichier mal formé
                 st.session_state["vir_msg"] = f"⚠ {type(e).__name__}: {e}"
     quartz = vr.fichier_quartz(cfg, date)
@@ -97,3 +108,72 @@ def render(kpi):
         st.markdown(rapport["synthese"])
         st.download_button("⬇ Télécharger synthese.md", rapport["synthese"].encode("utf-8"),
                            f"synthese_virements_{date}.md", "text/markdown", key="vir_md")
+
+    _rapport_et_mail(rapport, date)
+    _historique()
+
+
+def _rapport_et_mail(rapport: dict, date: str) -> None:
+    st.markdown("##### Rapport et envoi")
+    c0, c1 = st.columns([1, 2])
+    if c0.button("📄 Générer le rapport HTML", use_container_width=True, key="vir_rapport",
+                 help="Synthèse en haut (résultat, chiffres, points d'attention), tableaux de détail en bas."):
+        try:
+            chemin = rp.ecrire(rapport, date, rp.DOSSIER_RAPPORTS)
+            st.session_state["vir_rapport_html"] = str(chemin)
+            if st.session_state.get("vir_histo_id"):
+                con = connect()
+                try:
+                    vr.maj_fichier_rapport(st.session_state["vir_histo_id"], str(chemin), con)
+                finally:
+                    con.close()
+        except OSError as e:
+            st.error(f"Écriture du rapport impossible : {e}")
+    chemin = st.session_state.get("vir_rapport_html")
+    if not (chemin and Path(chemin).is_file() and f"_{date}_" in Path(chemin).name):
+        c1.caption("Générer le rapport pour obtenir le fichier HTML et le mail prêt à envoyer.")
+        return
+    d1, d2, d3 = st.columns(3)
+    d1.download_button("⬇ Rapport HTML", Path(chemin).read_bytes(), Path(chemin).name, "text/html",
+                       key="vir_html", use_container_width=True)
+    cfg_mail = mail.config_mail()
+    dest = mail.destinataires(cfg_mail, "virements")
+    texte = rp.texte_court(rapport, date)
+    sujet = texte.splitlines()[0]
+    pieces = [Path(chemin)] + [rapport["dossier"] / nom for cle, nom, _ in vr.CSV_RAPPORT
+                               if cle in (*vr.CLES_DOUBLONS, "doublons_virements", "sanite") and not rapport[cle].empty]
+    msg = mail.composer(sujet, Path(chemin).read_text(encoding="utf-8"), texte, pieces,
+                        expediteur=cfg_mail["expediteur"], destinataires=dest)
+    d2.download_button("✉ Mail prêt à envoyer (.eml)", mail.eml(msg), mail.nom_fichier("Virements", date),
+                       "message/rfc822", key="vir_eml", use_container_width=True,
+                       help="S'ouvre dans Outlook en mode composition : rapport HTML dans le corps, CSV des écarts en pièces jointes.")
+    if cfg_mail["smtp_hote"] and dest:
+        if d3.button(f"📤 Envoyer à {len(dest)} destinataire(s)", key="vir_envoyer", use_container_width=True):
+            try:
+                st.success(mail.envoyer(msg, cfg_mail))
+            except Exception as e:  # noqa: BLE001 — relais SMTP injoignable, refus, etc.
+                st.error(f"Envoi impossible : {e}")
+    else:
+        d3.caption("Envoi direct : renseigner `[mail] smtp_hote` et `destinataires_virements` dans config.ini.")
+    with st.expander("✉ Texte court à coller dans un mail ou Teams"):
+        st.code(texte, language=None)
+
+
+def _historique() -> None:
+    con = connect()
+    try:
+        h = vr.historique(60, con)
+    finally:
+        con.close()
+    with st.expander(f"Historique des contrôles — {len(h)} journée(s) sur 60 jours"):
+        if h.empty:
+            st.caption("Aucun contrôle enregistré : chaque lancement depuis cet onglet alimente vir_histo, vir_imports et vir_envois.")
+            return
+        h = h.copy()
+        h["résultat"] = h["ok"].map({1: "✅ OK", 0: "❌ KO"})
+        h["journée"] = pd.to_datetime(h["date_ctrl"]).dt.strftime("%d/%m/%Y")
+        h["montant_envoye"] = h["montant_envoye"].map(lambda v: f"{float(v or 0):,.2f} €".replace(",", " ").replace(".", ","))
+        st.dataframe(h[["journée", "résultat", "nb_instances", "nb_envoyes", "montant_envoye", "ko", "a_verifier", "ecarts", "executed_at"]]
+                     .rename(columns={"nb_instances": "instances", "nb_envoyes": "virements", "montant_envoye": "montant",
+                                      "ko": "bloquants", "a_verifier": "à vérifier", "ecarts": "écarts", "executed_at": "contrôlé le"}),
+                     hide_index=True, use_container_width=True)
