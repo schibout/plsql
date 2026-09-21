@@ -536,3 +536,44 @@ def test_executer_signale_les_doublons_comme_anomalie(tmp_path):
     assert "DOUBLON;REF DOUBLE" in csv_doublons
     resume = json.loads((racine / "rapport" / (res["base"] + "_resume.json")).read_text(encoding="utf-8"))
     assert resume["nb_doublons"] == 1
+
+
+# --- Disposition ODAT/prelevements : REJETS a cote d'EDF ; lignes lues exposees par executer() -----
+def test_rejets_a_cote_d_edf_prioritaire(tmp_path):
+    from rapprochement_cle_metier import trouver_dossier_rejets
+    edf = tmp_path / "EDF"
+    edf.mkdir()
+    assert trouver_dossier_rejets(edf) == tmp_path / "REJETS"          # par defaut : frere d'EDF
+    (edf / "REJETS").mkdir()
+    assert trouver_dossier_rejets(edf) == edf / "REJETS"               # ancienne disposition acceptee
+    (tmp_path / "REJETS").mkdir()
+    assert trouver_dossier_rejets(edf) == tmp_path / "REJETS"          # la nouvelle l'emporte
+
+
+def test_executer_expose_les_lignes_edf_et_rejets(tmp_path):
+    racine = _jeu_minimal(tmp_path)
+    # rejet range a cote d'EDF, apparie a la ligne Oracle (meme RUM, meme echeance)
+    d = racine / "REJETS"
+    d.mkdir()
+    (d / "REJETS_INTERNES_DK.20260913.070000.csv").write_text(
+        "\nLISTE DES REJETS INTERNES\nIBAN CREANCIER;RUM;IBAN DEBITEUR;DATE D'ECHEANCE;MONTANT;CODE REJET;MOTIF DU REJET;\n"
+        f"{IBAN_A};NVOA0001;FR7611111111111;30/09/2026;100,00;AM04;Provision insuffisante;\n", encoding="latin-1")
+    res = executer(reference="2026-09-14", racine=racine, jours=3)
+    assert res["dossier_rejets"].endswith("REJETS") and "EDF" not in Path(res["dossier_rejets"]).name
+    assert len(res["edf"]) == 1
+    e = res["edf"][0]
+    assert (e["fichier"], e["nom_si"], e["iban_creancier"], e["nb"], e["montant"]) == \
+        ("IMPORT_AVP_DK.20260913.070100.csv", "ORACLE", IBAN_A, 1, Decimal("100.00"))
+    assert e["date_fichier"] == date(2026, 9, 13) and e["echeance"] == date(2026, 9, 30)
+    assert len(res["rejets"]) == 1
+    r = res["rejets"][0]
+    assert (r["rum"], r["code"], r["montant"], r["appariee"], r["beneficiaire"]) == ("NVOA0001", "AM04", Decimal("100.00"), True, "BENEF")
+    # tous les fichiers recus sont listes, meme un etat EDF sans ligne du SI
+    ecrire_edf(racine, "20260914", ["CIF;FR7612345678901;30/09/2026;1;5,00;"])
+    res = executer(reference="2026-09-14", racine=racine, jours=3)
+    assert [f["fichier"] for f in res["fichiers_edf"]] == ["IMPORT_AVP_DK.20260913.070100.csv", "IMPORT_AVP_DK.20260914.070100.csv"]
+    assert res["fichiers_edf"][1]["date_fichier"] == date(2026, 9, 14) and len(res["edf"]) == 1
+    assert [f["fichier"] for f in res["fichiers_rejets"]] == ["REJETS_INTERNES_DK.20260913.070000.csv"]
+    # le JSON ecrit ne contient pas ces listes (elles ne sont pas serialisables telles quelles)
+    resume = json.loads((racine / "rapport" / (res["base"] + "_resume.json")).read_text(encoding="utf-8"))
+    assert "edf" not in resume and "rejets" not in resume

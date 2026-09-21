@@ -999,11 +999,13 @@ def construire_parser():
 
 
 def trouver_dossier_rejets(edf_path):
-    if edf_path.is_dir():
-        for d in edf_path.iterdir():
-            if d.is_dir() and d.name.upper() == "REJETS":
-                return d
-    return edf_path / "REJETS"
+    """REJETS a cote d'EDF (disposition ODAT/prelevements), sinon sous EDF (ancienne disposition)."""
+    for parent in (edf_path.parent, edf_path):
+        if parent.is_dir():
+            for d in parent.iterdir():
+                if d.is_dir() and d.name.upper() == "REJETS":
+                    return d
+    return edf_path.parent / "REJETS"
 
 
 def analyser(args, diag):
@@ -1072,7 +1074,39 @@ def analyser(args, diag):
         ("Clés rapprochées", len(rapprochement)),
         ("Doublons d'émission", sum(1 for d in doublons if d["type"] == "DOUBLON")),
     ]
-    return rapprochement, rejets, lignes_ko, contexte, reference, doublons
+    return rapprochement, rejets, lignes_ko, contexte, reference, doublons, agregats_edf
+
+
+def lignes_edf(agregats_edf, nom_si):
+    """Une ligne par tranche EDF lue (fichier, date du fichier, cle, nombre, montant) : ce que l'onglet persiste."""
+    out = []
+    for (iban, echeance), agg in agregats_edf.items():
+        for t in agg.tranches:
+            out.append({"fichier": t.fichier, "date_fichier": t.date_fichier, "nom_si": nom_si,
+                        "iban_creancier": iban, "echeance": echeance, "nb": t.nb, "montant": t.montant})
+    return sorted(out, key=lambda r: (r["date_fichier"], r["fichier"], r["echeance"], r["iban_creancier"]))
+
+
+def fichiers_dates(dossier, motif):
+    """Tous les fichiers d'un dossier correspondant au motif, avec la date portee par leur nom (2e segment) :
+    un etat EDF sans ligne du SI est un fichier recu quand meme, il doit etre memorise."""
+    out = []
+    if not Path(dossier).is_dir():
+        return out
+    for f in sorted(Path(dossier).glob(motif)):
+        try:
+            out.append({"fichier": f.name, "date_fichier": date_compacte(f.name.split(".")[1])})
+        except (IndexError, ValueError):
+            continue
+    return out
+
+
+def lignes_rejets(rejets):
+    out = [{"fichier": r.fichier, "date_fichier": r.date_fichier, "iban_creancier": r.iban_creancier, "rum": r.rum,
+            "iban_debiteur": r.iban_debiteur, "echeance": r.echeance, "montant": r.montant, "code": r.code,
+            "motif": r.motif, "appariee": r.appariee,
+            "beneficiaire": r.origine.nom if r.origine is not None else ""} for r in rejets]
+    return sorted(out, key=lambda r: (r["date_fichier"], r["fichier"], r["echeance"], r["rum"]))
 
 
 STATUT_GLOBAL_PAR_CODE = {0: "OK", 1: "ANOMALIES", 2: "ERREUR", 3: "DEGRADE"}
@@ -1098,7 +1132,7 @@ def executer(reference=None, racine=None, sortie=None, jours=10, nom_si="ORACLE"
         motifs_oracle=list(motifs_oracle), motif_edf=motif_edf,
         motif_rejets=motif_rejets, nom_si=nom_si)
     diag = Diagnostic()
-    rapprochement, rejets, lignes_ko, contexte, reference, doublons = analyser(args, diag)
+    rapprochement, rejets, lignes_ko, contexte, reference, doublons, agregats_edf = analyser(args, diag)
 
     # Les rapports sont toujours regroupes dans un sous-dossier dedie : ils
     # ne se melangent jamais aux fichiers sources analyses.
@@ -1138,9 +1172,16 @@ def executer(reference=None, racine=None, sortie=None, jours=10, nom_si="ORACLE"
         "nb_justifications": len(justifications), "nb_justifie_par_rejet": par_rejet, "nb_lignes_ko": len(lignes_ko),
         "avertissements": list(diag.avertissements),
         "contexte": {k: v for k, v in contexte},
+        # Lignes lues, pour persistance par l'appelant (non serialisees dans le JSON)
+        "edf": lignes_edf(agregats_edf, nom_si), "rejets": lignes_rejets(rejets),
+        "dossier_edf": str((args.racine / dossier_edf).resolve()),
+        "dossier_rejets": str(trouver_dossier_rejets(args.racine / dossier_edf).resolve()),
+        "fichiers_edf": fichiers_dates(args.racine / dossier_edf, motif_edf),
+        "fichiers_rejets": fichiers_dates(trouver_dossier_rejets(args.racine / dossier_edf), motif_rejets),
     }
     serialisable = dict(
-        res, dossier=str(dossier), reference=reference.isoformat(),
+        {k: v for k, v in res.items() if k not in ("edf", "rejets", "fichiers_edf", "fichiers_rejets")},
+        dossier=str(dossier), reference=reference.isoformat(),
         par_statut={s: dict(e, montant=str(e["montant"])) for s, e in res["par_statut"].items()},
         genere_le=datetime.now().isoformat(timespec="seconds"))
     temporaire = dossier / f"{base}_resume.tmp.json"

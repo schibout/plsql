@@ -122,6 +122,51 @@ CREATE TABLE IF NOT EXISTS vir_envois (
 );
 CREATE INDEX IF NOT EXISTS ix_vir_envois_date ON vir_envois(date_ctrl, fichier_ack);
 
+-- Prélèvements : trésorerie EDF persistante (états de réception, rejets internes) et historique des rapprochements.
+-- Alimentées à chaque lancement depuis l'onglet ; les fichiers ORACLE restent des fichiers.
+CREATE TABLE IF NOT EXISTS pv_fichiers (
+    nom           TEXT PRIMARY KEY,       -- IMPORT_AVP_DK.<date>.<heure>.csv / REJETS_INTERNES_DK.<date>.<heure>.csv
+    genre         TEXT NOT NULL,          -- EDF | REJET
+    date_fichier  TEXT NOT NULL,          -- AAAA-MM-JJ
+    nb_lignes     INTEGER,                -- lignes retenues (SI suivi / rejets dédoublonnés)
+    taille        INTEGER, md5 TEXT,
+    importe_le    TEXT NOT NULL
+);
+CREATE TABLE IF NOT EXISTS pv_edf (
+    fichier        TEXT NOT NULL,
+    date_fichier   TEXT NOT NULL,
+    nom_si         TEXT,
+    iban_creancier TEXT NOT NULL,
+    echeance       TEXT NOT NULL,
+    nb             INTEGER, montant REAL,
+    PRIMARY KEY (fichier, iban_creancier, echeance)
+);
+CREATE INDEX IF NOT EXISTS ix_pv_edf_date ON pv_edf(date_fichier);
+CREATE TABLE IF NOT EXISTS pv_rejets (
+    fichier        TEXT NOT NULL,
+    date_fichier   TEXT NOT NULL,
+    iban_creancier TEXT, rum TEXT NOT NULL, iban_debiteur TEXT,
+    echeance       TEXT NOT NULL,
+    montant        REAL NOT NULL,
+    code           TEXT, motif TEXT,
+    appariee       INTEGER,               -- 1 = rattaché à une émission Oracle connue
+    beneficiaire   TEXT,
+    PRIMARY KEY (fichier, rum, echeance, montant)
+);
+CREATE INDEX IF NOT EXISTS ix_pv_rejets_date ON pv_rejets(date_fichier);
+CREATE TABLE IF NOT EXISTS pv_histo (
+    id              INTEGER PRIMARY KEY AUTOINCREMENT,
+    reference       TEXT NOT NULL,        -- AAAA-MM-JJ, date de référence du rapprochement
+    executed_at     TEXT NOT NULL,
+    statut_global   TEXT NOT NULL,        -- OK | ANOMALIES | ERREUR | DEGRADE
+    nb_cles         INTEGER, nb_emis INTEGER, montant_emis REAL,
+    en_attente      INTEGER, anomalies INTEGER, signales INTEGER, a_investiguer INTEGER,
+    doublons        INTEGER, similitudes INTEGER, lignes_ko INTEGER, avertissements INTEGER,
+    base            TEXT,                 -- Rapprochement_Cle_Metier_<date>_<heure>
+    fichier_rapport TEXT
+);
+CREATE INDEX IF NOT EXISTS ix_pv_histo_ref ON pv_histo(reference, executed_at);
+
 -- Référentiel jobs Control-M <-> programmes Oracle Applications (auto + saisie manuelle prioritaire)
 CREATE TABLE IF NOT EXISTS referentiel_jobs (
     job_name         TEXT PRIMARY KEY,

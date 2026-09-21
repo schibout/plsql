@@ -6,9 +6,12 @@ from pathlib import Path
 
 import streamlit as st
 
+import pandas as pd
+
 import mail
 import prelevements as pv
 import rapport_prelevements as rp
+from db import connect
 
 
 def _fmt_nb(n) -> str:
@@ -56,9 +59,15 @@ def render(kpi):
             try:
                 res = pv.lancer(reference, dict(cfg, jours=int(jours)))
                 nb_cles = sum(e["cles"] for e in res["par_statut"].values())
+                con = connect()
+                try:
+                    st.session_state["pv_histo_id"] = pv.enregistrer(res, con)
+                finally:
+                    con.close()
                 st.session_state["pv_msg"] = (f"Rapprochement au {reference:%d/%m/%Y} terminé : "
                                               f"{res['statut_global']} · {nb_cles} clé(s) · "
-                                              f"{res['nb_anomalies']} anomalie(s) · `{res['base']}`")
+                                              f"{res['nb_anomalies']} anomalie(s) · {len(res.get('edf', []))} ligne(s) EDF et "
+                                              f"{len(res.get('rejets', []))} rejet(s) en base · `{res['base']}`")
                 st.session_state["pv_journal"] = res["journal"]
             except Exception as e:  # noqa: BLE001 — l'outil externe peut échouer sur un fichier mal formé
                 st.session_state["pv_msg"] = f"⚠ {type(e).__name__}: {e}"
@@ -77,6 +86,7 @@ def render(kpi):
     rapport = pv.lire_rapport(racine, reference)
     if rapport is None:
         st.caption("Aucun rapport pour cette date de référence : cliquez sur **Lancer le rapprochement**.")
+        _tresorerie(racine, reference)
         return
     r = pv.resume(rapport)
     _tuiles(kpi, r)
@@ -138,6 +148,12 @@ def render(kpi):
                  help="Synthèse en haut (statut, chiffres, à faire), tableaux de détail en bas. Même charte que le rapport du matin."):
         try:
             st.session_state["pv_rapport_html"] = str(rp.ecrire(rapport, rp.DOSSIER_RAPPORTS))
+            if st.session_state.get("pv_histo_id"):
+                con = connect()
+                try:
+                    pv.maj_fichier_rapport(st.session_state["pv_histo_id"], st.session_state["pv_rapport_html"], con)
+                finally:
+                    con.close()
         except OSError as e:
             st.error(f"Écriture du rapport impossible : {e}")
     c1.download_button("⬇ Rapprochement complet (CSV)",
@@ -173,3 +189,70 @@ def render(kpi):
             d3.caption("Envoi direct : renseigner `[mail] smtp_hote` et `destinataires_prelevements` dans config.ini.")
     with st.expander("✉ Texte court à coller dans un mail ou Teams"):
         st.code(rp.texte_court(rapport), language=None)
+
+    _tresorerie(racine, reference)
+
+
+def _eur(v) -> str:
+    return f"{float(v or 0):,.2f} €".replace(",", " ").replace(".", ",")
+
+
+def _tresorerie(racine, reference: date) -> None:
+    """Mémoire persistante des états EDF et des rejets (base), indépendante des fichiers du dossier."""
+    con = connect()
+    try:
+        t = pv.tresorerie(con, jours=90, reference=reference)
+        h = pv.historique(60, con)
+        absents = pv.fichiers_absents(con, racine / "EDF", racine / "REJETS")
+    finally:
+        con.close()
+    chrono = t["chronologie"]
+    st.markdown("##### Trésorerie EDF (base, 90 jours)")
+    if chrono.empty:
+        st.caption("Aucun état EDF en base : chaque lancement enregistre les états de réception et les rejets lus "
+                   "(pv_fichiers, pv_edf, pv_rejets).")
+    else:
+        c1, c2, c3, c4 = st.columns(4)
+        c1.metric("États EDF reçus", len(chrono))
+        c2.metric("Prélèvements confirmés", f"{int(chrono['nb'].sum()):,}".replace(",", " "))
+        c3.metric("Montant confirmé", _eur(chrono["montant"].sum()))
+        c4.metric("Rejets", len(t["rejets"]), delta=f"{len(t['recidives'])} mandat(s) récidiviste(s)" if not t["recidives"].empty else None,
+                  delta_color="inverse")
+        if t["jours_sans_etat"]:
+            st.warning("Jours ouvrés sans état EDF : " + ", ".join(j.strftime("%d/%m") for j in t["jours_sans_etat"][-15:])
+                       + (" …" if len(t["jours_sans_etat"]) > 15 else "")
+                       + " — vérifier la réception du mail « Synthèse quotidienne des prélèvements ».")
+        if absents:
+            st.info(f"{len(absents)} fichier(s) connu(s) en base mais absent(s) du dossier (purgés) : la base en garde le contenu. "
+                    f"Ex. {absents[0]}")
+        with st.expander(f"Chronologie des états reçus — {len(chrono)} fichier(s)"):
+            df = chrono.copy()
+            df["montant"] = df["montant"].map(_eur)
+            st.dataframe(df.rename(columns={"date_fichier": "reçu le", "nb": "prélèvements", "cles": "clés", "rejets": "rejets du jour"}),
+                         hide_index=True, use_container_width=True, height=min(400, 38 * len(df) + 40))
+        with st.expander(f"Rejets internes — {len(t['rejets'])} sur 90 jours"
+                         + (f", {len(t['recidives'])} mandat(s) rejeté(s) plusieurs fois" if not t["recidives"].empty else ""),
+                         expanded=not t["recidives"].empty):
+            if not t["recidives"].empty:
+                st.markdown("**Mandats rejetés plusieurs fois** — à signaler au métier (mandat ou débiteur à revoir)")
+                st.dataframe(t["recidives"], hide_index=True, use_container_width=True)
+            if t["rejets"].empty:
+                st.caption("Aucun rejet sur la période.")
+            else:
+                df = t["rejets"].copy()
+                df["appariee"] = df["appariee"].map({1: "oui", 0: "autre SI"})
+                st.dataframe(df.rename(columns={"appariee": "émission Oracle connue"}), hide_index=True,
+                             use_container_width=True, height=min(400, 38 * len(df) + 40))
+    with st.expander(f"Historique des rapprochements — {len(h)} date(s) sur 60 jours"):
+        if h.empty:
+            st.caption("Aucun rapprochement enregistré.")
+        else:
+            df = h.copy()
+            df["montant_emis"] = df["montant_emis"].map(_eur)
+            df["reference"] = pd.to_datetime(df["reference"]).dt.strftime("%d/%m/%Y")
+            st.dataframe(df[["reference", "statut_global", "nb_cles", "nb_emis", "montant_emis", "en_attente", "anomalies",
+                             "a_investiguer", "doublons", "similitudes", "avertissements", "executed_at"]]
+                         .rename(columns={"reference": "référence", "statut_global": "statut", "nb_cles": "clés", "nb_emis": "émis",
+                                          "montant_emis": "montant", "en_attente": "en attente", "a_investiguer": "à investiguer",
+                                          "executed_at": "lancé le"}),
+                         hide_index=True, use_container_width=True)

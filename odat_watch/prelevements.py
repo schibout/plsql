@@ -172,3 +172,136 @@ def par_statut(df: pd.DataFrame) -> list[tuple[str, pd.DataFrame]]:
     if df.empty:
         return []
     return [(s, df[df["statut"] == s]) for s in ORDRE_STATUTS if (df["statut"] == s).any()]
+
+
+# ------------------------------------------------------------------ base : trésorerie EDF persistante, historique
+
+def _iso(d) -> str:
+    return d.isoformat() if hasattr(d, "isoformat") else str(d)
+
+
+def _fichier(genre: str, nom: str, date_fichier, dossier: Path, nb_lignes: int, quand: str):
+    import hashlib
+    chemin = Path(dossier) / nom
+    taille, md5 = None, None
+    if chemin.is_file():
+        octets = chemin.read_bytes()
+        taille, md5 = len(octets), hashlib.md5(octets).hexdigest()
+    return (nom, genre, _iso(date_fichier), nb_lignes, taille, md5, quand)
+
+
+def enregistrer(res: dict, con, quand: datetime | None = None) -> int:
+    """Après un lancement : historise le rapprochement (pv_histo) et persiste les fichiers EDF / rejets lus
+    (pv_fichiers, pv_edf, pv_rejets). Idempotent : relancer n'ajoute que la ligne d'historique.
+    `res` est le dict de rapprochement_cle_metier.executer. Renvoie l'id de l'historique."""
+    maintenant = (quand or datetime.now()).strftime("%Y-%m-%d %H:%M:%S")
+    ps = res.get("par_statut", {})
+    nb_cles = sum(int(e["cles"]) for e in ps.values())
+    nb_emis = sum(int(e["nb"]) for e in ps.values())
+    montant = float(sum(float(e["montant"]) for e in ps.values()))
+    with con:
+        cur = con.execute(
+            "INSERT INTO pv_histo(reference, executed_at, statut_global, nb_cles, nb_emis, montant_emis, en_attente, anomalies, "
+            "signales, a_investiguer, doublons, similitudes, lignes_ko, avertissements, base) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+            (_iso(res["reference"]), maintenant, res["statut_global"], nb_cles, nb_emis, montant,
+             int(ps.get("EN_ATTENTE", {}).get("cles", 0)), int(res.get("nb_anomalies") or 0), int(res.get("nb_signales") or 0),
+             int(res.get("nb_a_investiguer") or 0), int(res.get("nb_doublons") or 0), int(res.get("nb_similitudes") or 0),
+             int(res.get("nb_lignes_ko") or 0), len(res.get("avertissements") or []), res.get("base")))
+        histo_id = cur.lastrowid
+        edf, rejets = res.get("edf") or [], res.get("rejets") or []
+        par_fichier: dict[str, tuple] = {}
+        for f in res.get("fichiers_edf") or []:          # tous les fichiers reçus, même sans ligne du SI
+            par_fichier[f["fichier"]] = ("EDF", f["date_fichier"], Path(res["dossier_edf"]), 0)
+        for f in res.get("fichiers_rejets") or []:
+            par_fichier[f["fichier"]] = ("REJET", f["date_fichier"], Path(res["dossier_rejets"]), 0)
+        for e in edf:
+            par_fichier.setdefault(e["fichier"], ("EDF", e["date_fichier"], Path(res["dossier_edf"]), 0))
+            g = par_fichier[e["fichier"]]
+            par_fichier[e["fichier"]] = (*g[:3], g[3] + 1)
+        for r in rejets:
+            par_fichier.setdefault(r["fichier"], ("REJET", r["date_fichier"], Path(res["dossier_rejets"]), 0))
+            g = par_fichier[r["fichier"]]
+            par_fichier[r["fichier"]] = (*g[:3], g[3] + 1)
+        con.executemany(
+            "INSERT INTO pv_fichiers(nom, genre, date_fichier, nb_lignes, taille, md5, importe_le) VALUES (?,?,?,?,?,?,?) "
+            "ON CONFLICT(nom) DO UPDATE SET nb_lignes=excluded.nb_lignes, taille=COALESCE(excluded.taille, pv_fichiers.taille), "
+            "md5=COALESCE(excluded.md5, pv_fichiers.md5)",
+            [_fichier(genre, nom, d, dossier, n, maintenant) for nom, (genre, d, dossier, n) in par_fichier.items()])
+        con.executemany(
+            "INSERT OR REPLACE INTO pv_edf(fichier, date_fichier, nom_si, iban_creancier, echeance, nb, montant) VALUES (?,?,?,?,?,?,?)",
+            [(e["fichier"], _iso(e["date_fichier"]), e.get("nom_si"), e["iban_creancier"], _iso(e["echeance"]),
+              int(e["nb"]), float(e["montant"])) for e in edf])
+        con.executemany(
+            "INSERT OR REPLACE INTO pv_rejets(fichier, date_fichier, iban_creancier, rum, iban_debiteur, echeance, montant, code, "
+            "motif, appariee, beneficiaire) VALUES (?,?,?,?,?,?,?,?,?,?,?)",
+            [(r["fichier"], _iso(r["date_fichier"]), r.get("iban_creancier"), r["rum"], r.get("iban_debiteur"),
+              _iso(r["echeance"]), float(r["montant"]), r.get("code"), r.get("motif"), int(bool(r.get("appariee"))),
+              r.get("beneficiaire")) for r in rejets])
+    return histo_id
+
+
+def maj_fichier_rapport(histo_id: int, fichier: str, con) -> None:
+    with con:
+        con.execute("UPDATE pv_histo SET fichier_rapport = ? WHERE id = ?", (fichier, histo_id))
+
+
+def historique(jours: int, con) -> pd.DataFrame:
+    """Une ligne par date de référence (dernière exécution), sur les N derniers jours."""
+    sql = """
+    SELECT reference, executed_at, statut_global, nb_cles, nb_emis, montant_emis, en_attente, anomalies, signales,
+           a_investiguer, doublons, similitudes, lignes_ko, avertissements, fichier_rapport
+    FROM pv_histo h
+    WHERE executed_at = (SELECT MAX(executed_at) FROM pv_histo WHERE reference = h.reference)
+      AND reference >= date('now', ?)
+    ORDER BY reference DESC"""
+    return pd.read_sql_query(sql, con, params=(f"-{int(jours)} days",))
+
+
+def _jours_ouvres(debut: date, fin: date) -> list[date]:
+    from datetime import timedelta
+    from controle_matin import jours_feries
+    feries = jours_feries(debut.year) | jours_feries(fin.year)
+    j, out = debut, []
+    while j <= fin:
+        if j.weekday() < 5 and j not in feries:
+            out.append(j)
+        j += timedelta(days=1)
+    return out
+
+
+def tresorerie(con, jours: int = 90, reference: date | None = None) -> dict:
+    """Vue trésorerie EDF depuis la base : chronologie des états reçus (nb, montant, rejets du jour), jours ouvrés
+    sans état, rejets de la période, mandats rejetés plusieurs fois."""
+    from datetime import timedelta
+    reference = reference or date.today()
+    debut = (reference - timedelta(days=jours)).isoformat()
+    chrono = pd.read_sql_query("""
+        SELECT f.date_fichier, f.nom AS fichier,
+               COALESCE(SUM(e.nb), 0) AS nb, COALESCE(SUM(e.montant), 0) AS montant,
+               COUNT(DISTINCT e.iban_creancier || e.echeance) AS cles,
+               (SELECT COUNT(*) FROM pv_rejets r WHERE r.date_fichier = f.date_fichier) AS rejets
+        FROM pv_fichiers f LEFT JOIN pv_edf e ON e.fichier = f.nom
+        WHERE f.genre = 'EDF' AND f.date_fichier >= ?
+        GROUP BY f.date_fichier, f.nom ORDER BY f.date_fichier DESC""", con, params=(debut,))
+    recus = {datetime.strptime(d, "%Y-%m-%d").date() for d in chrono["date_fichier"]} if not chrono.empty else set()
+    premier = min(recus) if recus else None
+    jours_sans = [j for j in _jours_ouvres(premier, reference) if j not in recus] if premier else []
+    rejets = pd.read_sql_query("""
+        SELECT date_fichier, echeance, beneficiaire, rum, iban_debiteur, montant, code, motif, appariee, fichier
+        FROM pv_rejets WHERE date_fichier >= ? ORDER BY date_fichier DESC, echeance""", con, params=(debut,))
+    recidives = pd.read_sql_query("""
+        SELECT rum, MAX(beneficiaire) AS beneficiaire, COUNT(*) AS nb_rejets, ROUND(SUM(montant), 2) AS montant,
+               GROUP_CONCAT(DISTINCT code) AS codes, MIN(date_fichier) AS premier, MAX(date_fichier) AS dernier
+        FROM pv_rejets WHERE date_fichier >= ? GROUP BY rum HAVING COUNT(*) > 1 ORDER BY nb_rejets DESC, montant DESC""",
+        con, params=(debut,))
+    return {"chronologie": chrono, "jours_sans_etat": jours_sans, "rejets": rejets, "recidives": recidives}
+
+
+def fichiers_absents(con, dossier_edf: Path, dossier_rejets: Path) -> list[str]:
+    """Fichiers connus en base mais plus présents sur disque : la base en garde la mémoire, on le signale."""
+    out = []
+    for nom, genre in con.execute("SELECT nom, genre FROM pv_fichiers ORDER BY date_fichier"):
+        dossier = Path(dossier_edf) if genre == "EDF" else Path(dossier_rejets)
+        if not (dossier / nom).is_file():
+            out.append(nom)
+    return out

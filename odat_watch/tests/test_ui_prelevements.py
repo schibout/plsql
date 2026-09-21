@@ -1,6 +1,7 @@
 """Onglet Prélèvements via AppTest : lecture d'un rapport fabriqué, tuiles, groupes par statut, message sans rapport."""
 from datetime import date
 
+import pytest
 from streamlit.testing.v1 import AppTest
 
 import prelevements as pv
@@ -22,6 +23,14 @@ def _script():
 
 def _cfg(racine):
     return lambda: {"outil": racine, "racine": racine, "jours": 10, "nom_si": "ORACLE"}
+
+
+@pytest.fixture(autouse=True)
+def _base_temporaire(monkeypatch, tmp_path):
+    """L'onglet écrit en base (pv_histo, trésorerie) : jamais dans odat.db pendant les tests."""
+    import db
+    import ui_prelevements
+    monkeypatch.setattr(ui_prelevements, "connect", lambda: db.connect(tmp_path / "ui.db"))
 
 
 def test_onglet_affiche_le_rapport(monkeypatch, tmp_path):
@@ -65,7 +74,9 @@ def test_onglet_racine_absente(monkeypatch, tmp_path):
 def test_lancer_affiche_message_et_journal(monkeypatch, tmp_path):
     def faux_lancer(reference, cfg):
         _rapport(tmp_path / "rapport", f"Rapprochement_Cle_Metier_{reference:%Y%m%d}_120000")
-        return {"statut_global": "OK", "par_statut": {"RAPPROCHE": {"cles": 1}}, "nb_anomalies": 0,
+        return {"statut_global": "OK", "par_statut": {"RAPPROCHE": {"cles": 1, "nb": 3, "montant": "300.00"}},
+                "nb_anomalies": 0, "reference": reference, "dossier": tmp_path / "rapport",
+                "dossier_edf": str(tmp_path / "EDF"), "dossier_rejets": str(tmp_path / "REJETS"), "edf": [], "rejets": [],
                 "base": f"Rapprochement_Cle_Metier_{reference:%Y%m%d}_120000",
                 "journal": "Oracle : 1 fichier(s), 1 ligne(s)\nEDF : 1 fichier(s)"}
     monkeypatch.setattr(pv, "config_prelevements", _cfg(tmp_path))
@@ -74,7 +85,7 @@ def test_lancer_affiche_message_et_journal(monkeypatch, tmp_path):
     at.run()
     at.button(key="pv_lancer").click().run()
     assert not at.exception
-    assert any("terminé : OK" in s.value for s in at.success)
+    assert any("terminé : OK" in s.value and "en base" in s.value for s in at.success)
     assert any("Journal d'exécution" in e.label for e in at.expander)
     assert any("Oracle : 1 fichier(s)" in c.value for c in at.code)
     assert any("résultat global [ok]" in m.value for m in at.markdown)
