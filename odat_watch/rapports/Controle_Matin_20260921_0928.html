@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Contrôle quotidien FIN-FINANCE — 21/09/2026</title>
+<style>
+  * { box-sizing: border-box; }
+  body { font-family: Segoe UI, Calibri, Arial, sans-serif; margin: 0; padding: 22px;
+         background: #f4f6f9; color: #24292f; }
+  .wrap { max-width: 1700px; margin: 0 auto; }
+  h1 { background: #003366; color: #fff; padding: 15px 22px; border-radius: 6px;
+       font-size: 1.22em; margin: 0 0 12px 0; }
+  h2 { color: #003366; border-bottom: 2px solid #003366; padding-bottom: 5px;
+       margin-top: 30px; font-size: 1.04em; }
+  .meta { background: #e8f0fe; border-left: 4px solid #003366; padding: 9px 15px;
+          margin-bottom: 15px; border-radius: 0 4px 4px 0; font-size: .85em; }
+  .meta span { margin-right: 20px; display: inline-block; }
+  .bandeau { padding: 13px 19px; border-radius: 6px; margin-bottom: 16px; font-size: .92em; }
+  .bandeau strong { display: block; font-size: 1.14em; margin-bottom: 3px; }
+  .bandeau.ok   { background: #d7f2e3; color: #0b6b3a; border: 1px solid #7fc9a3; }
+  .bandeau.warn { background: #fff4d6; color: #7a5600; border: 1px solid #e8c46a; }
+  .bandeau.ko   { background: #fbdcdc; color: #9b1c1c; border: 1px solid #e39292; }
+  .tiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(145px, 1fr)); gap: 11px; margin-bottom: 8px; }
+  .tile { background: #fff; border: 1px solid #dde3ea; border-radius: 6px;
+          padding: 13px 9px; text-align: center; box-shadow: 0 1px 2px rgba(0,0,0,.05); }
+  .tv { font-size: 1.45em; font-weight: 700; line-height: 1.15; }
+  .tn { font-size: .73em; color: #57606a; text-transform: uppercase; letter-spacing: .03em; margin-top: 4px; }
+  table { border-collapse: collapse; width: 100%; background: #fff; }
+  .tablewrap { overflow-x: auto; background: #fff; border-radius: 6px; box-shadow: 0 1px 3px rgba(0,0,0,.12); }
+  th { background: #003366; color: #fff; padding: 9px 10px; text-align: left; font-size: .77em; white-space: nowrap; }
+  td { padding: 6px 10px; border-bottom: 1px solid #eceff2; font-size: .81em; white-space: nowrap; }
+  tr:nth-child(even) td { background: #fafbfc; }
+  tr:hover td { background: #eef4fd; }
+  td.num { text-align: right; font-variant-numeric: tabular-nums; }
+  td:empty::after { content: '-'; color: #c9ced4; }
+  .pill { display: inline-block; padding: 2px 9px; border-radius: 11px; font-size: .8em; font-weight: 600; margin-top: 4px; }
+  .pill.ok   { background: #d7f2e3; color: #0b6b3a; }
+  .pill.warn { background: #fff4d6; color: #7a5600; }
+  .pill.ko   { background: #fbdcdc; color: #9b1c1c; }
+  .pill.na   { background: #eceff2; color: #57606a; }
+  .pill.na   { background: #eceff2; color: #57606a; }
+  .vide { color: #8b949e; font-style: italic; font-size: .88em; padding: 8px 2px; }
+  .erreur { background: #fbdcdc; color: #9b1c1c; border: 1px solid #e39292; border-radius: 6px;
+            padding: 9px 14px; font-family: Consolas, Menlo, monospace; font-size: .82em; white-space: pre-wrap; }
+  .footer { font-size: .76em; color: #8b949e; margin-top: 30px; text-align: center; }
+  @media print { body { background: #fff; padding: 0; } }
+</style>
+</head>
+<body><div class="wrap">
+<h1>Contrôle quotidien FIN-FINANCE — 21/09/2026</h1>
+<div class="meta"><span>📅 Lundi 21/09/2026 à 09:28</span><span>Plage contrôlée : 18/09/2026 19:00 → 21/09/2026 07:00</span><span>Historique : 3 j</span><span>Durée : 3.7 s</span><span>Dernier import RB : 21/09/2026</span></div>
+<div class="bandeau ko"><strong>Statut global : ERREUR</strong>Une partie du contrôle n&#x27;a pas pu être exécutée (erreur Oracle) : les compteurs concernés ne sont pas fiables.<br><b>Rappel lundi :</b> charger manuellement le fichier SG (Société Générale), les imports automatiques ne tournent pas le dimanche.</div>
+<div class="tiles"><div class="tile"><div class="tv">6</div><div class="tn">Flux DSP (fichiers)</div><span class="pill ok">OK</span></div><div class="tile"><div class="tv">83</div><div class="tn">Notes de frais Notilus</div><span class="pill ok">OK</span></div><div class="tile"><div class="tv">1 433</div><div class="tn">Factures Xerox</div><span class="pill ok">OK</span></div><div class="tile"><div class="tv">18</div><div class="tn">Factures Tradeshift</div><span class="pill ok">OK</span></div><div class="tile"><div class="tv">0</div><div class="tn">Factures DSP</div><span class="pill ok">OK</span></div><div class="tile"><div class="tv">43</div><div class="tn">Écritures GL (interface)</div><span class="pill ok">OK</span></div><div class="tile"><div class="tv">34 970</div><div class="tn">Lignes GL créées</div><span class="pill ok">OK</span></div><div class="tile"><div class="tv">?</div><div class="tn">Traitements nuit</div><span class="pill ko">non contrôlé</span></div><div class="tile"><div class="tv">?</div><div class="tn">Erreurs</div><span class="pill ko">non contrôlé</span></div><div class="tile"><div class="tv">?</div><div class="tn">Avertissements</div><span class="pill ko">non contrôlé</span></div><div class="tile"><div class="tv">1 176</div><div class="tn">Imports RB</div><span class="pill ok">OK</span></div><div class="tile"><div class="tv">8</div><div class="tn">Images manquantes</div><span class="pill ko">ALERTE</span></div></div>
+<h2>DSP — Détail des flux (fichiers)</h2><div class="tablewrap"><table><thead><tr><th>SRC</th><th>DATE_CR</th><th>JOUR</th><th>TYPE_FLUX</th><th>FICHIER</th></tr></thead><tbody><tr><td>DSP</td><td>18/09/26</td><td>VENDREDI</td><td>AUTRE</td><td>DSP01_PO_ENTETE_20260918162320_ST_DSP01-PO_2952988.csv</td></tr><tr><td>DSP</td><td>18/09/26</td><td>VENDREDI</td><td>DEBLOCAGE</td><td>DSP01_INV_DEBLOCAGE_20260918174316_ST_2953041.csv</td></tr><tr><td>DSP</td><td>18/09/26</td><td>VENDREDI</td><td>FOURNISSEURS</td><td>DSP01_SUP_ENTETE_20260918092316_ST_DSP01-SUP_2952409.csv</td></tr><tr><td>DSP</td><td>18/09/26</td><td>VENDREDI</td><td>FOURNISSEURS</td><td>DSP01_SUP_ENTETE_20260918144316_ST_DSP01-SUP_2952904.csv</td></tr><tr><td>DSP</td><td>18/09/26</td><td>VENDREDI</td><td>RECEPTIONS</td><td>DSP01_REC_RECEPTIONS_20260917163316_ST_DSP01-REC_2950438.csv</td></tr><tr><td>DSP</td><td>18/09/26</td><td>VENDREDI</td><td>RECEPTIONS</td><td>DSP01_REC_RECEPTIONS_20260918163316_ST_DSP01-REC_2952997.csv</td></tr></tbody></table></div><h2>DSP — Synthèse par jour et type</h2><div class="tablewrap"><table><thead><tr><th>DATE_CR</th><th>JOUR</th><th>NB_SUP</th><th>NB_CDE</th><th>NB_REC</th><th>NB_DEB</th><th>NB_AUT</th><th>TOTAL</th></tr></thead><tbody><tr><td>18/09/26</td><td>VENDREDI</td><td class="num">2</td><td class="num">0</td><td class="num">2</td><td class="num">1</td><td class="num">1</td><td class="num">6</td></tr></tbody></table></div><h2>NOTILUS — Notes de frais</h2><div class="tablewrap"><table><thead><tr><th>DATE_CR</th><th>JOUR</th><th>NB_NDF</th><th>MONTANT_TOT</th></tr></thead><tbody><tr><td>18/09/26</td><td>VENDREDI</td><td class="num">83</td><td class="num">1902</td></tr></tbody></table></div><h2>FACTURES — Synthèse par source</h2><div class="tablewrap"><table><thead><tr><th>DATE_CR</th><th>SOURCE</th><th>NB_FACS</th></tr></thead><tbody><tr><td>19/09/26</td><td>TRADESHIFT</td><td class="num">15</td></tr></tbody></table></div><h2>XEROX — Factures SANS images <span class="pill ko">8</span></h2><div class="tablewrap"><table><thead><tr><th>DATE_CR</th><th>NUM_FACT</th><th>FICHIER</th><th>INVOICE_IDS</th></tr></thead><tbody><tr><td>20260918</td><td>15332-2387</td><td>VE1-71350-20260917-0506-145-001-FMU-001-ED1Flux.TIF</td><td>12004357</td></tr><tr><td>20260918</td><td>2025120070</td><td>VE1-91190-20260917-0510-226-001-FMU-001-ED1Flux.TIF</td><td>12008366</td></tr><tr><td>20260918</td><td>2026/09-163</td><td>VE1-10435-20260917-0955-071-001-FMU-001-ED1Flux.TIF</td><td>12004353</td></tr><tr><td>20260918</td><td>F-260120</td><td>VE1-71350-20260917-0529-598-001-FMU-004-ED1Flux.TIF</td><td>12004343</td></tr><tr><td>20260918</td><td>F-260121</td><td>VE1-71350-20260917-0529-600-001-FMU-004-ED1Flux.TIF</td><td>12004344</td></tr><tr><td>20260918</td><td>F-260122</td><td>VE1-71350-20260917-0530-605-001-FMU-004-ED1Flux.TIF</td><td>12004345</td></tr><tr><td>20260918</td><td>F260817210</td><td>VE1-40438-20260917-1118-315-001-FMU-003-ED1Flux.TIF</td><td>12003414</td></tr><tr><td>20260918</td><td>INV1879729</td><td>VE1-30446-20260917-0510-218-001-FMU-001-ED1Flux.TIF</td><td>11952180</td></tr></tbody></table></div><h2>XEROX — Factures AVEC images (compteur)</h2><div class="tablewrap"><table><thead><tr><th>NB_AVEC_IMG</th></tr></thead><tbody><tr><td class="num">1028</td></tr></tbody></table></div><h2>GL — Interface (en attente)</h2><div class="tablewrap"><table><thead><tr><th>SOURCE</th><th>TYPE_GL</th><th>STATUS_GL</th><th>NB_LIGNES</th><th>TOT_DEBIT</th><th>TOT_CREDIT</th><th>PLUS_ANCIEN</th><th>AGE_J</th></tr></thead><tbody><tr><td>FAC02_SRC_ECRITURESGL_190926-010630</td><td>GER</td><td>NEW</td><td class="num">31</td><td class="num">3996</td><td class="num">3996</td><td>21/09/26</td><td class="num">0</td></tr><tr><td>FAC02_SRC_ECRITURESGL_190926-010630</td><td>FGE</td><td>NEW</td><td class="num">12</td><td class="num">3211</td><td class="num">3211</td><td>21/09/26</td><td class="num">0</td></tr></tbody></table></div><h2>GL — Lignes créées</h2><div class="tablewrap"><table><thead><tr><th>DATE_CR</th><th>SOURCE</th><th>NB_LIGNES</th><th>TOT_DEBIT</th></tr></thead><tbody><tr><td>21/09/26</td><td></td><td class="num">831</td><td class="num">4025522</td></tr><tr><td>19/09/26</td><td></td><td class="num">1812</td><td class="num">6488594</td></tr><tr><td>18/09/26</td><td></td><td class="num">32747</td><td class="num">120626114</td></tr><tr><td>18/09/26</td><td>FAC02_SRC_ECRITURESGL_180926-012130</td><td class="num">113</td><td class="num">16668</td></tr><tr><td>18/09/26</td><td>CDPG.NC4.EXPORT.2026091814530388532.COMP.E_CO</td><td class="num">2028</td><td class="num">1047522670</td></tr></tbody></table></div><h2>NUIT — Synthèse par statut</h2><div class="erreur">ORA-00903: invalid table name
+Help: https://docs.oracle.com/error-help/db/ora-00903/</div><h2>NUIT — Erreurs regroupées par programme</h2><div class="erreur">ORA-00903: invalid table name
+Help: https://docs.oracle.com/error-help/db/ora-00903/</div><h2>NUIT — Détail des erreurs (30 plus récentes)</h2><div class="erreur">ORA-00903: invalid table name
+Help: https://docs.oracle.com/error-help/db/ora-00903/</div><h2>NUIT — Détail des warnings</h2><div class="erreur">ORA-00903: invalid table name
+Help: https://docs.oracle.com/error-help/db/ora-00903/</div><h2>NUIT — Traitements longs (&gt; 30 min)</h2><div class="erreur">ORA-00903: invalid table name
+Help: https://docs.oracle.com/error-help/db/ora-00903/</div><h2>NUIT — Traitements en cours (potentiellement bloqués)</h2><div class="erreur">ORA-00903: invalid table name
+Help: https://docs.oracle.com/error-help/db/ora-00903/</div><h2>Rapprochement bancaire (RB)</h2><div class="tablewrap"><table><thead><tr><th>DATE_CR</th><th>JOUR</th><th>NB_CTES</th></tr></thead><tbody><tr><td>21/09/26</td><td>LUNDI</td><td class="num">207</td></tr><tr><td>19/09/26</td><td>SAMEDI</td><td class="num">141</td></tr></tbody></table></div>
+<div class="footer">ODAT Watch · contrôle du matin · portage de Controle_Quotidien_Complet.sql</div>
+</div></body>
+</html>
