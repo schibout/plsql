@@ -175,7 +175,7 @@ JOUR_FR = "'DAY', 'NLS_DATE_LANGUAGE=FRENCH'"
 
 # Programmes génériques (lanceur DKA_SLAUNCHER…) : ils ne font que soumettre le traitement métier, on ne les
 # compte ni ne les affiche. Bind :generiques = expression régulière construite par regex_generiques().
-HORS_GENERIQUES = ("AND    fcr.concurrent_program_id NOT IN (SELECT p.concurrent_program_id FROM {{s}}fnd_concurrent_programs p "
+HORS_GENERIQUES = ("AND    fcr.concurrent_program_id NOT IN (SELECT p.concurrent_program_id FROM {s}fnd_concurrent_programs p "
                    "WHERE REGEXP_LIKE(p.concurrent_program_name, :generiques))")
 
 NUIT = f"""
