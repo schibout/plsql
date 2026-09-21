@@ -43,8 +43,8 @@ def render(kpi):
 
     dates = pv.dates_disponibles(racine)
     b1, b2, b3, b4 = st.columns([1.3, 0.8, 1.4, 3])
-    reference = b1.date_input("Date de référence", value=dates[0] if dates else date.today(),
-                              format="DD/MM/YYYY", key="pv_date")
+    reference = b1.date_input("Date de référence", value=date.today(), format="DD/MM/YYYY", key="pv_date",
+                              help="Défaut : aujourd'hui. Choisir une date déjà contrôlée pour revoir son rapport.")
     jours = b2.number_input("Profondeur (j)", min_value=1, max_value=90, value=cfg["jours"], key="pv_jours")
     if b3.button("▶ Lancer le rapprochement", type="primary", use_container_width=True, key="pv_lancer",
                  help=f"Racine : {racine}\nSI : {cfg['nom_si']}"):
@@ -54,15 +54,21 @@ def render(kpi):
                 nb_cles = sum(e["cles"] for e in res["par_statut"].values())
                 st.session_state["pv_msg"] = (f"Rapprochement au {reference:%d/%m/%Y} terminé : "
                                               f"{res['statut_global']} · {nb_cles} clé(s) · "
-                                              f"{res['nb_anomalies']} anomalie(s)")
+                                              f"{res['nb_anomalies']} anomalie(s) · `{res['base']}`")
+                st.session_state["pv_journal"] = res["journal"]
             except Exception as e:  # noqa: BLE001 — l'outil externe peut échouer sur un fichier mal formé
                 st.session_state["pv_msg"] = f"⚠ {type(e).__name__}: {e}"
+                st.session_state["pv_journal"] = ""
     b4.caption("Dates déjà contrôlées : "
                + (", ".join(d.strftime("%d/%m") for d in dates[:8]) if dates else "aucune")
                + f" · SI = {cfg['nom_si']}")
     if st.session_state.get("pv_msg"):
         msg = st.session_state.pop("pv_msg")
         (st.error if msg.startswith("⚠") else st.success)(msg)
+        journal = st.session_state.pop("pv_journal", "")
+        if journal:
+            with st.expander("Journal d'exécution (fichiers lus, avertissements)"):
+                st.code(journal, language=None)
 
     rapport = pv.lire_rapport(racine, reference)
     if rapport is None:

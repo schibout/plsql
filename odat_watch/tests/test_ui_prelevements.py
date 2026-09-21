@@ -1,4 +1,6 @@
 """Onglet Prélèvements via AppTest : lecture d'un rapport fabriqué, tuiles, groupes par statut, message sans rapport."""
+from datetime import date
+
 from streamlit.testing.v1 import AppTest
 
 import prelevements as pv
@@ -28,6 +30,10 @@ def test_onglet_affiche_le_rapport(monkeypatch, tmp_path):
     at = AppTest.from_function(_script, default_timeout=60)
     at.run()
     assert not at.exception
+    assert at.date_input[0].value == date.today()          # défaut : aujourd'hui, pas la dernière date contrôlée
+    assert any("Lancer le rapprochement" in c.value for c in at.caption)
+    at.date_input[0].set_value(date(2026, 9, 14)).run()
+    assert not at.exception
     texte = "\n".join(m.value for m in at.markdown) + "\n".join(c.value for c in at.caption)
     assert "✅ OK résultat global [ok]" in texte
     assert "592 prélèvements émis" in texte and "1 en attente EDF [warn]" in texte
@@ -52,3 +58,21 @@ def test_onglet_racine_absente(monkeypatch, tmp_path):
     at.run()
     assert not at.exception
     assert any("config.ini [prelevements] racine" in c.value for c in at.caption)
+
+
+def test_lancer_affiche_message_et_journal(monkeypatch, tmp_path):
+    def faux_lancer(reference, cfg):
+        _rapport(tmp_path / "rapport", f"Rapprochement_Cle_Metier_{reference:%Y%m%d}_120000")
+        return {"statut_global": "OK", "par_statut": {"RAPPROCHE": {"cles": 1}}, "nb_anomalies": 0,
+                "base": f"Rapprochement_Cle_Metier_{reference:%Y%m%d}_120000",
+                "journal": "Oracle : 1 fichier(s), 1 ligne(s)\nEDF : 1 fichier(s)"}
+    monkeypatch.setattr(pv, "config_prelevements", _cfg(tmp_path))
+    monkeypatch.setattr(pv, "lancer", faux_lancer)
+    at = AppTest.from_function(_script, default_timeout=60)
+    at.run()
+    at.button(key="pv_lancer").click().run()
+    assert not at.exception
+    assert any("terminé : OK" in s.value for s in at.success)
+    assert any("Journal d'exécution" in e.label for e in at.expander)
+    assert any("Oracle : 1 fichier(s)" in c.value for c in at.code)
+    assert any("résultat global [ok]" in m.value for m in at.markdown)

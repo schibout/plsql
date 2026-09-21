@@ -99,3 +99,18 @@ def test_par_statut_respecte_l_ordre_metier(tmp_path):
     groupes = pv.par_statut(pv.lire_rapport(tmp_path, date(2026, 9, 14))["rapprochement"])
     assert [s for s, _ in groupes] == ["RAPPROCHE", "EN_ATTENTE"]
     assert len(groupes[1][1]) == 1
+
+
+def test_lancer_capture_le_journal(monkeypatch, tmp_path):
+    import sys
+    import types
+    faux = types.ModuleType("rapprochement_cle_metier")
+
+    def executer(**kw):
+        print("Oracle : 2 fichier(s)")
+        print("AVERTISSEMENT : test", file=sys.stderr)
+        return {"statut_global": "OK", "base": "x"}
+    faux.executer = executer
+    monkeypatch.setitem(sys.modules, "rapprochement_cle_metier", faux)
+    res = pv.lancer(date(2026, 9, 21), {"racine": tmp_path, "jours": 10, "nom_si": "ORACLE"})
+    assert res["journal"] == "Oracle : 2 fichier(s)\nAVERTISSEMENT : test"

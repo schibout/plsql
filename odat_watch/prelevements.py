@@ -6,6 +6,8 @@ ici on choisit la date de référence, on le lance en local et on relit le derni
 """
 from __future__ import annotations
 import configparser
+import contextlib
+import io
 import json
 import re
 import sys
@@ -90,11 +92,16 @@ def _outil(racine: Path) -> None:
 
 
 def lancer(reference: date, cfg: dict) -> dict:
-    """Exécute le rapprochement et écrit rapport/<base>.*. Renvoie le dict de rapprochement_cle_metier.executer."""
+    """Exécute le rapprochement et écrit rapport/<base>.*. Renvoie le dict de rapprochement_cle_metier.executer,
+    complété de « journal » : ce que l'outil a écrit sur la console (fichiers lus, avertissements)."""
     _outil(cfg["racine"])
     import rapprochement_cle_metier
-    return rapprochement_cle_metier.executer(reference=reference.isoformat(), racine=cfg["racine"],
-                                             jours=cfg["jours"], nom_si=cfg["nom_si"])
+    journal = io.StringIO()
+    with contextlib.redirect_stdout(journal), contextlib.redirect_stderr(journal):
+        res = rapprochement_cle_metier.executer(reference=reference.isoformat(), racine=cfg["racine"],
+                                                jours=cfg["jours"], nom_si=cfg["nom_si"])
+    res["journal"] = journal.getvalue().strip()
+    return res
 
 
 def _csv(f: Path) -> pd.DataFrame:
