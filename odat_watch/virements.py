@@ -1,7 +1,8 @@
 """Onglet Virements : pont vers l'outil controleVirement (dossiers *_cible chargés à la main).
 
 Le code du contrôle vit dans ../controleVirement (controle_virements.executer, config [virements] outil) ;
-les données (dossiers JJMMAAAA_cible / _source, fichier Quartz, rapports rapport_<date>) dans ../ODAT/virements
+les données (dossiers JJMMAAAA/<uuid> avec SOURCE, TALEND, TARGET ; fichier Quartz ; rapports rapport_<date>)
+dans ../ODAT/virements
 (config [virements] racine). Ici on choisit la journée, on lance le contrôle et on relit son rapport.
 """
 from __future__ import annotations
@@ -52,13 +53,27 @@ def config_virements() -> dict:
 
 
 def dates_disponibles(racine: Path) -> list[str]:
-    """Dates JJMMAAAA ayant un dossier *_cible sous la racine, la plus récente en premier."""
+    """Dates JJMMAAAA ayant un dossier JJMMAAAA (ou JJMMAAAA_cible, ancienne disposition) sous la racine,
+    la plus récente en premier."""
     dates = set()
-    for d in Path(racine).glob("*_cible"):
-        m = re.fullmatch(r"(\d{8})_cible", d.name)
+    for d in Path(racine).iterdir():
+        m = re.fullmatch(r"(\d{8})(?:_cible)?", d.name)
         if m and d.is_dir():
+            try:
+                datetime.strptime(m.group(1), "%d%m%Y")
+            except ValueError:
+                continue
             dates.add(m.group(1))
     return sorted(dates, key=lambda d: datetime.strptime(d, "%d%m%Y"), reverse=True)
+
+
+def nb_instances(racine: Path, date: str) -> int:
+    """Nombre de sous-dossiers (instances) du dossier du jour."""
+    for nom in (date, f"{date}_cible"):
+        d = Path(racine) / nom
+        if d.is_dir():
+            return sum(1 for x in d.iterdir() if x.is_dir())
+    return 0
 
 
 def date_lisible(d: str) -> str:

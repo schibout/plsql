@@ -6,13 +6,13 @@ import pytest
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from controle_virements import main, collecter_instance
-from cv.discovery import discover_instances
+from cv.discovery import discover_instances, dossier_cible
 
-RACINE = Path(__file__).resolve().parents[1]
+RACINE = Path(__file__).resolve().parents[2] / "ODAT" / "virements"
 DATE = "15092026"
 GUID = "0ab9fb010eba4d98a464464d897f9608"
 
-pytestmark = pytest.mark.skipif(not (RACINE / f"{DATE}_cible" / GUID).is_dir(),
+pytestmark = pytest.mark.skipif(not (dossier_cible(RACINE, DATE) / GUID).is_dir(),
                                 reason=f"donnees {DATE} absentes")
 
 

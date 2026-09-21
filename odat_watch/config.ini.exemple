@@ -49,7 +49,7 @@ comptes_connus = 30003/03620/00020137269;16807/00166/31990892212
 [virements]
 ; Onglet Virements. Code de l'outil (controle_virements.py)
 outil = ..\controleVirement
-; Donnees : dossiers JJMMAAAA_cible (et _source) copies a la main (copier_instances_virement.sh), fichier Quartz
+; Donnees : un dossier JJMMAAAA par jour (un sous-dossier par instance : SOURCE, TALEND, TARGET), fichier Quartz
 ; "Liste des virements importes du jour<date>.xls" ; les rapports rapport_<date> y sont ecrits. Hors git.
 racine = ..\ODAT\virements
 ; Recherche des envois deja transmis dans les autres dossiers *_cible des N jours precedents (0 = desactive)

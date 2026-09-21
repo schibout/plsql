@@ -27,9 +27,8 @@ def render(kpi):
     st.markdown("#### Virements · Oracle → FIN01.VIREMENT → VIREMENT.EDF01 (ACK banque) → Quartz")
     dates = vr.dates_disponibles(racine) if racine.is_dir() else []
     if not dates:
-        st.caption(f"Aucune journée : copiez les dossiers `JJMMAAAA_cible` (et `_source` si disponible, "
-                   f"`copier_instances_virement.sh`) et le fichier Quartz dans `{racine}` — "
-                   f"`config.ini [virements] racine`.")
+        st.caption(f"Aucune journée : copiez les dossiers `JJMMAAAA` (un sous-dossier par instance : SOURCE, "
+                   f"TALEND, TARGET) et le fichier Quartz dans `{racine}` — `config.ini [virements] racine`.")
         return
 
     b1, b2, b3 = st.columns([1.2, 1.4, 3])
@@ -40,14 +39,13 @@ def render(kpi):
             try:
                 res = vr.lancer(date, cfg)
                 st.session_state["vir_msg"] = (f"Contrôle du {vr.date_lisible(date)} terminé : "
-                                               f"{'OK' if res['ok'] else 'KO'} · {res['nb_instances']} instance(s)"
-                                               + (" · cible seule" if res["cible_seul"] else ""))
+                                               f"{'OK' if res['ok'] else 'KO'} · {res['nb_instances']} instance(s)")
             except Exception as e:  # noqa: BLE001 — l'outil externe peut échouer sur un fichier mal formé
                 st.session_state["vir_msg"] = f"⚠ {type(e).__name__}: {e}"
-    source = vr.source_presente(racine, date)
     quartz = vr.fichier_quartz(cfg, date)
-    b3.caption(f"Dossier source : {'présent' if source else 'absent → contrôle sur la cible seule'} · "
-               f"Retour Quartz : {quartz.name if quartz else 'absent (niveau 3 ignoré)'}")
+    b3.caption(f"{vr.nb_instances(racine, date)} instance(s) dans `{date}` · "
+               f"Retour Quartz : {quartz.name if quartz else 'absent (niveau 3 ignoré)'}"
+               + (" · DK en euros fournis (dossier _source)" if vr.source_presente(racine, date) else ""))
     if st.session_state.get("vir_msg"):
         msg = st.session_state.pop("vir_msg")
         (st.error if msg.startswith("⚠") else st.success)(msg)
@@ -58,8 +56,7 @@ def render(kpi):
         return
     r = vr.resume(rapport)
     _tuiles(kpi, r)
-    st.caption(f"Rapport généré le {rapport['genere_le']:%d/%m/%Y %H:%M} dans `{rapport['dossier']}`"
-               + (" · contrôle sur la cible seule" if r["cible_seul"] else ""))
+    st.caption(f"Rapport généré le {rapport['genere_le']:%d/%m/%Y %H:%M} dans `{rapport['dossier']}`")
 
     st.markdown(rapport["synthese_simple"] or rapport["synthese"].split("---")[1])
 

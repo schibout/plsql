@@ -115,12 +115,12 @@ def doublons_intra_envoi(acks):
 
 # ------------------------------------------------------------------ D5
 def dossiers_cible_precedents(racine, date, jours):
-    """Dossiers JJMMAAAA_cible de la racine dont la date est dans les `jours` jours avant `date`."""
+    """Dossiers JJMMAAAA (ou JJMMAAAA_cible) de la racine dont la date est dans les `jours` jours avant `date`."""
     racine = Path(racine)
     ref = datetime.strptime(date, "%d%m%Y")
     out = []
-    for d in racine.glob("*_cible"):
-        m = re.fullmatch(r"(\d{8})_cible", d.name)
+    for d in racine.iterdir():
+        m = re.fullmatch(r"(\d{8})(?:_cible)?", d.name)
         if not m or m.group(1) == date or not d.is_dir():
             continue
         try:

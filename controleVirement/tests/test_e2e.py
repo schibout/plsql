@@ -3,14 +3,19 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from controle_virements import main, collecter_instance
-from cv.discovery import discover_instances
+from cv.discovery import discover_instances, dossier_cible
 
-RACINE = Path(__file__).resolve().parents[1]  # dossier controleVirement/
+import pytest
+
+# Donnees de production : ODAT/virements/JJMMAAAA (hors git). Sans elles, ces tests sont sautes.
+RACINE = Path(__file__).resolve().parents[2] / "ODAT" / "virements"
+DATE = "26062026"
+pytestmark = pytest.mark.skipif(not dossier_cible(RACINE, DATE).is_dir(), reason=f"donnees {DATE} absentes")
 
 
 def test_e2e_sur_donnees_reelles():
-    code = main(["26062026", "--racine", str(RACINE)])
-    rapport = RACINE / "rapport_26062026"
+    code = main([DATE, "--racine", str(RACINE)])
+    rapport = RACINE / f"rapport_{DATE}"
     assert rapport.exists()
     assert (rapport / "controle_totaux_source.csv").exists()
     assert (rapport / "controle_totaux_edf.csv").exists()
@@ -18,8 +23,8 @@ def test_e2e_sur_donnees_reelles():
 
 
 def test_e2e_totaux_concordent():
-    instances = discover_instances(RACINE, "26062026")
-    assert instances, "instances 26062026 introuvables"
+    instances = discover_instances(RACINE, DATE)
+    assert instances, f"instances {DATE} introuvables"
     for inst in instances:
         _, totaux_source, totaux_edf, ecarts, _, _ = collecter_instance(inst)
         for t in totaux_source:
@@ -38,10 +43,10 @@ def test_e2e_quartz_concorde():
     from cv.reconcile import controle_quartz
     from cv.discovery import discover_instances
 
-    quartz = trouver_fichier_quartz(RACINE, "26062026")
+    quartz = trouver_fichier_quartz(RACINE, DATE)
     assert quartz is not None, "fichier Quartz introuvable"
     cible = []
-    for inst in discover_instances(RACINE, "26062026"):
+    for inst in discover_instances(RACINE, DATE):
         *_, cv, _ = collecter_instance(inst)
         cible += cv
     totaux, ecarts = controle_quartz(cible, parse_quartz_xls(quartz))

@@ -196,7 +196,7 @@ def main(argv=None) -> int:
                         help="Chemin du fichier .xls Quartz (defaut: recherche automatique)")
     parser.add_argument("--historique-jours", type=int, default=7,
                         help="Nb de jours en arriere pour chercher des envois deja transmis "
-                             "dans les autres dossiers *_cible de la racine (defaut: 7, 0 = desactive)")
+                             "dans les autres dossiers JJMMAAAA de la racine (defaut: 7, 0 = desactive)")
     args = parser.parse_args(argv)
 
     try:

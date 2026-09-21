@@ -11,7 +11,8 @@ OUTIL = Path(__file__).resolve().parents[2] / "controleVirement"
 RACINE = Path(__file__).resolve().parents[2] / "ODAT" / "virements"
 DATE = "18092026"
 CFG = {"outil": OUTIL, "racine": RACINE, "historique_jours": 7}
-pytestmark = pytest.mark.skipif(not (RACINE / f"{DATE}_cible").is_dir(), reason="données controleVirement absentes")
+pytestmark = pytest.mark.skipif(not ((RACINE / DATE).is_dir() or (RACINE / f"{DATE}_cible").is_dir()),
+                                reason="données ODAT/virements absentes")
 
 
 def test_dates_disponibles_les_plus_recentes_d_abord():
@@ -26,7 +27,8 @@ def test_lancer_puis_lire_rapport():
     assert rapport is not None and len(rapport["totaux_edf"]) == 46
     r = vr.resume(rapport)
     assert r["ok"] and r["nb_envoyes"] == 205 and round(r["montant_envoye"], 2) == 2667877.07
-    assert r["ko"] == 0 and r["ecarts"] == 0 and not r["cible_seul"] and not r["quartz"]
+    assert r["ko"] == 0 and r["ecarts"] == 0 and not r["quartz"]
+    assert vr.nb_instances(RACINE, DATE) == 2
 
 
 def test_lire_rapport_absent(tmp_path):
@@ -69,3 +71,13 @@ def test_onglet_affiche_le_rapport(monkeypatch):
     labels = [e.label for e in at.expander]
     assert any("Déjà transmis un jour précédent" in l for l in labels) or any("Aucun doublon" in s.value for s in at.success)
     assert any("Contrôles de forme — 0 constat" in l for l in labels)
+
+
+def test_dates_disponibles_accepte_les_deux_dispositions(tmp_path):
+    for nom in ("18092026", "15092026_cible", "rapport_18092026", "import_virement", "20260901"):
+        (tmp_path / nom).mkdir()
+    (tmp_path / "Liste des virements importes du jour18092026.xls").write_text("")
+    assert vr.dates_disponibles(tmp_path) == ["18092026", "15092026"]
+    (tmp_path / "18092026" / "uuid1").mkdir()
+    (tmp_path / "18092026" / "uuid2").mkdir()
+    assert vr.nb_instances(tmp_path, "18092026") == 2 and vr.nb_instances(tmp_path, "15092026") == 0

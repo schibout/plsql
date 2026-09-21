@@ -82,6 +82,11 @@ def test_dossiers_cible_precedents_dans_la_fenetre(tmp_path):
         (tmp_path / f"{d}_cible").mkdir()
     assert [d for d, _ in dossiers_cible_precedents(tmp_path, "18092026", 7)] == ["15092026"]
     assert [d for d, _ in dossiers_cible_precedents(tmp_path, "18092026", 30)] == ["10092026", "15092026"]
+    # disposition courante (sans suffixe) mélangée à l'ancienne, fichiers ignorés
+    (tmp_path / "16092026").mkdir()
+    (tmp_path / "rapport_16092026").mkdir()
+    (tmp_path / "Liste des virements importes du jour16092026.xls").write_text("")
+    assert [d for d, _ in dossiers_cible_precedents(tmp_path, "18092026", 7)] == ["15092026", "16092026"]
 
 
 def test_historique_ack_identique_fichier_rejoue_et_virement_deja_envoye(tmp_path):
