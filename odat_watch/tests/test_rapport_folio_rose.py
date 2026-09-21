@@ -40,6 +40,17 @@ def test_bandeau_ko_si_ko(tmp_path):
     con.close()
 
 
+def test_ligne_orange_interface_en_attente(tmp_path):
+    con, e, lignes = _contexte(tmp_path)
+    assert "tr class='orange'" not in rp.construire(e, lignes, fr.groupes_compenses(lignes), fr.rapprochements(con))
+    i = lignes.index[0]
+    lignes.loc[i, ["nb_interface", "montant_interface", "nb_oracle", "montant_oracle"]] = [2, 50.0, 0, 0.0]
+    lignes.loc[i, "statut"] = "KO"
+    h = rp.construire(e, lignes, fr.groupes_compenses(lignes), fr.rapprochements(con))
+    assert h.count("tr class='orange'") == 1 and "tr.orange td" in h
+    con.close()
+
+
 def test_ecrire(tmp_path):
     con, e, lignes = _contexte(tmp_path)
     p = rp.ecrire(e, lignes, fr.groupes_compenses(lignes), fr.rapprochements(con), tmp_path)

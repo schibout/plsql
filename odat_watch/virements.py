@@ -95,10 +95,25 @@ def fichier_quartz(cfg: dict, date: str) -> Path | None:
 
 
 def _outil(outil: Path) -> None:
-    """Rend importable controle_virements / cv depuis le dossier de l'outil."""
+    """Rend importable controle_virements / cv depuis le dossier de l'outil, et recharge ces modules s'ils
+    étaient déjà importés : Streamlit ne surveille que les fichiers de l'application, une mise à jour de
+    l'outil resterait sinon invisible jusqu'au redémarrage."""
     r = str(Path(outil))
     if r not in sys.path:
         sys.path.insert(0, r)
+    _recharger(("cv.model", "cv.parsers", "cv.montant", "cv.discovery", "cv.reconcile", "cv.doublons",
+                "cv.sanite", "cv.report", "controle_virements"))
+
+
+def _recharger(noms) -> None:
+    import importlib
+    for nom in noms:
+        module = sys.modules.get(nom)
+        if module is not None:
+            try:
+                importlib.reload(module)
+            except Exception:  # noqa: BLE001 — un module absent de cette version de l'outil n'empêche rien
+                pass
 
 
 def lancer(date: str, cfg: dict) -> dict:

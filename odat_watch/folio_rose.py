@@ -307,13 +307,30 @@ ECARTS = ("ecart_debit", "ecart_credit", "ecart_nb")   # les trois écarts qui d
 TOL_NB = 0.5                                              # nombre de pièces : entier, tolérance d'arrondi
 
 
-COULEURS_LIGNE = {"bleu": "#DCEBFF", "vert": "#E3F5E8", "rose": "#FBE3EC", "jaune": "#FFF6D6"}   # fonds des lignes
+COULEURS_LIGNE = {"orange": "#FFE0C2", "bleu": "#DCEBFF", "vert": "#E3F5E8", "rose": "#FBE3EC",
+                  "jaune": "#FFF6D6"}   # fonds des lignes
 
 
-def couleur_ligne(ecart_debit, ecart_credit, ecart_nb, statut: str | None = None, commentaire=None) -> str | None:
-    """Code couleur d'une ligne : bleu si le contrôle Oracle est OK ; jaune si un commentaire est renseigné ;
+def _num(v) -> float:
+    return 0.0 if v is None or pd.isna(v) else float(v)
+
+
+def interface_en_attente(nb_interface, montant_interface, nb_oracle, montant_oracle) -> bool:
+    """Vrai si l'interface Oracle contient des données (nombre ou montant non nul) alors que les tables
+    définitives sont vides, ou que le montant définitif diffère du montant en interface."""
+    if abs(_num(nb_interface)) < TOL_NB and abs(_num(montant_interface)) < TOL:
+        return False
+    return abs(_num(nb_oracle)) < TOL_NB or abs(_num(montant_interface) - _num(montant_oracle)) >= TOL
+
+
+def couleur_ligne(ecart_debit, ecart_credit, ecart_nb, statut: str | None = None, commentaire=None, *,
+                  nb_interface=None, montant_interface=None, nb_oracle=None, montant_oracle=None) -> str | None:
+    """Code couleur d'une ligne : orange si l'interface Oracle est alimentée sans tables définitives (ou avec
+    un montant différent) ; bleu si le contrôle Oracle est OK ; jaune si un commentaire est renseigné ;
     vert si l'écart de montant (débit et crédit) est nul ; rose si le nombre de pièces est à zéro mais pas
     le montant ; None (pas de couleur) sinon."""
+    if interface_en_attente(nb_interface, montant_interface, nb_oracle, montant_oracle):
+        return "orange"
     if statut == "OK":
         return "bleu"
     if commentaire is not None and not (isinstance(commentaire, float) and pd.isna(commentaire)) and str(commentaire).strip():

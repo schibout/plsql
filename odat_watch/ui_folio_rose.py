@@ -20,23 +20,25 @@ COLS_AFFICHEES = ["folio", "type", "date", "age_j", "fichier",
                   "amont_nb", "amont_debit", "amont_credit", "si_nb", "si_debit", "si_credit",
                   "ecart_nb", "ecart_debit", "ecart_credit", "commentaire",
                   "somme_amont_fichier", "somme_ecart_fichier",
-                  "montant_interface", "nb_oracle", "montant_oracle", "ecart_nb_calcule", "ecart_mt_calcule",
+                  "nb_interface", "montant_interface", "nb_oracle", "montant_oracle", "ecart_nb_calcule", "ecart_mt_calcule",
                   "statut", "erreur", "rapproche", "present", "date_dernier_export"]
-COLS_ORACLE = ["montant_interface", "nb_oracle", "montant_oracle", "ecart_nb_calcule", "ecart_mt_calcule", "erreur"]
+COLS_ORACLE = ["nb_interface", "montant_interface", "nb_oracle", "montant_oracle", "ecart_nb_calcule", "ecart_mt_calcule", "erreur"]
 LIBELLES = {"folio": "Folio", "type": "Type", "date": "Date", "age_j": "Âge (j)", "fichier": "Nom fichier transmis",
             "amont_nb": "App Amont Nb pièce", "amont_debit": "App Amont Débit", "amont_credit": "App Amont Crédit",
             "si_nb": "SI Finance Nb pièce", "si_debit": "SI Finance Débit", "si_credit": "SI Finance Crédit",
             "ecart_nb": "Écarts Nb pièce", "ecart_debit": "Écarts Débit", "ecart_credit": "Écarts Crédit",
             "commentaire": "Commentaire",
             "somme_amont_fichier": "Somme Amont Fichier", "somme_ecart_fichier": "Somme Écart Fichier",
-            "montant_interface": "Montant Interface OA", "nb_oracle": "Nb Pièces OA", "montant_oracle": "Montant OA",
+            "nb_interface": "Nb Pièces Interface OA", "montant_interface": "Montant Interface OA",
+            "nb_oracle": "Nb Pièces OA", "montant_oracle": "Montant OA",
             "ecart_nb_calcule": "Écart Nb Pièce Calculé", "ecart_mt_calcule": "Écart Mt Calculé",
             "statut": "Statut Vérification", "erreur": "Erreur Oracle", "rapproche": "Rapproché",
             "present": "Présente", "date_dernier_export": "Dernier export"}
 COLS_MONTANTS = ("App Amont Débit", "App Amont Crédit", "SI Finance Débit", "SI Finance Crédit", "Écarts Débit",
                  "Écarts Crédit", "Somme Amont Fichier", "Somme Écart Fichier", "Montant Interface OA", "Montant OA",
                  "Écart Mt Calculé")
-COLS_NB = ("Âge (j)", "App Amont Nb pièce", "SI Finance Nb pièce", "Écarts Nb pièce", "Nb Pièces OA", "Écart Nb Pièce Calculé")
+COLS_NB = ("Âge (j)", "App Amont Nb pièce", "SI Finance Nb pièce", "Écarts Nb pièce", "Nb Pièces Interface OA", "Nb Pièces OA",
+           "Écart Nb Pièce Calculé")
 
 
 def _fmt_mt(v) -> str:
@@ -72,7 +74,9 @@ def _style(df: pd.DataFrame):
         if "Présente" in r and not r["Présente"]:
             return ["color: #9AA3AF; font-style: italic"] * len(r)
         couleur = fr.couleur_ligne(r["Écarts Débit"], r["Écarts Crédit"], r["Écarts Nb pièce"], r["Statut Vérification"],
-                                   r["Commentaire"])
+                                   r["Commentaire"], nb_interface=r.get("Nb Pièces Interface OA"),
+                                   montant_interface=r.get("Montant Interface OA"), nb_oracle=r.get("Nb Pièces OA"),
+                                   montant_oracle=r.get("Montant OA"))
         return [f"background-color: {fr.COULEURS_LIGNE[couleur]}" if couleur else ""] * len(r)
     return df.style.apply(ligne, axis=1)
 
@@ -158,7 +162,9 @@ def render(kpi):
         statuts = f2.multiselect("Statut", sorted(lignes["statut"].unique()), key="fr_statuts")
         folios = f3.multiselect("Folio", sorted(lignes["folio"].unique()), key="fr_folios")
         masquer = f4.checkbox("Masquer les rapprochées", True, key="fr_masquer")
-        st.caption("Couleurs : 🟦 vérification Oracle OK · 🟨 jaune : commentaire renseigné · 🟩 écart de montant nul · 🟥 rose : nombre de pièces égal mais montant différent")
+        st.caption("Couleurs : 🟧 orange : données en interface Oracle absentes des tables définitives ou montant différent · "
+                   "🟦 vérification Oracle OK · 🟨 jaune : commentaire renseigné · 🟩 écart de montant nul · "
+                   "🟥 rose : nombre de pièces égal mais montant différent")
         vue = lignes.copy()
         eid = export.id
         if types:

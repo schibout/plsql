@@ -231,6 +231,29 @@ def test_couleur_ligne():
     assert fr.couleur_ligne(0.0, 0.0, 0.0, "KO") == "vert"
 
 
+def test_couleur_ligne_interface_en_attente():
+    # données dans l'interface Oracle mais rien dans les tables définitives -> orange, quel que soit le reste
+    assert fr.couleur_ligne(0.0, 0.0, 0.0, "KO", None, nb_interface=3, montant_interface=100.0,
+                            nb_oracle=0, montant_oracle=0.0) == "orange"
+    # interface et définitif alimentés mais montants différents -> orange
+    assert fr.couleur_ligne(12.5, 12.5, -2.0, "OK", "vu", nb_interface=3, montant_interface=100.0,
+                            nb_oracle=3, montant_oracle=90.0) == "orange"
+    # interface et définitif cohérents -> règle habituelle
+    assert fr.couleur_ligne(12.5, 12.5, -2.0, "OK", None, nb_interface=3, montant_interface=100.0,
+                            nb_oracle=3, montant_oracle=100.004) == "bleu"
+    # interface vide -> règle habituelle, même si le définitif est vide
+    assert fr.couleur_ligne(0.0, 0.0, 3.0, "KO", None, nb_interface=0, montant_interface=0.0,
+                            nb_oracle=0, montant_oracle=0.0) == "vert"
+    # pas de contrôle Oracle (NULL) -> règle habituelle
+    assert fr.couleur_ligne(12.5, 12.5, 0.0, "—", None, nb_interface=None, montant_interface=None,
+                            nb_oracle=None, montant_oracle=None) == "rose"
+    assert fr.interface_en_attente(2, 50.0, 0, 0.0)
+    assert fr.interface_en_attente(2, 50.0, 2, 49.0)
+    assert not fr.interface_en_attente(2, 50.0, 2, 50.0)
+    assert not fr.interface_en_attente(0, 0.0, 0, 0.0)
+    assert not fr.interface_en_attente(None, None, None, None)
+
+
 def test_folios_compenses_toutes_lignes_du_folio():
     # CYC : deux fichiers qui se compensent entre eux (pas au sein d'un même fichier) -> folio compensé
     # GCA : compensé au sein d'un seul fichier -> déjà couvert par les groupes par fichier, pas relisté

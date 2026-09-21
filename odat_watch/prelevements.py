@@ -87,10 +87,16 @@ def dates_disponibles(racine: Path) -> list[date]:
 
 
 def _outil(outil: Path) -> None:
-    """Rend importable rapprochement_cle_metier depuis le dossier de l'outil."""
+    """Rend importable rapprochement_cle_metier depuis le dossier de l'outil, et recharge les modules déjà
+    importés (Streamlit ne surveille pas les fichiers hors de l'application)."""
+    import importlib
     r = str(Path(outil))
     if r not in sys.path:
         sys.path.insert(0, r)
+    for nom in ("prelevements_rapprochement", "rapprochement_cle_metier"):
+        module = sys.modules.get(nom)
+        if module is not None:
+            importlib.reload(module)
 
 
 def lancer(reference: date, cfg: dict) -> dict:

@@ -15,7 +15,7 @@ STYLE = _STYLE_BASE + """
   span.ko { background: #fbdcdc; color: #9b1c1c; padding: 1px 7px; border-radius: 9px; font-weight: 600; }
   span.ok { background: #d7f2e3; color: #0b6b3a; padding: 1px 7px; border-radius: 9px; font-weight: 600; }
   tr.rapproche td { color: #8b949e; } .num { text-align: right; font-variant-numeric: tabular-nums; }
-  tr.bleu td { background: #DCEBFF !important; } tr.vert td { background: #E3F5E8 !important; } tr.rose td { background: #FBE3EC !important; } tr.jaune td { background: #FFF6D6 !important; }
+  tr.orange td { background: #FFE0C2 !important; } tr.bleu td { background: #DCEBFF !important; } tr.vert td { background: #E3F5E8 !important; } tr.rose td { background: #FBE3EC !important; } tr.jaune td { background: #FFF6D6 !important; }
   .legende span { display: inline-block; padding: 2px 10px; margin-right: 8px; border-radius: 4px; font-size: .82em; }
 """
 JOURS = ["lundi", "mardi", "mercredi", "jeudi", "vendredi", "samedi", "dimanche"]
@@ -87,7 +87,7 @@ def _detail(lignes: pd.DataFrame) -> str:
                  _mt(r["montant_interface"]), _nb(r["nb_oracle"]), _mt(r["montant_oracle"]),
                  _nb(r["ecart_nb_calcule"]), _mt(r["ecart_mt_calcule"]), statut, "✔" if r["rapproche"] else ""]
         tr = ("<tr class='rapproche'>" if r["rapproche"]
-              else f"<tr class='{couleur_ligne(r['ecart_debit'], r['ecart_credit'], r['ecart_nb'], r['statut'], r['commentaire']) or ''}'>")
+              else f"<tr class='{couleur_ligne(r['ecart_debit'], r['ecart_credit'], r['ecart_nb'], r['statut'], r['commentaire'], nb_interface=r.get('nb_interface'), montant_interface=r.get('montant_interface'), nb_oracle=r.get('nb_oracle'), montant_oracle=r.get('montant_oracle')) or ''}'>")
         rows.append(tr + "".join(f"<td class='num'>{c}</td>" if i in _NUMERIQUES else f"<td>{c}</td>"
                                  for i, c in enumerate(cells)) + "</tr>")
     head = "".join(f"<th>{h}</th>" for h in COLONNES_DETAIL)
@@ -140,7 +140,7 @@ def construire(export: Export, lignes: pd.DataFrame, groupes: pd.DataFrame, rapp
 {_synthese(lignes, "type", "Synthèse par type")}
 {_synthese(lignes, "folio", "Synthèse par folio")}
 <h2>Détail des lignes</h2>
-<div class="legende"><span style="background:#DCEBFF">vérification Oracle OK</span><span style="background:#FFF6D6">commentaire renseigné</span><span style="background:#E3F5E8">écart de montant nul</span><span style="background:#FBE3EC">nombre de pièces égal, montant différent</span></div>
+<div class="legende"><span style="background:#FFE0C2">interface Oracle alimentée : absente des tables définitives ou montant différent</span><span style="background:#DCEBFF">vérification Oracle OK</span><span style="background:#FFF6D6">commentaire renseigné</span><span style="background:#E3F5E8">écart de montant nul</span><span style="background:#FBE3EC">nombre de pièces égal, montant différent</span></div>
 {_detail(lignes)}
 <h2>Rapprochements</h2>{_rapprochements(rapprochements)}
 <div class="footer">ODAT Watch · Folio Rose · portage de Verifier_Factures.ps1</div>
