@@ -40,16 +40,18 @@ def _rapport(dossier: Path, base: str, statut_global="OK", par_statut=None, aver
 def test_config_par_defaut_sans_section(monkeypatch, tmp_path):
     monkeypatch.setattr(pv, "CONFIG", tmp_path / "absent.ini")
     cfg = pv.config_prelevements()
-    assert cfg["racine"].name == "CTRL_QUASI_AUTOMATIQUE_DES_PRELEVEMENTS"
+    assert cfg["outil"].name == "CTRL_QUASI_AUTOMATIQUE_DES_PRELEVEMENTS"
+    assert cfg["racine"].parts[-2:] == ("ODAT", "prelevements")
     assert cfg["jours"] == 10 and cfg["nom_si"] == "ORACLE"
 
 
 def test_config_lue_depuis_config_ini(monkeypatch, tmp_path):
     ini = tmp_path / "config.ini"
-    ini.write_text("[prelevements]\nracine = C:\\outil\njours = 15\nnom_si = CIF\n", encoding="utf-8")
+    ini.write_text("[prelevements]\noutil = C:\\outil\nracine = D:\\donnees\njours = 15\nnom_si = CIF\n", encoding="utf-8")
     monkeypatch.setattr(pv, "CONFIG", ini)
     cfg = pv.config_prelevements()
-    assert cfg["racine"] == Path(r"C:\outil") and cfg["jours"] == 15 and cfg["nom_si"] == "CIF"
+    assert cfg["outil"] == Path(r"C:\outil") and cfg["racine"] == Path(r"D:\donnees")
+    assert cfg["jours"] == 15 and cfg["nom_si"] == "CIF"
 
 
 def test_dates_disponibles_les_plus_recentes_d_abord(tmp_path):
@@ -116,7 +118,7 @@ def test_lancer_capture_le_journal(monkeypatch, tmp_path):
         return {"statut_global": "OK", "base": "x"}
     faux.executer = executer
     monkeypatch.setitem(sys.modules, "rapprochement_cle_metier", faux)
-    res = pv.lancer(date(2026, 9, 21), {"racine": tmp_path, "jours": 10, "nom_si": "ORACLE"})
+    res = pv.lancer(date(2026, 9, 21), {"outil": tmp_path, "racine": tmp_path, "jours": 10, "nom_si": "ORACLE"})
     assert res["journal"] == "Oracle : 2 fichier(s)\nAVERTISSEMENT : test"
 
 

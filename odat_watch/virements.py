@@ -1,7 +1,8 @@
 """Onglet Virements : pont vers l'outil controleVirement (dossiers *_cible chargés à la main).
 
-Le contrôle lui-même vit dans ../controleVirement (controle_virements.executer) ; ici on choisit la journée,
-on le lance en local et on relit le dossier rapport_<date> pour l'affichage.
+Le code du contrôle vit dans ../controleVirement (controle_virements.executer, config [virements] outil) ;
+les données (dossiers JJMMAAAA_cible / _source, fichier Quartz, rapports rapport_<date>) dans ../ODAT/virements
+(config [virements] racine). Ici on choisit la journée, on lance le contrôle et on relit son rapport.
 """
 from __future__ import annotations
 import configparser
@@ -14,7 +15,7 @@ import pandas as pd
 
 from oracle_refresh import BASE_DIR, CONFIG
 
-DEFAUTS = {"racine": r"..\controleVirement", "historique_jours": "7"}
+DEFAUTS = {"outil": r"..\controleVirement", "racine": r"..\ODAT\virements", "historique_jours": "7"}
 
 # Fichiers du rapport : (clé, nom du CSV, libellé, gravité portée par la colonne « gravite » ou fixe)
 CSV_RAPPORT = [
@@ -46,7 +47,8 @@ def config_virements() -> dict:
     if CONFIG.exists():
         cfg.read(CONFIG, encoding="utf-8")
     val = {k: cfg.get("virements", k, fallback=v) for k, v in DEFAUTS.items()}
-    return {"racine": _chemin(val["racine"]), "historique_jours": int(val["historique_jours"] or 0)}
+    return {"outil": _chemin(val["outil"]), "racine": _chemin(val["racine"]),
+            "historique_jours": int(val["historique_jours"] or 0)}
 
 
 def dates_disponibles(racine: Path) -> list[str]:
@@ -67,22 +69,23 @@ def source_presente(racine: Path, date: str) -> bool:
     return (Path(racine) / f"{date}_source").is_dir()
 
 
-def fichier_quartz(racine: Path, date: str) -> Path | None:
-    _outil(racine)
+def fichier_quartz(cfg: dict, date: str) -> Path | None:
+    _outil(cfg["outil"])
     import controle_virements
-    return controle_virements.trouver_fichier_quartz(Path(racine), date)
+    return controle_virements.trouver_fichier_quartz(Path(cfg["racine"]), date)
 
 
-def _outil(racine: Path) -> None:
-    """Rend importable controle_virements / cv depuis la racine de l'outil."""
-    r = str(Path(racine))
+def _outil(outil: Path) -> None:
+    """Rend importable controle_virements / cv depuis le dossier de l'outil."""
+    r = str(Path(outil))
     if r not in sys.path:
         sys.path.insert(0, r)
 
 
 def lancer(date: str, cfg: dict) -> dict:
-    """Exécute le contrôle et écrit rapport_<date>. Renvoie le dict de controle_virements.executer."""
-    _outil(cfg["racine"])
+    """Exécute le contrôle et écrit rapport_<date> sous la racine des données. Renvoie le dict de
+    controle_virements.executer."""
+    _outil(cfg["outil"])
     import controle_virements
     return controle_virements.executer(date, cfg["racine"], historique_jours=cfg["historique_jours"])
 

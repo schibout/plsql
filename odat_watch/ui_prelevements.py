@@ -40,8 +40,8 @@ def render(kpi):
     racine = cfg["racine"]
     st.markdown("#### Prélèvements · Oracle (OUT_SEPA) → EDF CashCollection (état de réception, rejets internes)")
     if not racine.is_dir():
-        st.caption(f"Racine introuvable : `{racine}` — `config.ini [prelevements] racine` "
-                   "(dossiers ORACLE\\<AAAAMMJJ>, EDF, EDF\\REJETS alimentés à la main).")
+        st.caption(f"Dossier des données introuvable : `{racine}` — `config.ini [prelevements] racine` "
+                   "(y déposer ORACLE\\<AAAAMMJJ>, EDF et EDF\\REJETS ; les rapports s'écrivent dans son sous-dossier rapport).")
         return
 
     dates = pv.dates_disponibles(racine)

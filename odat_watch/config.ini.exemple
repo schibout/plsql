@@ -47,18 +47,22 @@ banque_flux_b = 30003
 comptes_connus = 30003/03620/00020137269;16807/00166/31990892212
 
 [virements]
-; Onglet Virements. Racine de l'outil controleVirement : dossiers JJMMAAAA_cible (et _source) copies a la main
-; (copier_instances_virement.sh), fichier Quartz "Liste des virements importes du jour<date>.xls", rapports rapport_<date>.
-racine = ..\controleVirement
+; Onglet Virements. Code de l'outil (controle_virements.py)
+outil = ..\controleVirement
+; Donnees : dossiers JJMMAAAA_cible (et _source) copies a la main (copier_instances_virement.sh), fichier Quartz
+; "Liste des virements importes du jour<date>.xls" ; les rapports rapport_<date> y sont ecrits. Hors git.
+racine = ..\ODAT\virements
 ; Recherche des envois deja transmis dans les autres dossiers *_cible des N jours precedents (0 = desactive)
 historique_jours = 7
 
 [prelevements]
-; Onglet Prelevements. Racine de l'outil CTRL_QUASI_AUTOMATIQUE_DES_PRELEVEMENTS : dossiers ORACLE\<AAAAMMJJ>
-; (fichiers *PCX* / *PCL* archives depuis DATA/Traite/OUT_SEPA), EDF (IMPORT_AVP_DK.*.csv, pieces jointes du mail
-; "Synthese quotidienne des prelevements Dalkia recus par CashCollection") et EDF\REJETS (REJETS_INTERNES_DK.*.csv).
-; Rapports ecrits dans rapport\Rapprochement_Cle_Metier_<AAAAMMJJ>_<HHMMSS>.*
-racine = ..\CTRL_QUASI_AUTOMATIQUE_DES_PRELEVEMENTS
+; Onglet Prelevements. Code de l'outil (rapprochement_cle_metier.py)
+outil = ..\CTRL_QUASI_AUTOMATIQUE_DES_PRELEVEMENTS
+; Donnees : dossiers ORACLE\<AAAAMMJJ> (fichiers *PCX* / *PCL* archives depuis DATA/Traite/OUT_SEPA), EDF
+; (IMPORT_AVP_DK.*.csv, pieces jointes du mail "Synthese quotidienne des prelevements Dalkia recus par CashCollection")
+; et EDF\REJETS (REJETS_INTERNES_DK.*.csv). Rapports ecrits dans rapport\Rapprochement_Cle_Metier_<AAAAMMJJ>_<HHMMSS>.*
+; Hors git.
+racine = ..\ODAT\prelevements
 ; Profondeur du perimetre en jours calendaires (echeances de reference - jours a reference + 25 j)
 jours = 10
 ; Nom du SI dans les etats EDF (l'autre SI est CIF)

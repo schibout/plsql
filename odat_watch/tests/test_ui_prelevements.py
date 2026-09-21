@@ -21,7 +21,7 @@ def _script():
 
 
 def _cfg(racine):
-    return lambda: {"racine": racine, "jours": 10, "nom_si": "ORACLE"}
+    return lambda: {"outil": racine, "racine": racine, "jours": 10, "nom_si": "ORACLE"}
 
 
 def test_onglet_affiche_le_rapport(monkeypatch, tmp_path):

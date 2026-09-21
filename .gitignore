@@ -43,5 +43,8 @@ odat_watch/rapports/
 # Caches pytest
 .pytest_cache/
 
-# Rapports generes par le rapprochement des prelevements (ODAT Watch, onglet Prelevements)
+# Donnees de production des controles bancaires (IBAN, RUM, montants) et leurs rapports : jamais dans git
+ODAT/virements/
+ODAT/prelevements/
+ODAT/releve_bancaire/
 CTRL_QUASI_AUTOMATIQUE_DES_PRELEVEMENTS/rapport/

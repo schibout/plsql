@@ -7,8 +7,10 @@ from streamlit.testing.v1 import AppTest
 
 import virements as vr
 
-RACINE = Path(__file__).resolve().parents[2] / "controleVirement"
+OUTIL = Path(__file__).resolve().parents[2] / "controleVirement"
+RACINE = Path(__file__).resolve().parents[2] / "ODAT" / "virements"
 DATE = "18092026"
+CFG = {"outil": OUTIL, "racine": RACINE, "historique_jours": 7}
 pytestmark = pytest.mark.skipif(not (RACINE / f"{DATE}_cible").is_dir(), reason="données controleVirement absentes")
 
 
@@ -18,7 +20,7 @@ def test_dates_disponibles_les_plus_recentes_d_abord():
 
 
 def test_lancer_puis_lire_rapport():
-    res = vr.lancer(DATE, {"racine": RACINE, "historique_jours": 7})
+    res = vr.lancer(DATE, CFG)
     assert res["ok"] is True and res["nb_instances"] == 2
     rapport = vr.lire_rapport(RACINE / f"rapport_{DATE}")
     assert rapport is not None and len(rapport["totaux_edf"]) == 46
@@ -55,8 +57,8 @@ def _script():
 
 
 def test_onglet_affiche_le_rapport(monkeypatch):
-    vr.lancer(DATE, {"racine": RACINE, "historique_jours": 7})
-    monkeypatch.setattr(vr, "config_virements", lambda: {"racine": RACINE, "historique_jours": 7})
+    vr.lancer(DATE, CFG)
+    monkeypatch.setattr(vr, "config_virements", lambda: CFG)
     at = AppTest.from_function(_script, default_timeout=120)
     at.run()
     assert not at.exception

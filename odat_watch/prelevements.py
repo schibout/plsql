@@ -1,8 +1,9 @@
 """Onglet Prélèvements : pont vers l'outil CTRL_QUASI_AUTOMATIQUE_DES_PRELEVEMENTS (rapprochement par clé métier).
 
-Le contrôle lui-même vit dans ../CTRL_QUASI_AUTOMATIQUE_DES_PRELEVEMENTS (rapprochement_cle_metier.executer) ;
-ici on choisit la date de référence, on le lance en local et on relit le dernier rapport de cette date
-(rapport/Rapprochement_Cle_Metier_<AAAAMMJJ>_<HHMMSS>.csv, _justifications.csv, _resume.json, .xlsx).
+Le code du contrôle vit dans ../CTRL_QUASI_AUTOMATIQUE_DES_PRELEVEMENTS (rapprochement_cle_metier.executer,
+config [prelevements] outil) ; les données (ORACLE/<AAAAMMJJ>, EDF, EDF/REJETS) et les rapports
+(rapport/Rapprochement_Cle_Metier_<AAAAMMJJ>_<HHMMSS>.*) dans ../ODAT/prelevements (config [prelevements] racine).
+Ici on choisit la date de référence, on lance le rapprochement et on relit le dernier rapport de cette date.
 """
 from __future__ import annotations
 import configparser
@@ -18,7 +19,8 @@ import pandas as pd
 
 from oracle_refresh import BASE_DIR, CONFIG
 
-DEFAUTS = {"racine": r"..\CTRL_QUASI_AUTOMATIQUE_DES_PRELEVEMENTS", "jours": "10", "nom_si": "ORACLE"}
+DEFAUTS = {"outil": r"..\CTRL_QUASI_AUTOMATIQUE_DES_PRELEVEMENTS", "racine": r"..\ODAT\prelevements",
+           "jours": "10", "nom_si": "ORACLE"}
 DOSSIER_RAPPORT = "rapport"
 PREFIXE = "Rapprochement_Cle_Metier_"
 RE_BASE = re.compile(rf"{PREFIXE}(\d{{8}})_(\d{{6}})")
@@ -65,7 +67,7 @@ def config_prelevements() -> dict:
     if CONFIG.exists():
         cfg.read(CONFIG, encoding="utf-8")
     val = {k: cfg.get("prelevements", k, fallback=v) for k, v in DEFAUTS.items()}
-    return {"racine": _chemin(val["racine"]), "jours": int(val["jours"] or 10),
+    return {"outil": _chemin(val["outil"]), "racine": _chemin(val["racine"]), "jours": int(val["jours"] or 10),
             "nom_si": val["nom_si"].strip() or "ORACLE"}
 
 
@@ -84,9 +86,9 @@ def dates_disponibles(racine: Path) -> list[date]:
     return sorted({d for d, _, _ in _bases(racine)}, reverse=True)
 
 
-def _outil(racine: Path) -> None:
-    """Rend importable rapprochement_cle_metier depuis la racine de l'outil."""
-    r = str(Path(racine))
+def _outil(outil: Path) -> None:
+    """Rend importable rapprochement_cle_metier depuis le dossier de l'outil."""
+    r = str(Path(outil))
     if r not in sys.path:
         sys.path.insert(0, r)
 
@@ -94,7 +96,7 @@ def _outil(racine: Path) -> None:
 def lancer(reference: date, cfg: dict) -> dict:
     """Exécute le rapprochement et écrit rapport/<base>.*. Renvoie le dict de rapprochement_cle_metier.executer,
     complété de « journal » : ce que l'outil a écrit sur la console (fichiers lus, avertissements)."""
-    _outil(cfg["racine"])
+    _outil(cfg["outil"])
     import rapprochement_cle_metier
     journal = io.StringIO()
     with contextlib.redirect_stdout(journal), contextlib.redirect_stderr(journal):

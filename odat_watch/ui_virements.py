@@ -28,7 +28,8 @@ def render(kpi):
     dates = vr.dates_disponibles(racine) if racine.is_dir() else []
     if not dates:
         st.caption(f"Aucune journée : copiez les dossiers `JJMMAAAA_cible` (et `_source` si disponible, "
-                   f"`copier_instances_virement.sh`) dans `{racine}` — `config.ini [virements] racine`.")
+                   f"`copier_instances_virement.sh`) et le fichier Quartz dans `{racine}` — "
+                   f"`config.ini [virements] racine`.")
         return
 
     b1, b2, b3 = st.columns([1.2, 1.4, 3])
@@ -44,7 +45,7 @@ def render(kpi):
             except Exception as e:  # noqa: BLE001 — l'outil externe peut échouer sur un fichier mal formé
                 st.session_state["vir_msg"] = f"⚠ {type(e).__name__}: {e}"
     source = vr.source_presente(racine, date)
-    quartz = vr.fichier_quartz(racine, date)
+    quartz = vr.fichier_quartz(cfg, date)
     b3.caption(f"Dossier source : {'présent' if source else 'absent → contrôle sur la cible seule'} · "
                f"Retour Quartz : {quartz.name if quartz else 'absent (niveau 3 ignoré)'}")
     if st.session_state.get("vir_msg"):
