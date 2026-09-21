@@ -39,6 +39,7 @@ def _tuiles(r: dict) -> str:
         _tuile(_nb(r["a_verifier"]), "points à vérifier", "warn" if r["a_verifier"] else "ok"),
         _tuile(_nb(r["ecarts"]), "écarts de totaux / lignes", "ko" if r["ecarts"] else "ok"),
         _tuile("repris" if r["quartz"] else "non fourni", "retour trésorerie (Quartz)", "ok" if r["quartz"] else "warn"),
+        _tuile(_nb(r["nb_rejets"]), "rejets bancaires du jour", "warn" if r["nb_rejets"] else "ok"),
     ])
 
 
@@ -118,6 +119,12 @@ def construire(rapport: dict, date: str) -> str:
         corps.append(_table(df) if not df.empty else
                      '<div class="vide">' + ("Aucun écart." if cle in ("lignes", "quartz") else "Vide.") + "</div>")
 
+    rejets = rapport.get("rejets", pd.DataFrame())
+    corps.append(f"<h2>Rejets bancaires du jour — {len(rejets)} virement(s)"
+                 + (f" pour {_eur(r['montant_rejets'])}" if len(rejets) else "") + "</h2>")
+    corps.append(_table(rejets) if len(rejets) else
+                 '<div class="vide">Aucun rejet de virement reçu de la banque ce jour (ou fichier REJETS/JJMMAAAA_*.xls absent).</div>')
+
     style = STYLE + """
   ul.afaire { list-style: none; padding: 0; margin: 0; }
   ul.afaire li { background: #fff; border-left: 5px solid #dde3ea; border-radius: 4px; padding: 8px 12px;
@@ -154,6 +161,8 @@ def texte_court(rapport: dict, date: str) -> str:
               f"- {_nb(r['nb_envoyes'])} virements transmis à la banque pour {_eur(r['montant_envoye'])}",
               f"- {_nb(r['ko'])} bloquant(s), {_nb(r['a_verifier'])} à vérifier, {_nb(r['ecarts'])} écart(s) de totaux ; "
               f"retour trésorerie : {'repris' if r['quartz'] else 'non fourni'}"]
+    if r["nb_rejets"]:
+        lignes.append(f"- {_nb(r['nb_rejets'])} virement(s) rejeté(s) par la banque pour {_eur(r['montant_rejets'])}")
     md = rapport["synthese_simple"] or ""
     items = [re.sub(r"\*\*|`", "", l[2:]).strip() for l in md.splitlines() if l.startswith("- ")]
     items = [i for i in items if not i.startswith(("Transmis à la banque", "Repris par la trésorerie", "Retour trésorerie"))]

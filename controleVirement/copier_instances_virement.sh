@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # =====================================================================
-# Script pour copier les dossiers d'instances de flux pour une date donnée.
+# Script pour copier les instances du flux cible (VIREMENT.EDF01) pour une date donnée.
 #
 # Usage:
 #   ./copier_instances_virement.sh DD-MM-YYYY
@@ -11,29 +11,30 @@
 #
 # Description:
 # 1. Prend une date au format DD-MM-YYYY en argument.
-# 2. Cherche dans les répertoires sources les dossiers créés à cette date.
-# 3. Crée des sous-répertoires locaux nommés DDMMYYYY_source et DDMMYYYY_cible.
-# 4. Copie les dossiers trouvés dans les répertoires de destination respectifs.
-# 5. Enregistre toute la copie dans un fichier de log.
+# 2. Cherche dans VIREMENT.EDF01/INSTANCES les dossiers créés à cette date.
+# 3. Crée un sous-répertoire local nommé DDMMYYYY (déposable tel quel dans ODAT/virements/import_virement).
+# 4. Copie les dossiers trouvés dedans (le flux source FIN01.VIREMENT n'est plus copié :
+#    le contrôle tourne en mode « cible seule »).
+# 5. Vérifie, sans les copier, les instances source FIN01.VIREMENT du jour :
+#    code retour Talend (TALEND/LS_OUT.OK) et présence de fichiers.
+# 6. Enregistre tout dans un fichier de log.
 # =====================================================================
 
 set -uo pipefail
 
 # --- Fonctions ---
 
-# Fonction pour trouver et copier les instances pour un flux donné.
+# Fonction pour trouver les instances créées le jour J dans un répertoire d'instances.
 # Arguments:
 #   $1: Nom du flux (pour les logs, ex: "FIN01.VIREMENT")
 #   $2: Répertoire source
-#   $3: Répertoire de destination
-#
-# Cette fonction utilise les variables globales:
-# - START_DATE, END_DATE: pour la recherche par date
-# - total_copied_count: compteur global pour le nombre de dossiers copiés
-copy_and_log_instances() {
+# Résultat : tableau global found_dirs, variable globale search_method.
+# Utilise START_DATE, END_DATE pour la recherche par date.
+find_instances() {
     local flux_name="$1"
     local source_dir="$2"
-    local dest_dir="$3"
+    found_dirs=()
+    search_method="rapide (-newerBt)"
 
     echo "Recherche pour le flux ${flux_name} dans : ${source_dir}"
     if [ ! -d "$source_dir" ]; then
@@ -41,14 +42,12 @@ copy_and_log_instances() {
         return
     fi
 
-    local found_dirs=()
-    local search_method="rapide (-newerBt)"
 
     # --- STRATÉGIE DE RECHERCHE ROBUSTE ---
     # Essai 1: Méthode rapide avec -newerBt. C'est la plus performante, mais elle
     # n'est pas toujours supportée par le système de fichiers. Si elle ne renvoie
     # rien, on passe à la méthode de secours.
-    while IFS= read -r -d $'\0' dir; do found_dirs+=("$dir"); done < <(find "$source_dir" -maxdepth 1 -type d -newerBt "$START_DATE" ! -newerBt "$END_DATE" -print0 2>/dev/null)
+    while IFS= read -r -d $'\0' dir; do found_dirs+=("$dir"); done < <(find "$source_dir" -mindepth 1 -maxdepth 1 -type d -newerBt "$START_DATE" ! -newerBt "$END_DATE" -print0 2>/dev/null)
 
     # Essai 2: Méthode de secours si la première n'a rien donné.
     if [ ${#found_dirs[@]} -eq 0 ]; then
@@ -58,7 +57,7 @@ copy_and_log_instances() {
         # a) On récupère les candidats : tous les dossiers modifiés le jour J.
         #    Ceci est un sur-ensemble des dossiers créés le jour J.
         local candidates=()
-        while IFS= read -r -d $'\0' dir; do candidates+=("$dir"); done < <(find "$source_dir" -maxdepth 1 -type d -newermt "$START_DATE" ! -newermt "$END_DATE" -print0)
+        while IFS= read -r -d $'\0' dir; do candidates+=("$dir"); done < <(find "$source_dir" -mindepth 1 -maxdepth 1 -type d -newermt "$START_DATE" ! -newermt "$END_DATE" -print0)
 
         if [ ${#candidates[@]} -gt 0 ]; then
             echo " -> ${#candidates[@]} dossier(s) candidat(s) trouvé(s). Vérification de leur date de création exacte..."
@@ -77,7 +76,20 @@ copy_and_log_instances() {
             done
         fi
     fi
+}
 
+# Fonction pour trouver et copier les instances pour un flux donné.
+# Arguments:
+#   $1: Nom du flux (pour les logs)
+#   $2: Répertoire source
+#   $3: Répertoire de destination
+# Utilise total_copied_count : compteur global pour le nombre de dossiers copiés.
+copy_and_log_instances() {
+    local flux_name="$1"
+    local source_dir="$2"
+    local dest_dir="$3"
+
+    find_instances "$flux_name" "$source_dir"
     if [ ${#found_dirs[@]} -gt 0 ]; then
         echo " -> ${#found_dirs[@]} dossier(s) trouvé(s) pour ${flux_name} (méthode: ${search_method}). Copie vers ${dest_dir}..."
         for dir in "${found_dirs[@]}"; do
@@ -92,6 +104,42 @@ copy_and_log_instances() {
     else
         echo " -> Aucun dossier trouvé pour ${flux_name} pour la date spécifiée."
     fi
+    echo "---------------------------------------------------------------------"
+}
+
+# Fonction pour vérifier, sans copier, les instances source du jour :
+# code retour Talend (TALEND/LS_OUT.OK : 0 attendu) et nombre de fichiers présents.
+# Arguments:
+#   $1: Nom du flux (pour les logs)
+#   $2: Répertoire source
+check_source_instances() {
+    local flux_name="$1"
+    local source_dir="$2"
+
+    find_instances "$flux_name" "$source_dir"
+    if [ ${#found_dirs[@]} -eq 0 ]; then
+        echo " -> Aucune instance ${flux_name} pour la date spécifiée."
+        echo "---------------------------------------------------------------------"
+        return
+    fi
+    echo " -> ${#found_dirs[@]} instance(s) ${flux_name} (méthode: ${search_method}), vérifiées sans copie :"
+    local dir ls_out talend nb_fichiers
+    for dir in "${found_dirs[@]}"; do
+        ls_out="$dir/TALEND/LS_OUT.OK"
+        if [ ! -s "$ls_out" ]; then
+            talend="Talend SANS RETOUR (LS_OUT.OK absent ou vide)"
+        elif [ "$(tr -d '[:space:]' < "$ls_out")" == "0" ]; then
+            talend="Talend OK"
+        else
+            talend="Talend KO (code retour '$(tr -d '[:space:]' < "$ls_out")')"
+        fi
+        nb_fichiers=$(find "$dir" -type f ! -path "*/TALEND/*" | wc -l)
+        if [ "$nb_fichiers" -eq 0 ]; then
+            echo "  !! $(basename "$dir") : ${talend}, AUCUN fichier"
+        else
+            echo "  -> $(basename "$dir") : ${talend}, ${nb_fichiers} fichier(s)"
+        fi
+    done
     echo "---------------------------------------------------------------------"
 }
 
@@ -126,8 +174,7 @@ if ! END_DATE=$(date -d "$START_DATE + 1 day" "+%Y-%m-%d" 2>/dev/null); then
 fi
 
 DEST_DIR_NAME_BASE=$(date -d "$START_DATE" "+%d%m%Y")
-DEST_DIR_SOURCE_NAME="${DEST_DIR_NAME_BASE}_source"
-DEST_DIR_CIBLE_NAME="${DEST_DIR_NAME_BASE}_cible"
+DEST_DIR_CIBLE_NAME="${DEST_DIR_NAME_BASE}"
 
 # --- Fichier de log ---
 LOG_FILE="copie_${DEST_DIR_NAME_BASE}.log"
@@ -139,30 +186,28 @@ echo "Les logs de copie seront enregistrés dans le fichier : ./${LOG_FILE}"
     echo "Recherche des dossiers dont la date de création est le $INPUT_DATE"
     echo "---------------------------------------------------------------------"
 
-    echo "Création des répertoires de destination :"
-    echo " -> ./${DEST_DIR_SOURCE_NAME}"
-    mkdir -p "$DEST_DIR_SOURCE_NAME"
+    echo "Création du répertoire de destination :"
     echo " -> ./${DEST_DIR_CIBLE_NAME}"
     mkdir -p "$DEST_DIR_CIBLE_NAME"
 
     # Compteur global pour la fonction copy_and_log_instances
     total_copied_count=0
 
-    # --- Copie des instances ---
-    SOURCE_DIR_FIN01="/data/flf/share/EAIBW/EAI/filerepository/FIN01.VIREMENT/INSTANCES"
-    copy_and_log_instances "FIN01.VIREMENT" "$SOURCE_DIR_FIN01" "$DEST_DIR_SOURCE_NAME"
-
+    # --- Copie des instances (cible uniquement) ---
     SOURCE_DIR_EDF01="/data/flf/share/EAIBW/EAI/filerepository/VIREMENT.EDF01/INSTANCES"
     copy_and_log_instances "VIREMENT.EDF01 (cible)" "$SOURCE_DIR_EDF01" "$DEST_DIR_CIBLE_NAME"
 
+    # --- Vérification des instances source, sans copie ---
+    SOURCE_DIR_FIN01="/data/flf/share/EAIBW/EAI/filerepository/FIN01.VIREMENT/INSTANCES"
+    check_source_instances "FIN01.VIREMENT (source)" "$SOURCE_DIR_FIN01"
+
     # Vérification si des dossiers ont été copiés au total
     if [ "$total_copied_count" -eq 0 ]; then
-        echo "Aucun dossier trouvé pour la date du $INPUT_DATE sur l'ensemble des flux."
-        rmdir "$DEST_DIR_SOURCE_NAME" 2>/dev/null
+        echo "Aucun dossier trouvé pour la date du $INPUT_DATE."
         rmdir "$DEST_DIR_CIBLE_NAME" 2>/dev/null
     else
         echo "Opération de copie terminée avec succès."
-        echo "$total_copied_count dossier(s) ont été copiés dans les répertoires de destination."
+        echo "$total_copied_count dossier(s) ont été copiés dans ./${DEST_DIR_CIBLE_NAME}."
     fi
 
 } > "$LOG_FILE" 2>&1

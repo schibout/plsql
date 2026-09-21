@@ -32,6 +32,7 @@ def test_date_quartz_depuis_le_nom(tmp_path):
     f = tmp_path / "Liste des virements importés du jour18092026.xls"
     f.write_bytes(b"")
     assert vi.date_quartz(f) == "18092026"
+    assert vi.date_quartz(tmp_path / "17092026_Liste des rejets bancaires du jour - Virement.xls") == "17092026"
     assert vi.date_quartz(tmp_path / "Liste des virements importés du jour.xls") is None   # inexistant : illisible
 
 
@@ -43,6 +44,10 @@ def test_scanner_puis_importer(tmp_path):
     _instance(depot / "17092026", "uuid-c", None)                     # journée déposée entière, date du dossier parent
     _instance(depot, "uuid-d", None)                                  # indatable
     (depot / "Liste des virements importés du jour18092026.xls").write_bytes(b"")
+    (depot / "EDF").mkdir()                                            # sous-dossiers du dépôt Drive (Apps Script)
+    (depot / "EDF" / "17092026_Liste des virements importés du jour.xls").write_bytes(b"")
+    (depot / "REJET").mkdir()
+    (depot / "REJET" / "17092026_Liste des rejets bancaires du jour - Virement.xls").write_bytes(b"")
     (depot / "notes.txt").write_text("x")
     _instance(racine / "18092026", "uuid-deja", "20260918")           # déjà rangée : on ne réimporte pas
     _instance(depot, "uuid-deja", "20260918")
@@ -50,20 +55,27 @@ def test_scanner_puis_importer(tmp_path):
     etats = {e.chemin.name: e.etat for e in vi.scanner(depot, racine)}
     assert etats == {"uuid-a": "à importer", "uuid-b": "à importer", "uuid-c": "à importer", "uuid-d": "date introuvable",
                      "Liste des virements importés du jour18092026.xls": "à importer", "notes.txt": "non reconnu",
+                     "17092026_Liste des virements importés du jour.xls": "à importer",
+                     "17092026_Liste des rejets bancaires du jour - Virement.xls": "à importer",
                      "uuid-deja": "déjà présent"}
 
     con = db.connect(tmp_path / "t.db")
     bilan = vi.importer(depot, racine, con, quand=datetime(2026, 9, 21, 8, 0))
-    assert sorted(e.chemin.name for e in bilan.importes) == sorted(["uuid-a", "uuid-b", "uuid-c", "Liste des virements importés du jour18092026.xls"])
+    assert sorted(e.chemin.name for e in bilan.importes) == sorted([
+        "uuid-a", "uuid-b", "uuid-c", "Liste des virements importés du jour18092026.xls",
+        "17092026_Liste des virements importés du jour.xls", "17092026_Liste des rejets bancaires du jour - Virement.xls"])
     assert sorted(e.chemin.name for e in bilan.ignores) == ["notes.txt", "uuid-d", "uuid-deja"]
     assert (racine / "18092026" / "uuid-a" / "SOURCE").is_dir() and (racine / "15092026" / "uuid-b").is_dir()
     assert (racine / "17092026" / "uuid-c").is_dir() and not (depot / "17092026").exists()
     assert (racine / "Liste des virements importés du jour18092026.xls").is_file()
+    assert (racine / "Liste des virements importés du jour17092026.xls").is_file()
+    assert (racine / "REJETS" / "17092026_Liste des rejets bancaires du jour - Virement.xls").is_file()
+    assert (depot / "EDF").is_dir() and (depot / "REJET").is_dir()   # sous-dossiers Drive conservés
     assert (depot / "uuid-d").is_dir() and (depot / "notes.txt").is_file() and (depot / "uuid-deja").is_dir()
     rows = {r[0]: tuple(r) for r in con.execute("SELECT guid, date_ctrl, nb_fichiers, nb_envois, importe_le, controle_le FROM vir_imports")}
     assert rows["uuid-a"] == ("uuid-a", "2026-09-18", 7, 2, "2026-09-21 08:00:00", None)
     assert set(rows) == {"uuid-a", "uuid-b", "uuid-c"}
-    assert "3 instance(s) et 1 fichier(s) Quartz" in bilan.message and "15/09, 17/09, 18/09" in bilan.message
+    assert "3 instance(s), 2 fichier(s) Quartz et 1 fichier(s) de rejets" in bilan.message and "15/09, 17/09, 18/09" in bilan.message
     assert "3 élément(s) laissé(s)" in bilan.message
     # second passage : plus rien à importer
     assert vi.importer(depot, racine, con).importes == []

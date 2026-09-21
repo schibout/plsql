@@ -88,6 +88,44 @@ def source_presente(racine: Path, date: str) -> bool:
     return (Path(racine) / f"{date}_source").is_dir()
 
 
+def fichier_rejets(racine: Path, date: str) -> Path | None:
+    """Rejets bancaires de virements de la journée : REJETS/JJMMAAAA_*.xls (rangé par virements_import)."""
+    return next(iter(sorted((Path(racine) / "REJETS").glob(f"{date}_*.xls"))), None)
+
+
+COLONNES_REJETS = ["banque", "compte", "reference", "montant", "devise", "date_operation", "motif", "motif_libelle",
+                   "tiers", "iban_tiers"]
+
+
+def lire_rejets(fichier: Path | None) -> pd.DataFrame:
+    """Lignes du classeur Quartz « Liste des rejets bancaires du jour - Virement » : une par virement rejeté
+    (en-tête « Banque », lignes de totaux sans banque ignorées). Vide si le fichier est absent ou illisible."""
+    if not fichier or not Path(fichier).is_file():
+        return pd.DataFrame(columns=COLONNES_REJETS)
+    try:
+        import xlrd
+        wb = xlrd.open_workbook(str(fichier))
+        sh = wb.sheet_by_index(0)
+        lignes, en_tete = [], False
+        for r in range(sh.nrows):
+            v = [sh.cell_value(r, c) for c in range(sh.ncols)]
+            if not en_tete:
+                en_tete = str(v[0]).strip().lower() == "banque"
+                continue
+            if not str(v[0]).strip():
+                continue
+            v = (v + [""] * 10)[:10]
+            try:
+                d = datetime(*xlrd.xldate_as_tuple(float(v[5]), wb.datemode)[:3]).strftime("%d/%m/%Y") if v[5] else ""
+            except (ValueError, TypeError):
+                d = str(v[5])
+            lignes.append([str(v[0]).strip(), str(v[1]).strip(), str(v[2]).strip(), round(float(v[3] or 0), 2),
+                           str(v[4]).strip(), d, str(v[6]).strip(), str(v[7]).strip(), str(v[8]).strip(), str(v[9]).strip()])
+        return pd.DataFrame(lignes, columns=COLONNES_REJETS)
+    except Exception:  # noqa: BLE001 — classeur illisible : on affiche « aucun rejet lu » plutôt que de bloquer l'onglet
+        return pd.DataFrame(columns=COLONNES_REJETS)
+
+
 def fichier_quartz(cfg: dict, date: str) -> Path | None:
     _outil(cfg["outil"])
     import controle_virements
@@ -140,6 +178,8 @@ def lire_rapport(dossier: Path) -> dict | None:
             out[cle] = pd.read_csv(f, sep=";", dtype=str, keep_default_na=False, encoding="utf-8")
         else:
             out[cle] = pd.DataFrame()
+    m = re.fullmatch(r"rapport_(\d{8})", dossier.name)
+    out["rejets"] = lire_rejets(fichier_rejets(dossier.parent, m.group(1)) if m else None)
     return out
 
 
@@ -165,8 +205,10 @@ def resume(rapport: dict) -> dict:
     if not fichiers.empty:
         ecarts += int((~fichiers["statut"].isin(["OK", "DOUBLON"])).sum())
     ok = "✅ Conforme" in rapport["synthese"]
+    rejets = rapport.get("rejets", pd.DataFrame())
     return {"ok": ok, "nb_envoyes": nb, "montant_envoye": montant, "ko": ko, "a_verifier": a_verifier,
             "ecarts": ecarts, "cible_seul": "cible seul" in rapport["synthese"],
+            "nb_rejets": len(rejets), "montant_rejets": float(rejets["montant"].sum()) if len(rejets) else 0.0,
             "quartz": "Non réalisé : l'export de la trésorerie" not in rapport["synthese"]}
 
 

@@ -1,9 +1,12 @@
 """Import des virements déposés en vrac dans ODAT/virements/import_virement.
 
-On y dépose, sans les trier : des instances Talend (un dossier <uuid> contenant SOURCE, TALEND, TARGET) et des
-exports Quartz (« Liste des virements importés du jour.xls »). L'import date chaque élément par son contenu, le
-range dans ODAT/virements/JJMMAAAA/<uuid> ou ODAT/virements/Liste des virements importés du jour<JJMMAAAA>.xls,
-et l'enregistre dans vir_imports. Un dossier JJMMAAAA déposé tel quel est accepté aussi (ses instances sont rangées).
+On y dépose, sans les trier : des instances Talend (un dossier <uuid> contenant SOURCE, TALEND, TARGET), des
+exports Quartz (« Liste des virements importés du jour.xls », sous-dossier EDF du dépôt Drive) et les rejets
+bancaires de virements (« Liste des rejets bancaires du jour - Virement.xls », sous-dossier REJET). L'import date
+chaque élément par son nom (préfixe JJMMAAAA_ posé par l'Apps Script, ou suffixe) sinon par son contenu, le range
+dans ODAT/virements/JJMMAAAA/<uuid>, ODAT/virements/Liste des virements importés du jour<JJMMAAAA>.xls ou
+ODAT/virements/REJETS/JJMMAAAA_<nom>.xls, et enregistre les instances dans vir_imports. Un dossier JJMMAAAA déposé
+tel quel est accepté aussi (ses instances sont rangées).
 """
 from __future__ import annotations
 import re
@@ -16,13 +19,16 @@ DEPOT = "import_virement"
 RE_DATE_FICHIER = re.compile(r"[-_](\d{8})[-_]")             # DK_FIN01_*-20260918-49069237_20260918-014541.txt
 RE_DATE_ORACLE = re.compile(r"REGROUPEMENTS_REALISES_(\d{8})")
 RE_JOUR = re.compile(r"\d{8}")
+RE_PREFIXE_JOUR = re.compile(r"^(\d{8})_")                  # 18092026_Liste des … .xls (nommage Apps Script)
 QUARTZ_PREFIXE = "Liste des virements importés du jour"
+SOUS_DOSSIERS = {"EDF": "quartz", "REJET": "rejet", "REJETS": "rejet"}   # sous-dossiers du dépôt Drive → genre
+DOSSIER_REJETS = "REJETS"
 
 
 @dataclass
 class Element:
     chemin: Path
-    genre: str                      # instance | quartz | inconnu
+    genre: str                      # instance | quartz | rejet | inconnu
     date: str | None = None         # JJMMAAAA
     guid: str = ""
     destination: Path | None = None
@@ -40,8 +46,9 @@ class Bilan:
     def message(self) -> str:
         n_inst = sum(1 for e in self.importes if e.genre == "instance")
         n_q = sum(1 for e in self.importes if e.genre == "quartz")
+        n_r = sum(1 for e in self.importes if e.genre == "rejet")
         jours = sorted({e.date for e in self.importes if e.date}, key=lambda d: d[4:] + d[2:4] + d[:2])
-        txt = f"{n_inst} instance(s) et {n_q} fichier(s) Quartz importé(s)"
+        txt = f"{n_inst} instance(s), {n_q} fichier(s) Quartz et {n_r} fichier(s) de rejets importé(s)"
         if jours:
             txt += " — journée(s) " + ", ".join(f"{d[:2]}/{d[2:4]}" for d in jours)
         if self.ignores:
@@ -69,11 +76,15 @@ def date_instance(dossier: Path) -> str | None:
 
 
 def date_quartz(fichier: Path) -> str | None:
-    """Journée d'un export Quartz : dans le nom (…du jour18092026.xls) sinon dans l'en-tête
-    « Date de mise à jour: De JJ/MM/AAAA à JJ/MM/AAAA » du classeur."""
-    m = re.search(r"(\d{8})\.xls$", fichier.name, re.I)
-    if m and datetime.strptime(m.group(1), "%d%m%Y"):
-        return m.group(1)
+    """Journée d'un classeur Quartz (virements importés ou rejets) : préfixe 18092026_ ou suffixe …du jour18092026.xls
+    dans le nom, sinon l'en-tête « Date de mise à jour: De JJ/MM/AAAA à JJ/MM/AAAA » du classeur."""
+    m = RE_PREFIXE_JOUR.match(fichier.name) or re.search(r"(\d{8})\.xls$", fichier.name, re.I)
+    if m:
+        try:
+            datetime.strptime(m.group(1), "%d%m%Y")
+            return m.group(1)
+        except ValueError:
+            pass
     try:
         import xlrd
         sh = xlrd.open_workbook(str(fichier)).sheet_by_index(0)
@@ -101,13 +112,15 @@ def scanner(depot: Path, racine: Path) -> list[Element]:
     out: list[Element] = []
     if not depot.is_dir():
         return out
-    candidats: list[Path] = []
+    candidats: list[tuple[Path, str | None]] = []       # (chemin, genre imposé par le sous-dossier EDF / REJET)
     for p in sorted(depot.iterdir()):
         if p.is_dir() and RE_JOUR.fullmatch(p.name):        # journée déposée entière
-            candidats += [d for d in sorted(p.iterdir()) if d.is_dir()]
+            candidats += [(d, None) for d in sorted(p.iterdir()) if d.is_dir()]
+        elif p.is_dir() and p.name.upper() in SOUS_DOSSIERS:  # sous-dossiers du dépôt Drive
+            candidats += [(f, SOUS_DOSSIERS[p.name.upper()]) for f in sorted(p.iterdir()) if f.is_file()]
         else:
-            candidats.append(p)
-    for p in candidats:
+            candidats.append((p, None))
+    for p, genre in candidats:
         if p.is_dir():
             e = Element(chemin=p, genre="instance", guid=p.name)
             e.nb_fichiers, e.nb_envois = _compter(p)
@@ -118,12 +131,15 @@ def scanner(depot: Path, racine: Path) -> list[Element]:
                 e.destination = racine / e.date / p.name
                 e.etat = "déjà présent" if e.destination.exists() else "à importer"
         elif p.suffix.lower() == ".xls":
-            e = Element(chemin=p, genre="quartz")
+            e = Element(chemin=p, genre=genre or ("rejet" if "rejets" in p.name.lower() else "quartz"))
             e.date = date_quartz(p)
             if not e.date:
                 e.etat = "date introuvable"
             else:
-                e.destination = racine / f"{QUARTZ_PREFIXE}{e.date}.xls"
+                if e.genre == "rejet":
+                    e.destination = racine / DOSSIER_REJETS / f"{e.date}_{RE_PREFIXE_JOUR.sub('', p.name)}"
+                else:
+                    e.destination = racine / f"{QUARTZ_PREFIXE}{e.date}.xls"
                 e.etat = "déjà présent" if e.destination.exists() else "à importer"
         else:
             e = Element(chemin=p, genre="inconnu", etat="non reconnu")

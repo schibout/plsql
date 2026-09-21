@@ -14,13 +14,14 @@ from db import connect
 
 
 def _tuiles(kpi, r: dict) -> None:
-    c1, c2, c3, c4, c5, c6 = st.columns(6)
+    c1, c2, c3, c4, c5, c6, c7 = st.columns(7)
     kpi(c1, "✅ OK" if r["ok"] else "❌ KO", "résultat global", "ok" if r["ok"] else "err")
     kpi(c2, f"{r['nb_envoyes']:,}".replace(",", " "), "virements envoyés", "neutral")
     kpi(c3, f"{r['montant_envoye']:,.0f} €".replace(",", " "), "montant envoyé", "neutral")
     kpi(c4, r["ko"], "doublons / forme bloquants", "err" if r["ko"] else "ok")
     kpi(c5, r["a_verifier"], "points à vérifier", "warn" if r["a_verifier"] else "ok")
     kpi(c6, "repris" if r["quartz"] else "non fourni", "retour trésorerie", "ok" if r["quartz"] else "warn")
+    kpi(c7, r["nb_rejets"], "rejets bancaires du jour", "warn" if r["nb_rejets"] else "ok")
 
 
 def _table(df, hauteur: int = 320) -> None:
@@ -106,6 +107,17 @@ def render(kpi):
             else:
                 _table(df, 300)
 
+    rejets = rapport["rejets"]
+    with st.expander(f"Rejets bancaires du jour — {len(rejets)} virement(s)"
+                     + (f" pour {r['montant_rejets']:,.2f} €".replace(",", " ").replace(".", ",") if len(rejets) else ""),
+                     expanded=not rejets.empty):
+        if rejets.empty:
+            st.caption("Aucun rejet de virement reçu de la banque ce jour (fichier `REJETS/JJMMAAAA_*.xls` absent ou vide).")
+        else:
+            _table(rejets)
+            st.download_button("⬇ Exporter (CSV)", rejets.to_csv(index=False, sep=";").encode("utf-8-sig"),
+                               f"rejets_virements_{date}.csv", "text/csv", key="vir_csv_rejets")
+
     with st.expander("Synthèse complète (synthese.md)"):
         st.markdown(rapport["synthese"])
         st.download_button("⬇ Télécharger synthese.md", rapport["synthese"].encode("utf-8"),
@@ -116,15 +128,15 @@ def render(kpi):
 
 
 def _import(cfg: dict) -> None:
-    """Dépôt import_virement : instances et exports Quartz déposés en vrac, rangés par journée en un clic."""
+    """Dépôt import_virement : instances, exports Quartz (EDF/) et rejets (REJET/) déposés en vrac, rangés en un clic."""
     depot = cfg["depot"]
     elements = vi.scanner(depot, cfg["racine"]) if depot.is_dir() else []
     a_importer = [e for e in elements if e.etat == "à importer"]
     c1, c2 = st.columns([1.4, 3])
     if c1.button(f"📥 Importer {len(a_importer)} élément(s) déposé(s)" if a_importer else "📥 Importer depuis le dépôt",
                  key="vir_import", use_container_width=True, disabled=not a_importer,
-                 help=f"Dépôt : {depot}\nInstances (dossier uuid avec SOURCE, TALEND, TARGET) et exports Quartz, "
-                      "datés par leur contenu."):
+                 help=f"Dépôt : {depot}\nInstances (dossier uuid avec SOURCE, TALEND, TARGET), exports Quartz (EDF/) "
+                      "et rejets de virements (REJET/), datés par leur nom ou leur contenu."):
         con = connect()
         try:
             bilan = vi.importer(depot, cfg["racine"], con)
@@ -136,7 +148,7 @@ def _import(cfg: dict) -> None:
         c2.caption(f"Dépôt `{depot}` absent : créez-le et déposez-y les instances Talend et les exports Quartz "
                    "(`config.ini [virements] depot`).")
     elif not elements:
-        c2.caption(f"Dépôt `{depot.name}` vide. Déposez-y les instances (dossier uuid) et les exports Quartz, sans les trier.")
+        c2.caption(f"Dépôt `{depot.name}` vide. Déposez-y les instances (dossier uuid), les exports Quartz (EDF/) et les rejets (REJET/), sans les trier.")
     else:
         restes = [e for e in elements if e.etat != "à importer"]
         c2.caption(f"Dépôt `{depot.name}` : {len(a_importer)} à importer"

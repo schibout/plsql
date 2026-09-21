@@ -102,5 +102,5 @@ def test_bouton_import_range_les_instances(monkeypatch, tmp_path):
     bouton.click().run()
     assert not at.exception
     assert (racine / "18092026" / "uuid-x").is_dir() and not (racine / vi.DEPOT / "uuid-x").exists()
-    assert any("1 instance(s) et 0 fichier(s) Quartz" in s.value for s in at.success)
+    assert any("1 instance(s), 0 fichier(s) Quartz et 0 fichier(s) de rejets" in s.value for s in at.success)
     assert at.selectbox(key="vir_date").options == ["18/09/2026"]
