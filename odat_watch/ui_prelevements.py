@@ -2,10 +2,12 @@
 CTRL_QUASI_AUTOMATIQUE_DES_PRELEVEMENTS), tuiles, justification des écarts, clés par statut, téléchargements."""
 from __future__ import annotations
 from datetime import date
+from pathlib import Path
 
 import streamlit as st
 
 import prelevements as pv
+import rapport_prelevements as rp
 
 
 def _fmt_nb(n) -> str:
@@ -129,10 +131,26 @@ def render(kpi):
             st.caption(pv.EXPLICATIONS[statut])
             _table(df.drop(columns=["statut"]))
 
-    c1, c2 = st.columns(2)
+    st.markdown("##### Rapport et envoi")
+    c0, c1, c2 = st.columns(3)
+    if c0.button("📄 Générer le rapport HTML", use_container_width=True, key="pv_rapport",
+                 help="Synthèse en haut (statut, chiffres, à faire), tableaux de détail en bas. Même charte que le rapport du matin."):
+        try:
+            st.session_state["pv_rapport_html"] = str(rp.ecrire(rapport, rp.DOSSIER_RAPPORTS))
+        except OSError as e:
+            st.error(f"Écriture du rapport impossible : {e}")
     c1.download_button("⬇ Rapprochement complet (CSV)",
                        rapport["rapprochement"].to_csv(index=False, sep=";").encode("utf-8-sig"),
-                       f"{rapport['base']}.csv", "text/csv", key="pv_csv")
+                       f"{rapport['base']}.csv", "text/csv", key="pv_csv", use_container_width=True)
     if rapport["xlsx"]:
         c2.download_button("⬇ Classeur Excel", rapport["xlsx"].read_bytes(), rapport["xlsx"].name,
-                           "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", key="pv_xlsx")
+                           "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", key="pv_xlsx",
+                           use_container_width=True)
+    chemin = st.session_state.get("pv_rapport_html")
+    if chemin and Path(chemin).is_file() and rapport["base"][len(pv.PREFIXE):len(pv.PREFIXE) + 8] in Path(chemin).name:
+        d1, d2 = st.columns([1, 2])
+        d1.download_button("⬇ Rapport HTML", Path(chemin).read_bytes(), Path(chemin).name, "text/html",
+                           key="pv_html", use_container_width=True)
+        d2.caption(f"Écrit dans `{chemin}` — à joindre au mail ou à ouvrir dans le navigateur.")
+    with st.expander("✉ Texte court à coller dans un mail ou Teams"):
+        st.code(rp.texte_court(rapport), language=None)

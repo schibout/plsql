@@ -90,3 +90,19 @@ def test_onglet_signale_les_doublons(monkeypatch, tmp_path):
     assert not at.exception
     assert any("1 émis en double [err]" in m.value for m in at.markdown)
     assert any("1 doublon(s), 0 similitude(s)" in e.label for e in at.expander)
+
+
+def test_rapport_html_et_texte_mail(monkeypatch, tmp_path):
+    import rapport_prelevements as rp
+    _rapport(tmp_path / "rapport", "Rapprochement_Cle_Metier_20260914_081400")
+    monkeypatch.setattr(pv, "config_prelevements", _cfg(tmp_path))
+    monkeypatch.setattr(rp, "DOSSIER_RAPPORTS", tmp_path / "rapports")
+    at = AppTest.from_function(_script, default_timeout=60)
+    at.run()
+    at.date_input[0].set_value(date(2026, 9, 14)).run()
+    at.button(key="pv_rapport").click().run()
+    assert not at.exception
+    fichiers = list((tmp_path / "rapports").glob("Prelevements_20260914_*.html"))
+    assert len(fichiers) == 1
+    assert any("Rapport HTML" in b.label for b in at.download_button)
+    assert any("Prélèvements Oracle ↔ EDF au 14/09/2026 : OK" in c.value for c in at.code)
