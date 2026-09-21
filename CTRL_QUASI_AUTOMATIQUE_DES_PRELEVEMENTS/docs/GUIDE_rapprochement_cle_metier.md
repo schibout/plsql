@@ -57,6 +57,13 @@ python rapprochement_cle_metier.py --date 2026-08-06 --jours 10
 
 Le `.bat` installe automatiquement `openpyxl` s'il manque.
 
+**Depuis ODAT Watch :** onglet **💳 Prélèvements** (`odat_watch`, section `[prelevements]` de `config.ini`). On y
+choisit la date de référence et la profondeur, le bouton **Lancer le rapprochement** appelle la fonction
+`executer()` de ce script, puis l'onglet affiche le dernier rapport de la date choisie (tuiles, justification des
+écarts, clés par statut, téléchargement du CSV et du classeur). Les fichiers produits sont les mêmes qu'en ligne de
+commande, plus un `_resume.json` (statut global, compteurs par statut, avertissements, contexte) que l'onglet relit.
+`Lancer_Rapprochement.bat` (ancien lanceur PowerShell / Excel) appelle désormais `rapprochement_cle_metier.bat`.
+
 ### Codes retour
 
 | Code | Signification | À faire |
@@ -388,7 +395,7 @@ le rapport peut être transmis tel quel.
 | `rapprochement_cle_metier.py` | Le contrôle |
 | `rapprochement_cle_metier.bat` | Lanceur Windows |
 | `requirements.txt` | Dépendance `openpyxl` |
-| `tests\test_rapprochement_cle_metier.py` | 26 tests (`python -m pytest tests\`) |
+| `tests\test_rapprochement_cle_metier.py` | 30 tests, dont 3 sur `executer()` (`python -m pytest tests\`) |
 
 L'outil précédent (`prelevements_rapprochement.py`) reste disponible et inchangé — voir
 [GUIDE_prelevements_rapprochement.md](GUIDE_prelevements_rapprochement.md).

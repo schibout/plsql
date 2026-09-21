@@ -371,5 +371,5 @@ l'autre donne le diagnostic.
 | `prelevements_rapprochement.py` | Le contrôle |
 | `prelevements_rapprochement.bat` | Lanceur Windows |
 | `requirements.txt` | Dépendance `openpyxl` |
-| `tests\test_prelevements_rapprochement.py` | 10 tests de la recherche J+n (`python -m pytest tests\`) |
+| `tests\test_prelevements_rapprochement.py` | 18 tests : recherche J+n, contrainte de signe, provenance, rejets (`python -m pytest tests\`) |
 | `Prelevements_Rapprochement_Oracle_EDF.ps1` | Version PowerShell historique, résultat identique, nécessite Excel installé |

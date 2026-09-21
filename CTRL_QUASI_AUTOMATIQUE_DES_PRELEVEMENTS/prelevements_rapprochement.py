@@ -687,7 +687,7 @@ def construire_parser():
                    help="Motifs de nom des fichiers Oracle")
     p.add_argument("--motif-edf", default="IMPORT_AVP_DK.*.*.csv",
                    help="Motif de nom des etats de reception EDF")
-    p.add_argument("--motif-rejets", default="REJETS_INTERNES_DK.*",
+    p.add_argument("--motif-rejets", default="REJETS_INTERNES_DK.*.csv",
                    help="Motif de nom des fichiers de rejets internes")
     p.add_argument("--nom-si", default="ORACLE",
                    help="Valeur de la colonne 'NOM DU SI' a rapprocher")
