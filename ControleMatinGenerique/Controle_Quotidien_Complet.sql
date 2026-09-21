@@ -436,17 +436,34 @@ CLEAR COLUMNS
 PROMPT
 PROMPT === XEROX - Factures SANS images (AVERTISSEMENT) ===
 
-COLUMN info FORMAT A120
+COLUMN RECUE_LE FORMAT A8
+COLUMN NUM_FACT FORMAT A22
+COLUMN FOURNISSEUR FORMAT A30
+COLUMN DATE_FACT FORMAT A8
+COLUMN MONTANT FORMAT 9999999.99
+COLUMN DEV FORMAT A3
+COLUMN IMAGE_ATTENDUE FORMAT A40
+COLUMN FICHIER_XEROX FORMAT A50
+COLUMN AGE_J FORMAT 999 HEADING "AGE(j)"
+COLUMN INVOICE_IDS FORMAT A30
 
--- DISTINCT : invoice_num n'etant pas unique en multi-organisation, la meme
--- facture ressortait plusieurs fois avec des INV/VDR differents (F-2026-07-1
--- dans le log du 28/07). Les invoice_id sont donc regroupes sur une ligne.
-SELECT dir.date_creation || ' | ' ||
-       RPAD(NVL(dir.num_fact, '?'), 25) || ' | ' ||
-       RPAD(NVL(MIN(dir.reference_lad), '?'), 50) || ' | ' ||
-       'INV=' || LISTAGG(aia.invoice_id, ',') WITHIN GROUP (ORDER BY aia.invoice_id) AS info
+-- invoice_num n'etant pas unique en multi-organisation, la meme facture
+-- ressortait plusieurs fois (F-2026-07-1 dans le log du 28/07) : une ligne par
+-- facture, invoice_id regroupes. Fournisseur, date, montant et image attendue
+-- (attribute3) permettent de retrouver la facture sans rouvrir Oracle.
+SELECT TO_CHAR(TO_DATE(dir.date_creation, 'YYYYMMDD'), 'DD/MM/YY') AS RECUE_LE,
+       NVL(dir.num_fact, '?') AS NUM_FACT,
+       MIN(aps.vendor_name) AS FOURNISSEUR,
+       TO_CHAR(MIN(aia.invoice_date), 'DD/MM/YY') AS DATE_FACT,
+       MAX(aia.invoice_amount) AS MONTANT,
+       MIN(aia.invoice_currency_code) AS DEV,
+       MIN(aia.attribute3) AS IMAGE_ATTENDUE,
+       NVL(MIN(dir.reference_lad), '?') AS FICHIER_XEROX,
+       TRUNC(SYSDATE) - TRUNC(MIN(aia.creation_date)) AS AGE_J,
+       LISTAGG(aia.invoice_id, ',') WITHIN GROUP (ORDER BY aia.invoice_id) AS INVOICE_IDS
 FROM   dka_iapfacxgs_reporting_all dir
 JOIN   ap_invoices_all aia ON aia.invoice_num = dir.num_fact AND aia.creation_date > SYSDATE - 30
+LEFT JOIN ap_suppliers aps ON aps.vendor_id = aia.vendor_id
 WHERE  dir.nom_fichier LIKE 'VE1_DAL%'
 AND    dir.date_creation = TO_CHAR(SYSDATE - 1, 'YYYYMMDD')
 AND    NOT EXISTS (SELECT 1 FROM fnd_documents fd
@@ -454,7 +471,7 @@ AND    NOT EXISTS (SELECT 1 FROM fnd_documents fd
                    AND    (SUBSTR(fd.file_name, 1, LENGTH(fd.file_name) - 4) = aia.attribute3
                            OR fd.file_name = aia.attribute3))
 GROUP BY dir.date_creation, dir.num_fact
-ORDER BY dir.num_fact;
+ORDER BY MIN(aps.vendor_name), dir.num_fact;
 
 CLEAR COLUMNS
 

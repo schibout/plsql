@@ -264,11 +264,19 @@ GROUP BY date_creation, DECODE(SUBSTR(imagefile, 1, 3), 'VE1', 'XEROX', 'L56', '
 ORDER BY date_creation DESC, SOURCE""", False),
 
     ("xerox_sans_img", "XEROX — Factures SANS images", f"""
-SELECT dir.date_creation AS DATE_CR, NVL(dir.num_fact, '?') AS NUM_FACT,
-       NVL(MIN(dir.reference_lad), '?') AS FICHIER,
+SELECT TO_CHAR(TO_DATE(dir.date_creation, 'YYYYMMDD'), 'DD/MM/YY') AS RECUE_LE,
+       NVL(dir.num_fact, '?') AS NUM_FACT,
+       MIN(aps.vendor_name) AS FOURNISSEUR,
+       TO_CHAR(MIN(aia.invoice_date), 'DD/MM/YY') AS DATE_FACT,
+       MAX(aia.invoice_amount) AS MONTANT,
+       MIN(aia.invoice_currency_code) AS DEV,
+       MIN(aia.attribute3) AS IMAGE_ATTENDUE,
+       NVL(MIN(dir.reference_lad), '?') AS FICHIER_XEROX,
+       TRUNC({FIN}) - TRUNC(MIN(aia.creation_date)) AS AGE_J,
        LISTAGG(aia.invoice_id, ',') WITHIN GROUP (ORDER BY aia.invoice_id) AS INVOICE_IDS
 FROM   {{s}}dka_iapfacxgs_reporting_all dir
 JOIN   {{s}}ap_invoices_all aia ON aia.invoice_num = dir.num_fact AND aia.creation_date > {FIN} - 30
+LEFT JOIN {{s}}ap_suppliers aps ON aps.vendor_id = aia.vendor_id
 WHERE  dir.nom_fichier LIKE 'VE1_DAL%'
 AND    dir.date_creation = TO_CHAR({DEB}, 'YYYYMMDD')
 AND    NOT EXISTS (SELECT 1 FROM {{s}}fnd_documents fd
@@ -276,7 +284,7 @@ AND    NOT EXISTS (SELECT 1 FROM {{s}}fnd_documents fd
                    AND    (SUBSTR(fd.file_name, 1, LENGTH(fd.file_name) - 4) = aia.attribute3
                            OR fd.file_name = aia.attribute3))
 GROUP BY dir.date_creation, dir.num_fact
-ORDER BY dir.num_fact""", True),
+ORDER BY MIN(aps.vendor_name), dir.num_fact""", True),
 
     ("xerox_avec_img", "XEROX — Factures AVEC images (compteur)", f"""
 SELECT COUNT(DISTINCT dir.num_fact) AS NB_AVEC_IMG
