@@ -17,16 +17,17 @@ def _profils():
 
 def _ref():
     return pd.DataFrame([
-        dict(job_name="A", programme_auto="DKA_X · Import", programme="DKA_X · Import", application_ora="", commentaire="", source="auto"),
-        dict(job_name="B", programme_auto="", programme="PA_JALON", application_ora="PA", commentaire="vu DBA", source="manuel"),
-        dict(job_name="Z", programme_auto="", programme="", application_ora="", commentaire="", source="à renseigner"),
+        dict(job_name="A", programme_auto="Import", programme_code="DKA_X", programme="Import", application_ora="", commentaire="", source="auto"),
+        dict(job_name="B", programme_auto="", programme_code="", programme="PA_JALON", application_ora="PA", commentaire="vu DBA", source="manuel"),
+        dict(job_name="Z", programme_auto="", programme_code="", programme="", application_ora="", commentaire="", source="à renseigner"),
     ])
 
 
 def test_fusion_ajoute_le_referentiel_aux_profils():
     v = ui_profils.fusion(_profils(), _ref()).set_index("job")
     assert list(v.columns) == [c for c in ui_profils.COLONNES if c != "job"]
-    assert v.loc["A", "programme_auto"] == "DKA_X · Import" and v.loc["A", "programme"] == ""   # auto : saisie brute vide
+    assert v.loc["A", "programme_auto"] == "Import" and v.loc["A", "programme"] == ""   # auto : saisie brute vide
+    assert v.loc["A", "programme_code"] == "DKA_X"
     assert v.loc["A", "source"] == "auto" and v.loc["A", "heure"] == "02:00"
     assert v.loc["B", "programme"] == "PA_JALON" and v.loc["B", "application_ora"] == "PA" and v.loc["B", "source"] == "manuel"
     assert v.loc["C", "source"] == "à renseigner" and v.loc["C", "programme_auto"] == ""

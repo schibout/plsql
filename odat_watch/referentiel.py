@@ -50,18 +50,19 @@ def synchroniser(con: sqlite3.Connection) -> int:
         WHERE j.task_type IS NULL OR j.task_type <> 'Dummy'
         GROUP BY j.job_name""").fetchall()
     auto = forecast.programmes_oracle(con)
+    codes = forecast.codes_oracle(con)
     connus = {r[0] for r in con.execute("SELECT job_name FROM referentiel_jobs")}
     nouveaux = 0
     with con:
         for job, app, chaine, desc, member, vu_le in jobs:
             if job in connus:
                 con.execute("UPDATE referentiel_jobs SET application_ctm=?, chaine=?, description=?, script=?, "
-                            "programme_auto=?, vu_le=? WHERE job_name=?",
-                            (app, chaine, desc or "", member or "", auto.get(job), vu_le, job))
+                            "programme_auto=?, programme_code=?, vu_le=? WHERE job_name=?",
+                            (app, chaine, desc or "", member or "", auto.get(job), codes.get(job), vu_le, job))
             else:
                 con.execute("INSERT INTO referentiel_jobs(job_name, application_ctm, chaine, description, script, "
-                            "programme_auto, vu_le) VALUES (?,?,?,?,?,?,?)",
-                            (job, app, chaine, desc or "", member or "", auto.get(job), vu_le))
+                            "programme_auto, programme_code, vu_le) VALUES (?,?,?,?,?,?,?,?)",
+                            (job, app, chaine, desc or "", member or "", auto.get(job), codes.get(job), vu_le))
                 nouveaux += 1
     return nouveaux
 
@@ -77,7 +78,8 @@ def enregistrer(con: sqlite3.Connection, job: str, programme: str, application: 
 def table(con: sqlite3.Connection) -> pd.DataFrame:
     """Vue complète : programme = saisie manuelle sinon auto ; source = manuel | auto | à renseigner."""
     df = pd.read_sql_query("SELECT * FROM referentiel_jobs ORDER BY job_name", con)
-    for c in ("programme", "programme_auto", "application_ora", "commentaire", "description", "chaine", "script"):
+    for c in ("programme", "programme_auto", "programme_code", "application_ora", "commentaire", "description",
+              "chaine", "script"):
         df[c] = df[c].fillna("")
     manuel = df["programme"] != ""
     df["source"] = "à renseigner"

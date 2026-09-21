@@ -9,12 +9,13 @@ import streamlit as st
 import referentiel as ref
 from db import connect
 
-COLS_REF = ["programme_auto", "programme", "application_ora", "commentaire", "source"]
+COLS_REF = ["programme_auto", "programme_code", "programme", "application_ora", "commentaire", "source"]
 COLS_SAISIE = ("programme", "application_ora", "commentaire")
 LIBELLES = {"job": "job", "frequence": "fréquence", "description": "description", "groupe": "chaîne", "heure": "heure",
             "lendemain": "J+1", "duree_min": "durée (min)", "fiabilite": "fiabilité", "nb_exec": "exécutions",
             "jours": "jours", "cyclique": "cyclique", "script": "script",
-            "programme_auto": "programme (auto)", "programme": "programme (saisie)", "application_ora": "application Oracle",
+            "programme_auto": "programme (auto)", "programme_code": "code programme", "programme": "programme (saisie)",
+            "application_ora": "application Oracle",
             "commentaire": "commentaire", "source": "source"}
 COLONNES = list(LIBELLES)
 
@@ -43,7 +44,8 @@ def rechercher(vue: pd.DataFrame, frequences: list[str], chaines: list[str], sou
         vue = vue[vue["source"].isin(sources)]
     if recherche:
         m = pd.Series(False, index=vue.index)
-        for col in ("job", "description", "script", "programme", "programme_auto", "application_ora", "commentaire"):
+        for col in ("job", "description", "script", "programme", "programme_auto", "programme_code", "application_ora",
+                    "commentaire"):
             m |= vue[col].fillna("").astype(str).str.lower().str.contains(recherche, regex=False)
         vue = vue[m]
     return vue
@@ -93,7 +95,10 @@ def render(profils: pd.DataFrame, application: str, now: datetime, filtrer):
                 LIBELLES["lendemain"]: st.column_config.CheckboxColumn("J+1"),
                 LIBELLES["cyclique"]: st.column_config.CheckboxColumn("cyclique"),
                 LIBELLES["description"]: st.column_config.TextColumn(width="large"),
-                LIBELLES["programme_auto"]: st.column_config.TextColumn(width="large"),
+                LIBELLES["programme_auto"]: st.column_config.TextColumn(
+                    width="large", help="Nom utilisateur du programme Oracle Applications (ora_programs) ; le code seul "
+                                        "quand le programme n'est pas dans le référentiel des programmes chargé"),
+                LIBELLES["programme_code"]: st.column_config.TextColumn(width="medium"),
                 LIBELLES["programme"]: st.column_config.TextColumn(width="large", help="Laisser vide pour garder la valeur automatique"),
                 LIBELLES["source"]: st.column_config.TextColumn(width="small"),
             })

@@ -236,11 +236,13 @@ def historique_job(df_runs: pd.DataFrame, job: str) -> pd.DataFrame:
 GENERIQUES = {"DKA_SLAUNCHER"}   # lanceurs : jamais affichés comme « programme » d'un job
 
 
-def programmes_oracle(con, generiques: set[str] = GENERIQUES) -> dict[str, str]:
-    """Job Control-M -> programmes Oracle Applications qu'il déclenche, par fréquence décroissante.
+def programmes_oracle_detail(con, generiques: set[str] = GENERIQUES) -> dict[str, list[tuple[str, str]]]:
+    """Job Control-M -> [(code, nom utilisateur)] des programmes Oracle Applications qu'il déclenche,
+    par fréquence décroissante (4 au plus). Le nom utilisateur vient de la demande, sinon d'ora_programs ;
+    il est vide quand le programme n'est pas connu du référentiel des programmes.
 
     Le job lance un lanceur (DKA_SLAUNCHER, mémorisé dans job_mapping), qui soumet le traitement métier :
-    c'est ce dernier qu'on affiche. Un job dont on ne connaît que le lanceur affiche le lanceur.
+    c'est ce dernier qu'on retient. Un job dont on ne connaît que le lanceur n'apparaît pas.
     """
     lanceurs, scripts = {}, {}
     for job, short, prog in con.execute("SELECT job_name, program_short, programme FROM job_mapping"):
@@ -256,13 +258,25 @@ def programmes_oracle(con, generiques: set[str] = GENERIQUES) -> dict[str, str]:
     par_job: dict[str, list[tuple[str, str]]] = {}
     for job, short, name, _n in rows:
         par_job.setdefault(job, []).append((short, name))
-    out = {}
+    out: dict[str, list[tuple[str, str]]] = {}
     for job, progs in par_job.items():
-        metier = [(s, n) for s, n in progs if s != lanceurs.get(job) and s not in generiques]
+        metier = [(s, n or noms.get(s, "")) for s, n in progs if s != lanceurs.get(job) and s not in generiques]
         if metier:
-            out[job] = " ; ".join(f"{s} · {n}" if n else s for s, n in metier[:4])
+            out[job] = metier[:4]
     # Sans demande fille connue : le programme déduit du script du lanceur ; jamais le lanceur lui-même
     for job, prog in scripts.items():
         if prog not in generiques:
-            out.setdefault(job, f"{prog} · {noms[prog]}" if noms.get(prog) else prog)
+            out.setdefault(job, [(prog, noms.get(prog, ""))])
     return out
+
+
+def programmes_oracle(con, generiques: set[str] = GENERIQUES) -> dict[str, str]:
+    """Job -> libellé à afficher : le nom utilisateur du programme (ora_programs), à défaut son code."""
+    return {job: " ; ".join(n or c for c, n in progs)
+            for job, progs in programmes_oracle_detail(con, generiques).items()}
+
+
+def codes_oracle(con, generiques: set[str] = GENERIQUES) -> dict[str, str]:
+    """Job -> codes (noms courts) des programmes, dans le même ordre que programmes_oracle."""
+    return {job: " ; ".join(c for c, _n in progs)
+            for job, progs in programmes_oracle_detail(con, generiques).items()}

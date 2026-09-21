@@ -14,7 +14,8 @@ def test_programmes_oracle_prend_le_traitement_lance_par_le_lanceur(tmp_path):
     con.executemany("INSERT INTO ora_requests(request_id, program_short, program_name, job_name) VALUES (?,?,?,?)", rows)
     con.commit()
     prog = fc.programmes_oracle(con)
-    assert prog["FINFIN_J18TRT_04_IMP01_Q"] == "DKA_IPAPROJETHRM · Import projets HRM ; APXIIMPT · Import des factures fournisseurs"
+    assert prog["FINFIN_J18TRT_04_IMP01_Q"] == "Import projets HRM ; Import des factures fournisseurs"
+    assert fc.codes_oracle(con)["FINFIN_J18TRT_04_IMP01_Q"] == "DKA_IPAPROJETHRM ; APXIIMPT"
     assert "FINEXT_J11GEN_06_EXP01_Q" not in prog          # lanceur seul : pas de programme métier connu
     assert "INCONNU" not in prog
     con.close()
@@ -34,7 +35,7 @@ def test_programmes_oracle_ignore_les_demandes_et_programmes_mock(tmp_path):
     )
     con.commit()
 
-    assert fc.programmes_oracle(con)["JOB_A"] == "PROG_REEL · Programme réel"
+    assert fc.programmes_oracle(con)["JOB_A"] == "Programme réel"
     con.close()
 
 
@@ -56,7 +57,12 @@ def test_programmes_oracle_utilise_le_script_du_lanceur_a_defaut_de_filles(tmp_p
     con.execute("INSERT INTO ora_programs(program_short, program_name) VALUES ('DKA_IPAPROJETHRM', 'Import projets HRM')")
     con.execute("INSERT INTO ora_requests(request_id, program_short, program_name, job_name) VALUES (1, 'DKA_SLAUNCHER', 'Lanceur', 'FINFIN_J18TRT_04_IMP01_Q')")
     con.commit()
-    assert fc.programmes_oracle(con)["FINFIN_J18TRT_04_IMP01_Q"] == "DKA_IPAPROJETHRM · Import projets HRM"
+    assert fc.programmes_oracle(con)["FINFIN_J18TRT_04_IMP01_Q"] == "Import projets HRM"
+    assert fc.codes_oracle(con)["FINFIN_J18TRT_04_IMP01_Q"] == "DKA_IPAPROJETHRM"
+    # programme inconnu du référentiel des programmes : le code reste affiché plutôt que rien
+    con.execute("UPDATE job_mapping SET programme='DKA_IPOCDE_CHARG'")
+    con.commit()
+    assert fc.programmes_oracle(con)["FINFIN_J18TRT_04_IMP01_Q"] == "DKA_IPOCDE_CHARG"
     con.close()
 
 

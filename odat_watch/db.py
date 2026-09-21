@@ -90,7 +90,8 @@ CREATE INDEX IF NOT EXISTS ix_cm_histo_date ON controle_matin_histo(date_ctrl, e
 CREATE TABLE IF NOT EXISTS referentiel_jobs (
     job_name         TEXT PRIMARY KEY,
     application_ctm  TEXT, chaine TEXT, description TEXT, script TEXT,
-    programme_auto   TEXT,                 -- déduit des demandes Oracle (lanceur / filles / script)
+    programme_auto   TEXT,                 -- nom utilisateur du programme déduit des demandes Oracle (lanceur / filles / script)
+    programme_code   TEXT,                 -- code (nom court) du même programme
     programme        TEXT,                 -- saisie manuelle (prioritaire) ; vide = auto
     application_ora  TEXT,                 -- saisie manuelle
     commentaire      TEXT,
@@ -311,6 +312,10 @@ def _migrate(con: sqlite3.Connection) -> None:
         if cols and colonne not in cols:
             con.execute(f"ALTER TABLE {table} ADD COLUMN {colonne} TEXT")
             con.commit()
+    cols = [r[1] for r in con.execute("PRAGMA table_info(referentiel_jobs)")]
+    if cols and "programme_code" not in cols:
+        con.execute("ALTER TABLE referentiel_jobs ADD COLUMN programme_code TEXT")
+        con.commit()
     # Contrôle du matin : compteurs ajoutés après la création de l'historique (factures AR, 21/09/2026)
     cols = [r[1] for r in con.execute("PRAGMA table_info(controle_matin_histo)")]
     for colonne in ("nb_fac_ar", "nb_fac_ar_rejet"):

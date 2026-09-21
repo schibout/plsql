@@ -24,7 +24,8 @@ def test_synchroniser_cree_les_lignes_et_remplit_l_auto(tmp_path):
     t = ref.table(con)
     assert list(t["job_name"]) == ["CELCEL_J11TRT_04_WRK01_H", "FINFIN_J11TEC_04_DEB01_Q", "FINFIN_J18TRT_04_IMP01_Q"]
     imp = t.set_index("job_name").loc["FINFIN_J18TRT_04_IMP01_Q"]
-    assert imp["programme_auto"] == "DKA_IPAPROJETHRM · Import projets HRM" and imp["programme"] == "DKA_IPAPROJETHRM · Import projets HRM"
+    assert imp["programme_auto"] == "Import projets HRM" and imp["programme"] == "Import projets HRM"
+    assert imp["programme_code"] == "DKA_IPAPROJETHRM"
     assert imp["source"] == "auto" and imp["description"] == "Import des projets dans PA" and imp["chaine"] == "FINFIN_J18TRT_04_Q"
     jalon = t.set_index("job_name").loc["FINFIN_J11TEC_04_DEB01_Q"]
     assert jalon["source"] == "à renseigner" and jalon["programme"] == ""
@@ -39,12 +40,12 @@ def test_saisie_manuelle_prioritaire_et_conservee(tmp_path):
     t = ref.table(con).set_index("job_name")
     assert t.loc["FINFIN_J18TRT_04_IMP01_Q", "programme"] == "PA_IMPORT_PROJETS"
     assert t.loc["FINFIN_J18TRT_04_IMP01_Q", "source"] == "manuel"
-    assert t.loc["FINFIN_J18TRT_04_IMP01_Q", "programme_auto"] == "DKA_IPAPROJETHRM · Import projets HRM"
+    assert t.loc["FINFIN_J18TRT_04_IMP01_Q", "programme_auto"] == "Import projets HRM"
     ref.synchroniser(con)                         # une resynchro ne remplace pas la saisie
     assert ref.table(con).set_index("job_name").loc["FINFIN_J18TRT_04_IMP01_Q", "programme"] == "PA_IMPORT_PROJETS"
     ref.enregistrer(con, "FINFIN_J18TRT_04_IMP01_Q", programme="", application="", commentaire="")   # effacement -> retour à l'auto
     assert ref.table(con).set_index("job_name").loc["FINFIN_J18TRT_04_IMP01_Q", "source"] == "auto"
-    assert ref.programmes(con)["FINFIN_J18TRT_04_IMP01_Q"] == "DKA_IPAPROJETHRM · Import projets HRM"
+    assert ref.programmes(con)["FINFIN_J18TRT_04_IMP01_Q"] == "Import projets HRM"
     con.close()
 
 
@@ -54,7 +55,7 @@ def test_programmes_fusionne_manuel_et_auto(tmp_path):
     ref.enregistrer(con, "FINFIN_J11TEC_04_DEB01_Q", programme="(jalon, pas de programme)", application="", commentaire="")
     p = ref.programmes(con)
     assert p["FINFIN_J11TEC_04_DEB01_Q"] == "(jalon, pas de programme)"
-    assert p["FINFIN_J18TRT_04_IMP01_Q"].startswith("DKA_IPAPROJETHRM")
+    assert p["FINFIN_J18TRT_04_IMP01_Q"] == "Import projets HRM"
     con.close()
 
 
@@ -71,6 +72,7 @@ def test_synchroniser_relit_les_descriptions_de_lanceur_deja_en_base(tmp_path):
     assert con.execute("SELECT COUNT(*) FROM job_mapping WHERE job_name='FINEXT_J11GEN_06_EXP01_Q'").fetchone()[0] == 0
     ref.synchroniser(con)
     t = ref.table(con).set_index("job_name")
-    assert t.loc["FINEXT_J11GEN_06_EXP01_Q", "programme_auto"] == "DKA_IPOEXTRACTCDE · Extraction des commandes"
+    assert t.loc["FINEXT_J11GEN_06_EXP01_Q", "programme_auto"] == "Extraction des commandes"
+    assert t.loc["FINEXT_J11GEN_06_EXP01_Q", "programme_code"] == "DKA_IPOEXTRACTCDE"
     assert con.execute("SELECT programme FROM job_mapping WHERE job_name='FINEXT_J11GEN_06_EXP01_Q'").fetchone()[0] == "DKA_IPOEXTRACTCDE"
     con.close()
