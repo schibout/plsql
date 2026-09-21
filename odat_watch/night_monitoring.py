@@ -1,7 +1,7 @@
 """Rapproche le plan prévisionnel avec la dernière photo Control-M disponible."""
 from __future__ import annotations
 
-from datetime import datetime, timedelta
+from datetime import date, datetime, timedelta
 
 import pandas as pd
 
@@ -37,3 +37,17 @@ def compteurs(suivi_df: pd.DataFrame) -> dict[str, int]:
         return {label: 0 for label in labels}
     counts = suivi_df["suivi"].value_counts()
     return {label: int(counts.get(label, 0)) for label in labels}
+
+
+def couverture(plan: pd.DataFrame, photo: pd.DataFrame | None) -> tuple[bool, date | None]:
+    """La dernière photo ne renseigne qu'une odate : (la plage est-elle couverte ?, odate de la photo).
+    Sert à expliquer des compteurs à zéro en mode Suivre / Bilan au lieu de les laisser muets."""
+    odate = None
+    if photo is not None and photo.attrs.get("odate"):
+        try:
+            odate = datetime.strptime(str(photo.attrs["odate"]), "%Y-%m-%d").date()
+        except ValueError:
+            odate = None
+    if odate is None or plan.empty or "odate" not in plan.columns:
+        return False, odate
+    return bool((pd.to_datetime(plan["odate"]).dt.date == odate).any()), odate

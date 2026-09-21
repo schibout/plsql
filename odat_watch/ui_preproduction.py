@@ -73,6 +73,9 @@ def render(con: sqlite3.Connection, profs, last: pd.DataFrame, now: datetime, kp
     st.subheader("Préparer ma nuit")
     st.caption("Prévision issue de l'historique Control-M ; le suivi utilise la dernière photo importée et n'est pas une supervision temps réel.")
     default_day = now.date() if now.hour >= 6 else (now - timedelta(days=1)).date()
+    # Le bouton « Nuit du … » demande un changement de date : il s'applique ici, avant que le widget n'existe.
+    if "plan_day_demande" in st.session_state:
+        st.session_state["plan_day"] = st.session_state.pop("plan_day_demande")
     c1, c2, c3, c4 = st.columns([1.2, .8, .8, 1.4])
     day = c1.date_input("Date de début", value=default_day, key="plan_day")
     start_t = c2.time_input("Début", value=time(19, 0), key="plan_start")
@@ -88,6 +91,19 @@ def render(con: sqlite3.Connection, profs, last: pd.DataFrame, now: datetime, kp
     shown = production_plan.filtrer_contexte(plan, events, context_filter)
     if mode != "Préparer":
         shown = night_monitoring.suivi(shown, last, now)
+        couverte, odate_photo = night_monitoring.couverture(plan, last)
+        if not couverte:
+            w1, w2 = st.columns([3, 1])
+            if odate_photo is None:
+                w1.warning("Aucune photo Control-M importée : le suivi et le bilan n'ont rien à comparer. "
+                           "Importez les fichiers ODAT (barre latérale).")
+            else:
+                w1.warning(f"La dernière photo Control-M porte sur la nuit du **{odate_photo:%d/%m/%Y}** : elle ne couvre pas "
+                           f"la plage choisie, les compteurs restent à zéro. Choisissez cette date, ou importez une photo "
+                           f"plus récente pour suivre la nuit en cours.")
+                if w2.button(f"→ Nuit du {odate_photo:%d/%m}", key="plan_nuit_photo", use_container_width=True):
+                    st.session_state["plan_day_demande"] = odate_photo
+                    st.rerun()
     st.caption(f"{begin:%d/%m %H:%M} → {end:%d/%m %H:%M} · {context} · filtre : {context_filter}")
     if not events.empty:
         with st.expander(f"{len(events)} jalon(s) de clôture dans cette plage", expanded=False):
