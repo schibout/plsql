@@ -77,6 +77,27 @@ def charger(application: str | None, _stamp: float):
 
 
 @st.cache_data(show_spinner=False)
+def charger_jobs_controlm(_stamp: float):
+    """Historique brut de toutes les photos de l'application FIN-FINANCE."""
+    con = connect()
+    try:
+        jobs = pd.read_sql_query(
+            """SELECT j.*, s.snap_time
+               FROM ctm_jobs j
+               JOIN snapshots s ON s.id = j.snapshot_id
+               WHERE j.application = ?
+               ORDER BY s.snap_time DESC, j.job_name""",
+            con,
+            params=("FIN-FINANCE",),
+        )
+        for colonne in ("snap_time", "start_time", "end_time"):
+            jobs[colonne] = pd.to_datetime(jobs[colonne], errors="coerce")
+        return jobs
+    finally:
+        con.close()
+
+
+@st.cache_data(show_spinner=False)
 def programmes_oracle(_stamp: float) -> dict[str, str]:
     """Job -> programme Oracle : saisie du référentiel prioritaire, sinon déduit des demandes Oracle."""
     import referentiel
@@ -307,7 +328,7 @@ st.markdown(f"""
 </div>""", unsafe_allow_html=True)
 
 tab_plan, tab_calendriers, tab_soir, tab_demain, tab_now, tab_matin, tab_releves, tab_folio, tab_vir, tab_prel, tab_ora, tab_histo, tab_profils, tab_data, tab_sql = st.tabs(
-    ["🧭 Préparer ma nuit", "📥 Clôtures", "🌙 Ce soir", "📅 Demain", "🔴 Maintenant", "☀️ Matin", "🏦 Relevés bancaires", "🌹 Folio Rose", "💸 Virements", "💳 Prélèvements", "🅾 Oracle", "🔎 Historique", "📈 Profils", "🗂 Données", "⌨ SQL"])
+    ["🧭 Préparer ma nuit", "📥 Clôtures", "🌙 Ce soir", "📅 Demain", "🔴 Maintenant", "☀️ Matin", "🏦 Relevés bancaires", "🌹 Folio Rose", "💸 Virements", "💳 Prélèvements", "🅾 Oracle", "🔎 Historique", "📈 Profils", "🗂 Jobs CtrlM", "⌨ SQL"])
 
 with tab_plan:
     con = connect()
@@ -449,10 +470,10 @@ with tab_profils:
     import ui_profils
     ui_profils.render(fc.profils_df(profs), application, now, filtrer)
 
-# ------------------------------------------------------------------ données
+# ------------------------------------------------------------------ jobs Control-M
 with tab_data:
-    st.markdown("#### Photos chargées")
-    st.dataframe(snaps, use_container_width=True, hide_index=True)
+    import ui_jobs_controlm
+    ui_jobs_controlm.render(charger_jobs_controlm(stamp()), "FIN-FINANCE")
     st.markdown("#### Comparer deux photos")
     opts = list(snaps["snap_time"])
     if len(opts) >= 2:
@@ -463,8 +484,8 @@ with tab_data:
         q = """SELECT j.job_name, j.start_time, j.end_time, j.status, j.rerun, j.description
                FROM ctm_jobs j JOIN snapshots s ON s.id=j.snapshot_id
                WHERE s.snap_time=? AND j.application=? AND j.task_type<>'Dummy'"""
-        a = pd.read_sql_query(q, con, params=(s_a, application)).sort_values("start_time").drop_duplicates("job_name", keep="last")
-        b = pd.read_sql_query(q, con, params=(s_b, application)).sort_values("start_time").drop_duplicates("job_name", keep="last")
+        a = pd.read_sql_query(q, con, params=(s_a, "FIN-FINANCE")).sort_values("start_time").drop_duplicates("job_name", keep="last")
+        b = pd.read_sql_query(q, con, params=(s_b, "FIN-FINANCE")).sort_values("start_time").drop_duplicates("job_name", keep="last")
         con.close()
         m = a.merge(b, on="job_name", how="outer", suffixes=("_A", "_B")).fillna("")
         chg = m[(m["status_A"] != m["status_B"]) | (m["start_time_A"] != m["start_time_B"])].copy()

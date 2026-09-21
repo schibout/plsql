@@ -53,6 +53,20 @@ def _filtre(df: pd.DataFrame, recherche: str, application: str | None) -> pd.Dat
     return df
 
 
+def _filtre_multi(df: pd.DataFrame, jobs=(), programmes=(), statuts=()) -> pd.DataFrame:
+    """Filtres cumulables ; plusieurs valeurs d'un même critère sont combinées par OU."""
+    if df.empty:
+        return df.copy()
+    resultat = df.copy()
+    if jobs and "job_name" in resultat.columns:
+        resultat = resultat[resultat["job_name"].isin(jobs)]
+    if programmes and "program_short" in resultat.columns:
+        resultat = resultat[resultat["program_short"].isin(programmes)]
+    if statuts and "état" in resultat.columns:
+        resultat = resultat[resultat["état"].isin(statuts)]
+    return resultat
+
+
 def render(application, recherche, now: datetime, kpi, badge):
     req, logs, progs = _charger(_stamp())
     if not progs.empty and (progs["description"] == "(mock)").any():
@@ -76,6 +90,43 @@ def render(application, recherche, now: datetime, kpi, badge):
         req["état"] = req.apply(_etat, axis=1)
         req["durée_min"] = ((req["actual_completion"] - req["actual_start"]).dt.total_seconds() / 60).round(1)
         req["en_erreur"] = (req["phase_code"] == "C") & req["status_code"].isin(["E", "G", "X", "D"])
+
+    # ------------------------------------------------------------ recherche multi
+    req_avant_multi = req
+    jobs_disponibles = (sorted(req["job_name"].dropna().astype(str).loc[lambda s: s.str.strip().ne("")].unique())
+                        if not req.empty and "job_name" in req.columns else [])
+    programmes_disponibles = (sorted(req["program_short"].dropna().astype(str).loc[lambda s: s.str.strip().ne("")].unique())
+                              if not req.empty and "program_short" in req.columns else [])
+    statuts_disponibles = (sorted(req["état"].dropna().astype(str).unique())
+                           if not req.empty and "état" in req.columns else [])
+    noms_programmes = {}
+    if not req.empty and {"program_short", "program_name"}.issubset(req.columns):
+        noms_programmes = (req.dropna(subset=["program_short"])
+                           .drop_duplicates("program_short")
+                           .set_index("program_short")["program_name"].fillna("").to_dict())
+
+    col_jobs, col_programmes, col_statuts = st.columns([1.6, 1.5, 1])
+    jobs_choisis = col_jobs.multiselect(
+        "Jobs Control-M",
+        jobs_disponibles,
+        placeholder="Rechercher plusieurs jobs…",
+        key="oracle_jobs_multi",
+    )
+    programmes_choisis = col_programmes.multiselect(
+        "Programmes Oracle",
+        programmes_disponibles,
+        placeholder="Rechercher plusieurs programmes…",
+        format_func=lambda code: f"{code} — {noms_programmes.get(code, '')}".rstrip(" —"),
+        key="oracle_programmes_multi",
+    )
+    statuts_choisis = col_statuts.multiselect(
+        "Statuts",
+        statuts_disponibles,
+        placeholder="Tous les statuts",
+        key="oracle_statuts_multi",
+    )
+    req = _filtre_multi(req, jobs_choisis, programmes_choisis, statuts_choisis)
+    st.caption(f"{len(req)} demande(s) affichée(s) sur {len(req_avant_multi)}.")
 
     # ------------------------------------------------------------ KPI
     c = st.columns(6)

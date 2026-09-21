@@ -57,6 +57,23 @@ def snapshots_list(con=None) -> pd.DataFrame:
     return pd.read_sql_query("SELECT odate, snap_time, nb_lignes, source_file FROM snapshots ORDER BY snap_time DESC", _con(con))
 
 
+def jobs_controlm_bruts(con=None, application: str = "FIN-FINANCE") -> pd.DataFrame:
+    """Toutes les lignes de toutes les photos Control-M pour une application, sans dédoublonnage."""
+    con = _con(con)
+    df = pd.read_sql_query(
+        """SELECT j.*, s.snap_time
+           FROM ctm_jobs j
+           JOIN snapshots s ON s.id = j.snapshot_id
+           WHERE j.application = ?
+           ORDER BY s.snap_time DESC, j.job_name""",
+        con,
+        params=(application,),
+    )
+    for colonne in ("snap_time", "start_time", "end_time"):
+        df[colonne] = pd.to_datetime(df[colonne], errors="coerce")
+    return df
+
+
 # ---------------------------------------------------------------- profils
 @dataclass
 class Profil:
