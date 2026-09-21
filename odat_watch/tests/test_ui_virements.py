@@ -10,7 +10,7 @@ import virements as vr
 OUTIL = Path(__file__).resolve().parents[2] / "controleVirement"
 RACINE = Path(__file__).resolve().parents[2] / "ODAT" / "virements"
 DATE = "18092026"
-CFG = {"outil": OUTIL, "racine": RACINE, "historique_jours": 7}
+CFG = {"outil": OUTIL, "racine": RACINE, "depot": RACINE / "import_virement", "historique_jours": 7}
 pytestmark = pytest.mark.skipif(not ((RACINE / DATE).is_dir() or (RACINE / f"{DATE}_cible").is_dir()),
                                 reason="données ODAT/virements absentes")
 
@@ -81,3 +81,26 @@ def test_dates_disponibles_accepte_les_deux_dispositions(tmp_path):
     (tmp_path / "18092026" / "uuid1").mkdir()
     (tmp_path / "18092026" / "uuid2").mkdir()
     assert vr.nb_instances(tmp_path, "18092026") == 2 and vr.nb_instances(tmp_path, "15092026") == 0
+
+
+def test_bouton_import_range_les_instances(monkeypatch, tmp_path):
+    """Le dépôt contient une instance datable : le bouton l'importe dans JJMMAAAA et l'onglet la propose."""
+    import virements_import as vi
+    from test_virements_import import _instance
+    racine = tmp_path / "virements"
+    _instance(racine / vi.DEPOT, "uuid-x", "20260918")
+    cfg = {"outil": OUTIL, "racine": racine, "depot": racine / vi.DEPOT, "historique_jours": 7}
+    monkeypatch.setattr(vr, "config_virements", lambda: cfg)
+    import ui_virements
+    monkeypatch.setattr(ui_virements, "connect", lambda: __import__("db").connect(tmp_path / "t.db"))
+    at = AppTest.from_function(_script, default_timeout=60)
+    at.run()
+    assert not at.exception
+    assert any("Aucune journée" in c.value for c in at.caption)
+    bouton = at.button(key="vir_import")
+    assert "1 élément(s)" in bouton.label
+    bouton.click().run()
+    assert not at.exception
+    assert (racine / "18092026" / "uuid-x").is_dir() and not (racine / vi.DEPOT / "uuid-x").exists()
+    assert any("1 instance(s) et 0 fichier(s) Quartz" in s.value for s in at.success)
+    assert at.selectbox(key="vir_date").options == ["18/09/2026"]

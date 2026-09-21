@@ -95,8 +95,8 @@ CREATE TABLE IF NOT EXISTS vir_imports (
     nb_fichiers   INTEGER,                -- fichiers vus par le contrôle (DK_FIN01, ACK, CSV…)
     nb_envois     INTEGER,                -- fichiers ACK envoyés à la banque
     cible_seul    INTEGER,                -- 1 = sans dossier _source (DK en euros)
-    importe_le    TEXT NOT NULL,          -- première prise en compte
-    controle_le   TEXT NOT NULL           -- dernier contrôle
+    importe_le    TEXT NOT NULL,          -- première prise en compte (import depuis import_virement ou premier contrôle)
+    controle_le   TEXT                    -- dernier contrôle (NULL : importée, jamais contrôlée)
 );
 CREATE TABLE IF NOT EXISTS vir_histo (
     id              INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -348,6 +348,11 @@ def _migrate(con: sqlite3.Connection) -> None:
         if cols and colonne not in cols:
             con.execute(f"ALTER TABLE {table} ADD COLUMN {colonne} TEXT")
             con.commit()
+    # vir_imports : controle_le est devenu facultatif (import sans contrôle) ; table recréée, elle se réalimente au prochain contrôle
+    info = con.execute("PRAGMA table_info(vir_imports)").fetchall()
+    if any(r[1] == "controle_le" and r[3] == 1 for r in info):
+        con.execute("DROP TABLE vir_imports")
+        con.commit()
     cols = [r[1] for r in con.execute("PRAGMA table_info(referentiel_jobs)")]
     if cols and "programme_code" not in cols:
         con.execute("ALTER TABLE referentiel_jobs ADD COLUMN programme_code TEXT")

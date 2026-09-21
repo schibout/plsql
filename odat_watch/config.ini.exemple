@@ -52,6 +52,9 @@ outil = ..\controleVirement
 ; Donnees : un dossier JJMMAAAA par jour (un sous-dossier par instance : SOURCE, TALEND, TARGET), fichier Quartz
 ; "Liste des virements importes du jour<date>.xls" ; les rapports rapport_<date> y sont ecrits. Hors git.
 racine = ..\ODAT\virements
+; Depot en vrac (sous la racine, ou chemin absolu) : instances Talend (dossier uuid) et exports Quartz, ranges par
+; journee par le bouton Importer de l'onglet
+depot = import_virement
 ; Recherche des envois deja transmis dans les autres dossiers *_cible des N jours precedents (0 = desactive)
 historique_jours = 7
 

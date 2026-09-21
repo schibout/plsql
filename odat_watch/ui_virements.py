@@ -9,6 +9,7 @@ import streamlit as st
 import mail
 import rapport_virements as rp
 import virements as vr
+import virements_import as vi
 from db import connect
 
 
@@ -30,6 +31,7 @@ def render(kpi):
     cfg = vr.config_virements()
     racine = cfg["racine"]
     st.markdown("#### Virements · Oracle → FIN01.VIREMENT → VIREMENT.EDF01 (ACK banque) → Quartz")
+    _import(cfg)
     dates = vr.dates_disponibles(racine) if racine.is_dir() else []
     if not dates:
         st.caption(f"Aucune journée : copiez les dossiers `JJMMAAAA` (un sous-dossier par instance : SOURCE, "
@@ -111,6 +113,36 @@ def render(kpi):
 
     _rapport_et_mail(rapport, date)
     _historique()
+
+
+def _import(cfg: dict) -> None:
+    """Dépôt import_virement : instances et exports Quartz déposés en vrac, rangés par journée en un clic."""
+    depot = cfg["depot"]
+    elements = vi.scanner(depot, cfg["racine"]) if depot.is_dir() else []
+    a_importer = [e for e in elements if e.etat == "à importer"]
+    c1, c2 = st.columns([1.4, 3])
+    if c1.button(f"📥 Importer {len(a_importer)} élément(s) déposé(s)" if a_importer else "📥 Importer depuis le dépôt",
+                 key="vir_import", use_container_width=True, disabled=not a_importer,
+                 help=f"Dépôt : {depot}\nInstances (dossier uuid avec SOURCE, TALEND, TARGET) et exports Quartz, "
+                      "datés par leur contenu."):
+        con = connect()
+        try:
+            bilan = vi.importer(depot, cfg["racine"], con)
+        finally:
+            con.close()
+        st.session_state["vir_import_msg"] = bilan.message
+        st.rerun()
+    if not depot.is_dir():
+        c2.caption(f"Dépôt `{depot}` absent : créez-le et déposez-y les instances Talend et les exports Quartz "
+                   "(`config.ini [virements] depot`).")
+    elif not elements:
+        c2.caption(f"Dépôt `{depot.name}` vide. Déposez-y les instances (dossier uuid) et les exports Quartz, sans les trier.")
+    else:
+        restes = [e for e in elements if e.etat != "à importer"]
+        c2.caption(f"Dépôt `{depot.name}` : {len(a_importer)} à importer"
+                   + (", " + ", ".join(f"{e.chemin.name} ({e.etat})" for e in restes) if restes else ""))
+    if st.session_state.get("vir_import_msg"):
+        st.success(st.session_state.pop("vir_import_msg"))
 
 
 def _rapport_et_mail(rapport: dict, date: str) -> None:

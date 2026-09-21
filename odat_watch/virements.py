@@ -16,7 +16,8 @@ import pandas as pd
 
 from oracle_refresh import BASE_DIR, CONFIG
 
-DEFAUTS = {"outil": r"..\controleVirement", "racine": r"..\ODAT\virements", "historique_jours": "7"}
+DEFAUTS = {"outil": r"..\controleVirement", "racine": r"..\ODAT\virements", "depot": "import_virement",
+           "historique_jours": "7"}
 
 # Fichiers du rapport : (clé, nom du CSV, libellé, gravité portée par la colonne « gravite » ou fixe)
 CSV_RAPPORT = [
@@ -48,7 +49,10 @@ def config_virements() -> dict:
     if CONFIG.exists():
         cfg.read(CONFIG, encoding="utf-8")
     val = {k: cfg.get("virements", k, fallback=v) for k, v in DEFAUTS.items()}
-    return {"outil": _chemin(val["outil"]), "racine": _chemin(val["racine"]),
+    racine = _chemin(val["racine"])
+    depot = Path(val["depot"].strip() or "import_virement")
+    return {"outil": _chemin(val["outil"]), "racine": racine,
+            "depot": depot if depot.is_absolute() else racine / depot,
             "historique_jours": int(val["historique_jours"] or 0)}
 
 
