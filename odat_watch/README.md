@@ -35,7 +35,7 @@ Oracle EBS R12 pour répondre à : **qu'est-ce qui tourne ce soir, et demain ?**
 | `referentiel.py` / `ui_profils.py` | **Profils + référentiel** : profil calculé de chaque job (onglet Profils) enrichi du référentiel jobs Control-M ↔ programmes Oracle Applications : alimenté automatiquement (photos ODAT + demandes Oracle : lanceur, filles, script `DKA_X_JOB.sh`), corrigeable à la main (saisie prioritaire partout), export CSV. Table `referentiel_jobs`. |
 | `ui_sql.py` | Onglet SQL : explorateur des tables SQLite (structure, volumes) et requêteur libre en lecture seule, exemples fournis, export CSV. |
 | `mock_oracle.py` | **Poste sans Oracle** : fabrique des demandes simulées à partir des exécutions Control-M (lanceur + programme métier, statuts alignés) et des logs présents. `python mock_oracle.py --reset`. Écrasé par les vraies données au premier `oracle_refresh.py`. |
-| `app.py` | Interface Streamlit : Ce soir, Demain, Maintenant, Matin, Relevés bancaires, Folio Rose, Virements, Prélèvements, Oracle, Historique, Profils (avec référentiel), Données, SQL. |
+| `app.py` | Interface Streamlit : Ce soir, Demain, Maintenant, Matin, Banque (Relevés bancaires, Virements, Prélèvements), Folio Rose, Oracle, Historique, Profils (avec référentiel), Données, SQL. |
 | `.streamlit/config.toml` | Thème de l'interface. |
 | `run.bat` | Import ODAT + lancement de l'interface. |
 | `config.ini.exemple` | Modèle de configuration (Oracle, filtres, dossiers de logs, section `[releves]`). Copier en `config.ini` (ignoré par git). |

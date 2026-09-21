@@ -327,8 +327,8 @@ st.markdown(f"""
   <div class="meta">{meta}</div>
 </div>""", unsafe_allow_html=True)
 
-tab_plan, tab_calendriers, tab_soir, tab_demain, tab_now, tab_matin, tab_releves, tab_folio, tab_vir, tab_prel, tab_ora, tab_histo, tab_profils, tab_data, tab_sql = st.tabs(
-    ["🧭 Préparer ma nuit", "📥 Clôtures", "🌙 Ce soir", "📅 Demain", "🔴 Maintenant", "☀️ Matin", "🏦 Relevés bancaires", "🌹 Folio Rose", "💸 Virements", "💳 Prélèvements", "🅾 Oracle", "🔎 Historique", "📈 Profils", "🗂 Jobs CtrlM", "⌨ SQL"])
+tab_plan, tab_calendriers, tab_soir, tab_demain, tab_now, tab_matin, tab_banque, tab_folio, tab_ora, tab_histo, tab_profils, tab_data, tab_sql = st.tabs(
+    ["🧭 Préparer ma nuit", "📥 Clôtures", "🌙 Ce soir", "📅 Demain", "🔴 Maintenant", "☀️ Matin", "🏦 Banque", "🌹 Folio Rose", "🅾 Oracle", "🔎 Historique", "📈 Profils", "🗂 Jobs CtrlM", "⌨ SQL"])
 
 with tab_plan:
     con = connect()
@@ -344,21 +344,22 @@ with tab_matin:
     import ui_matin
     ui_matin.render(now, kpi)
 
-with tab_releves:
-    import ui_releves
-    ui_releves.render(kpi)
+# ------------------------------------------------------------------ banque : relevés, virements, prélèvements
+with tab_banque:
+    tab_releves, tab_vir, tab_prel = st.tabs(["📄 Relevés bancaires", "💸 Virements", "💳 Prélèvements"])
+    with tab_releves:
+        import ui_releves
+        ui_releves.render(kpi)
+    with tab_vir:
+        import ui_virements
+        ui_virements.render(kpi)
+    with tab_prel:
+        import ui_prelevements
+        ui_prelevements.render(kpi)
 
 with tab_folio:
     import ui_folio_rose
     ui_folio_rose.render(kpi)
-
-with tab_vir:
-    import ui_virements
-    ui_virements.render(kpi)
-
-with tab_prel:
-    import ui_prelevements
-    ui_prelevements.render(kpi)
 
 with tab_ora:
     import ui_oracle
