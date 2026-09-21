@@ -51,23 +51,12 @@ class MockFolder {
   constructor(name) {
     this.name = name;
     this.files = [];
-    this.folders = [];
   }
   getName() { return this.name; }
   getFilesByName(name) {
     const matches = this.files.filter(file => !file.trashed && file.getName() === name);
     let index = 0;
     return {hasNext: () => index < matches.length, next: () => matches[index++]};
-  }
-  getFoldersByName(name) {
-    const matches = this.folders.filter(folder => folder.getName() === name);
-    let index = 0;
-    return {hasNext: () => index < matches.length, next: () => matches[index++]};
-  }
-  createFolder(name) {
-    const folder = new MockFolder(name);
-    this.folders.push(folder);
-    return folder;
   }
   createFile(blob) {
     const file = new MockFile(blob.getName());
@@ -178,26 +167,23 @@ vm.runInContext(`
     'le chemin interne doit être retiré');
 
   const parent = new MockFolder('Controle_Transfert');
-  const dateFolder = virementGetDateFolder_(parent, receivedAt);
-  assert(dateFolder.getName() === '21092026', 'nom du sous-dossier incorrect');
-  assert(virementGetDateFolder_(parent, receivedAt) === dateFolder,
-    'le sous-dossier existant doit être réutilisé');
 
-  const first = virementSaveAttachment_(dateFolder, extraction.candidates[0], message);
+  const first = virementSaveAttachment_(parent, extraction.candidates[0], message);
   assert(first.created === true, 'le premier fichier doit être créé');
-  assert(first.fileName === 'Liste des virements.xls', 'le nom original doit être conservé');
+  assert(first.fileName === '21092026_Liste des virements.xls',
+    'le nom doit être préfixé par DDMMYYYY');
 
-  const repeated = virementSaveAttachment_(dateFolder, extraction.candidates[0], message);
+  const repeated = virementSaveAttachment_(parent, extraction.candidates[0], message);
   assert(repeated.created === false, 'la relance doit réutiliser le fichier');
-  assert(dateFolder.files.length === 1, 'la relance ne doit pas créer de doublon');
+  assert(parent.files.length === 1, 'la relance ne doit pas créer de doublon');
 
   const secondMessage = new MockMessage('message-2', receivedAt, [xls]);
   const collision = virementSaveAttachment_(
-    dateFolder, extraction.candidates[0], secondMessage
+    parent, extraction.candidates[0], secondMessage
   );
-  assert(collision.fileName === 'Liste des virements_02.xls',
+  assert(collision.fileName === '21092026_Liste des virements_02.xls',
     'le second message doit recevoir le suffixe _02');
-  assert(dateFolder.files.length === 2, 'la collision doit préserver deux fichiers');
+  assert(parent.files.length === 2, 'la collision doit préserver deux fichiers');
 
   const state = {lastSuccessfulRunIso: receivedAt.toISOString(), processed: {}};
   for (let index = 0; index < 600; index++) {
@@ -225,10 +211,8 @@ vm.runInContext(`
       TIME_ZONE: 'Europe/Paris',
       INITIAL_LOOKBACK_MONTHS: 4,
       DATE_OFFSET_DAYS: null,
-      CREATE_DATE_SUBFOLDER: true,
-      SUBFOLDER_DATE_FORMAT: 'ddMMyyyy',
-      FILE_NAME_MODE: 'original',
-      FILE_TIMESTAMP_FORMAT: 'yyyyMMdd_HHmm',
+      FILE_NAME_MODE: 'timestamp_original',
+      FILE_TIMESTAMP_FORMAT: 'ddMMyyyy',
     };
   }
 
@@ -263,22 +247,17 @@ vm.runInContext(`
   assert(csvExtraction.skipped === 1, 'le profil CSV doit ignorer le PDF');
 
   const prelevementFlow = MAIL_IMPORT_FLOWS.filter(function(flow) {
-    return flow.ID === 'prelevements';
+    return flow.ID === 'prelevements_cashcollection';
   })[0];
   const prelevementParent = new MockFolder('Controle_Transfert');
-  assert(
-    virementGetDateFolder_(prelevementParent, receivedAt, prelevementFlow) ===
-      prelevementParent,
-    'le profil prélèvements doit écrire dans le dossier racine'
-  );
   const prelevementSave = virementSaveAttachment_(
     prelevementParent,
     {blob: new MockBlob('rapport.csv', 'text/csv'), originalName: 'rapport.csv'},
     message,
     prelevementFlow
   );
-  assert(prelevementSave.fileName === '20260921_0832_rapport.csv',
-    'le profil prélèvements doit préfixer le nom avec l’horodatage de Paris');
+  assert(prelevementSave.fileName === '21092026_rapport.csv',
+    'le profil prélèvements doit préfixer le nom avec DDMMYYYY');
 
   const isolatedA = makeFlow('isolated_a', true);
   const isolatedB = makeFlow('isolated_b', true);

@@ -58,14 +58,6 @@ function virementAddCollisionSuffix_(fileName, collisionIndex) {
 }
 
 /** @private */
-function virementDateFolderName_(date, timeZone, pattern) {
-  if (!(date instanceof Date) || isNaN(date.getTime())) {
-    throw new Error('Date de message invalide.');
-  }
-  return Utilities.formatDate(date, timeZone, pattern);
-}
-
-/** @private */
 function virementBuildSearchQuery_(config, referenceDate) {
   // Le libellé n'est volontairement pas exclu : Gmail peut regrouper plusieurs
   // envois quotidiens dans une conversation déjà labellisée.

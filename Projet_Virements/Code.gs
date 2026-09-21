@@ -95,14 +95,9 @@ function mailImportProcessFlow_(flow) {
     try {
       const extraction = virementExtractAttachments_(item.message, flow);
       report.skippedFiles += extraction.skipped;
-      const dateFolder = virementGetDateFolder_(
-        parentFolder,
-        item.message.getDate(),
-        flow
-      );
       extraction.candidates.forEach(function(candidate) {
         const saveResult = virementSaveAttachment_(
-          dateFolder,
+          parentFolder,
           candidate,
           item.message,
           flow
@@ -465,7 +460,7 @@ function mailImportValidateConfigs_(flows) {
     const requiredStrings = [
       'DISPLAY_NAME', 'FOLDER_ID', 'SEARCH_QUERY', 'LABEL_NAME',
       'STATE_PROPERTY_KEY', 'DRIVE_MESSAGE_MARKER_PREFIX', 'TIME_ZONE',
-      'SUBFOLDER_DATE_FORMAT', 'FILE_NAME_MODE', 'FILE_TIMESTAMP_FORMAT',
+      'FILE_NAME_MODE', 'FILE_TIMESTAMP_FORMAT',
     ];
     requiredStrings.forEach(function(field) {
       if (!String(flow[field] || '').trim()) {
@@ -505,13 +500,17 @@ function mailImportValidateConfigs_(flows) {
         'DATE_OFFSET_DAYS invalide pour le profil "' + flow.ID + '".'
       );
     }
-    if (typeof flow.CREATE_DATE_SUBFOLDER !== 'boolean') {
+    if (flow.FILE_NAME_MODE !== 'timestamp_original') {
       throw new Error(
-        'CREATE_DATE_SUBFOLDER invalide pour le profil "' + flow.ID + '".'
+        'Le profil "' + flow.ID + '" doit utiliser ' +
+        'FILE_NAME_MODE="timestamp_original".'
       );
     }
-    if (['original', 'timestamp_original'].indexOf(flow.FILE_NAME_MODE) === -1) {
-      throw new Error('FILE_NAME_MODE invalide pour le profil "' + flow.ID + '".');
+    if (flow.FILE_TIMESTAMP_FORMAT !== 'ddMMyyyy') {
+      throw new Error(
+        'Le profil "' + flow.ID + '" doit utiliser ' +
+        'FILE_TIMESTAMP_FORMAT="ddMMyyyy".'
+      );
     }
   });
 }

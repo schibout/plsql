@@ -1,6 +1,6 @@
 /** Paramètres communs du moteur multi-flux. */
 const MAIL_IMPORT_ENGINE_CONFIG = Object.freeze({
-  CODE_VERSION: 'MAIL-IMPORTS-2026-09-21.3',
+  CODE_VERSION: 'MAIL-IMPORTS-2026-09-21.4',
   MAX_MESSAGES_PER_FLOW_PER_RUN: 50,
   SEARCH_BATCH_SIZE: 100,
   MAX_THREADS_PER_FLOW_PER_RUN: 500,
@@ -53,10 +53,9 @@ const MAIL_IMPORT_FLOWS = Object.freeze([
   Object.freeze({
     ID: 'prelevements_cashcollection',
     DISPLAY_NAME: 'Prélèvements Dalkia CashCollection',
-    // Désactivé le temps de valider virements_eur seul ; repasser à true pour l'activer.
-    ENABLED: false,
+    ENABLED: true,
 
-    FOLDER_ID: '1skW6lJUvX1qlmw6RoLqE_94o5P1yu7o2',
+    FOLDER_ID: '1yEjJwQaPdVZ6dFnpASp8xo-Ew99iRYvw',
     SEARCH_QUERY: 'in:anywhere ' +
       'subject:"[PRD] Synthèse quotidienne des prélèvements Dalkia reçus par CashCollection"',
     // Le script historique ne filtrait pas l'expéditeur.

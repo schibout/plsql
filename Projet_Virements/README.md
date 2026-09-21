@@ -11,19 +11,20 @@ Le premier profil actif est `virements_eur` :
 - extensions : `.xls` et `.xlsx` ;
 - dossier Drive : `1H4J7VFzEXdJ0rLPuihiLow2Ui3nFa3GQ` (valeur de `Config.gs`).
 
-Les prélèvements sont séparés en deux profils, **désactivés pour l'instant** (`ENABLED: false`) le temps
-de valider `virements_eur` seul ; les repasser à `true` pour les activer :
+Les prélèvements sont séparés en deux profils :
 
-- dossier Drive : `1skW6lJUvX1qlmw6RoLqE_94o5P1yu7o2` ;
-- `prelevements_cashcollection` pour la synthèse quotidienne CashCollection ;
-- `prelevements_oracle_edf` pour les regroupements Oracle EDF ;
+- `prelevements_cashcollection` (actif) pour la synthèse quotidienne
+  CashCollection, dossier Drive `1yEjJwQaPdVZ6dFnpASp8xo-Ew99iRYvw` ;
+- `prelevements_oracle_edf` (désactivé, `ENABLED: false`, à réactiver après
+  validation) pour les regroupements Oracle EDF, dossier Drive
+  `1skW6lJUvX1qlmw6RoLqE_94o5P1yu7o2` ;
 - aucun filtre d'expéditeur ;
 - toutes les extensions autorisées ;
 - mails reçus exactement à J‑3 ;
 - fichiers déposés dans le dossier racine sous
   `DDMMYYYY_nom-original`.
 
-Les deux profils utilisent le même dossier Drive, mais chacun possède sa propre
+Chacun possède son propre dossier Drive, sa propre
 requête Gmail, son propre libellé, sa clé d'état et son marqueur anti-doublon.
 
 `Projet_CTM` reste indépendant et n'est pas modifié.

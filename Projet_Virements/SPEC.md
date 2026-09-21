@@ -25,7 +25,7 @@ extensions autorisées, son dossier Drive et ses clés de suivi. Le profil
 - FR-3: Le moteur MUST traiter successivement tous les profils activés et MUST continuer avec les profils suivants lorsqu'un profil échoue.
 - FR-4: Le filtre MUST accepter un message lorsque son expéditeur correspond à l'un des expéditeurs du profil, ou lorsque le profil contient le joker `*`, et que son objet correspond à l'un de ses préfixes.
 - FR-5: L'extracteur MUST accepter toutes les pièces jointes dont l'extension figure dans le profil, MUST accepter toutes les extensions lorsque la liste est vide et MUST ignorer les images intégrées.
-- FR-6: Chaque profil MUST pouvoir conserver le nom d'origine ou le préfixer par l'horodatage, et MUST pouvoir utiliser le dossier racine ou un sous-dossier daté.
+- FR-6: Chaque profil actif MUST écrire directement dans son dossier racine sans créer de sous-dossier et MUST renommer chaque fichier sous `DDMMYYYY_nom-original.ext` selon la date de réception.
 - FR-7: L'idempotence MUST être isolée par profil grâce à une propriété ScriptProperties, un libellé Gmail et un marqueur Drive propres au profil.
 - FR-8: La recherche MUST NOT exclure les conversations labellisées, afin qu'un nouveau message d'une conversation existante soit encore détecté.
 - FR-9: Le projet MUST conserver `processVirementEmails`, `diagnoseVirementEmails`, `setupVirementProject`, `resetVirementImportState` et `createVirementTimeDrivenTrigger` comme alias compatibles.
@@ -33,7 +33,7 @@ extensions autorisées, son dossier Drive et ses clés de suivi. Le profil
 - FR-11: Le profil initial `virements_eur` MUST filtrer `quartz.messenger@treasury-factory.com`, l'objet `Dalkia Virements importés du jour EUR`, et les extensions `.xls` et `.xlsx`.
 - FR-12: En cas de collision de nom entre deux messages différents dans le même dossier, le moteur MUST préserver le premier fichier et suffixer le suivant.
 - FR-13: La validation MUST refuser les identifiants, clés d'état, libellés ou préfixes de marqueur dupliqués entre profils.
-- FR-14: Le profil `prelevements` MUST reproduire la configuration historique avec les deux préfixes d'objet fournis, le dossier `1skW6lJUvX1qlmw6RoLqE_94o5P1yu7o2`, toutes les extensions, aucun filtre d'expéditeur, une date exacte à J-3 et un nom `yyyyMMdd_HHmm_nom-original` dans le dossier racine.
+- FR-14: Les prélèvements MUST être séparés entre `prelevements_cashcollection` et `prelevements_oracle_edf`, avec un seul préfixe d'objet et un état indépendant par profil, tout en partageant le dossier `1skW6lJUvX1qlmw6RoLqE_94o5P1yu7o2`, toutes les extensions, aucun filtre d'expéditeur, une date exacte à J-3 et le nom `DDMMYYYY_nom-original`.
 
 ## Non-Functional Requirements
 
@@ -69,9 +69,10 @@ Then le classeur est retourné
 And le PDF est compté comme ignoré.
 
 ### AC-5: Destination propre au profil (FR-6)
-Given un profil configuré avec le format `ddMMyyyy` et un message reçu le 21 septembre 2026
-When la destination Drive est résolue
-Then le fichier est placé dans le sous-dossier `21092026` du dossier configuré par ce profil.
+Given un profil configuré avec le format `ddMMyyyy` et un message reçu le 21 septembre 2026 contenant `rapport.xls`
+When la destination Drive est résolue et le fichier enregistré
+Then aucun sous-dossier n'est créé
+And le fichier est placé dans le dossier racine sous `21092026_rapport.xls`.
 
 ### AC-6: États isolés (FR-7)
 Given deux profils dont les clés d'état sont différentes
@@ -107,12 +108,12 @@ When les deux commandes Node.js documentées sont exécutées
 Then tous les tests se terminent avec un code de sortie zéro
 And les limites de messages, d'état et de verrou sont vérifiées.
 
-### AC-12: Migration du flux prélèvements (FR-4, FR-5, FR-6, FR-14)
-Given le profil `prelevements` et une date de référence du 21 septembre 2026
-When un mail portant l'un des deux objets configurés est reçu le 18 septembre à 10:00 heure de Paris avec une pièce jointe `rapport.csv`
-Then le message est accepté quel que soit son expéditeur
-And le fichier est enregistré dans le dossier racine sous `20260918_1000_rapport.csv`
-And un message reçu le 17 septembre est refusé avec la raison `date`.
+### AC-12: Séparation des prélèvements (FR-4, FR-5, FR-6, FR-7, FR-14)
+Given les profils `prelevements_cashcollection` et `prelevements_oracle_edf` et une date de référence du 21 septembre 2026
+When leurs configurations sont validées
+Then chaque profil possède exactement un préfixe d'objet
+And leurs libellés, clés d'état et marqueurs Drive sont différents
+And ils partagent le même dossier Drive et les règles J-3 et `DDMMYYYY_nom-original`.
 
 ## Edge Cases
 
@@ -170,10 +171,8 @@ moins un profil a subi une erreur critique.
 | `TIME_ZONE` | string | Fuseau IANA |
 | `INITIAL_LOOKBACK_MONTHS` | number | Entier supérieur ou égal à 1 |
 | `DATE_OFFSET_DAYS` | number ou null | Entier ≥ 0 pour une date exacte J-N ; null pour la fenêtre glissante |
-| `CREATE_DATE_SUBFOLDER` | boolean | `false` pour écrire dans le dossier racine |
-| `SUBFOLDER_DATE_FORMAT` | string | Format accepté par `Utilities.formatDate` |
-| `FILE_NAME_MODE` | string | `original` ou `timestamp_original` |
-| `FILE_TIMESTAMP_FORMAT` | string | Format appliqué en mode `timestamp_original` |
+| `FILE_NAME_MODE` | string | MUST être `timestamp_original` pour les profils actifs |
+| `FILE_TIMESTAMP_FORMAT` | string | MUST être `ddMMyyyy` pour les profils actifs |
 
 ### MailImportState
 

@@ -1,22 +1,4 @@
 /** @private */
-function virementGetDateFolder_(parentFolder, messageDate, flow) {
-  const activeFlow = flow || VIREMENT_CONFIG;
-  if (!activeFlow.CREATE_DATE_SUBFOLDER) return parentFolder;
-  const folderName = virementDateFolderName_(
-    messageDate,
-    activeFlow.TIME_ZONE,
-    activeFlow.SUBFOLDER_DATE_FORMAT
-  );
-  const existing = parentFolder.getFoldersByName(folderName);
-  if (existing.hasNext()) return existing.next();
-  const created = parentFolder.createFolder(folderName);
-  mailImportFlowLog_(activeFlow, 'INFO', 'Sous-dossier Drive créé.', {
-    folderName: folderName,
-  });
-  return created;
-}
-
-/** @private */
 function virementSaveAttachment_(folder, attachmentCandidate, message, flow) {
   const activeFlow = flow || VIREMENT_CONFIG;
   const messageId = message.getId();

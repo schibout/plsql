@@ -7,6 +7,12 @@ function runVirementUnitTests() {
         virementAssertTrue_(MAIL_IMPORT_FLOWS.length >= 1);
         virementAssertEquals_('virements_eur', MAIL_IMPORT_FLOWS[0].ID);
         virementAssertEquals_(true, MAIL_IMPORT_FLOWS[0].ENABLED);
+        MAIL_IMPORT_FLOWS.filter(function(flow) {
+          return flow.ENABLED;
+        }).forEach(function(flow) {
+          virementAssertEquals_('timestamp_original', flow.FILE_NAME_MODE);
+          virementAssertEquals_('ddMMyyyy', flow.FILE_TIMESTAMP_FORMAT);
+        });
       },
     },
     {
@@ -45,19 +51,27 @@ function runVirementUnitTests() {
       },
     },
     {
-      name: 'déclare le profil prélèvements historique',
+      name: 'déclare deux profils prélèvements indépendants',
       run: function() {
         const matches = MAIL_IMPORT_FLOWS.filter(function(flow) {
-          return flow.ID === 'prelevements';
+          return flow.ID.indexOf('prelevements_') === 0;
         });
-        virementAssertEquals_(1, matches.length);
-        virementAssertEquals_(
-          '1skW6lJUvX1qlmw6RoLqE_94o5P1yu7o2',
-          matches[0].FOLDER_ID
-        );
-        virementAssertEquals_(2, matches[0].EXPECTED_SUBJECT_PREFIXES.length);
-        virementAssertEquals_(3, matches[0].DATE_OFFSET_DAYS);
-        virementAssertEquals_(0, matches[0].ALLOWED_EXTENSIONS.length);
+        virementAssertEquals_(2, matches.length);
+        matches.forEach(function(flow) {
+          virementAssertTrue_(typeof flow.FOLDER_ID === 'string' &&
+            flow.FOLDER_ID.length > 0);
+          virementAssertEquals_(1, flow.EXPECTED_SUBJECT_PREFIXES.length);
+          virementAssertEquals_(3, flow.DATE_OFFSET_DAYS);
+          virementAssertEquals_(0, flow.ALLOWED_EXTENSIONS.length);
+        });
+        virementAssertTrue_(matches[0].STATE_PROPERTY_KEY !==
+          matches[1].STATE_PROPERTY_KEY);
+        virementAssertTrue_(matches[0].LABEL_NAME !== matches[1].LABEL_NAME);
+        virementAssertTrue_(matches[0].DRIVE_MESSAGE_MARKER_PREFIX !==
+          matches[1].DRIVE_MESSAGE_MARKER_PREFIX);
+        virementAssertFalse_(matches[0].SEARCH_QUERY.indexOf(
+          matches[1].EXPECTED_SUBJECT_PREFIXES[0]
+        ) !== -1);
       },
     },
     {
@@ -84,7 +98,7 @@ function runVirementUnitTests() {
       name: 'le profil prélèvements accepte tout expéditeur mais seulement J-3',
       run: function() {
         const flow = MAIL_IMPORT_FLOWS.filter(function(candidate) {
-          return candidate.ID === 'prelevements';
+          return candidate.ID === 'prelevements_cashcollection';
         })[0];
         const validMessage = {
           isInTrash: function() { return false; },
@@ -118,13 +132,13 @@ function runVirementUnitTests() {
       },
     },
     {
-      name: 'le profil prélèvements préfixe le nom avec l horodatage',
+      name: 'le profil prélèvements préfixe le nom avec DDMMYYYY',
       run: function() {
         const flow = MAIL_IMPORT_FLOWS.filter(function(candidate) {
-          return candidate.ID === 'prelevements';
+          return candidate.ID === 'prelevements_cashcollection';
         })[0];
         virementAssertEquals_(
-          '20260918_1000_rapport.csv',
+          '18092026_rapport.csv',
           mailImportBuildOutputFileName_(
             'rapport.csv',
             new Date('2026-09-18T08:00:00.000Z'),
@@ -191,19 +205,6 @@ function runVirementUnitTests() {
         virementAssertEquals_(
           'Liste des virements.xls',
           virementSanitizeFileName_('../export\\Liste des virements.xls\u0000')
-        );
-      },
-    },
-    {
-      name: 'construit le dossier daté en heure de Paris',
-      run: function() {
-        virementAssertEquals_(
-          '21092026',
-          virementDateFolderName_(
-            new Date('2026-09-21T06:32:00.000Z'),
-            'Europe/Paris',
-            'ddMMyyyy'
-          )
         );
       },
     },
@@ -312,10 +313,8 @@ function virementTestFlow_(id) {
     TIME_ZONE: 'Europe/Paris',
     INITIAL_LOOKBACK_MONTHS: 4,
     DATE_OFFSET_DAYS: null,
-    CREATE_DATE_SUBFOLDER: true,
-    SUBFOLDER_DATE_FORMAT: 'ddMMyyyy',
-    FILE_NAME_MODE: 'original',
-    FILE_TIMESTAMP_FORMAT: 'yyyyMMdd_HHmm',
+    FILE_NAME_MODE: 'timestamp_original',
+    FILE_TIMESTAMP_FORMAT: 'ddMMyyyy',
   };
 }
 
