@@ -19,8 +19,8 @@ JOURS = ["lundi", "mardi", "mercredi", "jeudi", "vendredi", "samedi", "dimanche"
 CLASSE_STATUT = {"OK": "ok", "WARNING": "warn", "ALERTE": "ko", "ERREUR": "ko"}
 MESSAGE_STATUT = {
     "OK": "Tous les indicateurs sont au vert.",
-    "WARNING": "Des indicateurs sont sous leur seuil ou des traitements sont en avertissement : à vérifier.",
-    "ALERTE": "Traitements en erreur, factures Xerox sans image ou factures AR rejetées par AutoInvoice : action requise.",
+    "WARNING": "Des indicateurs sont sous leur seuil, des traitements sont en avertissement ou des factures Xerox attendent leur image : à vérifier.",
+    "ALERTE": "Traitements en erreur ou factures AR rejetées par AutoInvoice : action requise.",
     "ERREUR": "Une partie du contrôle n'a pas pu être exécutée (erreur Oracle) : les compteurs concernés ne sont pas fiables.",
 }
 
@@ -92,9 +92,9 @@ def _tuile(cle: str, res: Resultat) -> str:
     elif cle in res.statuts:
         cls = {"OK": "ok", "N/A": "na"}.get(res.statuts[cle], "warn")
         pill = f'<span class="pill {cls}">{_t(res.statuts[cle])}</span>'
-    elif cle in ("nb_erreurs", "nb_images_manq", "nb_fac_ar_rejet"):
+    elif cle in ("nb_erreurs", "nb_fac_ar_rejet"):
         pill = f'<span class="pill {"ko" if (val or 0) > 0 else "ok"}">{"ALERTE" if (val or 0) > 0 else "OK"}</span>'
-    elif cle == "nb_warnings":
+    elif cle in ("nb_warnings", "nb_images_manq"):
         pill = f'<span class="pill {"warn" if (val or 0) > 0 else "ok"}">{"W" if (val or 0) > 0 else "OK"}</span>'
     else:
         pill = ""
@@ -138,7 +138,8 @@ def construire(res: Resultat) -> str:
     tuiles = "".join(_tuile(c, res) for c in COMPTEURS)
     corps = []
     for sec in res.sections:
-        titre = _t(sec.titre) + (f' <span class="pill ko">{sec.nb}</span>' if sec.alerte else "")
+        cls = "warn" if sec.cle == "xerox_sans_img" else "ko"
+        titre = _t(sec.titre) + (f' <span class="pill {cls}">{sec.nb}</span>' if sec.alerte else "")
         corps.append(f"<h2>{titre}</h2>")
         corps.append(f'<div class="erreur">{_t(sec.erreur)}</div>' if sec.erreur else _table(sec.df))
     return f"""<!DOCTYPE html>

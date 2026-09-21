@@ -74,8 +74,10 @@ def test_statut_global_alerte_erreurs():
     assert cm.statut_global(compteurs_ok(nb_erreurs=1), _sections()) == "ALERTE"
 
 
-def test_statut_global_alerte_images_manquantes():
-    assert cm.statut_global(compteurs_ok(nb_images_manq=3), _sections()) == "ALERTE"
+def test_statut_global_images_manquantes_est_un_avertissement():
+    """Les images arrivent souvent avec un jour de retard : à surveiller, pas une alerte."""
+    assert cm.statut_global(compteurs_ok(nb_images_manq=3), _sections()) == "WARNING"
+    assert cm.statut_global(compteurs_ok(nb_images_manq=3, nb_erreurs=1), _sections()) == "ALERTE"
 
 
 def test_statut_global_erreur_si_section_en_echec():

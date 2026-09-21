@@ -92,6 +92,14 @@ def test_rapport_jour_sans_integration():
     assert "pas d'intégration ce jour-là" in h and "fichier SG" in h
 
 
+def test_tuile_images_manquantes_en_avertissement():
+    res = _resultat("WARNING")
+    res.compteurs["nb_images_manq"] = 3
+    html = rm.construire(res)
+    i = html.index("Images manquantes")
+    assert 'pill warn">W' in html[i:i + 120] and 'pill ko' not in html[i:i + 120]
+
+
 def test_tuile_factures_ar_rejetees_en_alerte():
     res = _resultat("ALERTE")
     res.compteurs["nb_fac_ar_rejet"] = 2

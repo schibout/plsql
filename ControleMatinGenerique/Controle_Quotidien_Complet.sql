@@ -229,7 +229,7 @@ BEGIN
         DBMS_OUTPUT.PUT_LINE('[!] ALERTE : Moins de 5 flux DSP attendus (normal: 5/jour ouvre)');
     END IF;
     IF v_nb_images_manq > 0 THEN
-        DBMS_OUTPUT.PUT_LINE('[!] ALERTE : ' || v_nb_images_manq || ' factures Xerox sans image - Voir Section 4');
+        DBMS_OUTPUT.PUT_LINE('[~] AVERTISSEMENT : ' || v_nb_images_manq || ' factures Xerox sans image - Voir Section 4');
     END IF;
     IF TO_CHAR(SYSDATE, 'DY', 'NLS_DATE_LANGUAGE=ENGLISH') = 'MON' AND v_nb_rb_imports = 0 THEN
         DBMS_OUTPUT.PUT_LINE('[!] RAPPEL LUNDI : Charger manuellement le fichier SG (rattrapage)');
@@ -430,11 +430,11 @@ ORDER BY date_creation DESC, SOURCE;
 
 CLEAR COLUMNS
 
--- Factures Xerox SANS images (ALERTE)
+-- Factures Xerox SANS images (AVERTISSEMENT : les images arrivent souvent avec un jour de retard)
 -- Une ligne par facture : DATE | NUM_FACT | NOM_FICHIER | INVOICE_ID | VENDOR_ID
 
 PROMPT
-PROMPT === XEROX - Factures SANS images (ALERTE) ===
+PROMPT === XEROX - Factures SANS images (AVERTISSEMENT) ===
 
 COLUMN info FORMAT A120
 

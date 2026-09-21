@@ -155,15 +155,16 @@ def statuts(compteurs: dict, volumes_controles: bool = True) -> dict:
 
 
 def statut_global(compteurs: dict, sections: list[Section], volumes_controles: bool = True) -> str:
-    """ERREUR (contrôle indisponible) > ALERTE (erreurs nuit, images manquantes, factures AR rejetées) > WARNING > OK.
-    Sans intégration la veille, les volumes (statut N/A) ne pèsent pas : seuls la nuit et les images comptent."""
+    """ERREUR (contrôle indisponible) > ALERTE (erreurs nuit, factures AR rejetées) > WARNING (warnings nuit,
+    volumes sous seuil, images manquantes, traitements en cours) > OK.
+    Sans intégration la veille, les volumes (statut N/A) ne pèsent pas."""
     if any(s.erreur for s in sections) or any(compteurs.get(k) is None for k in COMPTEURS):
         return "ERREUR"
-    if ((compteurs["nb_erreurs"] or 0) > 0 or (compteurs["nb_images_manq"] or 0) > 0
-            or (compteurs.get("nb_fac_ar_rejet") or 0) > 0):
+    if (compteurs["nb_erreurs"] or 0) > 0 or (compteurs.get("nb_fac_ar_rejet") or 0) > 0:
         return "ALERTE"
     en_cours = next((s for s in sections if s.cle == "nuit_en_cours"), None)
-    if ((compteurs["nb_warnings"] or 0) > 0 or "W" in statuts(compteurs, volumes_controles).values()
+    if ((compteurs["nb_warnings"] or 0) > 0 or (compteurs["nb_images_manq"] or 0) > 0
+            or "W" in statuts(compteurs, volumes_controles).values()
             or (en_cours is not None and en_cours.nb > 0)):
         return "WARNING"
     return "OK"
