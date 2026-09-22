@@ -23,19 +23,24 @@ ICONES = {
 
 def filtrer_jobs(
     jobs: pd.DataFrame,
-    noms: Iterable[str] = (),
+    recherche: str = "",
     statuts: Iterable[str] = (),
     non_ok_uniquement: bool = False,
 ) -> pd.DataFrame:
-    """Filtre la photo courante avec des sélections cumulatives."""
+    """Filtre les jobs par nom/description, statut et état non OK."""
     if jobs.empty:
         return jobs.copy()
 
     resultat = jobs.copy()
-    noms = set(noms)
     statuts = set(statuts)
-    if noms:
-        resultat = resultat[resultat["job_name"].isin(noms)]
+    recherche = recherche.strip()
+    if recherche:
+        noms = resultat["job_name"].fillna("").astype(str)
+        descriptions = resultat.get("description", pd.Series("", index=resultat.index)).fillna("").astype(str)
+        resultat = resultat[
+            noms.str.contains(recherche, case=False, regex=False)
+            | descriptions.str.contains(recherche, case=False, regex=False)
+        ]
     if statuts:
         resultat = resultat[resultat["status"].isin(statuts)]
     if non_ok_uniquement:
@@ -61,9 +66,6 @@ def preparer_table(jobs: pd.DataFrame) -> pd.DataFrame:
     table = table.sort_values(tri, ascending=croissant, na_position="last")
 
     colonnes = {
-        "snapshot_id": "photo id",
-        "snap_time": "photo",
-        "application": "application",
         "odate": "odate",
         "état": "statut",
         "job_name": "job",
@@ -92,18 +94,16 @@ def render(jobs: pd.DataFrame, application: str = "FIN-FINANCE") -> None:
         st.info("Aucun job Control-M chargé.")
         return
 
-    noms_disponibles = sorted(jobs["job_name"].dropna().astype(str).unique())
     statuts_disponibles = sorted(
         jobs["status"].dropna().astype(str).unique(),
         key=lambda statut: (ORDRE_STATUTS.get(statut, 99), statut),
     )
 
-    col_noms, col_statuts, col_non_ok = st.columns([2.2, 1.4, 1])
-    noms = col_noms.multiselect(
-        "Nom du job",
-        noms_disponibles,
-        placeholder="Rechercher un ou plusieurs jobs…",
-        key="ctrlm_jobs_noms",
+    col_recherche, col_statuts, col_non_ok = st.columns([2.2, 1.4, 1])
+    recherche = col_recherche.text_input(
+        "Recherche",
+        placeholder="Nom du job ou description…",
+        key="ctrlm_jobs_recherche",
     )
     statuts = col_statuts.multiselect(
         "Statut",
@@ -117,7 +117,7 @@ def render(jobs: pd.DataFrame, application: str = "FIN-FINANCE") -> None:
         help="Exclut les jobs au statut Ended OK.",
     )
 
-    selection = filtrer_jobs(jobs, noms, statuts, non_ok)
+    selection = filtrer_jobs(jobs, recherche, statuts, non_ok)
     nb_photos = jobs["snapshot_id"].nunique() if "snapshot_id" in jobs.columns else 0
     st.caption(
         f"Application {application} · {len(selection)} ligne(s) affichée(s) sur {len(jobs)} "
@@ -135,7 +135,6 @@ def render(jobs: pd.DataFrame, application: str = "FIN-FINANCE") -> None:
         hide_index=True,
         height=min(650, 38 * len(table) + 40),
         column_config={
-            "photo": st.column_config.DatetimeColumn("photo", format="DD/MM/YYYY HH:mm"),
             "job": st.column_config.TextColumn("job", width="medium"),
             "chaîne": st.column_config.TextColumn("chaîne", width="medium"),
             "début": st.column_config.DatetimeColumn("début", format="DD/MM/YYYY HH:mm"),
