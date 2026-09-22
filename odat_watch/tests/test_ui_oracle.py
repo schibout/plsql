@@ -46,3 +46,31 @@ def test_chargement_exclut_les_mocks_et_conserve_les_logs_reels(tmp_path):
     assert list(programmes["program_short"]) == ["PROG_REEL"]
     assert list(logs["request_id"]) == [1]
     con.close()
+
+
+def test_cache_est_invalide_quand_les_donnees_oracle_changent(tmp_path, monkeypatch):
+    base = tmp_path / "oracle_cache.db"
+    con = db.connect(base)
+    con.execute(
+        "INSERT INTO ora_requests(request_id, program_short, refreshed_at, source) VALUES (1, 'PROG_1', '2026-09-21 09:00:00', 'oracle')"
+    )
+    con.commit()
+    con.close()
+
+    monkeypatch.setattr(ui_oracle, "connect", lambda: db.connect(base))
+    ui_oracle._charger.clear()
+    try:
+        demandes, _, _ = ui_oracle._charger(("1", "2026-09-21 09:00:00"))
+        assert list(demandes["request_id"]) == [1]
+
+        con = db.connect(base)
+        con.execute(
+            "INSERT INTO ora_requests(request_id, program_short, refreshed_at, source) VALUES (2, 'PROG_2', '2026-09-23 08:00:00', 'oracle')"
+        )
+        con.commit()
+        con.close()
+
+        demandes, _, _ = ui_oracle._charger(("2", "2026-09-23 08:00:00"))
+        assert list(demandes["request_id"]) == [1, 2]
+    finally:
+        ui_oracle._charger.clear()
