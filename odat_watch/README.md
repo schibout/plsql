@@ -85,9 +85,12 @@ python logs.py --liste                   REM écrit list.txt des logs manquants 
 1. Onglet **Maintenant** : job Control-M en Ended Not OK.
 2. Onglet **Oracle › Erreurs et logs** : la demande Oracle correspondante, son statut, son `completion_text`,
    les chemins `logfile_name` / `outfile_name`.
-3. Pas de log local : bouton « Générer list.txt », puis sur le serveur EBS
-   `./copy_ebs_logs.sh list.txt` (script dans `ControleReleveBancaire/`), rapatrier les fichiers dans un
-   dossier listé dans `config.ini [logs]`.
+3. Pas de log local : **cocher les demandes voulues** dans « Demandes terminées en erreur » ou dans « Tous les
+   traitements », puis « Écrire list.txt » (ou « Télécharger la liste ») ; le tableau sous les boutons rappelle
+   pour chaque demande cochée son `.req`, son `.out` et si le log est déjà en local. Sans cocher de ligne, le
+   bouton « list.txt de tous les logs manquants » garde l'ancien comportement (toutes les demandes en erreur
+   sans log). Ensuite, sur le serveur EBS `./copy_ebs_logs.sh list.txt` (script dans `ControleReleveBancaire/`),
+   rapatrier les fichiers dans un dossier listé dans `config.ini [logs]`, et « Analyser les logs présents ».
 4. « Analyser les logs » : compteurs, erreurs comptées, diagnostic et action proposés depuis `diagnostics.json`.
 5. Code inconnu : le qualifier et l'ajouter dans `diagnostics.json` (clé exacte ou préfixe `ORA-20*`).
 

@@ -115,6 +115,56 @@ def _filtre_multi(df: pd.DataFrame, jobs=(), programmes=(), statuts=()) -> pd.Da
     return resultat
 
 
+def _recuperer_logs(df: pd.DataFrame, colonnes: list[str], cle: str, hauteur: int | None = None) -> None:
+    """Tableau de demandes à cocher, puis récupération de leurs logs : liste des chemins pour
+    copy_ebs_logs.sh (fichier local et téléchargement) et analyse des fichiers déjà rapatriés."""
+    import hashlib
+    import logs as logmod
+    vue = df.reset_index(drop=True)
+    cols = [c for c in colonnes if c in vue.columns]
+    # la clé d'un st.dataframe n'intègre pas les données : elle doit changer avec les lignes affichées,
+    # sinon la sélection survit aux filtres
+    sig = hashlib.blake2b("|".join(vue["request_id"].astype(str)).encode("utf-8"), digest_size=6).hexdigest()
+    ev = st.dataframe(vue[cols], use_container_width=True, hide_index=True,
+                      height=hauteur or min(400, 38 * len(vue) + 40), on_select="rerun",
+                      selection_mode="multi-row", key=f"{cle}_{sig}")
+    rows = list(ev.selection.rows) if ev and ev.selection else []
+    ids = [int(vue.at[i, "request_id"]) for i in rows if 0 <= i < len(vue)]
+    if not ids:
+        st.caption("Aucune ligne cochée : cochez des demandes pour préparer la récupération de leurs logs.")
+        return
+    con = connect()
+    try:
+        infos = logmod.chemins(con, ids)
+        contenu = logmod.contenu_liste(con, ids)
+    finally:
+        con.close()
+    manquants = [i for i in infos if not i["deja_local"]]
+    sans_chemin = [i for i in infos if not i["logfile_name"]]
+    st.success(f"{len(ids)} demande(s) cochée(s) · {len(manquants)} sans log en local · "
+               f"{len(infos) - len(manquants)} déjà analysée(s)")
+    if sans_chemin:
+        st.warning(f"{len(sans_chemin)} demande(s) sans chemin de log connu : "
+                   + ", ".join(str(i['request_id']) for i in sans_chemin[:8]))
+    b1, b2, b3 = st.columns(3)
+    if b1.button("📝 Écrire list.txt", key=f"{cle}_liste", use_container_width=True,
+                 help="Liste des chemins .req et .out à passer à copy_ebs_logs.sh sur le serveur EBS."):
+        st.session_state[f"{cle}_msg"] = logmod.ecrire_liste(request_ids=ids)
+    b2.download_button("⬇ Télécharger la liste", contenu or "", file_name="list.txt", mime="text/plain",
+                       key=f"{cle}_dl", use_container_width=True, disabled=not contenu)
+    if b3.button("🧾 Analyser les logs présents", key=f"{cle}_analyse", use_container_width=True,
+                 help="Relit les dossiers de config.ini [logs] et charge les .req / .out rapatriés."):
+        st.session_state[f"{cle}_msg"] = "\n".join(logmod.run())
+        st.cache_data.clear()
+    if st.session_state.get(f"{cle}_msg"):
+        st.code(st.session_state[f"{cle}_msg"])
+    st.dataframe(pd.DataFrame(infos).rename(columns={"request_id": "request_id", "job_name": "job",
+                                                     "logfile_name": "fichier .req", "outfile_name": "fichier .out",
+                                                     "deja_local": "déjà en local"}),
+                 use_container_width=True, hide_index=True, height=min(240, 38 * len(infos) + 40),
+                 column_config={"déjà en local": st.column_config.CheckboxColumn("déjà en local", disabled=True)})
+
+
 def render(application, recherche, now: datetime, kpi, badge):
     req, logs, progs = _charger(_stamp())
     st.caption("Source : traitements Oracle EBS réellement chargés, logs locaux analysés et référentiel réel. "
@@ -206,7 +256,8 @@ def render(application, recherche, now: datetime, kpi, badge):
         else:
             if not err.empty:
                 st.markdown("#### Demandes terminées en erreur ou avertissement")
-                st.dataframe(err[cols_req], use_container_width=True, hide_index=True, height=min(400, 38 * len(err) + 40))
+                st.caption("Cochez des lignes pour aller chercher leurs `.req` et `.out` sur le serveur EBS.")
+                _recuperer_logs(err, cols_req, "oracle_sel_err")
             ids = sorted(set(err["request_id"].tolist() if not err.empty else []) | set(logs_err["request_id"].tolist()),
                          reverse=True)
             st.markdown("#### Diagnostic d'une demande")
@@ -214,8 +265,9 @@ def render(application, recherche, now: datetime, kpi, badge):
             if rid:
                 _detail_request(rid, req, logs)
             st.markdown("---")
-            st.caption("Logs absents en local ? Générez la liste des chemins pour `copy_ebs_logs.sh` :")
-            if st.button("📝 Générer list.txt des logs manquants"):
+            st.caption("Sans cocher de ligne : la liste de toutes les demandes en erreur dont le log manque "
+                       "encore en local.")
+            if st.button("📝 list.txt de tous les logs manquants", key="oracle_liste_tous"):
                 import logs as logmod
                 st.info(logmod.ecrire_liste())
 
@@ -245,8 +297,8 @@ def render(application, recherche, now: datetime, kpi, badge):
         if req.empty:
             st.info("Pas de demandes chargées.")
         else:
-            st.dataframe(req.sort_values("request_date", ascending=False)[cols_req],
-                         use_container_width=True, hide_index=True, height=600)
+            st.caption("Cochez des lignes pour aller chercher leurs `.req` et `.out` sur le serveur EBS.")
+            _recuperer_logs(req.sort_values("request_date", ascending=False), cols_req, "oracle_sel_all", hauteur=520)
 
     # ------------------------------------------------------------ logs
     with s_logs:

@@ -215,19 +215,54 @@ def run(roots: list[Path] | None = None) -> list[str]:
     return logs
 
 
-def ecrire_liste(dest: Path | None = None) -> str:
-    """list.txt pour copy_ebs_logs.sh : demandes en erreur/avertissement sans log local."""
-    con = connect()
-    rows = con.execute("""
-        SELECT r.request_id, r.logfile_name, r.outfile_name
-        FROM ora_requests r
-        WHERE r.phase_code='C' AND r.status_code IN ('E','G','X')
-          AND r.source='oracle'
-          AND NOT EXISTS (SELECT 1 FROM ora_request_logs l WHERE l.request_id=r.request_id AND l.kind='req')
-        ORDER BY r.actual_completion DESC""").fetchall()
-    con.close()
+def chemins(con, request_ids) -> list[dict]:
+    """Chemins serveur du .req et du .out de chaque demande choisie, et présence du log en local."""
+    ids = [int(i) for i in request_ids]
+    if not ids:
+        return []
+    marques = ",".join("?" * len(ids))
+    rows = con.execute(f"""
+        SELECT r.request_id, r.job_name, r.logfile_name, r.outfile_name,
+               EXISTS (SELECT 1 FROM ora_request_logs l WHERE l.request_id = r.request_id AND l.kind='req') AS deja
+        FROM ora_requests r WHERE r.request_id IN ({marques})""", ids).fetchall()
+    par_id = {r["request_id"]: r for r in rows}
+    return [{"request_id": i, "job_name": par_id[i]["job_name"], "logfile_name": par_id[i]["logfile_name"],
+             "outfile_name": par_id[i]["outfile_name"], "deja_local": bool(par_id[i]["deja"])}
+            for i in ids if i in par_id]
+
+
+def _lignes_liste(rows) -> list[str]:
+    return [f"{r['logfile_name'] or ''} {r['outfile_name'] or ''}".strip() for r in rows if r["logfile_name"]]
+
+
+def contenu_liste(con, request_ids) -> str:
+    """Contenu du list.txt pour les demandes choisies : une ligne « <.req> <.out> » par demande."""
+    lignes = _lignes_liste(chemins(con, request_ids))
+    return "\n".join(lignes) + ("\n" if lignes else "")
+
+
+def ecrire_liste(dest: Path | None = None, request_ids=None, con=None) -> str:
+    """list.txt pour copy_ebs_logs.sh. Sans `request_ids` : les demandes en erreur ou avertissement dont le log
+    n'est pas déjà en local. Avec `request_ids` : exactement ces demandes, déjà rapatriées ou non (choix fait
+    dans l'onglet Oracle)."""
+    ferme = con is None
+    con = con or connect()
+    try:
+        if request_ids is None:
+            rows = con.execute("""
+                SELECT r.request_id, r.logfile_name, r.outfile_name
+                FROM ora_requests r
+                WHERE r.phase_code='C' AND r.status_code IN ('E','G','X')
+                  AND r.source='oracle'
+                  AND NOT EXISTS (SELECT 1 FROM ora_request_logs l WHERE l.request_id=r.request_id AND l.kind='req')
+                ORDER BY r.actual_completion DESC""").fetchall()
+            lignes = _lignes_liste(rows)
+        else:
+            lignes = _lignes_liste(chemins(con, request_ids))
+    finally:
+        if ferme:
+            con.close()
     dest = dest or (BASE_DIR / "list.txt")
-    lignes = [f"{r['logfile_name'] or ''} {r['outfile_name'] or ''}".strip() for r in rows if r["logfile_name"]]
     dest.write_text("\n".join(lignes) + "\n", encoding="utf-8", newline="\n")
     return f"{len(lignes)} ligne(s) écrite(s) dans {dest} (à passer à copy_ebs_logs.sh sur le serveur EBS)."
 
