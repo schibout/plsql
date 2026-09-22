@@ -125,6 +125,14 @@ Validation Oracle en attente : à faire sur le poste Dalkia (le serveur n'est pa
 développement). Les requêtes ont été vérifiées ligne à ligne contre le `.sql` ; la première exécution réelle doit
 être comparée au log du `.ps1` du même matin.
 
+Avertissements : une demande au statut Oracle `G` dont le texte de fin annonce une fin normale (« Request
+Completed Normal », « Fin normale ») n'est ni comptée ni listée. Le programme s'est bien exécuté, le `G` vient
+d'ailleurs, typiquement d'un traitement enfant (exemple : la demande 49094445, Create Accounting). Un texte de
+fin vide est conservé : il ne dit pas que tout va bien, il ne dit rien. Même règle dans le compteur
+« Avertissements », dans la section « NUIT — Détail des warnings » et dans
+`ControleMatinGenerique/Controle_Quotidien_Complet.sql`. La « Synthèse par statut » reste, elle, le reflet
+exact d'Oracle : son total WARNING peut donc dépasser le compteur.
+
 Jours sans intégration : si la veille contrôlée (date de « Début de nuit ») est un samedi, un dimanche ou un jour
 férié français (fériés calculés, Pâques inclus), les volumes (flux DSP, notes de frais, factures, GL, imports RB)
 passent en **N/A** et ne pèsent pas dans le statut global : seuls les traitements de la nuit (erreurs, warnings,

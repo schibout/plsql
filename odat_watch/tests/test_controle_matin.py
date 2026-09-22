@@ -201,3 +201,38 @@ def test_catalogue_et_synthese_factures_ar():
     assert "nb_fac_ar" in cles_synthese and "nb_fac_ar_rejet" in cles_synthese
     for _cles, sql in cm.SYNTHESE:
         sql.format(s="APPS.")            # aucune accolade résiduelle (cf. régression HORS_GENERIQUES)
+
+
+def _sql(cle: str) -> str:
+    """Requête du catalogue par sa clé (sections) ou par un compteur."""
+    for c, _titre, sql, _large in cm.CATALOGUE:
+        if c == cle:
+            return sql
+    for cles, sql in cm.SYNTHESE:
+        if cle in cles:
+            return sql
+    raise KeyError(cle)
+
+
+def test_warnings_excluent_les_fins_annoncees_normales():
+    # une demande en G dont le texte de fin dit « Request Completed Normal » (cas 49094445, Create
+    # Accounting) n'est pas un avertissement d'exploitation : ni comptée, ni listée.
+    for cle in ("nuit_warnings", "nb_warnings"):
+        sql = _sql(cle).upper()
+        assert "'REQUEST COMPLETED NORMAL', 'FIN NORMALE'" in sql, cle
+        assert "NOT IN" in sql and "NVL(FCR.COMPLETION_TEXT, '-')" in sql, cle
+
+
+def test_texte_de_fin_vide_reste_un_warning():
+    # NVL avant le NOT IN : sans lui, un completion_text NULL rendrait la comparaison NULL et la
+    # demande disparaîtrait, alors qu'un texte vide n'annonce pas une fin normale.
+    assert "NVL(fcr.completion_text, '-')" in _sql("nuit_warnings")
+    assert "NVL(fcr.completion_text, '-')" in _sql("nb_warnings")
+
+
+def test_erreurs_et_synthese_ne_sont_pas_filtrees():
+    # le filtre ne touche que les warnings : erreurs et synthèse par statut restent le reflet d'Oracle
+    for cle in ("nuit_err_detail", "nuit_err_prog", "nuit_synthese"):
+        assert "FIN NORMALE" not in _sql(cle).upper(), cle
+    # le compteur d'erreurs partage la requête des warnings : sa branche 'E' ne regarde pas le texte de fin
+    assert "CASE WHEN fcr.status_code = 'E' THEN 1 ELSE 0 END" in _sql("nb_erreurs")

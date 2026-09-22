@@ -132,9 +132,16 @@ BEGIN
     -- ligne -- le rapport annoncerait alors 0 traitement de nuit.
     -- NVL sur les SUM : sur un ensemble vide, SUM rend NULL et non 0, ce qui
     -- desamorce le test IF v_nb_erreurs > 0 et tronque la ligne d'affichage.
+    -- Un warning dont le texte de fin annonce une fin normale n'en est pas un pour
+    -- l'exploitation : le programme s'est bien execute, le G vient d'ailleurs (traitement
+    -- enfant, evenements non comptabilises). Exemple : 49094445 Create Accounting, texte
+    -- "Request Completed Normal". Un texte vide est conserve : il ne dit pas que tout va bien.
     SELECT COUNT(*),
            NVL(SUM(CASE WHEN status_code = 'E' THEN 1 ELSE 0 END), 0),
-           NVL(SUM(CASE WHEN status_code = 'G' THEN 1 ELSE 0 END), 0)
+           NVL(SUM(CASE WHEN status_code = 'G'
+                         AND UPPER(TRIM(NVL(completion_text, '-')))
+                             NOT IN ('REQUEST COMPLETED NORMAL', 'FIN NORMALE')
+                        THEN 1 ELSE 0 END), 0)
     INTO   v_nb_traitements, v_nb_erreurs, v_nb_warnings
     FROM   fnd_concurrent_requests
     WHERE  actual_start_date >= TRUNC(SYSDATE - 1) + :v_heure_fermeture / 24
@@ -728,6 +735,9 @@ WHERE  fcr.actual_start_date >= TRUNC(SYSDATE - 1) + :v_heure_fermeture / 24
 AND    fcr.actual_start_date <  TRUNC(SYSDATE)      + :v_heure_ouverture / 24
 AND    fcr.requested_by IN (SELECT user_id FROM fnd_user WHERE user_name LIKE 'EXP%')
 AND    fcr.status_code = 'G'
+-- Meme regle que le compteur v_nb_warnings : les fins annoncees normales ne sont pas listees.
+AND    UPPER(TRIM(NVL(fcr.completion_text, '-')))
+       NOT IN ('REQUEST COMPLETED NORMAL', 'FIN NORMALE')
 ORDER BY fcr.actual_start_date DESC;
 
 CLEAR COLUMNS

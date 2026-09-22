@@ -189,6 +189,13 @@ AND    fcr.actual_start_date <  {FIN}
 AND    fcr.requested_by IN (SELECT user_id FROM {{s}}fnd_user WHERE user_name LIKE 'EXP%')
 {HORS_GENERIQUES}"""
 
+# Un avertissement dont le texte de fin annonce une fin normale n'en est pas un pour l'exploitation :
+# le programme s'est bien exécuté, le G vient d'ailleurs (traitement enfant, événements non comptabilisés).
+# Exemple : 49094445 « Create Accounting », texte « Request Completed Normal ». Ces demandes ne sont ni
+# comptées ni listées. Un texte vide est conservé : il ne dit pas que tout va bien, il ne dit rien.
+FINS_NORMALES = ("'REQUEST COMPLETED NORMAL', 'FIN NORMALE'")
+WARNING_REEL = f"AND    UPPER(TRIM(NVL(fcr.completion_text, '-'))) NOT IN ({FINS_NORMALES})"
+
 TYPE_FLUX = """CASE
     WHEN dih.file_name LIKE '%SUP%'                                  THEN 'FOURNISSEURS'
     WHEN dih.file_name LIKE '%PO[_]%' ESCAPE '['
@@ -385,6 +392,7 @@ FROM   {{s}}fnd_concurrent_requests fcr
 JOIN   {{s}}fnd_concurrent_programs_vl fcp ON fcr.concurrent_program_id = fcp.concurrent_program_id
 {NUIT}
 AND    fcr.status_code = 'G'
+{WARNING_REEL}
 ORDER BY fcr.actual_start_date DESC""", True),
 
     ("nuit_longs", "NUIT — Traitements longs (> 30 min)", f"""
@@ -449,7 +457,9 @@ WHERE  ril.trx_number IN (SELECT dii.invoice_number FROM {{s}}dka_iarpafac_inter
     (("nb_traitements", "nb_erreurs", "nb_warnings"), f"""
 SELECT COUNT(*),
        NVL(SUM(CASE WHEN fcr.status_code = 'E' THEN 1 ELSE 0 END), 0),
-       NVL(SUM(CASE WHEN fcr.status_code = 'G' THEN 1 ELSE 0 END), 0)
+       NVL(SUM(CASE WHEN fcr.status_code = 'G'
+                     AND UPPER(TRIM(NVL(fcr.completion_text, '-'))) NOT IN ({FINS_NORMALES})
+                    THEN 1 ELSE 0 END), 0)
 FROM   {{s}}fnd_concurrent_requests fcr
 {NUIT}"""),
     (("nb_rb_imports", "date_rb_max"), f"""
