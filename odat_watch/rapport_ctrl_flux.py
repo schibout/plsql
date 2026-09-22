@@ -1,5 +1,5 @@
-"""Rapport HTML Folio Rose : charte des Rapport_Verification_*.html (bandeau, tuiles, synthèses, détail).
-Module pur : met en page des DataFrames déjà calculés par folio_rose."""
+"""Rapport HTML Ctrl Flux : charte des Rapport_Verification_*.html (bandeau, tuiles, synthèses, détail).
+Module pur : met en page des DataFrames déjà calculés par ctrl_flux."""
 from __future__ import annotations
 import html
 from datetime import datetime
@@ -7,7 +7,7 @@ from pathlib import Path
 
 import pandas as pd
 
-from folio_rose import TOL, Export, couleur_ligne
+from ctrl_flux import TOL, Export, couleur_ligne
 from rapport_matin import STYLE as _STYLE_BASE, DOSSIER_RAPPORTS
 
 STYLE = _STYLE_BASE + """
@@ -66,9 +66,9 @@ def _synthese(lignes: pd.DataFrame, champ: str, titre: str) -> str:
 COLONNES_DETAIL = (
     "Folio", "Type", "Date", "Âge", "Nom fichier transmis", "App Amont Nb pièce", "App Amont Débit", "App Amont Crédit",
     "SI Finance Nb pièce", "SI Finance Débit", "SI Finance Crédit", "Écarts Nb pièce", "Écarts Débit", "Écarts Crédit",
-    "Commentaire", "GDR (rejets)", "Somme Amont Fichier", "Somme Écart Fichier", "Montant Interface OA", "Nb Pièces OA", "Montant OA",
-    "Écart Nb Pièce Calculé", "Écart Mt Calculé", "Statut Vérification", "Rapproché")
-_NUMERIQUES = {3, 5, 6, 7, 8, 9, 10, 11, 12, 13, 16, 17, 18, 19, 20, 21, 22}
+    "GDR (rejets)", "Somme Amont Fichier", "Somme Écart Fichier", "Montant Interface OA", "Nb Pièces OA", "Montant OA",
+    "Écart Nb Pièce Calculé", "Écart Mt Calculé", "Statut Vérification", "Rapproché", "Commentaire")
+_NUMERIQUES = {3, 5, 6, 7, 8, 9, 10, 11, 12, 13, 15, 16, 17, 18, 19, 20, 21}
 
 
 def _detail(lignes: pd.DataFrame) -> str:
@@ -82,11 +82,12 @@ def _detail(lignes: pd.DataFrame) -> str:
         cells = [_t(r["folio"]), _t(r["type"]), _t(r["date"]), _nb(r["age_j"]), _t(r["fichier"]),
                  _nb(r["amont_nb"]), _mt(r["amont_debit"]), _mt(r["amont_credit"]),
                  _nb(r["si_nb"]), _mt(r["si_debit"]), _mt(r["si_credit"]),
-                 _nb(r["ecart_nb"]), _mt(r["ecart_debit"]), _mt(r["ecart_credit"]), _t(r["commentaire"]),
+                 _nb(r["ecart_nb"]), _mt(r["ecart_debit"]), _mt(r["ecart_credit"]),
                  _t(r.get("gdr")),
                  _mt(r.get("somme_amont_fichier")), _mt(r.get("somme_ecart_fichier")),
                  _mt(r["montant_interface"]), _nb(r["nb_oracle"]), _mt(r["montant_oracle"]),
-                 _nb(r["ecart_nb_calcule"]), _mt(r["ecart_mt_calcule"]), statut, "✔" if r["rapproche"] else ""]
+                 _nb(r["ecart_nb_calcule"]), _mt(r["ecart_mt_calcule"]), statut, "✔" if r["rapproche"] else "",
+                 _t(r["commentaire"])]
         gdr = str(r.get("gdr") or "")
         tr = ("<tr class='rapproche'>" if r["rapproche"]
               else "<tr class='gdr'>" if gdr and not gdr.startswith("probable")
@@ -134,9 +135,9 @@ def construire(export: Export, lignes: pd.DataFrame, groupes: pd.DataFrame, rapp
             f"<span>Période : {_t(export.periode_debut)} → {_t(export.periode_fin)}</span>"
             f"<span>Rapport généré le {datetime.now():%d/%m/%Y %H:%M}</span>")
     return f"""<!DOCTYPE html>
-<html lang="fr"><head><meta charset="utf-8"><title>Folio Rose — export du {d:%d/%m/%Y}</title><style>{STYLE}</style></head>
+<html lang="fr"><head><meta charset="utf-8"><title>Ctrl Flux — export du {d:%d/%m/%Y}</title><style>{STYLE}</style></head>
 <body><div class="wrap">
-<h1>Folio Rose — export du {d:%d/%m/%Y}</h1>
+<h1>Ctrl Flux — export du {d:%d/%m/%Y}</h1>
 <div class="meta">{meta}</div>
 <div class="bandeau {cls}"><strong>{_t(msg)}</strong></div>
 <div class="tiles">{tuiles}</div>
@@ -146,7 +147,7 @@ def construire(export: Export, lignes: pd.DataFrame, groupes: pd.DataFrame, rapp
 <div class="legende"><span style="background:#EDE3FB">écart expliqué par des pièces rejetées dans la GDR</span><span style="background:#FFE0C2">interface Oracle alimentée : absente des tables définitives ou montant différent</span><span style="background:#DCEBFF">vérification Oracle OK</span><span style="background:#FFF6D6">commentaire renseigné</span><span style="background:#E3F5E8">écart de montant nul</span><span style="background:#FBE3EC">nombre de pièces égal, montant différent</span></div>
 {_detail(lignes)}
 <h2>Rapprochements</h2>{_rapprochements(rapprochements)}
-<div class="footer">ODAT Watch · Folio Rose · portage de Verifier_Factures.ps1</div>
+<div class="footer">ODAT Watch · Ctrl Flux · portage de Verifier_Factures.ps1</div>
 </div></body></html>
 """
 
@@ -154,6 +155,6 @@ def construire(export: Export, lignes: pd.DataFrame, groupes: pd.DataFrame, rapp
 def ecrire(export: Export, lignes, groupes, rapprochements, dossier: Path | str = DOSSIER_RAPPORTS) -> Path:
     dossier = Path(dossier)
     dossier.mkdir(parents=True, exist_ok=True)
-    chemin = dossier / f"Folio_Rose_{export.date_export:%Y%m%d}_{datetime.now():%H%M}.html"
+    chemin = dossier / f"Ctrl_Flux_{export.date_export:%Y%m%d}_{datetime.now():%H%M}.html"
     chemin.write_text(construire(export, lignes, groupes, rapprochements), encoding="utf-8")
     return chemin

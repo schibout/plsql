@@ -328,7 +328,7 @@ st.markdown(f"""
 </div>""", unsafe_allow_html=True)
 
 tab_plan, tab_calendriers, tab_soir, tab_demain, tab_now, tab_matin, tab_banque, tab_folio, tab_ora, tab_histo, tab_profils, tab_data, tab_sql = st.tabs(
-    ["🧭 Préparer ma nuit", "📥 Clôtures", "🌙 Ce soir", "📅 Demain", "🔴 Maintenant", "☀️ Matin", "🏦 Banque", "🌹 Folio Rose", "🅾 Oracle", "🔎 Historique", "📈 Profils", "🗂 Jobs CtrlM", "⌨ SQL"])
+    ["🧭 Préparer ma nuit", "📥 Clôtures", "🌙 Ce soir", "📅 Demain", "🔴 Maintenant", "☀️ Matin", "🏦 Banque", "🔀 Ctrl Flux", "🅾 Oracle", "🔎 Historique", "📈 Profils", "🗂 Jobs CtrlM", "⌨ SQL"])
 
 with tab_plan:
     con = connect()
@@ -358,8 +358,8 @@ with tab_banque:
         ui_prelevements.render(kpi)
 
 with tab_folio:
-    import ui_folio_rose
-    ui_folio_rose.render(kpi)
+    import ui_ctrl_flux
+    ui_ctrl_flux.render(kpi)
 
 with tab_ora:
     import ui_oracle

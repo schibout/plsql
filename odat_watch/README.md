@@ -21,10 +21,10 @@ Oracle EBS R12 pour répondre à : **qu'est-ce qui tourne ce soir, et demain ?**
 | `rapport_matin.py` | Rapport HTML du contrôle du matin (charte des `Rapport_Verification_*.html`), écrit dans `rapports/` (ignoré par git). |
 | `planif_matin.py` | Tâche du Planificateur Windows `ODATWatch_ControleMatin` (`schtasks`) qui lance `controle_matin.py --rapport` chaque matin. |
 | `ui_matin.py` | Onglet Matin : plage date+heure, bandeau, tuiles avec écart vs. veille, détail par section, génération/téléchargement du rapport, programmation, tendance 30 jours. |
-| `folio_rose.py` | **Folio Rose** : portage de `Verifier_Factures.ps1` (import des exports `ExportCSV-*.csv`, tables `fr_*`, groupes compensés, rapprochements, contrôle Oracle). |
-| `rapport_folio_rose.py` | Rapport HTML Folio Rose (même charte que `rapport_matin.py`), écrit dans `rapports/`. |
-| `gdr.py` | **GDR** : exports quotidiens des rejets (AP / AR / GL), photos successives (tables `gdr_*`), pièces et rapprochement avec les lignes Folio Rose. |
-| `ui_folio_rose.py` | Onglet Folio Rose : import, tableau avec sélection et somme des écarts en direct, rapprochements (manuels et groupes compensés), contrôle Oracle, rapport HTML, historique. |
+| `ctrl_flux.py` | **Ctrl Flux** : portage de `Verifier_Factures.ps1` (import des exports `ExportCSV-*.csv`, tables `fr_*`, groupes compensés, rapprochements, contrôle Oracle). |
+| `rapport_ctrl_flux.py` | Rapport HTML Ctrl Flux (même charte que `rapport_matin.py`), écrit dans `rapports/`. |
+| `gdr.py` | **GDR** : exports quotidiens des rejets (AP / AR / GL), photos successives (tables `gdr_*`), pièces et rapprochement avec les lignes Ctrl Flux. |
+| `ui_ctrl_flux.py` | Onglet Ctrl Flux : import, tableau avec sélection et somme des écarts en direct, rapprochements (manuels et groupes compensés), contrôle Oracle, rapport HTML, historique. |
 | `releves_scan.py` | **Relevés bancaires — acquisition** : section `[releves]` de `config.ini`, lecture des fichiers AFB120 (CFONB 120 : relevés, mouvements, banques, dates, md5, flux A/B), scan des exécutions PFE (`<uuid>/SOURCE,TARGET,TALEND`) et des `AFB120.txt_*` reçus par EBS, parseurs des logs `RBAFBIMP` (synthèse des relevés, erreurs 001/025) et `DKA_SRBCTRLRB` (comptes en anomalie), comptes connus, chaîne Control-M `FINEXT_J14INT_05/06` lue dans les photos ODAT. Tables `rb_*`. |
 | `releves.py` | **Relevés bancaires — métier** : verdict de la matinée par flux (frise PFE · Control-M · Reçu EBS · Import · Contrôle, causes), chronologie des imports, continuité par compte SG (retard, trou), plan de reprise ordonné, `list_releves.txt` des logs manquants, vues PFE ↔ EBS et contrôles. Ré-exporte les noms publics de `releves_scan.py`. |
 | `rapport_releves.py` | Rapport HTML Relevés bancaires (même charte que `rapport_matin.py`), écrit dans `rapports/Releves_*.html`. |
@@ -39,7 +39,7 @@ Oracle EBS R12 pour répondre à : **qu'est-ce qui tourne ce soir, et demain ?**
 | `referentiel.py` / `ui_profils.py` | **Profils + référentiel** : profil calculé de chaque job (onglet Profils) enrichi du référentiel jobs Control-M ↔ programmes Oracle Applications : alimenté automatiquement (photos ODAT + demandes Oracle : lanceur, filles, script `DKA_X_JOB.sh`), corrigeable à la main (saisie prioritaire partout), export CSV. Table `referentiel_jobs`. |
 | `ui_sql.py` | Onglet SQL : explorateur des tables SQLite (structure, volumes) et requêteur libre en lecture seule, exemples fournis, export CSV. |
 | `mock_oracle.py` | **Poste sans Oracle** : fabrique des demandes simulées à partir des exécutions Control-M (lanceur + programme métier, statuts alignés) et des logs présents. `python mock_oracle.py --reset`. Écrasé par les vraies données au premier `oracle_refresh.py`. |
-| `app.py` | Interface Streamlit : Ce soir, Demain, Maintenant, Matin, Banque (Relevés bancaires, Virements, Prélèvements), Folio Rose, Oracle, Historique, Profils (avec référentiel), Données, SQL. |
+| `app.py` | Interface Streamlit : Ce soir, Demain, Maintenant, Matin, Banque (Relevés bancaires, Virements, Prélèvements), Ctrl Flux, Oracle, Historique, Profils (avec référentiel), Données, SQL. |
 | `.streamlit/config.toml` | Thème de l'interface. |
 | `run.bat` | Import ODAT + lancement de l'interface. |
 | `config.ini.exemple` | Modèle de configuration (Oracle, filtres, dossiers de logs, section `[releves]`). Copier en `config.ini` (ignoré par git). |
@@ -172,19 +172,25 @@ contrôles). Samedi, dimanche et jours fériés : aucune intégration attendue p
 Tests : `tests/test_releves_*.py`, `test_rapport_releves.py`, `test_ui_releves.py` (AppTest), tous sur les fichiers réels
 de `ControleReleveBancaire/` (incident des 15–18/09/2026 : flux B non reçu deux jours puis rejet `Erreur 025`).
 
-## Folio Rose
+## Ctrl Flux
+
+Anciennement « Folio Rose » : seul le nom affiché change. Les tables SQLite gardent le préfixe `fr_`
+(`fr_lignes`, `fr_oracle`, `fr_rapprochements`, `fr_rapprochement_lignes`, `fr_exports`) pour ne pas migrer les
+bases existantes, et le dossier `ControleFolioRose` garde son nom : c'est celui du `.ps1` d'origine sur le poste.
 
 Clé métier d'une ligne : **folio + date + nom de fichier transmis**. Un nouvel export met à jour les lignes
 existantes (montants, commentaire) et ajoute les inédites ; une ligne de la période couverte qui a disparu est
 marquée « disparue » (masquée par défaut, jamais supprimée). Les rapprochements sont attachés à cette clé et
 survivent aux mises à jour. Le tableau montre l'état courant ; les exports importés forment l'historique.
 
-Onglet **🌹 Folio Rose** : portage de `Verifier_Factures.ps1`. Déposer un ou plusieurs
+Onglet **🔀 Ctrl Flux** : portage de `Verifier_Factures.ps1`. Déposer un ou plusieurs
 `ExportCSV-*.csv` par glisser-déposer, ou importer d'un coup le dossier `ControleFolioRose` (et son
 sous-dossier `sauvegarde`). Chaque chargement **remplace** le tableau : l'état courant (`fr_lignes`,
 `fr_oracle`, `fr_exports`) est vidé avant d'importer le lot, les rapprochements sont conservés ; au sein d'un
 même lot, les fichiers en double (même hash) sont ignorés. Le tableau se filtre par
-type, statut et folio ; cocher des lignes affiche la somme de leurs écarts débit en direct, et à 0 (au moins
+type, statut et folio, et le sélecteur « Colonnes affichées » choisit les colonnes du tableau (les deux cumuls
+par fichier du `.ps1`, Somme Amont Fichier et Somme Écart Fichier, sont décochés par défaut ; le commentaire est
+en dernière colonne) ; cocher des lignes affiche la somme de leurs écarts débit en direct, et à 0 (au moins
 deux lignes) propose « 🔗 Rapprocher ces lignes ». Les groupes folio + fichier dont la somme des écarts fait
 déjà 0 sont listés à part (« Groupes compensés en attente ») avec un rapprochement à l'unité ou « Tout
 rapprocher ». « 🅾 Contrôler dans Oracle » interroge Oracle par couple (folio, fichier de base, type) et
@@ -192,7 +198,7 @@ mémorise nombre/montant côté Oracle (interface et tables définitives), avec 
 (colonne « Erreur Oracle ») quand la requête échoue. Couleurs des lignes, par priorité : orange quand
 l'interface Oracle contient des données absentes des tables définitives (ou dont le montant diffère), bleu
 si le contrôle Oracle est OK, jaune si un commentaire est renseigné, vert si l'écart de montant est nul, rose
-si le nombre de pièces est égal mais pas le montant. « 📄 Générer le rapport HTML » produit `rapports/Folio_Rose_AAAAMMJJ_HHMM.html` (même charte
+si le nombre de pièces est égal mais pas le montant. « 📄 Générer le rapport HTML » produit `rapports/Ctrl_Flux_AAAAMMJJ_HHMM.html` (même charte
 que le rapport du matin). Les rapprochements sont historisés (annulables) et les données vivent dans les
 tables `fr_lignes`, `fr_oracle`, `fr_rapprochements`, `fr_rapprochement_lignes`.
 
@@ -206,7 +212,7 @@ absente de la photo la plus récente de son type est marquée traitée (date de 
 supprimé). Une photo plus ancienne importée après coup n'écrase pas l'état courant.
 
 Le rapprochement se fait sur **le nom du fichier transmis + les trois premières lettres du folio**. Pour chaque
-ligne Folio Rose, la colonne « GDR (rejets) » indique ce que les pièces rejetées expliquent :
+ligne Ctrl Flux, la colonne « GDR (rejets) » indique ce que les pièces rejetées expliquent :
 
 - **« n pièces dans la GDR … = … »** (ligne violette) quand le montant rejeté égale l'écart débit, le montant
   de la pièce (rejet total), ou la différence entre le montant de la pièce et le montant Oracle ou interface ;
@@ -214,13 +220,13 @@ ligne Folio Rose, la colonne « GDR (rejets) » indique ce que les pièces rejet
 - **« probable : … »** quand le fichier et le folio sont bien dans la GDR mais qu'aucun montant ne tombe juste.
 
 Le détail des pièces (type, numéro, code et libellé de rejet, montant, ancienneté) s'ouvre sous le tableau pour
-les lignes cochées. Le commentaire de l'export n'est pas modifié : il vient du CSV Folio Rose et serait écrasé
+les lignes cochées. Le commentaire de l'export n'est pas modifié : il vient du CSV Ctrl Flux et serait écrasé
 au chargement suivant.
 
 `Verifier_Factures.ps1` reste utilisable en parallèle (aucune dépendance vers l'onglet).
 
-Tests : `folio_rose.py`, `gdr.py` et `rapport_folio_rose.py` sont couverts unitairement, `ui_folio_rose.py` par AppTest
-(import, sélection/somme via `folio_rose.somme_selection`, rapprochement de groupe) — inclus dans les 92 tests
+Tests : `ctrl_flux.py`, `gdr.py` et `rapport_ctrl_flux.py` sont couverts unitairement, `ui_ctrl_flux.py` par AppTest
+(import, sélection/somme via `ctrl_flux.somme_selection`, rapprochement de groupe) — inclus dans les tests
 de `pytest tests -q`.
 
 Validation Oracle en attente : à faire sur le poste Dalkia. Vérifier notamment le schéma propriétaire de

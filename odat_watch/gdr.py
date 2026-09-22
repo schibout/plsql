@@ -1,5 +1,5 @@
 """GDR : lecture des exports quotidiens de rejets (AP / AR / GL), import SQLite (photos successives,
-présent / disparu), agrégation par pièce et rapprochement avec les lignes Folio Rose (fichier transmis + folio)."""
+présent / disparu), agrégation par pièce et rapprochement avec les lignes Ctrl Flux (fichier transmis + folio)."""
 from __future__ import annotations
 import configparser
 import hashlib
@@ -207,7 +207,7 @@ def rejets(con: sqlite3.Connection, ouverts: bool = True) -> pd.DataFrame:
     return df
 
 
-# ------------------------------------------------------------------ pièces et rapprochement Folio Rose
+# ------------------------------------------------------------------ pièces et rapprochement Ctrl Flux
 
 def montant_piece(lignes: pd.DataFrame) -> float:
     """Montant d'une pièce : AP = ligne sur le compte 401 (total de la facture) ; sinon somme des débits,
@@ -251,7 +251,7 @@ def _mt(v) -> str:
 
 
 def verdict(ligne, pcs: pd.DataFrame) -> tuple[str, str]:
-    """(niveau, texte) pour une ligne Folio Rose et les pièces GDR ouvertes du même fichier + folio.
+    """(niveau, texte) pour une ligne Ctrl Flux et les pièces GDR ouvertes du même fichier + folio.
     niveau : '' (rien), 'total' (le montant rejeté explique un montant de la ligne : écart débit, montant de
     la pièce, pièce − OA, pièce − interface), 'piece' (une pièce seule l'explique), 'probable' (fichier + folio
     présents dans la GDR, montants différents)."""
@@ -278,8 +278,8 @@ def verdict(ligne, pcs: pd.DataFrame) -> tuple[str, str]:
     return "probable", f"probable : {tete}" + (f" (écart débit {_mt(ecart)})" if _egal(ecart, ecart) else "")
 
 
-def rapprocher_folio_rose(lignes_fr: pd.DataFrame, con: sqlite3.Connection) -> tuple[pd.DataFrame, dict[str, pd.DataFrame]]:
-    """Ajoute aux lignes Folio Rose les colonnes gdr_niveau et gdr (texte du verdict) et retourne, par empreinte,
+def rapprocher_ctrl_flux(lignes_fr: pd.DataFrame, con: sqlite3.Connection) -> tuple[pd.DataFrame, dict[str, pd.DataFrame]]:
+    """Ajoute aux lignes Ctrl Flux les colonnes gdr_niveau et gdr (texte du verdict) et retourne, par empreinte,
     les pièces GDR ouvertes du même fichier transmis + folio (3 lettres)."""
     out = lignes_fr.copy()
     out["gdr_niveau"], out["gdr"] = "", ""

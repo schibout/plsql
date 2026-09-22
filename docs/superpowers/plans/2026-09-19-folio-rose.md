@@ -1,5 +1,7 @@
 # Onglet « 🌹 Folio Rose » — plan d'implémentation
 
+> Note (22/09/2026) : la fonction décrite ici s'appelle désormais **Ctrl Flux** dans ODAT Watch (modules `ctrl_flux.py`, `ui_ctrl_flux.py`, `rapport_ctrl_flux.py`). Le texte ci-dessous garde le nom d'origine « Folio Rose », tel qu'il était au moment de la conception.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Un onglet ODAT Watch qui importe les exports Folio Rose, contrôle les montants dans Oracle comme `Verifier_Factures.ps1`, et permet de rapprocher des lignes (somme des écarts débit = 0) avec mémorisation des rapprochements et rapport HTML.

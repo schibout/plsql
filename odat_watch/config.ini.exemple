@@ -74,7 +74,7 @@ nom_si = ORACLE
 [gdr]
 ; Rejets GDR : exports quotidiens "JJMMAAAA_Synthese_des_rejets_<AP|AR|GL>_au_JJ-MM-AAAA[_02].csv" (mail
 ; "Etat de synthese des rejets GL, AP et AR au ..." recupere par le profil Apps Script gdr_rejets_synthese).
-; Le dossier est balaye a l'ouverture de l'onglet Folio Rose : tout fichier inconnu est importe. Hors git.
+; Le dossier est balaye a l'ouverture de l'onglet Ctrl Flux : tout fichier inconnu est importe. Hors git.
 racine = ..\ODAT\GDR
 
 [mail]

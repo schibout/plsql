@@ -1,5 +1,7 @@
 # Folio Rose × GDR : rapprocher les rejets GDR avec le contrôle des flux
 
+> Note (22/09/2026) : la fonction décrite ici s'appelle désormais **Ctrl Flux** dans ODAT Watch (modules `ctrl_flux.py`, `ui_ctrl_flux.py`, `rapport_ctrl_flux.py`). Le texte ci-dessous garde le nom d'origine « Folio Rose », tel qu'il était au moment de la conception.
+
 Date : 22/09/2026 · État : **implémenté** le 22/09/2026 (module `odat_watch/gdr.py`, colonne « GDR (rejets) »
 dans l'onglet et le rapport). Les réponses aux questions ouvertes sont reportées en fin de document.
 

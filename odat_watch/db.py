@@ -185,7 +185,7 @@ CREATE TABLE IF NOT EXISTS parametres (      -- réglages de l'interface (ex. im
     valeur TEXT
 );
 
--- Folio Rose : exports, lignes, contrôle Oracle, rapprochements
+-- Ctrl Flux : exports, lignes, contrôle Oracle, rapprochements
 CREATE TABLE IF NOT EXISTS fr_exports (
     id                     INTEGER PRIMARY KEY AUTOINCREMENT,
     nom_fichier            TEXT NOT NULL,
@@ -197,7 +197,7 @@ CREATE TABLE IF NOT EXISTS fr_exports (
     encodage               TEXT,
     nb_montants_illisibles INTEGER DEFAULT 0
 );
--- État courant des lignes Folio Rose : une ligne par clé métier folio + date + fichier (+ rang si doublon
+-- État courant des lignes Ctrl Flux : une ligne par clé métier folio + date + fichier (+ rang si doublon
 -- strict dans un même export). Un import met à jour la ligne existante, n'en crée pas une nouvelle.
 CREATE TABLE IF NOT EXISTS fr_lignes (
     id                INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -254,7 +254,7 @@ CREATE TABLE IF NOT EXISTS gdr_lignes (
     id_gdr                TEXT,                -- ID GDR : la piece
     type                  TEXT NOT NULL,
     code_rejet            TEXT, libelle_rejet TEXT,
-    fichier_source        TEXT,                -- = « Nom fichier transmis » de Folio Rose
+    fichier_source        TEXT,                -- = « Nom fichier transmis » de Ctrl Flux
     folio                 TEXT,                -- 3 premieres lettres du folio GDR
     folio_libelle         TEXT, societe TEXT, region TEXT,
     numero_piece          TEXT, date_piece TEXT, compte TEXT,
@@ -359,7 +359,7 @@ CREATE TABLE IF NOT EXISTS rb_comptes_connus (     -- anomalies préexistantes �
 """
 
 
-def _migrer_folio_rose(con: sqlite3.Connection) -> None:
+def _migrer_ctrl_flux(con: sqlite3.Connection) -> None:
     """Ancien modèle (une copie des lignes par export, empreinte incluant les montants) -> état courant par clé
     folio + date + fichier. Les rapprochements sont reportés sur la nouvelle empreinte."""
     cols = [r[1] for r in con.execute("PRAGMA table_info(fr_lignes)")]
@@ -418,7 +418,7 @@ def connect(path: Path | str = DB_PATH) -> sqlite3.Connection:
 
 def _migrate(con: sqlite3.Connection) -> None:
     """Tables Oracle recréées si leur structure a changé (elles se rechargent en un clic)."""
-    _migrer_folio_rose(con)
+    _migrer_ctrl_flux(con)
     for table, colonne in (("job_mapping", "programme"), ("rb_controles", "source_req")):
         cols = [r[1] for r in con.execute(f"PRAGMA table_info({table})")]
         if cols and colonne not in cols:

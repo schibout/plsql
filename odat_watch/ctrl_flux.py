@@ -1,4 +1,4 @@
-"""Folio Rose : lecture des exports, import SQLite, statuts, rapprochements et contrôle Oracle.
+"""Ctrl Flux : lecture des exports, import SQLite, statuts, rapprochements et contrôle Oracle.
 
 Portage de ControleFolioRose/Verifier_Factures.ps1 : mêmes règles de lecture (encodage CP850/1252/BOM,
 deux lignes de filtres, en-têtes tolérants aux accents, montants à virgule), mêmes trois requêtes Oracle
@@ -144,7 +144,7 @@ def _index_colonnes(entete: list[str]) -> dict[str, int]:
 
 
 def lire_export(source: Path | str | bytes, nom: str | None = None, date_import: date | None = None) -> Export:
-    """Lit un export Folio Rose (chemin ou octets). Lève ValueError si une colonne indispensable manque."""
+    """Lit un export Ctrl Flux (chemin ou octets). Lève ValueError si une colonne indispensable manque."""
     if isinstance(source, (str, Path)):
         chemin = Path(source)
         octets, nom = chemin.read_bytes(), nom or chemin.name

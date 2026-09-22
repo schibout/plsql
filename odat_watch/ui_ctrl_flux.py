@@ -1,4 +1,4 @@
-"""Onglet Folio Rose : import des exports, tableau avec sélection et somme des écarts en direct,
+"""Onglet Ctrl Flux : import des exports, tableau avec sélection et somme des écarts en direct,
 rapprochements (manuels et groupes compensés), contrôle Oracle, rapport HTML, historique."""
 from __future__ import annotations
 import contextlib
@@ -8,9 +8,9 @@ from pathlib import Path
 import pandas as pd
 import streamlit as st
 
-import folio_rose as fr
+import ctrl_flux as cf
 import gdr as gd
-import rapport_folio_rose as rp
+import rapport_ctrl_flux as rp
 from db import connect
 from oracle_refresh import CONFIG
 
@@ -20,11 +20,13 @@ DOSSIER_SAUVEGARDE = BASE_DIR.parent / "ControleFolioRose"
 # Colonnes et ordre du Rapport_Verification_*.csv du .ps1, complétés par l'âge, le statut et le rapprochement
 COLS_AFFICHEES = ["folio", "type", "date", "age_j", "fichier",
                   "amont_nb", "amont_debit", "amont_credit", "si_nb", "si_debit", "si_credit",
-                  "ecart_nb", "ecart_debit", "ecart_credit", "commentaire", "gdr",
+                  "ecart_nb", "ecart_debit", "ecart_credit", "gdr",
                   "somme_amont_fichier", "somme_ecart_fichier",
                   "nb_interface", "montant_interface", "nb_oracle", "montant_oracle", "ecart_nb_calcule", "ecart_mt_calcule",
-                  "statut", "erreur", "rapproche", "present", "date_dernier_export"]
+                  "statut", "erreur", "rapproche", "present", "date_dernier_export", "commentaire"]
 COLS_ORACLE = ["nb_interface", "montant_interface", "nb_oracle", "montant_oracle", "ecart_nb_calcule", "ecart_mt_calcule", "erreur"]
+# décochées à l'ouverture : cumuls par fichier du .ps1, rarement utiles à l'écran (le choix reste offert)
+COLS_HORS_DEFAUT = ["somme_amont_fichier", "somme_ecart_fichier"]
 LIBELLES = {"folio": "Folio", "type": "Type", "date": "Date", "age_j": "Âge (j)", "fichier": "Nom fichier transmis",
             "amont_nb": "App Amont Nb pièce", "amont_debit": "App Amont Débit", "amont_credit": "App Amont Crédit",
             "si_nb": "SI Finance Nb pièce", "si_debit": "SI Finance Débit", "si_credit": "SI Finance Crédit",
@@ -60,33 +62,41 @@ def _importer_fichiers(fichiers) -> list[str]:
     importés dans l'ordre (le tableau ne montre que ce nouveau chargement)."""
     msgs = []
     with contextlib.closing(connect()) as con:
-        fr.vider_etat(con)
+        cf.vider_etat(con)
         msgs.append("État précédent vidé (lignes, contrôle Oracle, exports).")
         for f in fichiers:
             nom = f.name if hasattr(f, "name") else Path(f).name
             try:
-                e = fr.lire_export(f.getvalue() if hasattr(f, "getvalue") else Path(f), nom)
-                eid = fr.importer(e, con)
+                e = cf.lire_export(f.getvalue() if hasattr(f, "getvalue") else Path(f), nom)
+                eid = cf.importer(e, con)
                 msgs.append(f"{nom} : {'déjà importé' if eid is None else f'{len(e.lignes)} lignes importées'}")
             except (ValueError, OSError, UnicodeDecodeError) as ex:
                 msgs.append(f"{nom} : ERREUR {ex}")
     return msgs
 
 
-def _style(df: pd.DataFrame):
-    def ligne(r):
-        if r["Rapproché"]:
-            return ["background-color: #EAF7EE; color: #7A8794"] * len(r)
-        if "Présente" in r and not r["Présente"]:
-            return ["color: #9AA3AF; font-style: italic"] * len(r)
-        if r.get("GDR (rejets)") and str(r["GDR (rejets)"]).strip() and not str(r["GDR (rejets)"]).startswith("probable"):
-            return [f"background-color: {COULEUR_GDR}"] * len(r)
-        couleur = fr.couleur_ligne(r["Écarts Débit"], r["Écarts Crédit"], r["Écarts Nb pièce"], r["Statut Vérification"],
-                                   r["Commentaire"], nb_interface=r.get("Nb Pièces Interface OA"),
-                                   montant_interface=r.get("Montant Interface OA"), nb_oracle=r.get("Nb Pièces OA"),
-                                   montant_oracle=r.get("Montant OA"))
-        return [f"background-color: {fr.COULEURS_LIGNE[couleur]}" if couleur else ""] * len(r)
-    return df.style.apply(ligne, axis=1)
+def _styles_lignes(vue: pd.DataFrame) -> list[str]:
+    """Style CSS de chaque ligne, calculé sur les données complètes : masquer une colonne ne change pas la couleur."""
+    styles = []
+    for _, r in vue.iterrows():
+        gdr = str(r.get("gdr") or "")
+        if r["rapproche"]:
+            styles.append("background-color: #EAF7EE; color: #7A8794")
+        elif "present" in r and not r["present"]:
+            styles.append("color: #9AA3AF; font-style: italic")
+        elif gdr.strip() and not gdr.startswith("probable"):
+            styles.append(f"background-color: {COULEUR_GDR}")
+        else:
+            couleur = cf.couleur_ligne(r["ecart_debit"], r["ecart_credit"], r["ecart_nb"], r["statut"],
+                                       r["commentaire"], nb_interface=r.get("nb_interface"),
+                                       montant_interface=r.get("montant_interface"), nb_oracle=r.get("nb_oracle"),
+                                       montant_oracle=r.get("montant_oracle"))
+            styles.append(f"background-color: {cf.COULEURS_LIGNE[couleur]}" if couleur else "")
+    return styles
+
+
+def _style(df: pd.DataFrame, styles: list[str]):
+    return df.style.apply(lambda r: [styles[r.name]] * len(r) if r.name < len(styles) else [""] * len(r), axis=1)
 
 
 # Formats numériques confiés au navigateur (locale française) : les valeurs restent des nombres,
@@ -99,12 +109,12 @@ COLONNES_CONFIG = {**{c: st.column_config.NumberColumn(c, format="euro") for c i
 
 
 def _charger_gdr(con, lignes):
-    """Importe les exports GDR nouvellement déposés puis rapproche les lignes Folio Rose (fichier + folio)."""
+    """Importe les exports GDR nouvellement déposés puis rapproche les lignes Ctrl Flux (fichier + folio)."""
     racine = gd.config_gdr()["racine"]
-    if "fr_gdr_log" not in st.session_state:
-        st.session_state["fr_gdr_log"] = gd.importer_dossier(racine, con)
+    if "cf_gdr_log" not in st.session_state:
+        st.session_state["cf_gdr_log"] = gd.importer_dossier(racine, con)
     try:
-        return gd.rapprocher_folio_rose(lignes, con)
+        return gd.rapprocher_ctrl_flux(lignes, con)
     except (ValueError, KeyError) as e:       # une GDR illisible ne doit pas emporter l'onglet
         st.warning(f"Rapprochement GDR impossible : {e}")
         lignes = lignes.copy()
@@ -132,66 +142,66 @@ def _pieces_gdr(sel, pieces_gdr: dict) -> None:
 
 def render(kpi):
     # ---------------------------------------------------------------- import
-    with st.expander("📥 Importer des exports Folio Rose", expanded=False):
+    with st.expander("📥 Importer des exports Ctrl Flux", expanded=False):
         fichiers = st.file_uploader("Glisser-déposer un ou plusieurs ExportCSV-*.csv", type=["csv"],
-                                    accept_multiple_files=True, key="fr_upload")
+                                    accept_multiple_files=True, key="cf_upload")
         c1, c2 = st.columns(2)
-        if c1.button("Importer les fichiers déposés", disabled=not fichiers, use_container_width=True, key="fr_imp_fichiers"):
-            st.session_state["fr_import_log"] = _importer_fichiers(fichiers)
+        if c1.button("Importer les fichiers déposés", disabled=not fichiers, use_container_width=True, key="cf_imp_fichiers"):
+            st.session_state["cf_import_log"] = _importer_fichiers(fichiers)
             st.rerun()
         st.caption("Chaque chargement remplace le tableau : l'état précédent (lignes, contrôle Oracle, exports) est vidé, "
                    "les rapprochements sont conservés.")
-        if c2.button("Importer le dossier ControleFolioRose", use_container_width=True, key="fr_imp_dossier",
+        if c2.button("Importer le dossier ControleFolioRose", use_container_width=True, key="cf_imp_dossier",
                      help=str(DOSSIER_SAUVEGARDE)):
             csvs = sorted(DOSSIER_SAUVEGARDE.glob("ExportCSV-*.csv")) + sorted((DOSSIER_SAUVEGARDE / "sauvegarde").glob("ExportCSV-*.csv"))
-            st.session_state["fr_import_log"] = _importer_fichiers(csvs)
+            st.session_state["cf_import_log"] = _importer_fichiers(csvs)
             st.rerun()
-        if st.session_state.get("fr_import_log"):
-            st.code("\n".join(st.session_state["fr_import_log"]))
+        if st.session_state.get("cf_import_log"):
+            st.code("\n".join(st.session_state["cf_import_log"]))
 
     with contextlib.closing(connect()) as con:
-        ex = fr.exports(con)
+        ex = cf.exports(con)
         if ex.empty:
             st.info("Aucun export importé. Déposez un fichier ExportCSV-*.csv ci-dessus.")
             return
-        export = fr.dernier_export(con)
+        export = cf.dernier_export(con)
         st.caption(f"État courant des lignes (clé : folio + date + fichier) · dernier export : {export.date_export:%d/%m/%Y} "
                    f"· période {export.periode_debut} → {export.periode_fin} · {len(ex)} import(s)")
-        voir_disparues = st.checkbox("Afficher aussi les lignes disparues des derniers exports", False, key="fr_disparues")
-        lignes = fr.lignes(con, disparues=voir_disparues)
+        voir_disparues = st.checkbox("Afficher aussi les lignes disparues des derniers exports", False, key="cf_disparues")
+        lignes = cf.lignes(con, disparues=voir_disparues)
         lignes, pieces_gdr = _charger_gdr(con, lignes)
-        groupes = fr.groupes_compenses(lignes[lignes["present"]])
+        groupes = cf.groupes_compenses(lignes[lignes["present"]])
 
-        folios_ok = fr.folios_compenses(lignes[lignes["present"]])
+        folios_ok = cf.folios_compenses(lignes[lignes["present"]])
 
         # ------------------------------------------------------------ Oracle + rapport
         o1, o2 = st.columns(2)
-        if o1.button("🅾 Contrôler dans Oracle", disabled=not CONFIG.exists(), use_container_width=True, key="fr_oracle"):
+        if o1.button("🅾 Contrôler dans Oracle", disabled=not CONFIG.exists(), use_container_width=True, key="cf_oracle"):
             with st.spinner("Interrogation Oracle…"):
                 try:
-                    st.session_state["fr_oracle_msg"] = fr.controler_oracle(con)
+                    st.session_state["cf_oracle_msg"] = cf.controler_oracle(con)
                     st.rerun()
                 except (Exception, SystemExit) as e:  # noqa: BLE001 — même mécanique que l'onglet Matin
                     st.error(f"Contrôle impossible : {e}")
-        if st.session_state.get("fr_oracle_msg"):
-            o1.caption(st.session_state["fr_oracle_msg"])
-        if o2.button("📄 Générer le rapport HTML", use_container_width=True, key="fr_btn_rapport"):
+        if st.session_state.get("cf_oracle_msg"):
+            o1.caption(st.session_state["cf_oracle_msg"])
+        if o2.button("📄 Générer le rapport HTML", use_container_width=True, key="cf_btn_rapport"):
             try:
-                chemin = rp.ecrire(export, lignes, groupes, fr.rapprochements(con))
-                st.session_state["fr_rapport"] = str(chemin)
+                chemin = rp.ecrire(export, lignes, groupes, cf.rapprochements(con))
+                st.session_state["cf_rapport"] = str(chemin)
             except OSError as e:
                 st.error(f"Écriture impossible : {e}")
-        if st.session_state.get("fr_rapport"):
-            p = Path(st.session_state["fr_rapport"])
+        if st.session_state.get("cf_rapport"):
+            p = Path(st.session_state["cf_rapport"])
             if p.exists():
                 o2.download_button("⬇ Télécharger " + p.name, p.read_bytes(), file_name=p.name, mime="text/html",
-                                   key="fr_dl")
+                                   key="cf_dl")
 
 
         # ------------------------------------------------------------ tuiles
-        if st.session_state.get("fr_gdr_log"):
-            with st.expander(f"🧾 Imports GDR ({len(st.session_state['fr_gdr_log'])})", expanded=False):
-                st.code("\n".join(st.session_state["fr_gdr_log"]))
+        if st.session_state.get("cf_gdr_log"):
+            with st.expander(f"🧾 Imports GDR ({len(st.session_state['cf_gdr_log'])})", expanded=False):
+                st.code("\n".join(st.session_state["cf_gdr_log"]))
         c = st.columns(6)
         controle = "—" not in set(lignes["statut"])
         kpi(c[0], len(lignes), "lignes", "neutral")
@@ -206,10 +216,10 @@ def render(kpi):
 
         # ------------------------------------------------------------ filtres
         f1, f2, f3, f4 = st.columns([1, 1, 2, 1])
-        types = f1.multiselect("Type", sorted(lignes["type"].unique()), key="fr_types")
-        statuts = f2.multiselect("Statut", sorted(lignes["statut"].unique()), key="fr_statuts")
-        folios = f3.multiselect("Folio", sorted(lignes["folio"].unique()), key="fr_folios")
-        masquer = f4.checkbox("Masquer les rapprochées", True, key="fr_masquer")
+        types = f1.multiselect("Type", sorted(lignes["type"].unique()), key="cf_types")
+        statuts = f2.multiselect("Statut", sorted(lignes["statut"].unique()), key="cf_statuts")
+        folios = f3.multiselect("Folio", sorted(lignes["folio"].unique()), key="cf_folios")
+        masquer = f4.checkbox("Masquer les rapprochées", True, key="cf_masquer")
         st.caption("Couleurs : 🟪 violet : écart expliqué par des pièces rejetées dans la GDR · 🟧 orange : données en interface Oracle absentes des tables définitives ou montant différent · "
                    "🟦 vérification Oracle OK · 🟨 jaune : commentaire renseigné · 🟩 écart de montant nul · "
                    "🟥 rose : nombre de pièces égal mais montant différent")
@@ -225,25 +235,39 @@ def render(kpi):
             vue = vue[~vue["rapproche"]]
         vue = vue.reset_index(drop=True)
 
+        # ------------------------------------------------------------ choix des colonnes
+        # colonnes Oracle proposées seulement si un contrôle a été lancé (Streamlit afficherait « None »)
+        disponibles = COLS_AFFICHEES if controle else [c for c in COLS_AFFICHEES if c not in COLS_ORACLE]
+        defaut = [c for c in disponibles if c not in COLS_HORS_DEFAUT]
+        choix = st.session_state.get("cf_colonnes")
+        nb = len(choix) if choix else len(defaut)
+        with st.expander(f"🧮 Colonnes affichées ({nb} sur {len(disponibles)})", expanded=False):
+            choix = st.multiselect("Colonnes affichées", [LIBELLES[c] for c in disponibles],
+                                   default=[LIBELLES[c] for c in defaut], key="cf_colonnes", label_visibility="collapsed",
+                                   help="Vider la liste rétablit la sélection par défaut. L'ordre du tableau ne change pas.")
+        retenues = {c for c in disponibles if LIBELLES[c] in set(choix)} if choix else set(defaut)
+        colonnes = [c for c in disponibles if c in retenues]
+
         # ------------------------------------------------------------ tableau + sélection
-        # colonnes Oracle masquées tant qu'aucun contrôle n'a été lancé (Streamlit afficherait « None »)
-        colonnes = COLS_AFFICHEES if "—" not in set(lignes["statut"]) else [c for c in COLS_AFFICHEES if c not in COLS_ORACLE]
+        styles = _styles_lignes(vue)
         aff = vue[colonnes].rename(columns=LIBELLES)
         for c in COLS_MONTANTS + COLS_NB:
             if c in aff.columns:
                 aff[c] = pd.to_numeric(aff[c], errors="coerce")
         # Streamlit n'inclut pas les données dans l'identité d'un st.dataframe à clé : on change la clé
         # dès que l'ensemble (ou l'ordre) des lignes affichées change, sinon la sélection survit au filtre.
-        sig = hashlib.blake2b("|".join(vue["empreinte"].astype(str)).encode("utf-8"), digest_size=6).hexdigest()
-        ev = st.dataframe(_style(aff), use_container_width=True, hide_index=True, height=420,
-                          column_config=COLONNES_CONFIG, on_select="rerun", selection_mode="multi-row",
-                          key=f"fr_table_{eid}_{sig}")
+        sig = hashlib.blake2b("|".join(list(vue["empreinte"].astype(str)) + colonnes).encode("utf-8"),
+                              digest_size=6).hexdigest()
+        ev = st.dataframe(_style(aff, styles), use_container_width=True, hide_index=True, height=420,
+                          column_config={k: v for k, v in COLONNES_CONFIG.items() if k in aff.columns},
+                          on_select="rerun", selection_mode="multi-row",
+                          key=f"cf_table_{eid}_{sig}")
         rows = list(ev.selection.rows) if ev and ev.selection else []
         sel_idx = [i for i in rows if 0 <= i < len(vue)]
         sel = vue.iloc[sel_idx]
         _pieces_gdr(sel, pieces_gdr)
-        sommes = fr.sommes_selection(vue, sel["empreinte"].tolist())
-        ok = len(sel) >= 2 and fr.compensee(sommes)
+        sommes = cf.sommes_selection(vue, sel["empreinte"].tolist())
+        ok = len(sel) >= 2 and cf.compensee(sommes)
         _panneau_flottant(len(sel), sommes, ok)
         if sel.empty:
             st.caption("Cochez des lignes : les écarts débit, crédit et nombre de pièces se cumulent dans le panneau "
@@ -251,11 +275,11 @@ def render(kpi):
         elif ok:
             st.success(f"✔ {len(sel)} lignes sélectionnées · écarts débit {_eur(sommes['ecart_debit'])} · "
                        f"crédit {_eur(sommes['ecart_credit'])} · pièces {sommes['ecart_nb']:g} — compensé, rapprochement possible.")
-            com = st.text_input("Commentaire (optionnel)", key="fr_com")
-            if st.button("🔗 Rapprocher ces lignes", type="primary", key="fr_rapprocher"):
+            com = st.text_input("Commentaire (optionnel)", key="cf_com")
+            if st.button("🔗 Rapprocher ces lignes", type="primary", key="cf_rapprocher"):
                 try:
-                    fr.rapprocher(sel["empreinte"].tolist(), com, con)
-                    st.session_state["fr_msg"] = f"Rapprochement enregistré ({len(sel)} lignes)."
+                    cf.rapprocher(sel["empreinte"].tolist(), com, con)
+                    st.session_state["cf_msg"] = f"Rapprochement enregistré ({len(sel)} lignes)."
                     st.rerun()
                 except ValueError as e:
                     st.error(str(e))
@@ -263,7 +287,7 @@ def render(kpi):
             st.info(f"{len(sel)} ligne(s) sélectionnée(s) · écarts débit {_eur(sommes['ecart_debit'])} · "
                     f"crédit {_eur(sommes['ecart_credit'])} · pièces {sommes['ecart_nb']:g}"
                     + ("" if len(sel) >= 2 else " · sélectionnez au moins deux lignes"))
-        msg = st.session_state.pop("fr_msg", None)
+        msg = st.session_state.pop("cf_msg", None)
         if msg:
             st.toast(msg, icon="✅")
 
@@ -272,23 +296,23 @@ def render(kpi):
         if groupes.empty:
             st.caption("Aucun groupe folio + fichier dont la somme des écarts débit fait 0.")
         else:
-            if st.button("🔗 Tout rapprocher", key="fr_tous"):
+            if st.button("🔗 Tout rapprocher", key="cf_tous"):
                 n = 0
                 for _, g in groupes.iterrows():
                     try:
-                        fr.rapprocher(list(g["empreintes"]), "groupe compensé (auto)", con); n += 1
+                        cf.rapprocher(list(g["empreintes"]), "groupe compensé (auto)", con); n += 1
                     except ValueError:
                         pass
-                st.session_state["fr_msg"] = f"{n} groupe(s) rapproché(s), {len(groupes) - n} refusé(s)."
+                st.session_state["cf_msg"] = f"{n} groupe(s) rapproché(s), {len(groupes) - n} refusé(s)."
                 st.rerun()
             for i, g in groupes.iterrows():
                 a, b = st.columns([5, 1])
                 a.write(f"**{g['folio']}** · `{g['fichier_base']}` · {g['nb']} lignes · débit {_eur(g['somme'])} · "
                         f"crédit {_eur(g['somme_credit'])} · pièces {g['somme_nb']:g}")
-                if b.button("Rapprocher", key=f"fr_grp_{i}"):
+                if b.button("Rapprocher", key=f"cf_grp_{i}"):
                     try:
-                        fr.rapprocher(list(g["empreintes"]), "groupe compensé", con)
-                        st.session_state["fr_msg"] = f"Groupe {g['folio']} rapproché."
+                        cf.rapprocher(list(g["empreintes"]), "groupe compensé", con)
+                        st.session_state["cf_msg"] = f"Groupe {g['folio']} rapproché."
                         st.rerun()
                     except ValueError as e:
                         st.error(str(e))
@@ -303,16 +327,16 @@ def render(kpi):
                 a, b = st.columns([5, 1])
                 a.write(f"**{g['folio']}** · {g['nb']} lignes sur {g['nb_fichiers']} fichier(s) · débit {_eur(g['somme'])} · "
                         f"crédit {_eur(g['somme_credit'])} · pièces {g['somme_nb']:g}")
-                if b.button("Rapprocher", key=f"fr_folio_{i}"):
+                if b.button("Rapprocher", key=f"cf_folio_{i}"):
                     try:
-                        fr.rapprocher(list(g["empreintes"]), "folio compensé", con)
-                        st.session_state["fr_msg"] = f"Folio {g['folio']} rapproché ({g['nb']} lignes)."
+                        cf.rapprocher(list(g["empreintes"]), "folio compensé", con)
+                        st.session_state["cf_msg"] = f"Folio {g['folio']} rapproché ({g['nb']} lignes)."
                         st.rerun()
                     except ValueError as e:
                         st.error(str(e))
 
         # ------------------------------------------------------------ historique
-        r = fr.rapprochements(con)
+        r = cf.rapprochements(con)
         with st.expander(f"Historique des rapprochements ({int((r['annule_le'].isna()).sum()) if not r.empty else 0} actifs)"):
             if r.empty:
                 st.caption("Aucun rapprochement.")
@@ -320,8 +344,8 @@ def render(kpi):
                 a, b = st.columns([5, 1])
                 etat = f" · annulé le {x['annule_le']}" if x["annule_le"] else ""
                 a.write(f"{x['cree_le']} · {x['folios'] or ''} · {x['nb_lignes']} lignes · {x['commentaire'] or ''}{etat}")
-                if not x["annule_le"] and b.button("Annuler", key=f"fr_ann_{x['id']}"):
-                    fr.annuler_rapprochement(int(x["id"]), con)
+                if not x["annule_le"] and b.button("Annuler", key=f"cf_ann_{x['id']}"):
+                    cf.annuler_rapprochement(int(x["id"]), con)
                     st.rerun()
 
 
@@ -332,11 +356,11 @@ def _panneau_flottant(n: int, sommes: dict, ok: bool) -> None:
     fond, bord, texte = ("#EAF7EE", "#1F9D55", "#0B6B3A") if ok else ("#FFF8E1", "#D9A400", "#5B4A00")
     etat = "✔ compensé — rapprochement possible" if ok else ("sélectionnez au moins deux lignes" if n < 2 else "écarts non nuls")
     st.markdown(f"""
-<style>.fr-flot {{position:fixed; right:24px; bottom:24px; z-index:1000; background:{fond}; border:2px solid {bord};
+<style>.cf-flot {{position:fixed; right:24px; bottom:24px; z-index:1000; background:{fond}; border:2px solid {bord};
   color:{texte}; border-radius:14px; padding:.7rem 1.1rem; box-shadow:0 8px 24px rgba(16,24,40,.18); font-size:.9rem; min-width:300px;}}
-.fr-flot b {{font-size:1.05rem;}} .fr-flot .v {{font-variant-numeric:tabular-nums; font-weight:700;}}
-.fr-flot table {{border-collapse:collapse; margin-top:.3rem;}} .fr-flot td {{padding:.05rem .6rem .05rem 0;}}</style>
-<div class="fr-flot"><b>{n} ligne(s) sélectionnée(s)</b><table>
+.cf-flot b {{font-size:1.05rem;}} .cf-flot .v {{font-variant-numeric:tabular-nums; font-weight:700;}}
+.cf-flot table {{border-collapse:collapse; margin-top:.3rem;}} .cf-flot td {{padding:.05rem .6rem .05rem 0;}}</style>
+<div class="cf-flot"><b>{n} ligne(s) sélectionnée(s)</b><table>
 <tr><td>Écart débit</td><td class="v">{_eur(sommes['ecart_debit'])}</td></tr>
 <tr><td>Écart crédit</td><td class="v">{_eur(sommes['ecart_credit'])}</td></tr>
 <tr><td>Écart nb pièces</td><td class="v">{sommes['ecart_nb']:g}</td></tr></table>

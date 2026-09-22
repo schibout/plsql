@@ -1,4 +1,4 @@
-"""GDR : lecture des exports, import en photos successives, pièces, rapprochement Folio Rose."""
+"""GDR : lecture des exports, import en photos successives, pièces, rapprochement Ctrl Flux."""
 from datetime import date
 from pathlib import Path
 
@@ -145,20 +145,20 @@ def test_verdict_piece_seule(tmp_path):
     con.close()
 
 
-def test_rapprocher_folio_rose(tmp_path):
+def test_rapprocher_ctrl_flux(tmp_path):
     con = _con_avec_gl(tmp_path)
     lignes = pd.DataFrame([_ligne_fr(), _ligne_fr(empreinte="e2", folio="ZZZ"),
                            _ligne_fr(empreinte="e3", folio="par", fichier="FAC02_SRC_ECRITURESGL_270526-171607 ", ecart_debit=5.0)])
-    out, detail = gdr.rapprocher_folio_rose(lignes, con)
+    out, detail = gdr.rapprocher_ctrl_flux(lignes, con)
     assert list(out["gdr_niveau"]) == ["total", "", "probable"]      # folio et fichier normalisés (casse, espaces)
     assert set(detail) == {"e1", "e3"} and len(detail["e1"]) == 1
-    vide, d = gdr.rapprocher_folio_rose(lignes.iloc[0:0], con)
+    vide, d = gdr.rapprocher_ctrl_flux(lignes.iloc[0:0], con)
     assert vide.empty and "gdr" in vide.columns and d == {}
     con.close()
 
 
 def test_rapprocher_sans_gdr(tmp_path):
     con = db.connect(tmp_path / "t.db")
-    out, detail = gdr.rapprocher_folio_rose(pd.DataFrame([_ligne_fr()]), con)
+    out, detail = gdr.rapprocher_ctrl_flux(pd.DataFrame([_ligne_fr()]), con)
     assert (out["gdr"] == "").all() and detail == {}
     con.close()
