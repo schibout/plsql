@@ -357,9 +357,15 @@ with tab_banque:
         import ui_prelevements
         ui_prelevements.render(kpi)
 
+# ------------------------------------------------------------------ ctrl flux : contrôle des flux, rejets GDR
 with tab_folio:
-    import ui_ctrl_flux
-    ui_ctrl_flux.render(kpi)
+    sous_flux, sous_gdr = st.tabs(["🔀 Ctrl Flux", "🧾 GDR"])
+    with sous_flux:
+        import ui_ctrl_flux
+        ui_ctrl_flux.render(kpi)
+    with sous_gdr:
+        import ui_gdr
+        ui_gdr.render(kpi)
 
 with tab_ora:
     import ui_oracle

@@ -23,6 +23,7 @@ Oracle EBS R12 pour répondre à : **qu'est-ce qui tourne ce soir, et demain ?**
 | `ui_matin.py` | Onglet Matin : plage date+heure, bandeau, tuiles avec écart vs. veille, détail par section, génération/téléchargement du rapport, programmation, tendance 30 jours. |
 | `ctrl_flux.py` | **Ctrl Flux** : portage de `Verifier_Factures.ps1` (import des exports `ExportCSV-*.csv`, tables `fr_*`, groupes compensés, rapprochements, contrôle Oracle). |
 | `rapport_ctrl_flux.py` | Rapport HTML Ctrl Flux (même charte que `rapport_matin.py`), écrit dans `rapports/`. |
+| `ui_gdr.py` | Sous-onglet GDR : pièces et lignes rejetées ouvertes, filtres, répartitions par code rejet et par folio, historique des imports. |
 | `gdr.py` | **GDR** : exports quotidiens des rejets (AP / AR / GL), photos successives (tables `gdr_*`), pièces et rapprochement avec les lignes Ctrl Flux. |
 | `ui_ctrl_flux.py` | Onglet Ctrl Flux : import, tableau avec sélection et somme des écarts en direct, rapprochements (manuels et groupes compensés), contrôle Oracle, rapport HTML, historique. |
 | `releves_scan.py` | **Relevés bancaires — acquisition** : section `[releves]` de `config.ini`, lecture des fichiers AFB120 (CFONB 120 : relevés, mouvements, banques, dates, md5, flux A/B), scan des exécutions PFE (`<uuid>/SOURCE,TARGET,TALEND`) et des `AFB120.txt_*` reçus par EBS, parseurs des logs `RBAFBIMP` (synthèse des relevés, erreurs 001/025) et `DKA_SRBCTRLRB` (comptes en anomalie), comptes connus, chaîne Control-M `FINEXT_J14INT_05/06` lue dans les photos ODAT. Tables `rb_*`. |
@@ -39,7 +40,7 @@ Oracle EBS R12 pour répondre à : **qu'est-ce qui tourne ce soir, et demain ?**
 | `referentiel.py` / `ui_profils.py` | **Profils + référentiel** : profil calculé de chaque job (onglet Profils) enrichi du référentiel jobs Control-M ↔ programmes Oracle Applications : alimenté automatiquement (photos ODAT + demandes Oracle : lanceur, filles, script `DKA_X_JOB.sh`), corrigeable à la main (saisie prioritaire partout), export CSV. Table `referentiel_jobs`. |
 | `ui_sql.py` | Onglet SQL : explorateur des tables SQLite (structure, volumes) et requêteur libre en lecture seule, exemples fournis, export CSV. |
 | `mock_oracle.py` | **Poste sans Oracle** : fabrique des demandes simulées à partir des exécutions Control-M (lanceur + programme métier, statuts alignés) et des logs présents. `python mock_oracle.py --reset`. Écrasé par les vraies données au premier `oracle_refresh.py`. |
-| `app.py` | Interface Streamlit : Ce soir, Demain, Maintenant, Matin, Banque (Relevés bancaires, Virements, Prélèvements), Ctrl Flux, Oracle, Historique, Profils (avec référentiel), Données, SQL. |
+| `app.py` | Interface Streamlit : Ce soir, Demain, Maintenant, Matin, Banque (Relevés bancaires, Virements, Prélèvements), Ctrl Flux (Ctrl Flux, GDR), Oracle, Historique, Profils (avec référentiel), Données, SQL. |
 | `.streamlit/config.toml` | Thème de l'interface. |
 | `run.bat` | Import ODAT + lancement de l'interface. |
 | `config.ini.exemple` | Modèle de configuration (Oracle, filtres, dossiers de logs, section `[releves]`). Copier en `config.ini` (ignoré par git). |
@@ -220,7 +221,10 @@ ligne Ctrl Flux, la colonne « GDR (rejets) » indique ce que les pièces rejet�
 - **« probable : … »** quand le fichier et le folio sont bien dans la GDR mais qu'aucun montant ne tombe juste.
 
 Le détail des pièces (type, numéro, code et libellé de rejet, montant, ancienneté) s'ouvre sous le tableau pour
-les lignes cochées. Le commentaire de l'export n'est pas modifié : il vient du CSV Ctrl Flux et serait écrasé
+les lignes cochées. Le sous-onglet **🧾 GDR**, à côté de **🔀 Ctrl Flux**, montre la GDR pour elle-même : tuiles
+(pièces et lignes ouvertes, montant rejeté, nouvelles et traitées de la dernière photo), pièces puis lignes
+rejetées avec filtres (type, code rejet, folio, recherche libre) et affichage optionnel des rejets traités,
+répartitions par code rejet et par folio, et historique des imports. Le commentaire de l'export n'est pas modifié : il vient du CSV Ctrl Flux et serait écrasé
 au chargement suivant.
 
 `Verifier_Factures.ps1` reste utilisable en parallèle (aucune dépendance vers l'onglet).
