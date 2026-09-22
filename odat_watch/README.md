@@ -180,7 +180,9 @@ survivent aux mises à jour. Le tableau montre l'état courant ; les exports imp
 
 Onglet **🌹 Folio Rose** : portage de `Verifier_Factures.ps1`. Déposer un ou plusieurs
 `ExportCSV-*.csv` par glisser-déposer, ou importer d'un coup le dossier `ControleFolioRose` (et son
-sous-dossier `sauvegarde`) ; les fichiers déjà importés (même hash) sont ignorés. Le tableau se filtre par
+sous-dossier `sauvegarde`). Chaque chargement **remplace** le tableau : l'état courant (`fr_lignes`,
+`fr_oracle`, `fr_exports`) est vidé avant d'importer le lot, les rapprochements sont conservés ; au sein d'un
+même lot, les fichiers en double (même hash) sont ignorés. Le tableau se filtre par
 type, statut et folio ; cocher des lignes affiche la somme de leurs écarts débit en direct, et à 0 (au moins
 deux lignes) propose « 🔗 Rapprocher ces lignes ». Les groupes folio + fichier dont la somme des écarts fait
 déjà 0 sont listés à part (« Groupes compensés en attente ») avec un rapprochement à l'unité ou « Tout

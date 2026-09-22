@@ -54,8 +54,12 @@ def _eur(v) -> str:
 
 
 def _importer_fichiers(fichiers) -> list[str]:
+    """Charge un lot de fichiers : l'état courant est vidé une fois avant le lot, puis les fichiers sont
+    importés dans l'ordre (le tableau ne montre que ce nouveau chargement)."""
     msgs = []
     with contextlib.closing(connect()) as con:
+        fr.vider_etat(con)
+        msgs.append("État précédent vidé (lignes, contrôle Oracle, exports).")
         for f in fichiers:
             nom = f.name if hasattr(f, "name") else Path(f).name
             try:
@@ -99,6 +103,8 @@ def render(kpi):
         if c1.button("Importer les fichiers déposés", disabled=not fichiers, use_container_width=True, key="fr_imp_fichiers"):
             st.session_state["fr_import_log"] = _importer_fichiers(fichiers)
             st.rerun()
+        st.caption("Chaque chargement remplace le tableau : l'état précédent (lignes, contrôle Oracle, exports) est vidé, "
+                   "les rapprochements sont conservés.")
         if c2.button("Importer le dossier ControleFolioRose", use_container_width=True, key="fr_imp_dossier",
                      help=str(DOSSIER_SAUVEGARDE)):
             csvs = sorted(DOSSIER_SAUVEGARDE.glob("ExportCSV-*.csv")) + sorted((DOSSIER_SAUVEGARDE / "sauvegarde").glob("ExportCSV-*.csv"))

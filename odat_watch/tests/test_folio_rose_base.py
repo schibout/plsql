@@ -218,6 +218,19 @@ def test_sommes_par_fichier_comme_le_ps1(tmp_path):
     con.close()
 
 
+def test_vider_etat(tmp_path):
+    con = db.connect(tmp_path / "t.db")
+    fr.importer(fr.lire_export(SAUVEGARDE / "ExportCSV-19-08-2026.csv"), con)
+    con.execute("INSERT INTO fr_oracle(folio, fichier_base, type, controle_le) VALUES ('F', 'B', 'GL', 'x')")
+    con.commit()
+    fr.vider_etat(con)
+    for t in ("fr_lignes", "fr_oracle", "fr_exports"):
+        assert con.execute(f"SELECT COUNT(*) FROM {t}").fetchone()[0] == 0, t
+    # le même fichier peut être réimporté après le vidage
+    assert fr.importer(fr.lire_export(SAUVEGARDE / "ExportCSV-19-08-2026.csv"), con) is not None
+    con.close()
+
+
 def test_couleur_ligne():
     # montant à zéro -> vert ; nb pièces à zéro mais montant non nul -> rose ; sinon jaune
     assert fr.couleur_ligne(0.0, 0.0, 3.0) == "vert"

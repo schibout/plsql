@@ -244,6 +244,15 @@ def importer(export: Export, con: sqlite3.Connection) -> int | None:
     return eid
 
 
+def vider_etat(con: sqlite3.Connection) -> None:
+    """Vide l'état courant (lignes, résultats Oracle, exports) avant un nouveau chargement.
+    Les rapprochements sont conservés : attachés à la clé métier, ils s'appliquent à nouveau si la ligne revient."""
+    with con:
+        con.execute("DELETE FROM fr_lignes")
+        con.execute("DELETE FROM fr_oracle")
+        con.execute("DELETE FROM fr_exports")
+
+
 def dernier_export(con: sqlite3.Connection) -> Export | None:
     """Métadonnées du dernier export importé (le plus récent par date d'export)."""
     ex = exports(con)

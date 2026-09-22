@@ -73,3 +73,18 @@ def test_generer_le_rapport(app, tmp_path, monkeypatch):
     at.button(key="fr_btn_rapport").click().run()
     assert not at.exception
     assert list((tmp_path / "r").glob("Folio_Rose_*.html"))
+
+
+def test_import_remplace_l_etat(app, monkeypatch):
+    # un nouvel import vide l'état courant : seules les lignes du dernier lot restent
+    at, base = app
+    fichiers = sorted(SAUVEGARDE.glob("ExportCSV-*.csv"))
+    assert len(fichiers) >= 2
+    autre = [f for f in fichiers if f.name != "ExportCSV-19-08-2026.csv"][0]
+    msgs = ui_folio_rose._importer_fichiers([autre])
+    assert "vidé" in msgs[0] and "importées" in msgs[1]
+    con = db.connect(base)
+    assert con.execute("SELECT COUNT(*) FROM fr_exports").fetchone()[0] == 1
+    assert fr.exports(con).iloc[0]["nom_fichier"] == autre.name
+    assert (fr.lignes(con, disparues=True)["dernier_export"] == autre.name).all()
+    con.close()
