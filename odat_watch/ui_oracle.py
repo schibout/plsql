@@ -14,7 +14,8 @@ GRAVITE_ICON = {"bloquant": "🟥", "à reprendre": "🟧", "normal": "🟩", "�
 
 
 @st.cache_data(show_spinner=False)
-def _charger(_stamp: tuple):
+def _charger(cache_key: tuple):
+    """Charge les données Oracle ; ``cache_key`` invalide le cache après chaque import."""
     con = connect()
     try:
         return _charger_depuis(con)
@@ -33,11 +34,19 @@ def _charger_depuis(con):
 def _stamp() -> tuple:
     """Clé de cache : compteurs + dernier rafraîchissement (robuste même si le mtime ne bouge pas)."""
     con = connect()
-    t = (con.execute("SELECT COUNT(*), MAX(refreshed_at) FROM ora_requests WHERE source='oracle'").fetchone()[:],
-         con.execute("SELECT COUNT(*), MAX(loaded_at) FROM ora_request_logs").fetchone()[:],
-         con.execute("SELECT COUNT(*) FROM ora_programs WHERE source='oracle'").fetchone()[0])
-    con.close()
-    return tuple(map(str, t))
+    try:
+        demandes = con.execute(
+            "SELECT COUNT(*), MAX(refreshed_at) FROM ora_requests WHERE source='oracle'"
+        ).fetchone()
+        logs = con.execute(
+            "SELECT COUNT(*), MAX(loaded_at) FROM ora_request_logs"
+        ).fetchone()
+        programmes = con.execute(
+            "SELECT COUNT(*), MAX(refreshed_at) FROM ora_programs WHERE source='oracle'"
+        ).fetchone()
+        return tuple(str(valeur or "") for groupe in (demandes, logs, programmes) for valeur in groupe)
+    finally:
+        con.close()
 
 
 def _etat(r) -> str:
