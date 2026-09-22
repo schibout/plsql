@@ -24,11 +24,43 @@ def _charger(cache_key: tuple):
 
 
 def _charger_depuis(con):
-    """Charge uniquement les traitements et programmes provenant réellement d'Oracle EBS."""
+    """Charge uniquement les traitements et programmes provenant réellement d'Oracle EBS.
+    Les demandes soumises par le lanceur générique sont conservées : leur vrai programme est résolu."""
+    import referentiel
     req = pd.read_sql_query("SELECT * FROM ora_requests WHERE source='oracle'", con)
     logs = pd.read_sql_query("SELECT * FROM ora_request_logs", con)
     progs = pd.read_sql_query("SELECT * FROM ora_programs WHERE source='oracle'", con)
-    return req, logs, progs
+    return _resoudre_lanceurs(req, referentiel.programmes(con)), logs, progs
+
+
+def _resoudre_lanceurs(req: pd.DataFrame, programmes: dict[str, str]) -> pd.DataFrame:
+    """Remplace le lanceur générique par le programme réellement exécuté.
+
+    Presque toutes les demandes sont soumises par `DKA_SLAUNCHER` : les masquer revenait à cacher la quasi-
+    totalité de la base, erreurs comprises. Le programme est retrouvé dans le référentiel des jobs (saisie
+    manuelle puis déduction automatique), sinon dans la description « JOB : DKA_X_JOB.sh », sinon dans le
+    script des arguments. Sans rien d'exploitable, la demande est gardée telle quelle, avec le lanceur.
+    Le lanceur d'origine reste dans la colonne `lanceur`, et `via_lanceur` permet de les filtrer."""
+    import forecast
+    from oracle_refresh import programme_from_description
+    out = req.copy()
+    for c in ("program_short", "program_name", "description", "argument_text", "job_name"):
+        if c not in out.columns:
+            out[c] = ""
+    out["via_lanceur"] = out["program_short"].isin(forecast.GENERIQUES)
+    out["lanceur"] = out["program_short"].where(out["via_lanceur"], "")
+    if out.empty:
+        return out
+    for i in out.index[out["via_lanceur"]]:
+        job = str(out.at[i, "job_name"] or "")
+        code = (programme_from_description(out.at[i, "description"])
+                or programme_from_description(": " + str(out.at[i, "argument_text"] or "")))
+        nom = programmes.get(job) or code
+        if code:
+            out.at[i, "program_short"] = code
+        if nom:
+            out.at[i, "program_name"] = nom
+    return out
 
 
 def _stamp() -> tuple:
@@ -94,10 +126,6 @@ def render(application, recherche, now: datetime, kpi, badge):
         return
 
     req = _filtre(req, recherche, application)
-    # Les programmes génériques (lanceur DKA_SLAUNCHER…) ne portent aucune information métier : masqués.
-    if not req.empty and "program_short" in req.columns:
-        import forecast
-        req = req[~req["program_short"].isin(forecast.GENERIQUES)]
     for c in ("request_date", "requested_start", "actual_start", "actual_completion", "refreshed_at"):
         if c in req.columns:
             req[c] = pd.to_datetime(req[c], errors="coerce")
@@ -120,7 +148,7 @@ def render(application, recherche, now: datetime, kpi, badge):
                            .drop_duplicates("program_short")
                            .set_index("program_short")["program_name"].fillna("").to_dict())
 
-    col_jobs, col_programmes, col_statuts = st.columns([1.6, 1.5, 1])
+    col_jobs, col_programmes, col_statuts, col_lanceur = st.columns([1.6, 1.5, 1, 1])
     jobs_choisis = col_jobs.multiselect(
         "Jobs Control-M",
         jobs_disponibles,
@@ -140,8 +168,16 @@ def render(application, recherche, now: datetime, kpi, badge):
         placeholder="Tous les statuts",
         key="oracle_statuts_multi",
     )
+    sans_lanceur = col_lanceur.checkbox(
+        "Sans les demandes du lanceur", False, key="oracle_sans_lanceur",
+        help="Les demandes soumises par le lanceur générique (DKA_SLAUNCHER) sont affichées avec le programme "
+             "réel déduit du référentiel, de la description ou du script.")
+    if sans_lanceur and "via_lanceur" in req.columns:
+        req = req[~req["via_lanceur"]]
     req = _filtre_multi(req, jobs_choisis, programmes_choisis, statuts_choisis)
-    st.caption(f"{len(req)} demande(s) affichée(s) sur {len(req_avant_multi)}.")
+    via = int(req["via_lanceur"].sum()) if "via_lanceur" in req.columns and not req.empty else 0
+    st.caption(f"{len(req)} demande(s) affichée(s) sur {len(req_avant_multi)}"
+               + (f", dont {via} soumise(s) par le lanceur." if via else "."))
 
     # ------------------------------------------------------------ KPI
     c = st.columns(6)
@@ -156,8 +192,9 @@ def render(application, recherche, now: datetime, kpi, badge):
     s_err, s_next, s_all, s_logs, s_progs = st.tabs(
         ["✖ Erreurs et logs", "⏳ Ce soir / demain côté Oracle", "📋 Tous les traitements", "🧾 Logs chargés", "📚 Programmes"])
 
-    cols_req = ["état", "request_id", "job_name", "program_short", "program_name", "requested_start", "actual_start",
-                "actual_completion", "durée_min", "requestor", "argument_text", "completion_text"]
+    cols_req = ["état", "request_id", "job_name", "program_short", "program_name", "lanceur", "requested_start",
+                "actual_start", "actual_completion", "durée_min", "requestor", "argument_text", "completion_text"]
+    cols_req = [c for c in cols_req if c in req.columns] if not req.empty else cols_req
 
     # ------------------------------------------------------------ erreurs + logs
     with s_err:
