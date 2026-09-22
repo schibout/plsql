@@ -15,6 +15,11 @@ Le profil `virements_rejets` (actif) récupère « Dalkia Liste des rejets
 bancaires du jour - Virements » (tout expéditeur, toute extension, J-3) dans le
 dossier Drive `1raeLB3Meqw4GdtuQJrHZplvaVYR7jp2U`.
 
+Le profil `gdr_rejets_synthese` (actif) récupère « Etat de synthèse des rejets
+GL, AP et AR au <date> » envoyé par `noreply-gdr@prod.dalkia.fr` (toute
+extension, J-3) dans le dossier Drive `1fF_34VEeM3i8C9Db29rSdzkpNw0EdIVG`.
+L'objet se terminant par la date du jour, seule la partie fixe est comparée.
+
 Les prélèvements sont séparés en trois profils :
 
 - `prelevements_cashcollection` (actif) pour la synthèse quotidienne

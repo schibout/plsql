@@ -1,6 +1,6 @@
 /** Paramètres communs du moteur multi-flux. */
 const MAIL_IMPORT_ENGINE_CONFIG = Object.freeze({
-  CODE_VERSION: 'MAIL-IMPORTS-2026-09-22.3',
+  CODE_VERSION: 'MAIL-IMPORTS-2026-09-22.4',
   MAX_MESSAGES_PER_FLOW_PER_RUN: 50,
   SEARCH_BATCH_SIZE: 100,
   MAX_THREADS_PER_FLOW_PER_RUN: 500,
@@ -143,6 +143,33 @@ const MAIL_IMPORT_FLOWS = Object.freeze([
     LABEL_NAME: 'Controle_Virements_Rejets_Traite',
     STATE_PROPERTY_KEY: 'VIREMENTS_REJETS_IMPORT_STATE_V1',
     DRIVE_MESSAGE_MARKER_PREFIX: 'VIREMENTS_REJETS_MESSAGE_ID=',
+    TIME_ZONE: 'Europe/Paris',
+    INITIAL_LOOKBACK_MONTHS: 4,
+    DATE_OFFSET_DAYS: 3,
+    FILE_NAME_MODE: 'timestamp_original',
+    FILE_TIMESTAMP_FORMAT: 'ddMMyyyy',
+  }),
+
+  Object.freeze({
+    ID: 'gdr_rejets_synthese',
+    DISPLAY_NAME: 'GDR - Etat de synthèse des rejets GL, AP et AR',
+    ENABLED: true,
+
+    FOLDER_ID: '1fF_34VEeM3i8C9Db29rSdzkpNw0EdIVG',
+    SEARCH_QUERY: 'in:anywhere from:noreply-gdr@prod.dalkia.fr ' +
+      'subject:"Etat de synthèse des rejets GL, AP et AR au"',
+    EXPECTED_SENDERS: Object.freeze([
+      'noreply-gdr@prod.dalkia.fr',
+    ]),
+    // L'objet se termine par la date du jour : on ne compare que le préfixe.
+    EXPECTED_SUBJECT_PREFIXES: Object.freeze([
+      'Etat de synthèse des rejets GL, AP et AR au',
+    ]),
+    ALLOWED_EXTENSIONS: Object.freeze([]),
+
+    LABEL_NAME: 'Controle_GDR_Rejets_Synthese_Traite',
+    STATE_PROPERTY_KEY: 'GDR_REJETS_SYNTHESE_IMPORT_STATE_V1',
+    DRIVE_MESSAGE_MARKER_PREFIX: 'GDR_REJETS_SYNTHESE_MESSAGE_ID=',
     TIME_ZONE: 'Europe/Paris',
     INITIAL_LOOKBACK_MONTHS: 4,
     DATE_OFFSET_DAYS: 3,
