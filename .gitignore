@@ -47,6 +47,7 @@ odat_watch/rapports/
 ODAT/virements/
 ODAT/prelevements/
 ODAT/releve_bancaire/
+ODAT/GDR/
 CTRL_QUASI_AUTOMATIQUE_DES_PRELEVEMENTS/rapport/
 
 # Caches pytest (odat_watch)

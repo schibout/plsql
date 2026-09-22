@@ -51,6 +51,18 @@ def test_ligne_orange_interface_en_attente(tmp_path):
     con.close()
 
 
+def test_ligne_gdr(tmp_path):
+    con, e, lignes = _contexte(tmp_path)
+    lignes["gdr"] = ""
+    assert "tr class='gdr'" not in rp.construire(e, lignes, fr.groupes_compenses(lignes), fr.rapprochements(con))
+    lignes.loc[lignes.index[0], "gdr"] = "1 pièce dans la GDR · 12,00 € = l'écart débit"
+    lignes.loc[lignes.index[1], "gdr"] = "probable : 2 pièces dans la GDR · 30,00 €"
+    h = rp.construire(e, lignes, fr.groupes_compenses(lignes), fr.rapprochements(con))
+    assert h.count("tr class='gdr'") == 1                     # « probable » ne colore pas la ligne
+    assert "1 pièce dans la GDR" in h and "GDR (rejets)" in h and "tr.gdr td" in h
+    con.close()
+
+
 def test_ecrire(tmp_path):
     con, e, lignes = _contexte(tmp_path)
     p = rp.ecrire(e, lignes, fr.groupes_compenses(lignes), fr.rapprochements(con), tmp_path)

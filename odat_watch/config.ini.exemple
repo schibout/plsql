@@ -71,6 +71,12 @@ jours = 10
 ; Nom du SI dans les etats EDF (l'autre SI est CIF)
 nom_si = ORACLE
 
+[gdr]
+; Rejets GDR : exports quotidiens "JJMMAAAA_Synthese_des_rejets_<AP|AR|GL>_au_JJ-MM-AAAA[_02].csv" (mail
+; "Etat de synthese des rejets GL, AP et AR au ..." recupere par le profil Apps Script gdr_rejets_synthese).
+; Le dossier est balaye a l'ouverture de l'onglet Folio Rose : tout fichier inconnu est importe. Hors git.
+racine = ..\ODAT\GDR
+
 [mail]
 ; Rapports envoyes par mail depuis les onglets Virements et Prelevements. Sans smtp_hote, l'onglet propose
 ; seulement le brouillon .eml (a ouvrir dans Outlook, destinataires a completer). Avec smtp_hote (relais interne,

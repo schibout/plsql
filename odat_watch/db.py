@@ -238,6 +238,37 @@ CREATE TABLE IF NOT EXISTS fr_rapprochement_lignes (
 );
 CREATE INDEX IF NOT EXISTS ix_fr_rl_empreinte ON fr_rapprochement_lignes(empreinte);
 
+-- GDR : photos quotidiennes des rejets ouverts (AP / AR / GL) et etat courant des lignes rejetees
+CREATE TABLE IF NOT EXISTS gdr_fichiers (
+    id          INTEGER PRIMARY KEY AUTOINCREMENT,
+    nom_fichier TEXT NOT NULL,
+    file_hash   TEXT NOT NULL UNIQUE,
+    type        TEXT NOT NULL,                 -- AP | AR | GL
+    date_photo  TEXT NOT NULL,                 -- AAAA-MM-JJ (prefixe JJMMAAAA du nom)
+    rang        INTEGER NOT NULL DEFAULT 1,    -- 1 : premier envoi du jour, 2 : suffixe _02...
+    importe_le  TEXT NOT NULL,
+    nb_lignes   INTEGER NOT NULL
+);
+CREATE TABLE IF NOT EXISTS gdr_lignes (
+    line_gdr              TEXT PRIMARY KEY,    -- Line GDR
+    id_gdr                TEXT,                -- ID GDR : la piece
+    type                  TEXT NOT NULL,
+    code_rejet            TEXT, libelle_rejet TEXT,
+    fichier_source        TEXT,                -- = « Nom fichier transmis » de Folio Rose
+    folio                 TEXT,                -- 3 premieres lettres du folio GDR
+    folio_libelle         TEXT, societe TEXT, region TEXT,
+    numero_piece          TEXT, date_piece TEXT, compte TEXT,
+    montant_debit         REAL, montant_credit REAL,
+    description           TEXT,
+    date_creation_gdr     TEXT, date_arrete TEXT, fichier_src_technique TEXT,
+    premier_fichier_id    INTEGER REFERENCES gdr_fichiers(id),
+    dernier_fichier_id    INTEGER REFERENCES gdr_fichiers(id),
+    present               INTEGER NOT NULL DEFAULT 1,   -- 0 : absente de la derniere photo de son type (rejet traite)
+    disparu_le            TEXT                          -- date de la photo ou la ligne a disparu
+);
+CREATE INDEX IF NOT EXISTS ix_gdr_lignes_cle ON gdr_lignes(fichier_source, folio);
+CREATE INDEX IF NOT EXISTS ix_gdr_lignes_piece ON gdr_lignes(id_gdr);
+
 -- Calendriers de clôture importés depuis Excel. Les versions restent conservées.
 CREATE TABLE IF NOT EXISTS calendar_imports (
     id            INTEGER PRIMARY KEY AUTOINCREMENT,

@@ -23,6 +23,7 @@ Oracle EBS R12 pour répondre à : **qu'est-ce qui tourne ce soir, et demain ?**
 | `ui_matin.py` | Onglet Matin : plage date+heure, bandeau, tuiles avec écart vs. veille, détail par section, génération/téléchargement du rapport, programmation, tendance 30 jours. |
 | `folio_rose.py` | **Folio Rose** : portage de `Verifier_Factures.ps1` (import des exports `ExportCSV-*.csv`, tables `fr_*`, groupes compensés, rapprochements, contrôle Oracle). |
 | `rapport_folio_rose.py` | Rapport HTML Folio Rose (même charte que `rapport_matin.py`), écrit dans `rapports/`. |
+| `gdr.py` | **GDR** : exports quotidiens des rejets (AP / AR / GL), photos successives (tables `gdr_*`), pièces et rapprochement avec les lignes Folio Rose. |
 | `ui_folio_rose.py` | Onglet Folio Rose : import, tableau avec sélection et somme des écarts en direct, rapprochements (manuels et groupes compensés), contrôle Oracle, rapport HTML, historique. |
 | `releves_scan.py` | **Relevés bancaires — acquisition** : section `[releves]` de `config.ini`, lecture des fichiers AFB120 (CFONB 120 : relevés, mouvements, banques, dates, md5, flux A/B), scan des exécutions PFE (`<uuid>/SOURCE,TARGET,TALEND`) et des `AFB120.txt_*` reçus par EBS, parseurs des logs `RBAFBIMP` (synthèse des relevés, erreurs 001/025) et `DKA_SRBCTRLRB` (comptes en anomalie), comptes connus, chaîne Control-M `FINEXT_J14INT_05/06` lue dans les photos ODAT. Tables `rb_*`. |
 | `releves.py` | **Relevés bancaires — métier** : verdict de la matinée par flux (frise PFE · Control-M · Reçu EBS · Import · Contrôle, causes), chronologie des imports, continuité par compte SG (retard, trou), plan de reprise ordonné, `list_releves.txt` des logs manquants, vues PFE ↔ EBS et contrôles. Ré-exporte les noms publics de `releves_scan.py`. |
@@ -195,9 +196,30 @@ si le nombre de pièces est égal mais pas le montant. « 📄 Générer le rapp
 que le rapport du matin). Les rapprochements sont historisés (annulables) et les données vivent dans les
 tables `fr_lignes`, `fr_oracle`, `fr_rapprochements`, `fr_rapprochement_lignes`.
 
+### Rejets GDR
+
+Chaque jour, le mail « Etat de synthèse des rejets GL, AP et AR au <date> » apporte trois CSV
+(`JJMMAAAA_Synthese_des_rejets_<AP|AR|GL>_au_JJ-MM-AAAA[_02].csv`) déposés dans `config.ini [gdr] racine`
+(défaut `..\ODAT\GDR`, hors git) par le profil Apps Script `gdr_rejets_synthese`. À l'ouverture de l'onglet,
+tout fichier inconnu du dossier est importé : chaque export est une **photo** des rejets ouverts, une pièce
+absente de la photo la plus récente de son type est marquée traitée (date de disparition conservée, rien n'est
+supprimé). Une photo plus ancienne importée après coup n'écrase pas l'état courant.
+
+Le rapprochement se fait sur **le nom du fichier transmis + les trois premières lettres du folio**. Pour chaque
+ligne Folio Rose, la colonne « GDR (rejets) » indique ce que les pièces rejetées expliquent :
+
+- **« n pièces dans la GDR … = … »** (ligne violette) quand le montant rejeté égale l'écart débit, le montant
+  de la pièce (rejet total), ou la différence entre le montant de la pièce et le montant Oracle ou interface ;
+- **« pièce <n° > dans la GDR … »** quand une seule pièce rejetée suffit à l'expliquer ;
+- **« probable : … »** quand le fichier et le folio sont bien dans la GDR mais qu'aucun montant ne tombe juste.
+
+Le détail des pièces (type, numéro, code et libellé de rejet, montant, ancienneté) s'ouvre sous le tableau pour
+les lignes cochées. Le commentaire de l'export n'est pas modifié : il vient du CSV Folio Rose et serait écrasé
+au chargement suivant.
+
 `Verifier_Factures.ps1` reste utilisable en parallèle (aucune dépendance vers l'onglet).
 
-Tests : `folio_rose.py` et `rapport_folio_rose.py` sont couverts unitairement, `ui_folio_rose.py` par AppTest
+Tests : `folio_rose.py`, `gdr.py` et `rapport_folio_rose.py` sont couverts unitairement, `ui_folio_rose.py` par AppTest
 (import, sélection/somme via `folio_rose.somme_selection`, rapprochement de groupe) — inclus dans les 92 tests
 de `pytest tests -q`.
 

@@ -9,16 +9,18 @@ import pandas as pd
 import streamlit as st
 
 import folio_rose as fr
+import gdr as gd
 import rapport_folio_rose as rp
 from db import connect
 from oracle_refresh import CONFIG
 
 BASE_DIR = Path(__file__).resolve().parent
+COULEUR_GDR = "#EDE3FB"   # ligne dont l'écart est expliqué par des pièces rejetées dans la GDR
 DOSSIER_SAUVEGARDE = BASE_DIR.parent / "ControleFolioRose"
 # Colonnes et ordre du Rapport_Verification_*.csv du .ps1, complétés par l'âge, le statut et le rapprochement
 COLS_AFFICHEES = ["folio", "type", "date", "age_j", "fichier",
                   "amont_nb", "amont_debit", "amont_credit", "si_nb", "si_debit", "si_credit",
-                  "ecart_nb", "ecart_debit", "ecart_credit", "commentaire",
+                  "ecart_nb", "ecart_debit", "ecart_credit", "commentaire", "gdr",
                   "somme_amont_fichier", "somme_ecart_fichier",
                   "nb_interface", "montant_interface", "nb_oracle", "montant_oracle", "ecart_nb_calcule", "ecart_mt_calcule",
                   "statut", "erreur", "rapproche", "present", "date_dernier_export"]
@@ -27,7 +29,7 @@ LIBELLES = {"folio": "Folio", "type": "Type", "date": "Date", "age_j": "Âge (j)
             "amont_nb": "App Amont Nb pièce", "amont_debit": "App Amont Débit", "amont_credit": "App Amont Crédit",
             "si_nb": "SI Finance Nb pièce", "si_debit": "SI Finance Débit", "si_credit": "SI Finance Crédit",
             "ecart_nb": "Écarts Nb pièce", "ecart_debit": "Écarts Débit", "ecart_credit": "Écarts Crédit",
-            "commentaire": "Commentaire",
+            "commentaire": "Commentaire", "gdr": "GDR (rejets)",
             "somme_amont_fichier": "Somme Amont Fichier", "somme_ecart_fichier": "Somme Écart Fichier",
             "nb_interface": "Nb Pièces Interface OA", "montant_interface": "Montant Interface OA",
             "nb_oracle": "Nb Pièces OA", "montant_oracle": "Montant OA",
@@ -77,6 +79,8 @@ def _style(df: pd.DataFrame):
             return ["background-color: #EAF7EE; color: #7A8794"] * len(r)
         if "Présente" in r and not r["Présente"]:
             return ["color: #9AA3AF; font-style: italic"] * len(r)
+        if r.get("GDR (rejets)") and str(r["GDR (rejets)"]).strip() and not str(r["GDR (rejets)"]).startswith("probable"):
+            return [f"background-color: {COULEUR_GDR}"] * len(r)
         couleur = fr.couleur_ligne(r["Écarts Débit"], r["Écarts Crédit"], r["Écarts Nb pièce"], r["Statut Vérification"],
                                    r["Commentaire"], nb_interface=r.get("Nb Pièces Interface OA"),
                                    montant_interface=r.get("Montant Interface OA"), nb_oracle=r.get("Nb Pièces OA"),
@@ -92,6 +96,38 @@ COLONNES_CONFIG = {**{c: st.column_config.NumberColumn(c, format="euro") for c i
                    "Rapproché": st.column_config.CheckboxColumn("Rapproché", disabled=True),
                    "Présente": st.column_config.CheckboxColumn("Présente", disabled=True,
                                                                help="Décochée : absente du dernier export couvrant sa date")}
+
+
+def _charger_gdr(con, lignes):
+    """Importe les exports GDR nouvellement déposés puis rapproche les lignes Folio Rose (fichier + folio)."""
+    racine = gd.config_gdr()["racine"]
+    if "fr_gdr_log" not in st.session_state:
+        st.session_state["fr_gdr_log"] = gd.importer_dossier(racine, con)
+    try:
+        return gd.rapprocher_folio_rose(lignes, con)
+    except (ValueError, KeyError) as e:       # une GDR illisible ne doit pas emporter l'onglet
+        st.warning(f"Rapprochement GDR impossible : {e}")
+        lignes = lignes.copy()
+        lignes["gdr_niveau"] = lignes["gdr"] = ""
+        return lignes, {}
+
+
+def _pieces_gdr(sel, pieces_gdr: dict) -> None:
+    """Pièces rejetées dans la GDR pour les lignes sélectionnées."""
+    trouve = [(e, pieces_gdr[e]) for e in sel["empreinte"] if e in pieces_gdr]
+    if not trouve:
+        return
+    n = sum(len(g) for _, g in trouve)
+    with st.expander(f"🧾 Pièces rejetées dans la GDR pour la sélection ({n})", expanded=False):
+        for e, g in trouve:
+            r = sel[sel["empreinte"] == e].iloc[0]
+            st.caption(f"**{r['folio']}** · `{r['fichier']}` — {r['gdr'] or 'aucun rapprochement'}")
+            aff = g[["type", "numero_piece", "code_rejet", "libelle_rejet", "montant", "nb_lignes", "vu_depuis"]].rename(
+                columns={"type": "Type", "numero_piece": "N° pièce", "code_rejet": "Code rejet",
+                         "libelle_rejet": "Libellé rejet", "montant": "Montant", "nb_lignes": "Lignes",
+                         "vu_depuis": "Rejetée depuis"})
+            st.dataframe(aff, use_container_width=True, hide_index=True,
+                         column_config={"Montant": st.column_config.NumberColumn("Montant", format="euro")})
 
 
 def render(kpi):
@@ -123,6 +159,7 @@ def render(kpi):
                    f"· période {export.periode_debut} → {export.periode_fin} · {len(ex)} import(s)")
         voir_disparues = st.checkbox("Afficher aussi les lignes disparues des derniers exports", False, key="fr_disparues")
         lignes = fr.lignes(con, disparues=voir_disparues)
+        lignes, pieces_gdr = _charger_gdr(con, lignes)
         groupes = fr.groupes_compenses(lignes[lignes["present"]])
 
         folios_ok = fr.folios_compenses(lignes[lignes["present"]])
@@ -152,7 +189,10 @@ def render(kpi):
 
 
         # ------------------------------------------------------------ tuiles
-        c = st.columns(5)
+        if st.session_state.get("fr_gdr_log"):
+            with st.expander(f"🧾 Imports GDR ({len(st.session_state['fr_gdr_log'])})", expanded=False):
+                st.code("\n".join(st.session_state["fr_gdr_log"]))
+        c = st.columns(6)
         controle = "—" not in set(lignes["statut"])
         kpi(c[0], len(lignes), "lignes", "neutral")
         kpi(c[1], lignes["folio"].nunique(), "folios", "neutral")
@@ -161,6 +201,8 @@ def render(kpi):
         kpi(c[3], nb_ok if controle else "—", "OK Oracle", "ok" if nb_ok else "neutral")
         nb_ko = int((lignes["statut"] == "KO").sum())
         kpi(c[4], nb_ko if controle else "—", "KO Oracle", "err" if nb_ko else "neutral")
+        nb_gdr = int((lignes["gdr"] != "").sum())
+        kpi(c[5], nb_gdr, "lignes vues en GDR", "warn" if nb_gdr else "neutral")
 
         # ------------------------------------------------------------ filtres
         f1, f2, f3, f4 = st.columns([1, 1, 2, 1])
@@ -168,7 +210,7 @@ def render(kpi):
         statuts = f2.multiselect("Statut", sorted(lignes["statut"].unique()), key="fr_statuts")
         folios = f3.multiselect("Folio", sorted(lignes["folio"].unique()), key="fr_folios")
         masquer = f4.checkbox("Masquer les rapprochées", True, key="fr_masquer")
-        st.caption("Couleurs : 🟧 orange : données en interface Oracle absentes des tables définitives ou montant différent · "
+        st.caption("Couleurs : 🟪 violet : écart expliqué par des pièces rejetées dans la GDR · 🟧 orange : données en interface Oracle absentes des tables définitives ou montant différent · "
                    "🟦 vérification Oracle OK · 🟨 jaune : commentaire renseigné · 🟩 écart de montant nul · "
                    "🟥 rose : nombre de pièces égal mais montant différent")
         vue = lignes.copy()
@@ -199,6 +241,7 @@ def render(kpi):
         rows = list(ev.selection.rows) if ev and ev.selection else []
         sel_idx = [i for i in rows if 0 <= i < len(vue)]
         sel = vue.iloc[sel_idx]
+        _pieces_gdr(sel, pieces_gdr)
         sommes = fr.sommes_selection(vue, sel["empreinte"].tolist())
         ok = len(sel) >= 2 and fr.compensee(sommes)
         _panneau_flottant(len(sel), sommes, ok)
