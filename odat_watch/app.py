@@ -327,8 +327,13 @@ st.markdown(f"""
   <div class="meta">{meta}</div>
 </div>""", unsafe_allow_html=True)
 
-tab_plan, tab_calendriers, tab_soir, tab_demain, tab_now, tab_matin, tab_banque, tab_folio, tab_ora, tab_histo, tab_profils, tab_data, tab_sql = st.tabs(
-    ["🧭 Préparer ma nuit", "📥 Clôtures", "🌙 Ce soir", "📅 Demain", "🔴 Maintenant", "☀️ Matin", "🏦 Banque", "🔀 Ctrl Flux", "🅾 Oracle", "🔎 Historique", "📈 Profils", "🗂 Jobs CtrlM", "⌨ SQL"])
+tab_plan, tab_calendriers, tab_soir, tab_demain, tab_now, tab_matin, tab_banque, tab_folio, tab_ora, tab_controlm, tab_sql = st.tabs(
+    ["🧭 Préparer ma nuit", "📥 Clôtures", "🌙 Ce soir", "📅 Demain", "🔴 Maintenant", "☀️ Matin", "🏦 Banque", "🔀 Ctrl Flux", "🅾 Oracle", "🕓 Control-M", "⌨ SQL"])
+
+with tab_controlm:
+    tab_histo, tab_profils, tab_jobs_controlm = st.tabs(
+        ["🔎 Historique", "📈 Profils", "🗂 Jobs CtrlM"]
+    )
 
 with tab_plan:
     con = connect()
@@ -478,7 +483,7 @@ with tab_profils:
     ui_profils.render(fc.profils_df(profs), application, now, filtrer)
 
 # ------------------------------------------------------------------ jobs Control-M
-with tab_data:
+with tab_jobs_controlm:
     import ui_jobs_controlm
     ui_jobs_controlm.render(charger_jobs_controlm(stamp()), "FIN-FINANCE")
     st.markdown("#### Comparer deux photos")
