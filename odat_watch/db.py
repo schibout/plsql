@@ -269,6 +269,43 @@ CREATE TABLE IF NOT EXISTS gdr_lignes (
 CREATE INDEX IF NOT EXISTS ix_gdr_lignes_cle ON gdr_lignes(fichier_source, folio);
 CREATE INDEX IF NOT EXISTS ix_gdr_lignes_piece ON gdr_lignes(id_gdr);
 
+-- Carte des flux : un flux = une application, un objet echange et un sens (vers Oracle ou depuis Oracle),
+-- tel que le schema « Flux pour FIN01 - ORACLE » les dessine. Saisi et complete a la main dans l'onglet
+-- Carte des flux : motif du nom de fichier, interlocuteurs, attributs libres cle/valeur.
+CREATE TABLE IF NOT EXISTS flux_referentiel (
+    code            TEXT PRIMARY KEY,       -- CEL01_IN_FACTURES_FOURNISSEURS_AP
+    application     TEXT,                   -- CEL01
+    nom_application TEXT,                   -- CELERIS
+    domaine         TEXT,                   -- FINANCES, REFERENTIEL... (legende du schema)
+    sens            TEXT,                   -- entrant (vers Oracle) | sortant (depuis Oracle)
+    objet           TEXT,                   -- Factures Fournisseurs (AP)
+    nature          TEXT,                   -- Flux Asynchrone (Batch) | (Fil de l'eau) | Flux Synchrone | inconnue
+    statut          TEXT,                   -- Actif | En projet | Inactif
+    type_flux       TEXT,                   -- FOURNISSEURS | CLIENTS | GL | AUTRE
+    motif           TEXT,                   -- CEL01_SRC_FACTURESFOURNISSEURS_* (joker), ou ^regex
+    source_etat     TEXT,                   -- ctrl_flux | virements | prelevements | releves | (vide)
+    dossier_unix    TEXT,                   -- ou rapatrier les instances
+    commentaire     TEXT,
+    cree_le         TEXT,
+    maj_le          TEXT
+);
+CREATE TABLE IF NOT EXISTS flux_interlocuteurs (
+    id        INTEGER PRIMARY KEY AUTOINCREMENT,
+    code      TEXT NOT NULL REFERENCES flux_referentiel(code) ON DELETE CASCADE,
+    nom       TEXT,
+    role      TEXT,                          -- amont | EAI | metier | Oracle | autre
+    mail      TEXT,
+    telephone TEXT,
+    remarque  TEXT
+);
+CREATE INDEX IF NOT EXISTS ix_flux_interlocuteurs ON flux_interlocuteurs(code);
+CREATE TABLE IF NOT EXISTS flux_attributs (
+    code   TEXT NOT NULL REFERENCES flux_referentiel(code) ON DELETE CASCADE,
+    cle    TEXT NOT NULL,                    -- criticite, heure_attendue, jours, ticket, procedure...
+    valeur TEXT,
+    PRIMARY KEY (code, cle)
+);
+
 -- Calendriers de clôture importés depuis Excel. Les versions restent conservées.
 CREATE TABLE IF NOT EXISTS calendar_imports (
     id            INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -433,6 +470,14 @@ def _migrate(con: sqlite3.Connection) -> None:
     if cols and "programme_code" not in cols:
         con.execute("ALTER TABLE referentiel_jobs ADD COLUMN programme_code TEXT")
         con.commit()
+    # Carte des flux : la première ébauche du référentiel (23/09/2026, jamais alimentée) n'avait ni sens ni
+    # application ; les tables sont recréées sur le modèle du schéma FIN01.
+    cols = [r[1] for r in con.execute("PRAGMA table_info(flux_referentiel)")]
+    if cols and "sens" not in cols:
+        for table in ("flux_attributs", "flux_interlocuteurs", "flux_referentiel"):
+            con.execute(f"DROP TABLE IF EXISTS {table}")
+        con.commit()
+        con.executescript(SCHEMA)
     # Contrôle du matin : compteurs ajoutés après la création de l'historique (factures AR, 21/09/2026)
     cols = [r[1] for r in con.execute("PRAGMA table_info(controle_matin_histo)")]
     for colonne in ("nb_fac_ar", "nb_fac_ar_rejet"):

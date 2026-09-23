@@ -1,0 +1,530 @@
+[
+ {
+  "application": "REF02",
+  "nom": "KADOR AFFAIRE",
+  "domaine": "REFERENTIEL",
+  "sens": "entrant",
+  "objet": "Centre Finance",
+  "nature": "Flux Asynchrone (Fil de l'eau)"
+ },
+ {
+  "application": "REF02",
+  "nom": "KADOR AFFAIRE",
+  "domaine": "REFERENTIEL",
+  "sens": "entrant",
+  "objet": "Projet Finance",
+  "nature": "Flux Asynchrone (Fil de l'eau)"
+ },
+ {
+  "application": "REF02",
+  "nom": "KADOR AFFAIRE",
+  "domaine": "REFERENTIEL",
+  "sens": "entrant",
+  "objet": "Ressource V2",
+  "nature": "Flux Asynchrone (Fil de l'eau)"
+ },
+ {
+  "application": "REF02",
+  "nom": "KADOR AFFAIRE",
+  "domaine": "REFERENTIEL",
+  "sens": "entrant",
+  "objet": "Tache Finance",
+  "nature": "Flux Asynchrone (Fil de l'eau)"
+ },
+ {
+  "application": "SEE01",
+  "nom": "KADOR SEE ET SERVICE",
+  "domaine": "REFERENTIEL",
+  "sens": "entrant",
+  "objet": "Partenaire",
+  "nature": "Flux Asynchrone (Fil de l'eau)"
+ },
+ {
+  "application": "VCH01",
+  "nom": "VACHE",
+  "domaine": "OPERATION",
+  "sens": "entrant",
+  "objet": "Ecritures GL",
+  "nature": "Flux Asynchrone (Batch)"
+ },
+ {
+  "application": "GXP01",
+  "nom": "GXP",
+  "domaine": "RESSOURCES HUMAINES",
+  "sens": "entrant",
+  "objet": "Données bancaires",
+  "nature": "Flux Asynchrone (Batch)"
+ },
+ {
+  "application": "GXP01",
+  "nom": "GXP",
+  "domaine": "RESSOURCES HUMAINES",
+  "sens": "entrant",
+  "objet": "Ecritures GL",
+  "nature": "Flux Asynchrone (Batch)"
+ },
+ {
+  "application": "CEL01",
+  "nom": "CELERIS",
+  "domaine": "FINANCES",
+  "sens": "entrant",
+  "objet": "Ecritures GL",
+  "nature": "Flux Asynchrone (Batch)"
+ },
+ {
+  "application": "CEL01",
+  "nom": "CELERIS",
+  "domaine": "FINANCES",
+  "sens": "entrant",
+  "objet": "Factures Fournisseurs (AP)",
+  "nature": "Flux Asynchrone (Batch)"
+ },
+ {
+  "application": "CEL01",
+  "nom": "CELERIS",
+  "domaine": "FINANCES",
+  "sens": "entrant",
+  "objet": "Images Factures",
+  "nature": "Flux Asynchrone (Batch)"
+ },
+ {
+  "application": "DSP01",
+  "nom": "D@CSHOP",
+  "domaine": "FINANCES",
+  "sens": "entrant",
+  "objet": "Commandes",
+  "nature": "Flux Asynchrone (Batch)"
+ },
+ {
+  "application": "DSP01",
+  "nom": "D@CSHOP",
+  "domaine": "FINANCES",
+  "sens": "entrant",
+  "objet": "Déblocage Facture",
+  "nature": "Flux Asynchrone (Batch)"
+ },
+ {
+  "application": "DSP01",
+  "nom": "D@CSHOP",
+  "domaine": "FINANCES",
+  "sens": "entrant",
+  "objet": "Facture Poflip",
+  "nature": "Flux Asynchrone (Batch)"
+ },
+ {
+  "application": "DSP01",
+  "nom": "D@CSHOP",
+  "domaine": "FINANCES",
+  "sens": "entrant",
+  "objet": "Fournisseur",
+  "nature": "Flux Asynchrone (Batch)"
+ },
+ {
+  "application": "DSP01",
+  "nom": "D@CSHOP",
+  "domaine": "FINANCES",
+  "sens": "entrant",
+  "objet": "Reception",
+  "nature": "Flux Asynchrone (Batch)"
+ },
+ {
+  "application": "FAC02",
+  "nom": "CONTRACTUAL INVOICING (CID)",
+  "domaine": "FINANCES",
+  "sens": "entrant",
+  "objet": "Contrôle Facture clients",
+  "nature": "Flux Asynchrone (Batch)"
+ },
+ {
+  "application": "FAC02",
+  "nom": "CONTRACTUAL INVOICING (CID)",
+  "domaine": "FINANCES",
+  "sens": "entrant",
+  "objet": "Ecritures GL",
+  "nature": "Flux Asynchrone (Batch)"
+ },
+ {
+  "application": "FAC02",
+  "nom": "CONTRACTUAL INVOICING (CID)",
+  "domaine": "FINANCES",
+  "sens": "entrant",
+  "objet": "Factures clients (AR)",
+  "nature": "Flux Asynchrone (Batch)"
+ },
+ {
+  "application": "FAC02",
+  "nom": "CONTRACTUAL INVOICING (CID)",
+  "domaine": "FINANCES",
+  "sens": "entrant",
+  "objet": "Factures fournisseurs (AP)",
+  "nature": "Flux Asynchrone (Batch)"
+ },
+ {
+  "application": "HEF01",
+  "nom": "CITY",
+  "domaine": "FINANCES",
+  "sens": "entrant",
+  "objet": "Factures clients (AR)",
+  "nature": "Flux Asynchrone (Batch)"
+ },
+ {
+  "application": "HEF01",
+  "nom": "CITY",
+  "domaine": "FINANCES",
+  "sens": "entrant",
+  "objet": "Factures fournisseurs (AP)",
+  "nature": "Flux Asynchrone (Batch)"
+ },
+ {
+  "application": "NOT01",
+  "nom": "NOTILUS",
+  "domaine": "FINANCES",
+  "sens": "entrant",
+  "objet": "Factures Fournisseurs",
+  "nature": "Flux Asynchrone (Batch)"
+ },
+ {
+  "application": "PRN01",
+  "nom": "PIRENE",
+  "domaine": "FINANCES",
+  "sens": "entrant",
+  "objet": "Ecritures GL",
+  "nature": "Flux Asynchrone (Fil de l'eau)"
+ },
+ {
+  "application": "PRN01",
+  "nom": "PIRENE",
+  "domaine": "FINANCES",
+  "sens": "entrant",
+  "objet": "Factures Fournisseurs (AP)",
+  "nature": "Flux Asynchrone (Fil de l'eau)"
+ },
+ {
+  "application": "PRN01",
+  "nom": "PIRENE",
+  "domaine": "FINANCES",
+  "sens": "entrant",
+  "objet": "Image Facture (AR)",
+  "nature": "Flux Asynchrone (Fil de l'eau)"
+ },
+ {
+  "application": "SCX01",
+  "nom": "SCAN XEROX",
+  "domaine": "FINANCES",
+  "sens": "entrant",
+  "objet": "Facture Dématérialisée",
+  "nature": "Flux Asynchrone (Batch)"
+ },
+ {
+  "application": "SCX01",
+  "nom": "SCAN XEROX",
+  "domaine": "FINANCES",
+  "sens": "entrant",
+  "objet": "Facture Papier",
+  "nature": "Flux Asynchrone (Batch)"
+ },
+ {
+  "application": "HEC01",
+  "nom": "HERCULE",
+  "domaine": "OPERATION",
+  "sens": "sortant",
+  "objet": "Données Déboursées",
+  "nature": "Flux Asynchrone (Batch)"
+ },
+ {
+  "application": "HEC01",
+  "nom": "HERCULE",
+  "domaine": "OPERATION",
+  "sens": "sortant",
+  "objet": "Travaux comptes groupe",
+  "nature": "Flux Asynchrone (Batch)"
+ },
+ {
+  "application": "HEC01",
+  "nom": "HERCULE",
+  "domaine": "OPERATION",
+  "sens": "sortant",
+  "objet": "Règlements",
+  "nature": "Flux Asynchrone (Batch)"
+ },
+ {
+  "application": "PSE01",
+  "nom": "PORTAIL SANTE SECURITE",
+  "domaine": "RESSOURCES HUMAINES",
+  "sens": "sortant",
+  "objet": "Fournisseur FULL",
+  "nature": "Flux Asynchrone (Batch)"
+ },
+ {
+  "application": "BUD02",
+  "nom": "SÉLÉNÉ",
+  "domaine": "FINANCES",
+  "sens": "sortant",
+  "objet": "Commandes non réceptionnées",
+  "nature": "Flux Asynchrone (Batch)"
+ },
+ {
+  "application": "BUD02",
+  "nom": "SÉLÉNÉ",
+  "domaine": "FINANCES",
+  "sens": "sortant",
+  "objet": "Ecritures Comptables",
+  "nature": "Flux Asynchrone (Batch)"
+ },
+ {
+  "application": "CEL01",
+  "nom": "CELERIS",
+  "domaine": "FINANCES",
+  "sens": "sortant",
+  "objet": "Fournisseur",
+  "nature": "Flux Asynchrone (Batch)"
+ },
+ {
+  "application": "CTL01",
+  "nom": "CONTROLE DES FLUX",
+  "domaine": "FINANCES",
+  "sens": "sortant",
+  "objet": "Contrôle Ecritures Comptables",
+  "nature": "Flux Asynchrone (Batch)"
+ },
+ {
+  "application": "DSP01",
+  "nom": "D@CSHOP",
+  "domaine": "FINANCES",
+  "sens": "sortant",
+  "objet": "Factures",
+  "nature": "Flux Asynchrone (Batch)"
+ },
+ {
+  "application": "DSP01",
+  "nom": "D@CSHOP",
+  "domaine": "FINANCES",
+  "sens": "sortant",
+  "objet": "Fournisseur FULL",
+  "nature": "Flux Asynchrone (Batch)"
+ },
+ {
+  "application": "DSP01",
+  "nom": "D@CSHOP",
+  "domaine": "FINANCES",
+  "sens": "sortant",
+  "objet": "Fournisseur",
+  "nature": "Flux Asynchrone (Batch)"
+ },
+ {
+  "application": "GAT02",
+  "nom": "GARANTIE TOTALE",
+  "domaine": "FINANCES",
+  "sens": "sortant",
+  "objet": "Dépenses Travaux interne",
+  "nature": "Flux Asynchrone (Batch)"
+ },
+ {
+  "application": "GDR01",
+  "nom": "GESTION DES REJETS",
+  "domaine": "FINANCES",
+  "sens": "sortant",
+  "objet": "Rejets Ecritures comptables",
+  "nature": "Flux Asynchrone (Batch)"
+ },
+ {
+  "application": "GDR01",
+  "nom": "GESTION DES REJETS",
+  "domaine": "FINANCES",
+  "sens": "sortant",
+  "objet": "Rejets Factures client",
+  "nature": "Flux Asynchrone (Batch)"
+ },
+ {
+  "application": "GDR01",
+  "nom": "GESTION DES REJETS",
+  "domaine": "FINANCES",
+  "sens": "sortant",
+  "objet": "Rejets Factures fournisseur",
+  "nature": "Flux Asynchrone (Batch)"
+ },
+ {
+  "application": "NOT01",
+  "nom": "NOTILUS",
+  "domaine": "FINANCES",
+  "sens": "sortant",
+  "objet": "Employés",
+  "nature": "Flux Asynchrone (Batch)"
+ },
+ {
+  "application": "PRN01",
+  "nom": "PIRENE",
+  "domaine": "FINANCES",
+  "sens": "sortant",
+  "objet": "Fournisseur",
+  "nature": "Flux Asynchrone (Batch)"
+ },
+ {
+  "application": "SCX01",
+  "nom": "SCAN XEROX",
+  "domaine": "FINANCES",
+  "sens": "sortant",
+  "objet": "Commandes",
+  "nature": "Flux Asynchrone (Batch)"
+ },
+ {
+  "application": "SCX01",
+  "nom": "SCAN XEROX",
+  "domaine": "FINANCES",
+  "sens": "sortant",
+  "objet": "Fournisseur FULL",
+  "nature": "Flux Asynchrone (Batch)"
+ },
+ {
+  "application": "SCX01",
+  "nom": "SCAN XEROX",
+  "domaine": "FINANCES",
+  "sens": "sortant",
+  "objet": "Fournisseur",
+  "nature": "Flux Asynchrone (Batch)"
+ },
+ {
+  "application": "SCX01",
+  "nom": "SCAN XEROX",
+  "domaine": "FINANCES",
+  "sens": "sortant",
+  "objet": "Statut Facture",
+  "nature": "Flux Asynchrone (Batch)"
+ },
+ {
+  "application": "SRZ01",
+  "nom": "SERENSIA",
+  "domaine": "FINANCES",
+  "sens": "sortant",
+  "objet": "Fournisseur FULL",
+  "nature": "Flux Asynchrone (Batch)"
+ },
+ {
+  "application": "SRZ01",
+  "nom": "SERENSIA",
+  "domaine": "FINANCES",
+  "sens": "sortant",
+  "objet": "Commandes",
+  "nature": "Flux Asynchrone (Batch)"
+ },
+ {
+  "application": "SRZ01",
+  "nom": "SERENSIA",
+  "domaine": "FINANCES",
+  "sens": "entrant",
+  "objet": "Demat Facture Fournisseur",
+  "nature": "Flux Asynchrone (Fil de l'eau)"
+ },
+ {
+  "application": "VHC03",
+  "nom": "DACARFLEET",
+  "domaine": "FINANCES",
+  "sens": "entrant",
+  "objet": "Ecritures GL",
+  "nature": "Flux Asynchrone (Batch)"
+ },
+ {
+  "application": "VHC03",
+  "nom": "DACARFLEET",
+  "domaine": "FINANCES",
+  "sens": "entrant",
+  "objet": "Facture Fournisseur",
+  "nature": "Flux Asynchrone (Batch)"
+ },
+ {
+  "application": "EDF01",
+  "nom": "APPLICATIONS DU GROUPE EDF",
+  "domaine": "PARTENAIRES EXTERNES",
+  "sens": "entrant",
+  "objet": "Ecritures GL",
+  "nature": "Flux Asynchrone (Batch)"
+ },
+ {
+  "application": "EDF01",
+  "nom": "APPLICATIONS DU GROUPE EDF",
+  "domaine": "PARTENAIRES EXTERNES",
+  "sens": "entrant",
+  "objet": "Releves de compte",
+  "nature": "Flux Asynchrone (Batch)"
+ },
+ {
+  "application": "SYR01",
+  "nom": "SYRUS",
+  "domaine": "FINANCES",
+  "sens": "sortant",
+  "objet": "Encours",
+  "nature": "Flux Asynchrone (Batch)"
+ },
+ {
+  "application": "SYR01",
+  "nom": "SYRUS",
+  "domaine": "FINANCES",
+  "sens": "sortant",
+  "objet": "Règlements",
+  "nature": "Flux Asynchrone (Batch)"
+ },
+ {
+  "application": "TST01",
+  "nom": "TRADESHIFT",
+  "domaine": "FINANCES",
+  "sens": "sortant",
+  "objet": "Commandes",
+  "nature": "Flux Asynchrone (Batch)"
+ },
+ {
+  "application": "DTR01",
+  "nom": "DTR",
+  "domaine": "JURIDIQUE, RISQUE, COMMUNICATION & PILOTAGE",
+  "sens": "sortant",
+  "objet": "Données Oracle (datadump)",
+  "nature": "Flux Asynchrone (Batch)"
+ },
+ {
+  "application": "DTR01",
+  "nom": "DTR",
+  "domaine": "JURIDIQUE, RISQUE, COMMUNICATION & PILOTAGE",
+  "sens": "sortant",
+  "objet": "Evènement Facture Client",
+  "nature": "Flux Asynchrone (Batch)"
+ },
+ {
+  "application": "DTR01",
+  "nom": "DTR",
+  "domaine": "JURIDIQUE, RISQUE, COMMUNICATION & PILOTAGE",
+  "sens": "sortant",
+  "objet": "RIB Fournisseurs",
+  "nature": "Flux Asynchrone (Batch)"
+ },
+ {
+  "application": "LAK02",
+  "nom": "DATA PLATFORM",
+  "domaine": "JURIDIQUE, RISQUE, COMMUNICATION & PILOTAGE",
+  "sens": "sortant",
+  "objet": "Encours",
+  "nature": "Flux Asynchrone (Batch)"
+ },
+ {
+  "application": "LAK02",
+  "nom": "DATA PLATFORM",
+  "domaine": "JURIDIQUE, RISQUE, COMMUNICATION & PILOTAGE",
+  "sens": "sortant",
+  "objet": "Factures Fournisseurs",
+  "nature": "Flux Asynchrone (Batch)"
+ },
+ {
+  "application": "PEV01",
+  "nom": "CDPG (ex PLATEFORME VIR/PREL)",
+  "domaine": "PARTENAIRES EXTERNES",
+  "sens": "sortant",
+  "objet": "Prélèvement",
+  "nature": "Flux Asynchrone (Batch)"
+ },
+ {
+  "application": "PEV01",
+  "nom": "CDPG (ex PLATEFORME VIR/PREL)",
+  "domaine": "PARTENAIRES EXTERNES",
+  "sens": "sortant",
+  "objet": "Virement",
+  "nature": "Flux Asynchrone (Batch)"
+ }
+]

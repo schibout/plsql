@@ -364,13 +364,16 @@ with tab_banque:
 
 # ------------------------------------------------------------------ ctrl flux : contrôle des flux, rejets GDR
 with tab_folio:
-    sous_flux, sous_gdr = st.tabs(["🔀 Ctrl Flux", "🧾 GDR"])
+    sous_flux, sous_gdr, sous_carte = st.tabs(["🔀 Ctrl Flux", "🧾 GDR", "🗺 Carte des flux"])
     with sous_flux:
         import ui_ctrl_flux
         ui_ctrl_flux.render(kpi)
     with sous_gdr:
         import ui_gdr
         ui_gdr.render(kpi)
+    with sous_carte:
+        import ui_carte_flux
+        ui_carte_flux.render(kpi)
 
 with tab_ora:
     import ui_oracle
