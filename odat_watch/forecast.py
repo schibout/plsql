@@ -29,14 +29,42 @@ def runs(con=None, application: str | None = "FIN-FINANCE") -> pd.DataFrame:
     FROM ctm_jobs j JOIN snapshots s ON s.id = j.snapshot_id
     WHERE j.task_type <> 'Dummy' AND (? IS NULL OR j.application = ?)
     """
-    df = pd.read_sql_query(q, con, params=(application, application))
-    df = df.sort_values("snap_time")
-    df = df.drop_duplicates(["job_name", "odate", "start_time"], keep="last")
+    df = consolider(pd.read_sql_query(q, con, params=(application, application)))
     for c in ("start_time", "end_time", "snap_time"):
         df[c] = pd.to_datetime(df[c], errors="coerce")
     df["odate"] = pd.to_datetime(df["odate"]).dt.date
     df["duree_min"] = (df["end_time"] - df["start_time"]).dt.total_seconds() / 60
     return df
+
+
+NON_LANCE = "Non lancé"
+
+
+def consolider(df: pd.DataFrame) -> pd.DataFrame:
+    """Une ligne par exécution à son dernier état connu, au lieu d'une ligne par photo.
+
+    Chaque odate est photographié 5 fois (13h46, 16h46, puis 7h07, 7h37, 8h07 le lendemain) : une exécution
+    (job, odate, order id) y passe de « Wait for Event » à « Executing » puis « Ended OK ». On garde la photo la plus
+    récente de chaque tentative (une relance a une autre heure de début et reste visible), on retire l'attente
+    d'une exécution qui a démarré depuis, et une attente encore là à la dernière photo d'un odate clos
+    (un odate plus récent existe) devient « Non lancé » : le job n'a jamais tourné pour cet odate.
+    Un cyclique resté entre deux cycles sur un odate clos devient « Ended OK »."""
+    if df.empty:
+        return df
+    d = df.sort_values("snap_time").assign(_oid=df["order_id"].fillna(""))
+    d = d.drop_duplicates(["job_name", "odate", "_oid", "start_time"], keep="last")
+    demarre = d["start_time"].notna() & d["start_time"].astype(str).ne("")
+    lances = set(zip(d.loc[demarre, "job_name"], d.loc[demarre, "odate"], d.loc[demarre, "_oid"]))
+    d = d[demarre | pd.Series([k not in lances for k in zip(d["job_name"], d["odate"], d["_oid"])], index=d.index)]
+    demarre = demarre.reindex(d.index)
+    clos = d["odate"].astype(str) < str(d["odate"].max())
+    d.loc[clos & ~demarre & d["status"].eq("Wait for Event"), "status"] = NON_LANCE
+    if "cyclic" in d and "end_time" in d:
+        # cyclique entre deux cycles (« Wait for Event » avec l'heure du dernier passage) : sur un odate clos,
+        # son dernier cycle s'est terminé normalement (un cycle en erreur l'aurait laissé en Ended Not OK)
+        fini = d["end_time"].notna() & d["end_time"].astype(str).ne("")
+        d.loc[clos & demarre & fini & d["cyclic"].eq("Yes") & d["status"].eq("Wait for Event"), "status"] = "Ended OK"
+    return d.drop(columns="_oid")
 
 
 def latest_snapshot(con=None, application: str | None = "FIN-FINANCE") -> pd.DataFrame:

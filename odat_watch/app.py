@@ -78,7 +78,7 @@ def charger(application: str | None, _stamp: float):
 
 @st.cache_data(show_spinner=False)
 def charger_jobs_controlm(_stamp: float):
-    """Historique brut de toutes les photos de l'application FIN-FINANCE."""
+    """Exécutions FIN-FINANCE à leur dernier état connu (photos fusionnées, cf. forecast.consolider)."""
     con = connect()
     try:
         jobs = pd.read_sql_query(
@@ -92,7 +92,7 @@ def charger_jobs_controlm(_stamp: float):
         )
         for colonne in ("snap_time", "start_time", "end_time"):
             jobs[colonne] = pd.to_datetime(jobs[colonne], errors="coerce")
-        return jobs
+        return fc.consolider(jobs)
     finally:
         con.close()
 
@@ -331,9 +331,13 @@ tab_plan, tab_calendriers, tab_soir, tab_demain, tab_now, tab_matin, tab_banque,
     ["🧭 Préparer ma nuit", "📥 Clôtures", "🌙 Ce soir", "📅 Demain", "🔴 Maintenant", "☀️ Matin", "🏦 Banque", "🔀 Ctrl Flux", "🅾 Oracle", "🕓 Control-M", "⌨ SQL"])
 
 with tab_controlm:
-    tab_histo, tab_profils, tab_jobs_controlm = st.tabs(
-        ["🔎 Historique", "📈 Profils", "🗂 Jobs CtrlM"]
+    tab_plan_prod, tab_histo, tab_profils, tab_jobs_controlm = st.tabs(
+        ["📋 Plan de production", "🔎 Historique", "📈 Profils", "🗂 Jobs CtrlM"]
     )
+
+with tab_plan_prod:
+    import ui_plan_prod
+    ui_plan_prod.render(df_runs, profs, programmes_oracle(stamp()), kpi)
 
 with tab_plan:
     con = connect()

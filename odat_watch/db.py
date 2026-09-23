@@ -370,6 +370,19 @@ CREATE TABLE IF NOT EXISTS calendar_job_mapping (
     PRIMARY KEY (event_id, job_name)
 );
 
+-- Plan de production : bible Control-M (docs/Plan de Production.xlsx, juin 2025), enrichie par les ODAT, éditable
+CREATE TABLE IF NOT EXISTS pdp_chaines (
+    code              TEXT PRIMARY KEY,
+    description       TEXT, categorie TEXT,
+    planification     TEXT,          -- référence courante : "J-2, J, J+2" ou "lun mar mer jeu ven"
+    planification_ref TEXT,          -- colonne C de la bible après " - " (ex. "L1", "Périodique D4")
+    jours_reference   TEXT,          -- jours cochés dans la bible : "J-6,J-5,sam,…"
+    statut            TEXT NOT NULL DEFAULT 'bible',   -- bible | nouvelle | supprimee
+    planif_manuelle   INTEGER NOT NULL DEFAULT 0,      -- 1 : saisie à la main, la synchro ODAT n'y touche plus
+    commentaire       TEXT,
+    source            TEXT, importe_le TEXT, maj_le TEXT
+);
+
 -- Relevés bancaires (onglet « Relevés bancaires », modules releves_scan.py / releves.py)
 CREATE TABLE IF NOT EXISTS rb_pfe (                -- une exécution Talend (dossier <uuid>) : le fichier livré à EBS
     uuid            TEXT PRIMARY KEY,
@@ -506,6 +519,11 @@ def _migrate(con: sqlite3.Connection) -> None:
             con.execute(f"DROP TABLE IF EXISTS {table}")
         con.commit()
         con.executescript(SCHEMA)
+    # Plan de production : planification saisie à la main protégée de la synchronisation ODAT (23/09/2026)
+    cols = [r[1] for r in con.execute("PRAGMA table_info(pdp_chaines)")]
+    if cols and "planif_manuelle" not in cols:
+        con.execute("ALTER TABLE pdp_chaines ADD COLUMN planif_manuelle INTEGER NOT NULL DEFAULT 0")
+        con.commit()
     # Contrôle du matin : compteurs ajoutés après la création de l'historique (factures AR, 21/09/2026)
     cols = [r[1] for r in con.execute("PRAGMA table_info(controle_matin_histo)")]
     for colonne in ("nb_fac_ar", "nb_fac_ar_rejet"):

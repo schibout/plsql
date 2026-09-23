@@ -7,17 +7,20 @@ import pandas as pd
 
 
 STATUT_OK = "Ended OK"
+NON_LANCE = "Non lancé"          # attente restée telle quelle à la dernière photo d'un odate clos (forecast.consolider)
 ORDRE_STATUTS = {
     "Ended Not OK": 0,
     "Executing": 1,
     "Wait for Event": 2,
     "Ended OK": 3,
+    NON_LANCE: 4,
 }
 ICONES = {
     "Ended Not OK": "✖",
     "Executing": "▶",
     "Wait for Event": "⏸",
     "Ended OK": "✔",
+    NON_LANCE: "⊘",
 }
 
 
@@ -26,12 +29,15 @@ def filtrer_jobs(
     recherche: str = "",
     statuts: Iterable[str] = (),
     non_ok_uniquement: bool = False,
+    non_lances: bool = True,
 ) -> pd.DataFrame:
-    """Filtre les jobs par nom/description, statut et état non OK."""
+    """Filtre les jobs par nom/description, statut et état non OK ; non_lances=False retire les « Non lancé »."""
     if jobs.empty:
         return jobs.copy()
 
     resultat = jobs.copy()
+    if not non_lances and not set(statuts) & {NON_LANCE}:
+        resultat = resultat[resultat["status"].ne(NON_LANCE)]
     statuts = set(statuts)
     recherche = recherche.strip()
     if recherche:
@@ -44,7 +50,7 @@ def filtrer_jobs(
     if statuts:
         resultat = resultat[resultat["status"].isin(statuts)]
     if non_ok_uniquement:
-        resultat = resultat[resultat["status"].fillna("").ne(STATUT_OK)]
+        resultat = resultat[~resultat["status"].fillna("").isin([STATUT_OK, NON_LANCE])]
     return resultat
 
 
@@ -99,7 +105,7 @@ def render(jobs: pd.DataFrame, application: str = "FIN-FINANCE") -> None:
         key=lambda statut: (ORDRE_STATUTS.get(statut, 99), statut),
     )
 
-    col_recherche, col_statuts, col_non_ok = st.columns([2.2, 1.4, 1])
+    col_recherche, col_statuts, col_non_ok, col_non_lance = st.columns([2.2, 1.4, 1, 1])
     recherche = col_recherche.text_input(
         "Recherche",
         placeholder="Nom du job ou description…",
@@ -117,11 +123,18 @@ def render(jobs: pd.DataFrame, application: str = "FIN-FINANCE") -> None:
         help="Exclut les jobs au statut Ended OK.",
     )
 
-    selection = filtrer_jobs(jobs, recherche, statuts, non_ok)
+    non_lances = col_non_lance.checkbox(
+        "Afficher les non lancés",
+        key="ctrlm_jobs_non_lances",
+        help="Jobs restés en attente à la dernière photo de leur odate : ils n'ont jamais tourné ce jour-là.",
+    )
+
+    selection = filtrer_jobs(jobs, recherche, statuts, non_ok, non_lances)
     nb_photos = jobs["snapshot_id"].nunique() if "snapshot_id" in jobs.columns else 0
     st.caption(
-        f"Application {application} · {len(selection)} ligne(s) affichée(s) sur {len(jobs)} "
-        f"dans {nb_photos} photo(s)."
+        f"Application {application} · {len(selection)} exécution(s) affichée(s) sur {len(jobs)}, "
+        f"chacune à son dernier état connu ({nb_photos} photo(s) fusionnées : une attente remplacée par "
+        f"une exécution dans une photo suivante disparaît)."
     )
 
     if selection.empty:

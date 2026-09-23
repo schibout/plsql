@@ -1,5 +1,20 @@
 [
   "tests/test_discovery.py::test_discover_apparie_les_guids",
+  "tests/test_discovery.py::test_disposition_courante_sans_suffixe_ni_source",
+  "tests/test_doublons.py::test_controle_fichiers_cible_seule_n_attend_ni_dk_ni_dkfin01_source",
+  "tests/test_doublons.py::test_croises_aucun_doublon_quand_envois_disjoints",
+  "tests/test_doublons.py::test_croises_chevauchement_partiel_et_virement_multi",
+  "tests/test_doublons.py::test_croises_ignorent_les_copies_identiques_deja_signalees",
+  "tests/test_doublons.py::test_croises_payeurs_differents_pas_de_doublon",
+  "tests/test_doublons.py::test_dossiers_cible_precedents_dans_la_fenetre",
+  "tests/test_doublons.py::test_doublon_exige_la_ligne_entiere_identique",
+  "tests/test_doublons.py::test_entete_ack_ignore_seulement_l_horodatage_de_creation",
+  "tests/test_doublons.py::test_historique_ack_identique_fichier_rejoue_et_virement_deja_envoye",
+  "tests/test_doublons.py::test_historique_sans_journee_precedente",
+  "tests/test_doublons.py::test_intra_envoi_references_distinctes_a_verifier_meme_reference_ko",
+  "tests/test_doublons.py::test_ref_paiement_extraite_du_libelle",
+  "tests/test_doublons.py::test_sources_meme_nom_meme_contenu_et_reference_multiple",
+  "tests/test_doublons.py::test_totaux_source_cible_seule_compare_entete_dkfin01",
   "tests/test_e2e.py::test_e2e_quartz_concorde",
   "tests/test_e2e.py::test_e2e_sur_donnees_reelles",
   "tests/test_e2e.py::test_e2e_totaux_concordent",
@@ -49,5 +64,9 @@
   "tests/test_report.py::test_write_reports_quartz_ecart_rend_ko",
   "tests/test_report.py::test_write_reports_synthese_simple",
   "tests/test_report.py::test_write_reports_synthese_simple_conforme",
-  "tests/test_report.py::test_write_reports_tout_ok"
+  "tests/test_report.py::test_write_reports_tout_ok",
+  "tests/test_sanite.py::test_iban_valide",
+  "tests/test_sanite.py::test_sanite_detecte_chaque_type",
+  "tests/test_sanite.py::test_sanite_ls_out_absent_a_verifier",
+  "tests/test_sanite.py::test_sanite_rien_a_signaler"
 ]

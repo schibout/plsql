@@ -62,3 +62,11 @@ def test_rendu_permet_la_recherche_et_le_filtre_non_ok():
     at.text_input(key="ctrlm_jobs_recherche").set_value("bancaire")
     at.checkbox(key="ctrlm_jobs_non_ok").check().run()
     assert list(at.dataframe[0].value["job"]) == ["JOB_KO"]
+
+
+def test_non_lances_masques_par_defaut_sauf_si_demandes():
+    jobs = pd.concat([_jobs(), pd.DataFrame([{"snapshot_id": 1, "job_name": "JOB_JAMAIS", "status": ui.NON_LANCE}])])
+    assert "JOB_JAMAIS" not in list(ui.filtrer_jobs(jobs, non_lances=False)["job_name"])
+    assert "JOB_JAMAIS" in list(ui.filtrer_jobs(jobs, non_lances=True)["job_name"])
+    assert "JOB_JAMAIS" in list(ui.filtrer_jobs(jobs, statuts=[ui.NON_LANCE], non_lances=False)["job_name"])
+    assert "JOB_JAMAIS" not in list(ui.filtrer_jobs(jobs, non_ok_uniquement=True)["job_name"])
