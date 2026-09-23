@@ -32,7 +32,14 @@ Un troisième sous-onglet dans Ctrl Flux, à côté de Ctrl Flux et GDR, indépe
 2. **Les tuiles** : flux et applications, vers Oracle, depuis Oracle, conformes, en écart, sans donnée, et une
    jauge « santé des flux suivis ».
 3. **La météo des flux** : un tableau, une ligne par flux, avec un pictogramme (☀️ conforme, 🌧️ écart,
-   ⛅ sans donnée, 🌫️ inactif), la nature, la date de dernière donnée, le détail et le nombre de contacts.
+   ⛅ sans donnée, 🌫️ inactif), le type, la nature, la date de dernière donnée, la volumétrie Ctrl Flux
+   (fichiers, folios, pièces, montant amont, écart, liste des folios, dernier fichier transmis), le détail,
+   le motif et le nombre de contacts.
+
+   **Volumétrie dans le graphe** : l'étiquette d'un nœud donne les pièces vues, son infobulle détaille par type
+   de flux (FOURNISSEURS / CLIENTS / GL) les flux, fichiers, folios, pièces, montant amont et écart, puis liste
+   les folios, les motifs et le dernier fichier transmis ; l'infobulle d'une flèche ajoute le motif et la
+   volumétrie du flux. Une case éclate chaque application en un nœud par type de flux.
 4. **La fiche d'un flux** : tout se saisit là. Le **motif du nom de fichier** (joker `*` et `?`, ou expression
    régulière si le motif commence par `^`), testé en direct contre les fichiers transmis connus ; les
    **interlocuteurs** (nom, rôle amont / EAI / métier / Oracle, mail, téléphone) ; les **attributs libres**

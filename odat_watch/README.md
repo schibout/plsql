@@ -253,7 +253,14 @@ crée une fiche par famille de fichiers transmis qu'aucun motif ne reconnaît.
 Le graphe, façon Neo4j (vis-network embarqué par `pyvis`, aucun accès réseau), met **Oracle Finance au centre**
 et un nœud par application, à la couleur de son domaine ; une flèche par flux : verte conforme, orange en écart,
 grise sans donnée, tirets longs pour le batch, points pour le fil de l'eau. Les nœuds se déplacent à la souris,
-la molette zoome, le survol donne le détail ; une case affiche l'objet de chaque flux le long de sa flèche.
+la molette zoome ; une case affiche l'objet de chaque flux le long de sa flèche.
+
+Les nœuds portent la **volumétrie Ctrl Flux** : l'étiquette donne les pièces (ou les fichiers) vus, et le survol
+détaille, **par type de flux (FOURNISSEURS / CLIENTS / GL)**, le nombre de flux, de fichiers transmis, de folios,
+de pièces, le montant amont et l'écart restant, puis la liste des folios, les motifs de noms de fichiers et le
+dernier fichier transmis. Le survol d'une flèche ajoute le motif et la volumétrie de ce flux précis. La case
+**« Séparer fournisseurs / clients / GL »** éclate chaque application en un nœud par type de flux. Les mêmes
+colonnes (fichiers, folios, pièces, montant amont, écart, liste des folios, dernier fichier) sont dans la météo.
 Filtres par sens, domaine, nature et état ; tuiles ; jauge « santé des flux suivis » ; « météo des flux »
 (☀️ conforme, 🌧️ écart, ⛅ sans donnée, 🌫️ inactif). L'état vient de la source déclarée sur la fiche :
 `ctrl_flux` (lignes Ctrl Flux dont le fichier transmis correspond au motif, en écart si une ligne non

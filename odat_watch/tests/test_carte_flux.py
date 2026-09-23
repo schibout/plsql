@@ -133,3 +133,58 @@ def test_graphe_facon_neo4j(tmp_path):
     assert ref["tirets"] == [2, 4]                                       # fil de l'eau
     assert cf.graphe(cf.carte(db.connect(":memory:")))["liens"] == []
     con.close()
+
+
+def test_volumetrie_ctrl_flux_dans_l_etat(tmp_path):
+    con = db.connect(tmp_path / "t.db")
+    _ligne(con, CEL_FRS, "CEE", ecart=40.0, emp="a")
+    _ligne(con, CEL_FRS, "CEG", emp="b")
+    e = cf.etat_flux(con, _fiche())
+    assert e["nb_fichiers"] == 1 and e["nb_lignes"] == 2 and e["nb_folios"] == 2
+    assert e["folios"] == "CEE, CEG" and e["types"] == "FOURNISSEURS"
+    assert e["nb_pieces"] == 20.0 and e["montant"] == 2000.0     # 10 pièces et 1 000 € amont par ligne
+    assert e["ecart"] == 40.0 and e["nb_ecart"] == 1 and e["dernier_fichier"] == CEL_FRS
+    # les colonnes de volumétrie remontent dans la carte
+    fx.enregistrer(con, _fiche())
+    ligne = cf.carte(con).iloc[0]
+    for c in cf.COLS_VOLUME:
+        assert c in ligne
+    assert ligne["nb_folios"] == 2 and ligne["dernier_fichier"] == CEL_FRS
+    con.close()
+
+
+def test_infobulles_detaillees(tmp_path):
+    con = db.connect(tmp_path / "t.db")
+    _ligne(con, CEL_FRS, "CEE", ecart=40.0)
+    fx.charger_catalogue(con)
+    g = cf.graphe(cf.carte(con))
+    cel = next(n for n in g["noeuds"] if n["id"] == "CEL01")
+    # le nœud résume par type de flux, avec folios et motifs
+    assert "FOURNISSEURS :" in cel["titre"] and "GL :" in cel["titre"]
+    assert "Folios : CEE" in cel["titre"] and "Motifs :" in cel["titre"]
+    assert "Dernier fichier : " + CEL_FRS in cel["titre"]
+    assert cel["nb_fichiers"] == 1 and cel["ecart"] == 40.0 and cel["folios"] == ["CEE"]
+    assert "pièces" in cel["label"] or "fichier" in cel["label"]
+    # le lien porte le motif et la volumétrie du flux
+    lien = next(l for l in g["liens"] if l["code"] == "CEL01_IN_FACTURES_FOURNISSEURS_AP")
+    assert "[FOURNISSEURS]" in lien["titre"] and "Motif : CEL01_SRC_FACTURESFOURNISSEURS_*" in lien["titre"]
+    assert "1 fichier(s)" in lien["titre"] and "Folios : CEE" in lien["titre"]
+    assert lien["type_flux"] == "FOURNISSEURS"
+    con.close()
+
+
+def test_graphe_par_type_de_flux(tmp_path):
+    con = db.connect(tmp_path / "t.db")
+    _ligne(con, CEL_FRS, "CEE")
+    fx.charger_catalogue(con)
+    df = cf.carte(con)
+    g = cf.graphe(df, par_type=True)
+    ids = [n["id"] for n in g["noeuds"]]
+    assert cf.ORACLE_ID in ids and len(ids) > 26                      # plus de nœuds qu'en mode application
+    assert "CEL01 · FOURNISSEURS" in ids and "CEL01 · GL" in ids and "CEL01 · AUTRE" in ids
+    frs = next(n for n in g["noeuds"] if n["id"] == "CEL01 · FOURNISSEURS")
+    assert frs["type_flux"] == "FOURNISSEURS" and frs["application"] == "CEL01"
+    assert frs["label"].startswith("CEL01 · FOURNISSEURS")
+    assert len(g["liens"]) == len(df)                                  # toujours un lien par flux
+    assert all(l["de"] == cf.ORACLE_ID or l["vers"] == cf.ORACLE_ID for l in g["liens"])
+    con.close()

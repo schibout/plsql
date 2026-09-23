@@ -3,6 +3,7 @@
 fichier, interlocuteurs, attributs libres)."""
 from __future__ import annotations
 import contextlib
+import json
 
 import pandas as pd
 import streamlit as st
@@ -15,15 +16,34 @@ from db import connect
 
 METEO = {"ok": "☀️", "ecart": "🌧️", "inconnu": "⛅", "inactif": "🌫️"}
 COLS_TABLE = {"meteo": "", "sens": "Sens", "application": "Appli", "nom_application": "Application",
-              "objet": "Objet", "nature": "Nature", "domaine": "Domaine", "etat_libelle": "État",
-              "vu_le": "Vu le", "detail": "Détail", "nb_interlocuteurs": "Contacts", "motif": "Motif"}
+              "objet": "Objet", "type_flux": "Type", "nature": "Nature", "domaine": "Domaine",
+              "etat_libelle": "État", "vu_le": "Vu le", "nb_fichiers": "Fichiers", "nb_folios": "Folios",
+              "nb_pieces": "Pièces", "montant": "Montant amont", "ecart": "Écart", "detail": "Détail",
+              "folios": "Liste folios", "dernier_fichier": "Dernier fichier", "nb_interlocuteurs": "Contacts",
+              "motif": "Motif"}
+COLS_NOMBRE = ("Fichiers", "Folios", "Pièces", "Contacts")
+COLS_EUROS = ("Montant amont", "Écart")
 HAUTEUR_GRAPHE = 680
 
 
-def _graphe_html(df: pd.DataFrame, objets: bool) -> str:
+# vis-network insère le titre comme texte (pas comme HTML) : les retours à la ligne et l'indentation sont
+# donc rendus par la feuille de style de l'infobulle, avec white-space: pre-line.
+STYLE_INFOBULLE = """
+<style>
+  div.vis-tooltip {
+    font-family: "Segoe UI", Arial, sans-serif !important; font-size: 12px !important; line-height: 1.5 !important;
+    color: #1F2937 !important; background: #FFFFFF !important; border: 1px solid #CBD5E1 !important;
+    border-radius: 8px !important; padding: 10px 12px !important; max-width: 520px !important;
+    white-space: pre-line !important; box-shadow: 0 6px 20px rgba(16,24,40,.16) !important;
+  }
+</style>
+</head>"""
+
+
+def _graphe_html(df: pd.DataFrame, objets: bool, par_type: bool = False) -> str:
     """Graphe interactif façon Neo4j (vis-network embarqué, aucun accès réseau) : les nœuds se tirent à la
     souris, Oracle Finance reste au centre, les liens portent l'état du flux et la nature en pointillés."""
-    g = cf.graphe(df)
+    g = cf.graphe(df, par_type=par_type)
     net = Network(height=f"{HAUTEUR_GRAPHE - 20}px", width="100%", directed=True, bgcolor="#F7F8FA",
                   font_color="#1F2937", cdn_resources="in_line")
     for n in g["noeuds"]:
@@ -36,14 +56,22 @@ def _graphe_html(df: pd.DataFrame, objets: bool) -> str:
                            "face": "Segoe UI, Arial", "multi": False, "bold": centre,
                            "vadjust": 0 if centre else -2})
     for l in g["liens"]:
-        net.add_edge(l["de"], l["vers"], title=l["titre"], color={"color": l["couleur"], "highlight": "#1F2937",
-                                                                 "hover": "#1F2937"},
+        net.add_edge(l["de"], l["vers"], title=l["titre"],
+                     color={"color": l["couleur"], "highlight": "#1F2937", "hover": "#1F2937"},
                      width=l["largeur"], dashes=l["tirets"], label=l["objet"] if objets else "",
                      smooth={"type": "curvedCW", "roundness": l["roundness"]}, arrows="to",
                      font={"size": 9, "color": "#4B5563", "strokeWidth": 3, "strokeColor": "#F7F8FA", "align": "middle"})
-    net.barnes_hut(gravity=-5200, central_gravity=0.12, spring_length=210, spring_strength=0.02, damping=0.55,
-                   overlap=0.25)
-    html = net.generate_html()
+    # set_options remplace toutes les options : la physique de barnes_hut est donc reprise ici, avec
+    # interaction.hover, sans quoi vis-network n'affiche jamais les infobulles.
+    net.set_options(json.dumps({
+        "interaction": {"hover": True, "tooltipDelay": 120, "hideEdgesOnDrag": False, "navigationButtons": False,
+                        "multiselect": True, "zoomView": True, "dragNodes": True},
+        "physics": {"enabled": True, "solver": "barnesHut", "stabilization": {"iterations": 180},
+                    "barnesHut": {"gravitationalConstant": -5200, "centralGravity": 0.12, "springLength": 210,
+                                  "springConstant": 0.02, "damping": 0.55, "avoidOverlap": 0.25}},
+        "edges": {"smooth": True, "arrows": {"to": {"enabled": True, "scaleFactor": 0.7}}},
+        "nodes": {"shadow": False}}))
+    page = net.generate_html().replace("</head>", STYLE_INFOBULLE, 1)
     # Dans un cadre Streamlit, le canevas n'a pas encore sa taille quand vis-network cadre la vue : on recadre
     # une fois la physique stabilisée, puis à chaque redimensionnement du cadre.
     recadrage = """
@@ -59,7 +87,7 @@ def _graphe_html(df: pd.DataFrame, objets: bool) -> str:
   })();
 </script>
 </body>"""
-    return html.replace("</body>", recadrage, 1)
+    return page.replace("</body>", recadrage, 1)
 
 
 # ------------------------------------------------------------------ fiche d'un flux
@@ -213,17 +241,19 @@ def render(kpi):
             vue = vue[vue["nature"].isin(natures)]
         if etats:
             vue = vue[vue["etat"].isin(etats)]
-        c1, c2 = st.columns([3, 1])
-        c1.caption("Un nœud par application, Oracle Finance au centre, une flèche par flux : verte conforme, "
-                   "orange en écart, grise sans donnée ; tirets longs pour le batch, points pour le fil de l'eau. "
-                   "Les nœuds se déplacent à la souris, la molette zoome, le survol donne le détail. "
-                   "Couleur des applications = domaine du schéma.")
+        c1, c2 = st.columns([3, 1.3])
+        c1.caption("Oracle Finance au centre, une flèche par flux : verte conforme, orange en écart, grise sans "
+                   "donnée ; tirets longs pour le batch, points pour le fil de l'eau. Les nœuds se déplacent à "
+                   "la souris, la molette zoome, le survol donne le détail Ctrl Flux : fichiers, folios, pièces, "
+                   "montant amont, écart, motifs et dernier fichier transmis.")
+        par_type = c2.checkbox("Séparer fournisseurs / clients / GL", False, key="cf_par_type",
+                               help="Un nœud par application ET par type de flux, au lieu d'un nœud par application.")
         objets = c2.checkbox("Objets sur les flèches", False, key="cf_objets",
                              help="Affiche le libellé de chaque flux le long de sa flèche.")
         if vue.empty:
             st.info("Aucun flux pour ces filtres.")
         else:
-            components.html(_graphe_html(vue, objets), height=HAUTEUR_GRAPHE, scrolling=False)
+            components.html(_graphe_html(vue, objets, par_type), height=HAUTEUR_GRAPHE, scrolling=False)
             legende = " · ".join(f'<span style="display:inline-block;width:11px;height:11px;border-radius:50%;'
                                  f'background:{cf.COULEURS_DOMAINE[d]};margin-right:4px;vertical-align:middle"></span>{d}'
                                  for d in sorted(vue["domaine"].dropna().unique()) if d in cf.COULEURS_DOMAINE)
@@ -233,9 +263,12 @@ def render(kpi):
         st.markdown(f"#### Météo des flux ({len(vue)})")
         table = vue.assign(meteo=vue["etat"].map(METEO))[list(COLS_TABLE)].rename(columns=COLS_TABLE)
         table["Sens"] = table["Sens"].map({"entrant": "→ Oracle", "sortant": "Oracle →"})
+        for c in COLS_NOMBRE + COLS_EUROS:
+            table[c] = pd.to_numeric(table[c], errors="coerce").replace(0, pd.NA)
         st.dataframe(table, use_container_width=True, hide_index=True, height=min(520, 38 * len(table) + 40),
                      column_config={"": st.column_config.TextColumn("", width="small"),
-                                    "Contacts": st.column_config.NumberColumn("Contacts", format="%d")})
+                                    **{c: st.column_config.NumberColumn(c, format="%d") for c in COLS_NOMBRE},
+                                    **{c: st.column_config.NumberColumn(c, format="euro") for c in COLS_EUROS}})
 
         # ---------------------------------------------------------- fiche
         st.markdown("#### Fiche d'un flux")
