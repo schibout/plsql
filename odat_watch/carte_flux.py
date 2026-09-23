@@ -13,11 +13,16 @@ TOL = 0.01
 ORACLE = "FIN01 · ORACLE"
 ETATS = ("ok", "ecart", "inconnu", "inactif")
 LIBELLES_ETAT = {"ok": "conforme", "ecart": "en écart", "inconnu": "sans donnée", "inactif": "inactif"}
-COULEURS_ETAT = {"ok": "#1F9D55", "ecart": "#D9A400", "inconnu": "#B8C0CC", "inactif": "#E5E7EB"}
-COULEURS_DOMAINE = {"REFERENTIEL": "#0F57C7", "OPERATION": "#FF5717", "MARKETING, COMMERCE & RELATION CLIENTS": "#4F9E30",
-                    "RESSOURCES HUMAINES": "#70A8DB", "FINANCES": "#FFB20F",
-                    "JURIDIQUE, RISQUE, COMMUNICATION & PILOTAGE": "#0F8AFF", "PARTENAIRES EXTERNES": "#141414",
-                    "APPLICATION SYSTEME D'INFORMATION": "#B8B8B8", "DECOMMISSIONNEE": "#666666", "INCONNU": "#DDDDDD"}
+COULEURS_ETAT = {"ok": "#2FB170", "ecart": "#F0A020", "inconnu": "#C4CBD4", "inactif": "#E6E9EE"}
+# Palette des nœuds, façon Neo4j Browser : pastels francs, un par domaine du schéma, Oracle en bleu nuit
+COULEURS_DOMAINE = {"FINANCES": "#FFC454", "REFERENTIEL": "#4C8EDA", "OPERATION": "#F79767",
+                    "RESSOURCES HUMAINES": "#C990C0", "PARTENAIRES EXTERNES": "#848484",
+                    "JURIDIQUE, RISQUE, COMMUNICATION & PILOTAGE": "#57C7E3",
+                    "MARKETING, COMMERCE & RELATION CLIENTS": "#8DCC93",
+                    "APPLICATION SYSTEME D'INFORMATION": "#D9C8AE", "DECOMMISSIONNEE": "#A5ABB6", "INCONNU": "#ECB5C9"}
+COULEUR_ORACLE = "#1F3B73"
+TIRETS_NATURE = {"Flux Asynchrone (Batch)": [8, 4], "Flux Asynchrone (Fil de l'eau)": [2, 4],
+                 "Flux Synchrone": False, "Nature de flux inconnue": [10, 4, 2, 4]}
 
 
 def _date_fr(txt) -> datetime | None:
@@ -149,6 +154,55 @@ def sankey(df: pd.DataFrame) -> dict:
         liens.append({"source": src, "cible": dst, "valeur": 1, "code": r["code"], "label": r["objet"],
                       "etat": r["etat"], "couleur": COULEURS_ETAT[r["etat"]],
                       "info": f"{r['objet']} · {r['nature']} · {r['etat_libelle']} · vu le {r['vu_le']}"})
+    return {"noeuds": noeuds, "liens": liens}
+
+
+ORACLE_ID = "ORACLE"
+
+
+def graphe(df: pd.DataFrame) -> dict:
+    """Nœuds et liens du graphe façon Neo4j : un nœud par application (des deux côtés à la fois si elle
+    envoie et reçoit), Oracle Finance au centre, un lien orienté par flux. Les liens d'un même couple
+    application → Oracle s'écartent (roundness croissante) pour rester tous visibles."""
+    noeuds = [{"id": ORACLE_ID, "label": "Oracle\nFinance", "titre": "FIN01 · ORACLE E-Business Suite",
+               "couleur": COULEUR_ORACLE, "bordure": "#122246", "police": "#FFFFFF", "taille": 46,
+               "domaine": "FINANCES", "sens": "centre", "x": 0, "y": 0}]
+    if df.empty:
+        return {"noeuds": noeuds, "liens": []}
+    apps = df.groupby("application")
+    entrants = sorted(a for a, g in apps if (g["sens"] == "entrant").any() and not (g["sens"] == "sortant").any())
+    sortants = sorted(a for a, g in apps if (g["sens"] == "sortant").any() and not (g["sens"] == "entrant").any())
+    mixtes = sorted(a for a, g in apps if (g["sens"] == "entrant").any() and (g["sens"] == "sortant").any())
+
+    def position(liste, x, ecart=110):
+        return {a: (x, (i - (len(liste) - 1) / 2) * ecart) for i, a in enumerate(liste)}
+
+    positions = {**position(entrants, -520), **position(sortants, 520),
+                 **{a: ((i - (len(mixtes) - 1) / 2) * 180, -420 if i % 2 == 0 else 420) for i, a in enumerate(mixtes)}}
+    for app, g in apps:
+        # une application déclarée par le schéma et par un fichier inconnu garde le domaine du schéma
+        connus = [d for d in g["domaine"].tolist() if d and d != "INCONNU"]
+        domaine = max(set(connus), key=connus.count) if connus else "INCONNU"
+        noms = [n for n in g["nom_application"].tolist() if n]
+        nom = str(noms[0] if noms else "")
+        etats = g["etat"].value_counts().to_dict()
+        resume_etats = " · ".join(f"{LIBELLES_ETAT[e]} {n}" for e, n in etats.items())
+        sens = "mixte" if app in mixtes else ("entrant" if app in entrants else "sortant")
+        x, y = positions[app]
+        noeuds.append({"id": app, "label": f"{app}\n{nom}" if nom else app,
+                       "titre": f"{app} · {nom}\n{domaine}\n{len(g)} flux : {resume_etats}",
+                       "couleur": COULEURS_DOMAINE.get(domaine, COULEURS_DOMAINE["INCONNU"]),
+                       "bordure": "#FFFFFF", "police": "#1F2937", "taille": 18 + 3 * len(g),
+                       "domaine": domaine, "sens": sens, "x": x, "y": y})
+    liens, compteur = [], {}
+    for _, r in df.iterrows():
+        de, vers = (r["application"], ORACLE_ID) if r["sens"] == "entrant" else (ORACLE_ID, r["application"])
+        k = compteur[(de, vers)] = compteur.get((de, vers), -1) + 1
+        liens.append({"de": de, "vers": vers, "code": r["code"], "objet": r["objet"], "etat": r["etat"],
+                      "nature": r["nature"], "couleur": COULEURS_ETAT[r["etat"]],
+                      "largeur": 3 if r["etat"] == "ecart" else 2 if r["etat"] == "ok" else 1.4,
+                      "tirets": TIRETS_NATURE.get(r["nature"], [10, 4, 2, 4]), "roundness": 0.08 + 0.13 * k,
+                      "titre": f"{fx.libelle(r)}\n{r['nature']} · {r['etat_libelle']} · vu le {r['vu_le']}\n{r['detail']}"})
     return {"noeuds": noeuds, "liens": liens}
 
 

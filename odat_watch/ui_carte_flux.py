@@ -5,8 +5,9 @@ from __future__ import annotations
 import contextlib
 
 import pandas as pd
-import plotly.graph_objects as go
 import streamlit as st
+import streamlit.components.v1 as components
+from pyvis.network import Network
 
 import carte_flux as cf
 import flux_ref as fx
@@ -16,29 +17,49 @@ METEO = {"ok": "☀️", "ecart": "🌧️", "inconnu": "⛅", "inactif": "🌫�
 COLS_TABLE = {"meteo": "", "sens": "Sens", "application": "Appli", "nom_application": "Application",
               "objet": "Objet", "nature": "Nature", "domaine": "Domaine", "etat_libelle": "État",
               "vu_le": "Vu le", "detail": "Détail", "nb_interlocuteurs": "Contacts", "motif": "Motif"}
+HAUTEUR_GRAPHE = 680
 
 
-def _sankey(df: pd.DataFrame) -> go.Figure:
-    s = cf.sankey(df)
-    fig = go.Figure(go.Sankey(
-        arrangement="snap",
-        node=dict(pad=14, thickness=18, label=[n["label"] for n in s["noeuds"]],
-                  color=[n["couleur"] for n in s["noeuds"]], line=dict(color="white", width=1),
-                  hovertemplate="%{label}<extra></extra>"),
-        link=dict(source=[l["source"] for l in s["liens"]], target=[l["cible"] for l in s["liens"]],
-                  value=[l["valeur"] for l in s["liens"]], label=[l["label"] for l in s["liens"]],
-                  color=[_transparent(l["couleur"]) for l in s["liens"]],
-                  customdata=[l["info"] for l in s["liens"]],
-                  hovertemplate="%{customdata}<extra></extra>")))
-    fig.update_layout(height=max(520, 22 * len(s["liens"]) + 120), margin=dict(l=10, r=10, t=10, b=10),
-                      font=dict(size=12), paper_bgcolor="white", plot_bgcolor="white")
-    return fig
-
-
-def _transparent(hexa: str, alpha: float = 0.55) -> str:
-    h = hexa.lstrip("#")
-    r, g, b = int(h[0:2], 16), int(h[2:4], 16), int(h[4:6], 16)
-    return f"rgba({r},{g},{b},{alpha})"
+def _graphe_html(df: pd.DataFrame, objets: bool) -> str:
+    """Graphe interactif façon Neo4j (vis-network embarqué, aucun accès réseau) : les nœuds se tirent à la
+    souris, Oracle Finance reste au centre, les liens portent l'état du flux et la nature en pointillés."""
+    g = cf.graphe(df)
+    net = Network(height=f"{HAUTEUR_GRAPHE - 20}px", width="100%", directed=True, bgcolor="#F7F8FA",
+                  font_color="#1F2937", cdn_resources="in_line")
+    for n in g["noeuds"]:
+        centre = n["id"] == cf.ORACLE_ID
+        net.add_node(n["id"], label=n["label"], title=n["titre"], shape="dot", size=n["taille"],
+                     color={"background": n["couleur"], "border": n["bordure"],
+                            "highlight": {"background": n["couleur"], "border": "#1F2937"}},
+                     borderWidth=3 if centre else 2, x=n["x"], y=n["y"], physics=not centre, fixed=centre,
+                     font={"size": 16 if centre else 12, "color": n["police"] if centre else "#1F2937",
+                           "face": "Segoe UI, Arial", "multi": False, "bold": centre,
+                           "vadjust": 0 if centre else -2})
+    for l in g["liens"]:
+        net.add_edge(l["de"], l["vers"], title=l["titre"], color={"color": l["couleur"], "highlight": "#1F2937",
+                                                                 "hover": "#1F2937"},
+                     width=l["largeur"], dashes=l["tirets"], label=l["objet"] if objets else "",
+                     smooth={"type": "curvedCW", "roundness": l["roundness"]}, arrows="to",
+                     font={"size": 9, "color": "#4B5563", "strokeWidth": 3, "strokeColor": "#F7F8FA", "align": "middle"})
+    net.barnes_hut(gravity=-5200, central_gravity=0.12, spring_length=210, spring_strength=0.02, damping=0.55,
+                   overlap=0.25)
+    html = net.generate_html()
+    # Dans un cadre Streamlit, le canevas n'a pas encore sa taille quand vis-network cadre la vue : on recadre
+    # une fois la physique stabilisée, puis à chaque redimensionnement du cadre.
+    recadrage = """
+<script type="text/javascript">
+  (function () {
+    function cadrer() { try { network.fit({animation: false}); } catch (e) {} }
+    if (typeof network !== "undefined") {
+      network.once("stabilizationIterationsDone", function () { setTimeout(cadrer, 50); });
+      network.once("stabilized", function () { setTimeout(cadrer, 50); });
+      setTimeout(cadrer, 700); setTimeout(cadrer, 2500);
+      window.addEventListener("resize", cadrer);
+    }
+  })();
+</script>
+</body>"""
+    return html.replace("</body>", recadrage, 1)
 
 
 # ------------------------------------------------------------------ fiche d'un flux
@@ -143,7 +164,9 @@ def render(kpi):
         propositions = fx.decouvrir(con)
         if a2.button(f"🔍 Déclarer les fichiers inconnus ({len(propositions)})", disabled=not propositions,
                      use_container_width=True, key="cf_decouvrir",
-                     help="Une fiche par famille de fichiers transmis qu'aucun motif ne reconnaît."):
+                     help="Une fiche par famille de fichiers transmis qu'aucun motif ne reconnaît. Chargez d'abord "
+                          "les flux du schéma : leurs motifs reconnaissent déjà les fichiers SRC de factures et "
+                          "d'écritures, il ne reste alors que les fichiers intermédiaires ou inattendus."):
             for p in propositions:
                 p.pop("nb_fichiers", None)
                 p.pop("exemple", None)
@@ -190,12 +213,21 @@ def render(kpi):
             vue = vue[vue["nature"].isin(natures)]
         if etats:
             vue = vue[vue["etat"].isin(etats)]
-        st.caption("Chaque ruban est un flux : vert conforme, orange en écart, gris sans donnée. Les applications "
-                   "portent la couleur de leur domaine (légende du schéma). Survolez un ruban pour le détail.")
+        c1, c2 = st.columns([3, 1])
+        c1.caption("Un nœud par application, Oracle Finance au centre, une flèche par flux : verte conforme, "
+                   "orange en écart, grise sans donnée ; tirets longs pour le batch, points pour le fil de l'eau. "
+                   "Les nœuds se déplacent à la souris, la molette zoome, le survol donne le détail. "
+                   "Couleur des applications = domaine du schéma.")
+        objets = c2.checkbox("Objets sur les flèches", False, key="cf_objets",
+                             help="Affiche le libellé de chaque flux le long de sa flèche.")
         if vue.empty:
             st.info("Aucun flux pour ces filtres.")
         else:
-            st.plotly_chart(_sankey(vue), use_container_width=True, config={"displayModeBar": False})
+            components.html(_graphe_html(vue, objets), height=HAUTEUR_GRAPHE, scrolling=False)
+            legende = " · ".join(f'<span style="display:inline-block;width:11px;height:11px;border-radius:50%;'
+                                 f'background:{cf.COULEURS_DOMAINE[d]};margin-right:4px;vertical-align:middle"></span>{d}'
+                                 for d in sorted(vue["domaine"].dropna().unique()) if d in cf.COULEURS_DOMAINE)
+            st.markdown(f'<div style="font-size:.8rem;color:#4B5563">{legende}</div>', unsafe_allow_html=True)
 
         # ---------------------------------------------------------- météo des flux
         st.markdown(f"#### Météo des flux ({len(vue)})")

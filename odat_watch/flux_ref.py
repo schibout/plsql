@@ -108,7 +108,9 @@ def proposer_fiche(nom: str) -> dict:
                             .replace("FACTURESCLIENTS", "factures clients").replace("ECRITURESGL", "ecritures gl"))
     objet = {"FOURNISSEURS": "Factures fournisseurs (AP)", "CLIENTS": "Factures clients (AR)",
              "GL": "Ecritures GL"}.get(typ, " ".join(mots[1:]) or base)
-    return {"code": code_flux(application, "entrant", objet), "application": application, "nom_application": "",
+    # le code reprend le préfixe du fichier (CEL01_PIVOT_GL_ECRITURESGL), jamais la forme APP_IN_OBJET du
+    # schéma : un fichier intermédiaire (PIVOT) ne doit pas prendre la place du flux du schéma
+    return {"code": slug(prefixe) or application, "application": application, "nom_application": "",
             "domaine": "INCONNU", "sens": "entrant", "objet": objet, "nature": "Nature de flux inconnue",
             "statut": "Actif", "type_flux": typ, "motif": motif, "source_etat": "ctrl_flux",
             "dossier_unix": "", "commentaire": f"proposé depuis {base}"}

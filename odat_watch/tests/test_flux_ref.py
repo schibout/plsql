@@ -118,7 +118,12 @@ def test_fichiers_sans_flux_et_decouverte(tmp_path):
                                            "CEL01_SRC_FACTURESFOURNISSEURS_*"}
     cli = next(p for p in props if p["motif"] == "FAC02_SRC_FACTURESCLIENTS_*")
     assert cli["sens"] == "entrant" and cli["type_flux"] == "CLIENTS" and cli["application"] == "FAC02"
-    assert cli["code"] == "FAC02_IN_FACTURES_CLIENTS_AR" and cli["nb_fichiers"] == 1
+    assert cli["code"] == "FAC02_SRC_FACTURESCLIENTS" and cli["nb_fichiers"] == 1
+    # le code d'une fiche proposée vient du préfixe du fichier : un fichier intermédiaire ne prend jamais la
+    # place d'un flux du schéma (codes APP_IN_OBJET)
+    pivot = fx.proposer_fiche("CEL01_PIVOT_GL_ECRITURESGL_20260729-170423")
+    assert pivot["code"] == "CEL01_PIVOT_GL_ECRITURESGL" and pivot["objet"] == "Ecritures GL"
+    assert pivot["code"] != fx.code_flux("CEL01", "entrant", "Ecritures GL")
     con.close()
 
 

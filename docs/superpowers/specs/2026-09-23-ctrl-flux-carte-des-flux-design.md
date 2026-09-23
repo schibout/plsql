@@ -22,11 +22,13 @@ le référentiel fournisseurs).
 
 Un troisième sous-onglet dans Ctrl Flux, à côté de Ctrl Flux et GDR, indépendant de la GDR.
 
-1. **Le diagramme** : applications entrantes à gauche, Oracle au centre, applications sortantes à droite,
-   reliées par un ruban par flux. Les applications portent la couleur de leur domaine, comme sur le schéma ;
-   les rubans portent l'**état** du flux : vert conforme, orange en écart, gris sans donnée. Survoler un ruban
-   donne l'objet, la nature, l'état et la date de la dernière donnée vue. Filtres par sens, domaine, nature
-   et état.
+1. **Le graphe**, façon Neo4j : Oracle Finance au centre, un nœud par application (une seule fois, même
+   quand elle envoie et reçoit), une flèche orientée par flux. Les nœuds portent la couleur de leur domaine
+   (palette pastel inspirée de Neo4j Browser), les flèches l'**état** du flux (verte conforme, orange en
+   écart, grise sans donnée) et la **nature** en pointillés (tirets longs batch, points fil de l'eau). Les
+   flèches d'un même couple s'écartent pour rester lisibles. Nœuds déplaçables à la souris, zoom à la
+   molette, détail au survol, objets affichables le long des flèches. Rendu par `pyvis` avec vis-network
+   embarqué, donc sans accès réseau. Filtres par sens, domaine, nature et état.
 2. **Les tuiles** : flux et applications, vers Oracle, depuis Oracle, conformes, en écart, sans donnée, et une
    jauge « santé des flux suivis ».
 3. **La météo des flux** : un tableau, une ligne par flux, avec un pictogramme (☀️ conforme, 🌧️ écart,

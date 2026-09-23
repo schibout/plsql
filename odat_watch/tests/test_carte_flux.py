@@ -101,3 +101,35 @@ def test_carte_vide():
     assert df.empty and "etat" in df.columns
     assert cf.resume(df)["flux"] == 0
     con.close()
+
+
+def test_graphe_facon_neo4j(tmp_path):
+    con = db.connect(tmp_path / "t.db")
+    _ligne(con, CEL_FRS, "CEE", ecart=40.0)
+    fx.charger_catalogue(con)
+    g = cf.graphe(cf.carte(con))
+    ids = [n["id"] for n in g["noeuds"]]
+    assert ids[0] == cf.ORACLE_ID and len(ids) == 1 + 25                # Oracle + une fois chaque application
+    assert len(set(ids)) == len(ids)
+    oracle = g["noeuds"][0]
+    assert oracle["x"] == 0 and oracle["y"] == 0 and oracle["couleur"] == cf.COULEUR_ORACLE
+    cel = next(n for n in g["noeuds"] if n["id"] == "CEL01")
+    assert cel["sens"] == "mixte" and cel["couleur"] == cf.COULEURS_DOMAINE["FINANCES"]
+    assert "CELERIS" in cel["label"] and "flux" in cel["titre"]
+    entrant_pur = next(n for n in g["noeuds"] if n["id"] == "REF02")
+    sortant_pur = next(n for n in g["noeuds"] if n["id"] == "HEC01")
+    assert entrant_pur["x"] < 0 < sortant_pur["x"]                       # entrants à gauche, sortants à droite
+    assert len(g["liens"]) == 66
+    vers_oracle = [l for l in g["liens"] if l["vers"] == cf.ORACLE_ID]
+    depuis = [l for l in g["liens"] if l["de"] == cf.ORACLE_ID]
+    assert len(vers_oracle) == 33 and len(depuis) == 33
+    # les trois flux CEL01 -> Oracle s'écartent, le flux en écart est orange et épais
+    cel_liens = [l for l in vers_oracle if l["de"] == "CEL01"]
+    assert len({l["roundness"] for l in cel_liens}) == len(cel_liens) == 3
+    ap = next(l for l in cel_liens if l["code"] == "CEL01_IN_FACTURES_FOURNISSEURS_AP")
+    assert ap["etat"] == "ecart" and ap["couleur"] == cf.COULEURS_ETAT["ecart"] and ap["largeur"] == 3
+    assert ap["tirets"] == [8, 4]                                        # batch
+    ref = next(l for l in vers_oracle if l["code"] == "REF02_IN_CENTRE_FINANCE")
+    assert ref["tirets"] == [2, 4]                                       # fil de l'eau
+    assert cf.graphe(cf.carte(db.connect(":memory:")))["liens"] == []
+    con.close()

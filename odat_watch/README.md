@@ -55,7 +55,7 @@ sur les chemins longs : créer un venv dans un chemin court.
 
 ```bat
 python -m venv C:\tmp\odatenv
-C:\tmp\odatenv\Scripts\python.exe -m pip install streamlit pandas plotly oracledb
+C:\tmp\odatenv\Scripts\python.exe -m pip install streamlit pandas plotly oracledb pyvis
 copy config.ini.exemple config.ini      REM puis renseigner user / password / dsn
 ```
 
@@ -250,8 +250,10 @@ nature, côté = sens) : 66 flux, 33 vers Oracle et 33 depuis Oracle, 25 applica
 schéma FIN01 » les ajoute au référentiel sans toucher aux fiches existantes ; « Déclarer les fichiers inconnus »
 crée une fiche par famille de fichiers transmis qu'aucun motif ne reconnaît.
 
-Le diagramme place les applications entrantes à gauche, Oracle au centre, les sortantes à droite, un ruban par
-flux : vert conforme, orange en écart, gris sans donnée ; les applications portent la couleur de leur domaine.
+Le graphe, façon Neo4j (vis-network embarqué par `pyvis`, aucun accès réseau), met **Oracle Finance au centre**
+et un nœud par application, à la couleur de son domaine ; une flèche par flux : verte conforme, orange en écart,
+grise sans donnée, tirets longs pour le batch, points pour le fil de l'eau. Les nœuds se déplacent à la souris,
+la molette zoome, le survol donne le détail ; une case affiche l'objet de chaque flux le long de sa flèche.
 Filtres par sens, domaine, nature et état ; tuiles ; jauge « santé des flux suivis » ; « météo des flux »
 (☀️ conforme, 🌧️ écart, ⛅ sans donnée, 🌫️ inactif). L'état vient de la source déclarée sur la fiche :
 `ctrl_flux` (lignes Ctrl Flux dont le fichier transmis correspond au motif, en écart si une ligne non
