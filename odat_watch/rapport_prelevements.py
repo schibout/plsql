@@ -62,7 +62,6 @@ def _tuiles(r: dict) -> str:
         _tuile(_nb(r["anomalies"]), "anomalies", "ko" if r["anomalies"] else "ok"),
         _tuile(_nb(r["a_investiguer"]), "écarts à investiguer", "ko" if r["a_investiguer"] else "ok"),
         _tuile(_nb(r["doublons"]), "émis en double", "ko" if r["doublons"] else "ok"),
-        _tuile(_nb(r["similitudes"]), "similitudes à vérifier", "warn" if r["similitudes"] else "ok"),
     ])
 
 
@@ -100,7 +99,7 @@ def actions(rapport: dict) -> list[tuple[str, str]]:
     if not dbl.empty:
         for _, d in dbl[dbl["type"] == "DOUBLON"].iterrows():
             out.append(("ko", f"Doublon d'émission : {d['beneficiaire']} ({d['rum']}), {_eur(d['montant'])} à l'échéance "
-                              f"du {d['echeance']}, référence {d['reference']} émise {d['nb']} fois "
+                              f"du {d['echeance']}, ligne identique (référence {d['reference']}) émise {d['nb']} fois "
                               f"({d['fichiers']}). Bloquer le second prélèvement avant l'échéance."))
     if not df.empty:
         for _, k in df[df["statut"] == "NON_RECU"].iterrows():
@@ -125,11 +124,6 @@ def actions(rapport: dict) -> list[tuple[str, str]]:
             out.append(("warn", f"{pv.LIBELLES_STATUT[k['statut']]} : IBAN {k['iban_creancier']}, échéance {k['echeance']}, "
                                 f"{_nb(k['nb_rejets'])} rejet(s) ({k['codes_rejets']}). À signaler au métier : "
                                 f"{pv.EXPLICATIONS[k['statut']].lower()}"))
-    if not dbl.empty:
-        n_sim = int((dbl["type"] == "SIMILITUDE").sum())
-        if n_sim:
-            out.append(("warn", f"{n_sim} similitude(s) : même mandat, débiteur, échéance et montant avec des références "
-                                f"différentes. Confirmer qu'il s'agit bien de factures distinctes (tableau Doublons)."))
     if not df.empty:
         att = df[df["statut"] == "EN_ATTENTE"]
         if not att.empty:
@@ -175,7 +169,7 @@ def construire(rapport: dict) -> str:
     corps.append("<h2>Détail — Justification des écarts"
                  + (f' <span class="pill ko">{r["a_investiguer"]} à investiguer</span>' if r["a_investiguer"] else "") + "</h2>")
     corps.append(_table(_renommer(rapport["justifications"])))
-    corps.append("<h2>Détail — Doublons et similitudes"
+    corps.append("<h2>Détail — Doublons d'émission"
                  + (f' <span class="pill ko">{r["doublons"]}</span>' if r["doublons"] else "") + "</h2>")
     corps.append(_table(_renommer(rapport["doublons"])))
     for statut, g in pv.par_statut(rapport["rapprochement"]):

@@ -8,7 +8,12 @@ D1 (envois strictement identiques) reste dans reconcile.controle_doublons_ack. I
   D6  fichier source (DK_FIN01) rejoue : meme nom ou meme contenu dans plusieurs instances,
       ou reference plusieurs fois par le CSV Oracle
 
-Chaque ligne produite porte une gravite : KO (ecart bloquant) ou A_VERIFIER (a qualifier).
+Doublon = ligne entiere identique, caractere pour caractere : meme societe, meme date, meme beneficiaire,
+meme IBAN, meme montant, meme lot, meme reference, meme site... Seuls les numeros de sequence propres au
+fichier et l'horodatage de creation de l'en-tete sont ignores. Meme IBAN et meme montant ne suffisent pas.
+
+Chaque ligne produite porte la gravite KO : un doublon est toujours bloquant.
+A_VERIFIER reste utilise par les controles de forme (cv.sanite).
 """
 import re
 from collections import Counter, defaultdict
@@ -17,7 +22,7 @@ from itertools import combinations
 from pathlib import Path
 
 from cv.parsers import parse_ack, parse_dk_fin01
-from cv.reconcile import _empreinte_ack, _norm_nom
+from cv.reconcile import _empreinte_ack
 
 KO = "KO"
 A_VERIFIER = "A_VERIFIER"
@@ -25,8 +30,9 @@ A_VERIFIER = "A_VERIFIER"
 _REF_PAIEMENT = re.compile(r"\d{2}/\d{2}/\d{4}-(\d+)-")
 
 
-def _cle(payeur, v):
-    return (payeur.strip(), v.iban, v.montant_cts, _norm_nom(v.nom))
+def _cle(ack, v):
+    """Un virement n'est en double que si l'en-tete de son envoi et sa ligne entiere sont identiques."""
+    return (ack.contenu_entete(), v.contenu())
 
 
 def ref_paiement(v):
@@ -41,15 +47,17 @@ def doublons_croises(acks, doublons_identiques=()):
 
     acks : liste de (guid, nom, LotAck). Retourne (chevauchements, virements_multi).
     chevauchements : une ligne par paire d'envois ayant au moins un virement commun (D2).
-    virements_multi : une ligne par virement (payeur, IBAN, montant, nom) present dans
+    virements_multi : une ligne par virement (ligne entiere identique) present dans
     plusieurs envois distincts (D3), avec la liste des envois concernes.
     """
     exclus = {(d["guid"], d["fichier"]) for d in doublons_identiques}
     lots = [(g, n, a) for g, n, a in acks if (g, n) not in exclus and a.virements]
     index = defaultdict(list)                       # cle virement -> [indice de lot, ...]
+    exemple = {}                                    # cle virement -> (lot, virement) pour l'affichage
     for i, (_, _, a) in enumerate(lots):
         for v in a.virements:
-            index[_cle(a.iban_payeur, v)].append(i)
+            index[_cle(a, v)].append(i)
+            exemple.setdefault(_cle(a, v), (a, v))
 
     virements_multi = []
     communs = Counter()
@@ -57,9 +65,10 @@ def doublons_croises(acks, doublons_identiques=()):
         distincts = sorted(set(idxs))
         if len(distincts) < 2:
             continue
-        payeur, iban, montant, nom = cle
+        a, v = exemple[cle]
         virements_multi.append({
-            "payeur": payeur, "iban": iban, "montant_cts": montant, "nom": nom,
+            "payeur": a.iban_payeur.strip(), "iban": v.iban, "montant_cts": v.montant_cts, "nom": v.nom,
+            "libelle": v.libelle,
             "nb_envois": len(distincts),
             "envois": " | ".join(lots[i][1] for i in distincts),
             "guids": " | ".join(sorted({lots[i][0] for i in distincts})),
@@ -78,7 +87,7 @@ def doublons_croises(acks, doublons_identiques=()):
             "nb_virements": len(a.virements), "nb_virements_autre": len(b.virements),
             "nb_communs": nb, "pct_commun": round(100 * nb / plus_petit) if plus_petit else 0,
             "montant_commun_cts": sum(v.montant_cts for v in a.virements
-                                      if index.get(_cle(a.iban_payeur, v)) and j in index[_cle(a.iban_payeur, v)]),
+                                      if j in index.get(_cle(a, v), ())),
             "gravite": KO,
         })
     virements_multi.sort(key=lambda r: (-r["montant_cts"], r["iban"]))
@@ -87,28 +96,21 @@ def doublons_croises(acks, doublons_identiques=()):
 
 # ------------------------------------------------------------------ D4
 def doublons_intra_envoi(acks):
-    """Meme beneficiaire (IBAN) et meme montant plusieurs fois dans un meme envoi.
-
-    Deux factures de meme montant sont possibles : la ligne est A_VERIFIER, et devient KO si
-    les occurrences portent la meme reference de paiement Oracle.
-    """
+    """Ligne de virement repetee a l'identique dans un meme envoi (KO). Des lignes qui ne different
+    que d'un caractere (reference, lot...) ne sont pas des doublons et ne sont pas signalees."""
     lignes = []
     for guid, nom, ack in acks:
         groupes = defaultdict(list)
         for v in ack.virements:
-            groupes[(v.iban, v.montant_cts)].append(v)
-        for (iban, montant), vs in groupes.items():
+            groupes[v.contenu()].append(v)
+        for vs in groupes.values():
             if len(vs) < 2:
                 continue
-            refs = [ref_paiement(v) for v in vs]
-            memes_refs = len(set(refs)) < len(refs) and any(refs)
+            v = vs[0]
             lignes.append({
-                "guid": guid, "fichier": nom, "iban": iban, "montant_cts": montant,
-                "nom": vs[0].nom, "occurrences": len(vs),
-                "references": " | ".join(r or "?" for r in refs),
-                "gravite": KO if memes_refs else A_VERIFIER,
-                "detail": ("meme reference de paiement repetee" if memes_refs
-                           else "references de paiement distinctes : deux factures possibles"),
+                "guid": guid, "fichier": nom, "iban": v.iban, "montant_cts": v.montant_cts,
+                "nom": v.nom, "occurrences": len(vs), "references": ref_paiement(v) or "?",
+                "gravite": KO, "detail": "ligne identique repetee : doublon",
             })
     return lignes
 
@@ -145,8 +147,8 @@ def charger_envois(dossier_cible):
 def doublons_historique(acks, racine, date, jours=7):
     """Envois ou virements du jour deja transmis un jour precedent.
 
-    ACK_IDENTIQUE / FICHIER_REJOUE : KO. VIREMENT_DEJA_ENVOYE : A_VERIFIER (un paiement
-    recurrent de meme montant au meme beneficiaire est legitime).
+    ACK_IDENTIQUE / FICHIER_REJOUE / VIREMENT_DEJA_ENVOYE : KO. Un virement n'est « deja envoye »
+    que si sa ligne entiere (date, lot, reference compris) l'a ete : un paiement recurrent ne l'est pas.
     Retourne (lignes, nb_jours_compares).
     """
     precedents = dossiers_cible_precedents(racine, date, jours)
@@ -157,7 +159,7 @@ def doublons_historique(acks, racine, date, jours=7):
             if ack.virements:
                 empreintes.setdefault(_empreinte_ack(ack), (d, guid, nom))
                 for v in ack.virements:
-                    virements.setdefault(_cle(ack.iban_payeur, v), (d, nom))
+                    virements.setdefault(_cle(ack, v), (d, nom))
 
     lignes = []
     for guid, nom, ack in acks:
@@ -181,19 +183,19 @@ def doublons_historique(acks, racine, date, jours=7):
                            "detail": f"contenu identique a un envoi du {d} (instance {g})"})
             continue
         for v in ack.virements:
-            deja = virements.get(_cle(ack.iban_payeur, v))
+            deja = virements.get(_cle(ack, v))
             if deja:
                 d, n = deja
                 lignes.append({"guid": guid, "fichier": nom, "type": "VIREMENT_DEJA_ENVOYE",
-                               "gravite": A_VERIFIER, "date_precedente": d, "fichier_precedent": n,
+                               "gravite": KO, "date_precedente": d, "fichier_precedent": n,
                                "nb_virements": 1, "montant_cts": v.montant_cts,
-                               "detail": f"{v.nom} / {v.iban} deja paye le {d}"})
+                               "detail": f"{v.nom} / {v.iban} : ligne identique deja envoyee le {d}"})
     return lignes, len(precedents)
 
 
 # ------------------------------------------------------------------ D6
 def _empreinte_lot(lot):
-    return tuple(sorted((v.iban, v.montant_cts, _norm_nom(v.nom)) for v in lot.virements))
+    return tuple(sorted(v.contenu() for v in lot.virements))
 
 
 def doublons_sources(instances_sources, oracle_rows_par_guid):
@@ -220,11 +222,11 @@ def doublons_sources(instances_sources, oracle_rows_par_guid):
         noms = sorted({n for _, n, _ in lots})
         if len(noms) > 1:
             lot = lots[0][2]
-            lignes.append({"type": "CONTENU_IDENTIQUE", "gravite": A_VERIFIER, "fichier": " | ".join(noms),
+            lignes.append({"type": "CONTENU_IDENTIQUE", "gravite": KO, "fichier": " | ".join(noms),
                            "guids": " | ".join(sorted({g for g, _, _ in lots})),
                            "nb_virements": len(lot.virements),
                            "montant_cts": sum(v.montant_cts for v in lot.virements),
-                           "detail": "memes virements sous des noms de fichier differents"})
+                           "detail": "memes lignes, caractere pour caractere, sous des noms de fichier differents"})
     refs = Counter()
     for guid, rows in oracle_rows_par_guid.items():
         for r in rows:

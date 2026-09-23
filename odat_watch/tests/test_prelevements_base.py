@@ -20,7 +20,7 @@ def _res(tmp_path: Path, statut="OK", **maj) -> dict:
            "dossier": tmp_path / "rapport", "reference": date(2026, 9, 14),
            "par_statut": {"RAPPROCHE": {"cles": 3, "nb": 10, "montant": Decimal("1000.00")},
                           "EN_ATTENTE": {"cles": 1, "nb": 2, "montant": Decimal("250.00")}},
-           "nb_anomalies": 0, "nb_signales": 0, "nb_a_investiguer": 0, "nb_doublons": 0, "nb_similitudes": 1,
+           "nb_anomalies": 0, "nb_signales": 0, "nb_a_investiguer": 0, "nb_doublons": 0,
            "nb_lignes_ko": 0, "avertissements": [], "contexte": {"Lignes Oracle": 12},
            "dossier_edf": str(edf), "dossier_rejets": str(rejets),
            "fichiers_edf": [{"fichier": "IMPORT_AVP_DK.20260913.070100.csv", "date_fichier": date(2026, 9, 13)},

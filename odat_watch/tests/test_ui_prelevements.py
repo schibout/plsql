@@ -52,7 +52,7 @@ def test_onglet_affiche_le_rapport(monkeypatch, tmp_path):
     assert any("En attente EDF" in l for l in labels)
     assert any("Justification des écarts" in l and "1 à investiguer" in l for l in labels)
     assert "0 émis en double [ok]" in texte
-    assert any("émis en double — 0 doublon(s), 0 similitude(s)" in l for l in labels)
+    assert any("émis en double — 0 doublon(s)" in l for l in labels)
 
 
 def test_onglet_sans_aucun_rapport(monkeypatch, tmp_path):
@@ -100,7 +100,7 @@ def test_onglet_signale_les_doublons(monkeypatch, tmp_path):
     at.date_input[0].set_value(date(2026, 9, 14)).run()
     assert not at.exception
     assert any("1 émis en double [err]" in m.value for m in at.markdown)
-    assert any("1 doublon(s), 0 similitude(s)" in e.label for e in at.expander)
+    assert any("1 doublon(s)" in e.label for e in at.expander)
 
 
 def test_rapport_html_et_texte_mail(monkeypatch, tmp_path):

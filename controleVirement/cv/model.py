@@ -11,6 +11,13 @@ class Virement:
     nom: str
     bic: str
     libelle: str = ""          # ACK : lot Oracle + reference de paiement (zone 132-202 de l'enregistrement 06)
+    ligne: str = ""            # ligne entiere telle que lue, hors numeros de sequence propres au fichier
+
+    def contenu(self):
+        """Ce qui doit etre identique, caractere pour caractere, pour parler de doublon : la ligne entiere
+        (beneficiaire, banque, IBAN, montant, lot, date, reference, site, adresse...). A defaut de ligne lue
+        (virement construit a la main), tous les champs connus."""
+        return self.ligne or (self.iban, self.montant_cts, self.nom, self.bic, self.libelle)
 
 
 @dataclass
@@ -29,6 +36,10 @@ class LotAck:
     footer_total_cts: int = 0
     date_creation: str = ""    # AAMMJJ (en-tete 03, position 54)
     date_valeur: str = ""      # JJMMAA (en-tete 03, position 24)
+    entete: str = ""           # en-tete 03 hors horodatage de creation : remettant, date de valeur, societe, compte payeur
+
+    def contenu_entete(self):
+        return self.entete or self.iban_payeur
 
 
 @dataclass

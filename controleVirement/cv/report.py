@@ -82,24 +82,26 @@ def _ecrit_csv(chemin, lignes):
 # Controles complementaires (cle dans `extras`) -> (nom du CSV, titre metier, explication)
 CONTROLES_PLUS = {
     "chevauchements": ("controle_doublons_croises.csv", "Envois se recouvrant partiellement",
-                       "Deux envois vers la banque, pour le même compte payeur, contiennent des virements "
-                       "identiques (même bénéficiaire, même montant) sans être strictement identiques. "
+                       "Deux envois vers la banque, pour le même compte payeur, contiennent des lignes de virement "
+                       "identiques caractère pour caractère sans être strictement identiques. "
                        "Cela ressemble à un rejeu partiel : les virements communs risquent d'être payés deux fois."),
     "virements_multi": ("controle_doublons_virements_jour.csv", "Virements présents dans plusieurs envois du jour",
-                        "Un même virement (payeur, bénéficiaire, IBAN, montant) figure dans plusieurs envois "
-                        "distincts de la journée. Sauf justification, le bénéficiaire sera payé plusieurs fois."),
+                        "Une même ligne de virement, identique caractère pour caractère (payeur, date, bénéficiaire, "
+                        "IBAN, montant, lot, référence, site), figure dans plusieurs envois distincts de la journée. "
+                        "Le bénéficiaire sera payé plusieurs fois."),
     "intra": ("controle_doublons_intra_envoi.csv", "Virements en double au sein d'un même envoi",
-              "Un même bénéficiaire reçoit deux fois le même montant dans un même envoi. Deux factures de "
-              "même montant sont possibles ; le cas est signalé « à vérifier », et devient bloquant si la "
-              "référence de paiement est la même."),
+              "Une même ligne de virement est répétée à l'identique, caractère pour caractère, dans un même "
+              "envoi : le bénéficiaire sera payé plusieurs fois. Des lignes qui diffèrent d'un seul "
+              "caractère (référence, lot…) ne sont pas des doublons et ne sont pas signalées."),
     "historique": ("controle_doublons_historique.csv", "Envois ou virements déjà transmis un jour précédent",
                    "Les envois de la journée ont été comparés aux journées précédentes disponibles dans le "
-                   "dossier de contrôle. Un envoi identique (ou un fichier de même nom) déjà transmis est "
-                   "bloquant ; un virement isolé déjà payé peut être un paiement récurrent : à vérifier."),
+                   "dossier de contrôle. Un envoi identique, un fichier de même nom ou une ligne de virement "
+                   "identique caractère pour caractère (date, lot et référence compris) déjà transmis est "
+                   "bloquant. Un paiement récurrent n'a pas la même ligne : il n'est pas signalé."),
     "sources": ("controle_doublons_sources.csv", "Fichiers d'origine rejoués",
                 "Un fichier préparé (DK_FIN01) apparaît dans plusieurs instances du flux, ou est référencé "
-                "plusieurs fois par Oracle, ou deux fichiers de noms différents ont exactement le même "
-                "contenu : le flux amont a probablement été relancé."),
+                "plusieurs fois par Oracle, ou deux fichiers de noms différents ont exactement les mêmes "
+                "lignes, caractère pour caractère : le flux amont a probablement été relancé."),
     "sanite": ("controle_sanite.csv", "Contrôles de forme sur les envois",
                "Signature PGP présente, compte payeur conforme à Oracle, date de l'envoi, pied de fichier, "
                "code retour du traitement, montants positifs, IBAN valides, BIC renseignés."),
@@ -478,8 +480,8 @@ def write_reports(dossier, fichiers, totaux_source, totaux_edf, ecarts,
     if nb_plus_verif:
         lignes_md += ["---", "", "## Points à vérifier (non bloquants)", "",
                       "Les constats ci-dessous ne sont pas des écarts avérés : ils correspondent à des "
-                      "situations qui peuvent être légitimes (paiement récurrent, deux factures de même "
-                      "montant) mais qui méritent un regard. Ils n'empêchent pas la clôture du contrôle.", ""]
+                      "situations qui peuvent être légitimes (retour Talend absent, date ou BIC à "
+                      "confirmer) mais qui méritent un regard. Ils n'empêchent pas la clôture du contrôle.", ""]
         for cle, (nom_csv, titre, explication) in CONTROLES_PLUS.items():
             if plus_verif[cle]:
                 lignes_md += [f"### {titre}", "", explication, "",

@@ -1,9 +1,10 @@
 """Doublons complementaires D2..D6 (cv.doublons) et mode cible seule."""
 from pathlib import Path
 
-from cv.doublons import (doublons_croises, doublons_intra_envoi, doublons_historique,
+from cv.doublons import (charger_envois, doublons_croises, doublons_intra_envoi, doublons_historique,
                          doublons_sources, dossiers_cible_precedents, ref_paiement)
 from cv.model import LotAck, LotDK, OracleRow, Virement
+from cv.parsers import parse_ack
 from cv.reconcile import controle_doublons_ack, controle_fichiers, controle_totaux_source
 
 PAYEUR = "FR7630003011000002002534384"
@@ -49,20 +50,50 @@ def test_croises_payeurs_differents_pas_de_doublon():
     assert doublons_croises(acks) == ([], [])
 
 
+# ------------------------------------------------------------------ ligne entiere
+ENTETE = "03029992DK  CODEREMETTAN170926DALKIA Virement         260915021823EURSOGEFRPPXXX" + PAYEUR + "       30003"
+
+
+def test_entete_ack_ignore_seulement_l_horodatage_de_creation(tmp_path):
+    for nom, entete in (("a", ENTETE), ("b", ENTETE.replace("260915021823", "260916093000")),
+                        ("c", ENTETE.replace("170926", "180926"))):
+        (tmp_path / nom).write_text(entete + "\n0802" + "0" * 23, encoding="latin-1")
+    a, b, c = (parse_ack(tmp_path / n) for n in "abc")
+    assert a.iban_payeur == PAYEUR and a.entete == b.entete != c.entete
+
+
+def test_doublon_exige_la_ligne_entiere_identique(tmp_path):
+    """Meme beneficiaire, IBAN et montant ne suffisent pas : une reference differente, ce n'est pas un doublon.
+    Les numeros de sequence (propres a chaque fichier) ne comptent pas."""
+    ligne = ("FR1", 100, "NOM", "21/09/2026-1000-Site X")
+    ack = "CDPG.NC4.IMPORT_ACK."
+    _ecrit_ack(tmp_path, "g1", ack + "A", [ligne])
+    _ecrit_ack(tmp_path, "g1", ack + "B", [("FR1", 100, "NOM", "21/09/2026-2000-Site X")])
+    _ecrit_ack(tmp_path, "g2", ack + "C", [("FR9", 5, "AUTRE"), ligne])          # meme ligne, en 2e position
+    chev, multi = doublons_croises(charger_envois(tmp_path))
+    assert [(m["envois"], m["libelle"]) for m in multi] == [(f"{ack}A | {ack}C", "21/09/2026-1000-Site X")]
+    assert [(c["fichier"], c["fichier_autre"]) for c in chev] == [(ack + "A", ack + "C")]
+
+    intra = tmp_path / "intra"
+    _ecrit_ack(intra, "g", ack + "D", [ligne, ligne, ("FR1", 100, "NOM", "21/09/2026-3000-Site X")])
+    _ecrit_ack(intra, "g", ack + "E", [ligne, ("FR1", 100, "NOM", "21/09/2026-3000-Site X")])
+    assert [(l["fichier"], l["occurrences"], l["gravite"]) for l in doublons_intra_envoi(charger_envois(intra))] == [
+        (ack + "D", 2, "KO")]
+
+
 # ------------------------------------------------------------------ D4
 def test_ref_paiement_extraite_du_libelle():
     assert ref_paiement(_v("FR1", 1, libelle="20260918-0019DCWXTIERSEXVIR0001 21/09/2026-44756-Site FRA67403 FOU")) == "44756"
     assert ref_paiement(_v("FR1", 1, libelle="")) == ""
 
 
-def test_intra_envoi_references_distinctes_a_verifier_meme_reference_ko():
+def test_intra_envoi_seule_la_ligne_identique_est_signalee():
     l1 = "21/09/2026-1000-Site"
     l2 = "21/09/2026-2000-Site"
     acks = [("g", "A", _ack(_v("FR1", 100, libelle=l1), _v("FR1", 100, libelle=l2), _v("FR2", 100))),
             ("g", "B", _ack(_v("FR1", 100, libelle=l1), _v("FR1", 100, libelle=l1)))]
     lignes = doublons_intra_envoi(acks)
-    assert [(l["fichier"], l["occurrences"], l["gravite"]) for l in lignes] == [("A", 2, "A_VERIFIER"), ("B", 2, "KO")]
-    assert lignes[0]["references"] == "1000 | 2000"
+    assert [(l["fichier"], l["occurrences"], l["gravite"], l["references"]) for l in lignes] == [("B", 2, "KO", "1000")]
 
 
 # ------------------------------------------------------------------ D5
@@ -70,10 +101,10 @@ def _ecrit_ack(dossier, guid, nom, virements, payeur=PAYEUR):
     target = Path(dossier) / guid / "TARGET"
     target.mkdir(parents=True, exist_ok=True)
     lignes = ["03" + " " * 78 + payeur.ljust(27) + " " * 100]
-    for i, (iban, cts, nom_b) in enumerate(virements, 1):
+    for i, (iban, cts, nom_b, *libelle) in enumerate(virements, 1):
         lignes.append("06" + f"{i:021d}" + nom_b.ljust(24) + " " * 24 + "BIC".ljust(11) + iban.ljust(34)
-                      + f"{cts:016d}" + "libelle".ljust(70))
-    lignes.append("08" + "02" + f"{len(virements):07d}" + f"{sum(c for _, c, _ in virements):016d}")
+                      + f"{cts:016d}" + (libelle[0] if libelle else "libelle").ljust(70))
+    lignes.append("08" + "02" + f"{len(virements):07d}" + f"{sum(v[1] for v in virements):016d}")
     (target / nom).write_text("\n".join(lignes), encoding="latin-1")
 
 
@@ -93,19 +124,19 @@ def test_historique_ack_identique_fichier_rejoue_et_virement_deja_envoye(tmp_pat
     hier = tmp_path / "17092026_cible"
     _ecrit_ack(hier, "g0", "CDPG.NC4.IMPORT_ACK.X", [("FR1", 100, "A"), ("FR2", 200, "B")])
     _ecrit_ack(hier, "g0", "CDPG.NC4.IMPORT_ACK.Y", [("FR9", 900, "Z")])
-    acks = [
-        ("g1", "CDPG.NC4.IMPORT_ACK.1", _ack(_v("FR1", 100, "A"), _v("FR2", 200, "B"))),   # meme contenu que ACK_X
-        ("g1", "CDPG.NC4.IMPORT_ACK.Y", _ack(_v("FR5", 500, "E"))),                        # meme nom de fichier
-        ("g1", "CDPG.NC4.IMPORT_ACK.2", _ack(_v("FR9", 900, "Z"), _v("FR7", 700, "G"))),   # un virement deja paye
-    ]
-    lignes, nb = doublons_historique(acks, tmp_path, "18092026", 7)
+    jour = tmp_path / "18092026"
+    _ecrit_ack(jour, "g1", "CDPG.NC4.IMPORT_ACK.1", [("FR1", 100, "A"), ("FR2", 200, "B")])   # meme contenu que ACK_X
+    _ecrit_ack(jour, "g1", "CDPG.NC4.IMPORT_ACK.Y", [("FR5", 500, "E")])                      # meme nom de fichier
+    _ecrit_ack(jour, "g1", "CDPG.NC4.IMPORT_ACK.2", [("FR7", 700, "G"), ("FR9", 900, "Z"),    # ligne deja envoyee
+                                                     ("FR9", 900, "Z", "autre reference")])  # meme IBAN/montant : non
+    lignes, nb = doublons_historique(charger_envois(jour), tmp_path, "18092026", 7)
     assert nb == 1
     assert [(l["fichier"], l["type"], l["gravite"], l["date_precedente"]) for l in lignes] == [
         ("CDPG.NC4.IMPORT_ACK.1", "ACK_IDENTIQUE", "KO", "17092026"),
+        ("CDPG.NC4.IMPORT_ACK.2", "VIREMENT_DEJA_ENVOYE", "KO", "17092026"),
         ("CDPG.NC4.IMPORT_ACK.Y", "FICHIER_REJOUE", "KO", "17092026"),
-        ("CDPG.NC4.IMPORT_ACK.2", "VIREMENT_DEJA_ENVOYE", "A_VERIFIER", "17092026"),
     ]
-    assert lignes[2]["montant_cts"] == 900
+    assert lignes[1]["montant_cts"] == 900
 
 
 def test_historique_sans_journee_precedente(tmp_path):
@@ -136,7 +167,7 @@ def test_sources_meme_nom_meme_contenu_et_reference_multiple(tmp_path):
                               {"g1": [_orow("DK_FIN01_A.txt")], "g2": [_orow("DK_FIN01_A.txt"), _orow("DK_FIN01_C.txt"), _orow("DK_FIN01_C.txt")]})
     types = {(l["type"], l["fichier"]): l for l in lignes}
     assert types[("FICHIER_DANS_PLUSIEURS_INSTANCES", "DK_FIN01_A.txt")]["guids"] == "g1 | g2"
-    assert types[("CONTENU_IDENTIQUE", "DK_FIN01_A.txt | DK_FIN01_B.txt")]["gravite"] == "A_VERIFIER"
+    assert types[("CONTENU_IDENTIQUE", "DK_FIN01_A.txt | DK_FIN01_B.txt")]["gravite"] == "KO"
     assert types[("REFERENCE_ORACLE_MULTIPLE", "DK_FIN01_A.txt")]["detail"] == "reference 2 fois par le CSV Oracle"
     assert types[("REFERENCE_ORACLE_MULTIPLE", "DK_FIN01_C.txt")]["guids"] == "g2"
     assert len(lignes) == 4

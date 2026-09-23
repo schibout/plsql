@@ -161,7 +161,7 @@ CREATE TABLE IF NOT EXISTS pv_histo (
     statut_global   TEXT NOT NULL,        -- OK | ANOMALIES | ERREUR | DEGRADE
     nb_cles         INTEGER, nb_emis INTEGER, montant_emis REAL,
     en_attente      INTEGER, anomalies INTEGER, signales INTEGER, a_investiguer INTEGER,
-    doublons        INTEGER, similitudes INTEGER, lignes_ko INTEGER, avertissements INTEGER,
+    doublons        INTEGER, lignes_ko INTEGER, avertissements INTEGER,
     base            TEXT,                 -- Rapprochement_Cle_Metier_<date>_<heure>
     fichier_rapport TEXT
 );

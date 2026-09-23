@@ -122,13 +122,13 @@ def test_lancer_capture_le_journal(monkeypatch, tmp_path):
     assert res["journal"] == "Oracle : 2 fichier(s)\nAVERTISSEMENT : test"
 
 
-def test_resume_compte_doublons_et_similitudes(tmp_path):
+def test_resume_ignore_les_similitudes_des_anciens_rapports(tmp_path):
     r = tmp_path / "rapport"
     _rapport(r, "Rapprochement_Cle_Metier_20260914_081400",
              doublons="DOUBLON;P1;RUM1;FR76A;FR76D;X;30/09/2026;100.00;2;f1 + f2;11/09/2026 + 12/09/2026\n"
                       "SIMILITUDE;P2 + P3;RUM2;FR76A;FR76D;Y;30/09/2026;50.00;2;f1;11/09/2026\n")
     res = pv.resume(pv.lire_rapport(tmp_path, date(2026, 9, 14)))
-    assert res["doublons"] == 1 and res["similitudes"] == 1
+    assert res["doublons"] == 1 and "similitudes" not in res
 
 
 def test_resume_sans_fichier_doublons(tmp_path):
@@ -137,4 +137,4 @@ def test_resume_sans_fichier_doublons(tmp_path):
     _rapport(r, "Rapprochement_Cle_Metier_20260914_081400")
     (r / "Rapprochement_Cle_Metier_20260914_081400_doublons.csv").unlink()
     res = pv.resume(pv.lire_rapport(tmp_path, date(2026, 9, 14)))
-    assert res["doublons"] == 0 and res["similitudes"] == 0
+    assert res["doublons"] == 0

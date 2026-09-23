@@ -117,16 +117,15 @@ def render(kpi):
                                f"{rapport['base']}_justifications.csv", "text/csv", key="pv_csv_just")
 
     dbl = rapport["doublons"]
-    n_dbl, n_sim = r["doublons"], r["similitudes"]
-    with st.expander(f"{'🔴' if n_dbl else '🟠' if n_sim else '🟢'} Prélèvements émis en double — "
-                     f"{n_dbl} doublon(s), {n_sim} similitude(s) à vérifier", expanded=bool(n_dbl)):
+    n_dbl = r["doublons"]
+    with st.expander(f"{'🔴' if n_dbl else '🟢'} Prélèvements émis en double — {n_dbl} doublon(s)",
+                     expanded=bool(n_dbl)):
         if dbl.empty:
-            st.caption("Aucun prélèvement émis en double : chaque référence de paiement n'est partie qu'une fois, "
-                       "et aucun couple mandat / débiteur / échéance / montant ne se répète.")
+            st.caption("Aucun prélèvement émis en double : aucune ligne n'est partie deux fois à l'identique.")
         else:
-            st.caption("DOUBLON : même référence de paiement émise plusieurs fois (lot rejoué, le débiteur serait "
-                       "prélevé deux fois) → anomalie. SIMILITUDE : même mandat, débiteur, échéance et montant avec "
-                       "des références différentes (souvent deux factures distinctes de même montant) → à vérifier.")
+            st.caption("DOUBLON : ligne entière identique, caractère pour caractère (société, débiteur, IBAN, échéance, "
+                       "montant, référence…), émise plusieurs fois : lot rejoué, le débiteur serait prélevé deux fois "
+                       "→ anomalie. Des lignes qui diffèrent d'un seul caractère ne sont pas des doublons.")
             _table(dbl, 360)
             st.download_button("⬇ Doublons (CSV)", dbl.to_csv(index=False, sep=";").encode("utf-8-sig"),
                                f"{rapport['base']}_doublons.csv", "text/csv", key="pv_csv_dbl")
@@ -251,7 +250,7 @@ def _tresorerie(racine, reference: date) -> None:
             df["montant_emis"] = df["montant_emis"].map(_eur)
             df["reference"] = pd.to_datetime(df["reference"]).dt.strftime("%d/%m/%Y")
             st.dataframe(df[["reference", "statut_global", "nb_cles", "nb_emis", "montant_emis", "en_attente", "anomalies",
-                             "a_investiguer", "doublons", "similitudes", "avertissements", "executed_at"]]
+                             "a_investiguer", "doublons", "avertissements", "executed_at"]]
                          .rename(columns={"reference": "référence", "statut_global": "statut", "nb_cles": "clés", "nb_emis": "émis",
                                           "montant_emis": "montant", "en_attente": "en attente", "a_investiguer": "à investiguer",
                                           "executed_at": "lancé le"}),

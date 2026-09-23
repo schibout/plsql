@@ -21,12 +21,14 @@ def _entete(lines):
     return champs[1], euros_to_cts(champs[2])
 
 
-def _virement_depuis_ligne(cols, montant_cts):
+def _virement_depuis_ligne(ligne, montant_cts):
+    cols = ligne.split(";")
     return Virement(
         iban=cols[_IBAN].strip(),
         montant_cts=montant_cts,
         nom=cols[_NOM].strip(),
         bic=cols[_BIC].strip(),
+        ligne=ligne.rstrip(),
     )
 
 
@@ -36,7 +38,7 @@ def parse_dk(path) -> LotDK:
     virements = []
     for ligne in lines[2:]:
         cols = ligne.split(";")
-        virements.append(_virement_depuis_ligne(cols, euros_to_cts(cols[_AMOUNT])))
+        virements.append(_virement_depuis_ligne(ligne, euros_to_cts(cols[_AMOUNT])))
     return LotDK(ref=ref, montant_entete_cts=entete_cts, virements=virements, euro_lines=0)
 
 
@@ -104,13 +106,14 @@ def parse_ack(path) -> LotAck:
     virements = []
     footer_count = 0
     footer_total_cts = 0
-    date_creation = date_valeur = ""
+    date_creation = date_valeur = entete = ""
     for ligne in _read_lines(path):
         rec = ligne[0:2]
         if rec == "03":
             iban_payeur = ligne[80:107].strip()
             date_valeur = ligne[24:30].strip()
             date_creation = ligne[54:60].strip()
+            entete = (ligne[:54] + ligne[66:]).rstrip()     # sans l'horodatage de creation AAMMJJHHMMSS
         elif rec == "06":
             virements.append(Virement(
                 nom=ligne[23:47].strip(),
@@ -118,6 +121,7 @@ def parse_ack(path) -> LotAck:
                 iban=ligne[82:116].strip(),
                 montant_cts=int(ligne[116:132]),
                 libelle=" ".join(ligne[132:202].split()),
+                ligne=(ligne[:4] + ligne[23:]).rstrip(),      # sans les numeros de sequence (positions 4-23)
             ))
         elif rec == "08":
             footer_count = int(ligne[4:11])
@@ -129,6 +133,7 @@ def parse_ack(path) -> LotAck:
         footer_total_cts=footer_total_cts,
         date_creation=date_creation,
         date_valeur=date_valeur,
+        entete=entete,
     )
 
 
@@ -152,5 +157,5 @@ def parse_dk_fin01(path) -> LotDK:
         if is_euro_amount(amount):
             euro_lines += 1
             continue
-        virements.append(_virement_depuis_ligne(cols, int(amount)))
+        virements.append(_virement_depuis_ligne(ligne, int(amount)))
     return LotDK(ref=ref, montant_entete_cts=entete_cts, virements=virements, euro_lines=euro_lines)

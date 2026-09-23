@@ -505,15 +505,14 @@ def test_doublon_meme_reference_dans_deux_fichiers(tmp_path):
     assert d["emissions"] == "11/09/2026 + 12/09/2026"
 
 
-def test_similitude_meme_debiteur_meme_montant_references_differentes(tmp_path):
-    """Deux factures distinctes de meme montant le meme jour : SIMILITUDE, a verifier, pas une anomalie."""
+def test_meme_debiteur_meme_montant_references_differentes_pas_de_doublon(tmp_path):
+    """Deux factures distinctes de meme montant le meme jour : pas un doublon, rien n'est signale."""
     ecrire_oracle(tmp_path, "20260910", "DK_x-PCL-20260911-1_20260911-01.txt",
                   [ligne_oracle(IBAN_A, "09/30/2026", "614.63", reference="P22036"),
                    ligne_oracle(IBAN_A, "09/30/2026", "614.63", reference="P22037")])
     lignes, _ = charger_oracle(tmp_path / "ORACLE", MOTIFS, Diagnostic())
     doublons = detecter_doublons(lignes)
-    assert len(doublons) == 1 and doublons[0]["type"] == "SIMILITUDE"
-    assert doublons[0]["reference"] == "P22036 + P22037" and doublons[0]["nb"] == 2
+    assert doublons == []
 
 
 def test_aucun_doublon_quand_les_montants_different(tmp_path):
@@ -524,13 +523,31 @@ def test_aucun_doublon_quand_les_montants_different(tmp_path):
     assert detecter_doublons(lignes) == []
 
 
+def test_meme_reference_mais_ligne_differente_n_est_pas_un_doublon(tmp_path):
+    """Doublon = ligne entiere identique. Meme reference, meme montant, meme echeance mais un autre
+    beneficiaire (un seul champ differe) : pas un doublon, rien n'est signale."""
+    ecrire_oracle(tmp_path, "20260910", "DK_x-PCL-20260911-1_20260911-01.txt",
+                  [ligne_oracle(IBAN_A, "09/30/2026", "100.00", reference="P1 REF", nom="DUPONT"),
+                   ligne_oracle(IBAN_A, "09/30/2026", "100.00", reference="P1 REF", nom="DUPONT JEAN")])
+    lignes, _ = charger_oracle(tmp_path / "ORACLE", MOTIFS, Diagnostic())
+    assert detecter_doublons(lignes) == []
+
+
+def test_references_vides_ne_se_ressemblent_pas(tmp_path):
+    ecrire_oracle(tmp_path, "20260910", "DK_x-PCL-20260911-1_20260911-01.txt",
+                  [ligne_oracle(IBAN_A, "09/30/2026", "10.00", reference=""),
+                   ligne_oracle(IBAN_A, "09/30/2026", "20.00", reference="")])
+    lignes, _ = charger_oracle(tmp_path / "ORACLE", MOTIFS, Diagnostic())
+    assert detecter_doublons(lignes) == []
+
+
 def test_executer_signale_les_doublons_comme_anomalie(tmp_path):
     racine = _jeu_minimal(tmp_path)
     ecrire_oracle(racine, "20260911", "DK_x-PCL-20260912-2_20260912-01.txt",
                   [ligne_oracle(IBAN_A, "09/30/2026", "100.00", reference="REF DOUBLE"),
                    ligne_oracle(IBAN_A, "09/30/2026", "100.00", reference="REF DOUBLE")])
     res = executer(reference="2026-09-14", racine=racine, jours=3)
-    assert res["nb_doublons"] == 1 and res["nb_similitudes"] == 0
+    assert res["nb_doublons"] == 1 and "nb_similitudes" not in res
     assert res["code"] == 1 and res["statut_global"] == "ANOMALIES"
     csv_doublons = (racine / "rapport" / (res["base"] + "_doublons.csv")).read_text(encoding="utf-8-sig")
     assert "DOUBLON;REF DOUBLE" in csv_doublons

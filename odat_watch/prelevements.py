@@ -118,6 +118,13 @@ def _csv(f: Path) -> pd.DataFrame:
     return pd.read_csv(f, sep=";", dtype=str, keep_default_na=False, encoding="utf-8-sig")
 
 
+def _doublons(f: Path) -> pd.DataFrame:
+    """Doublons d'émission seuls : les rapports produits avant leur suppression contiennent aussi des
+    lignes SIMILITUDE, qui ne sont pas des doublons."""
+    dbl = _csv(f)
+    return dbl[dbl["type"] == "DOUBLON"].reset_index(drop=True) if "type" in dbl.columns else dbl
+
+
 def lire_rapport(racine: Path, reference: date) -> dict | None:
     """Relit le rapport le plus récent de la date de référence : rapprochement, justifications, résumé, classeur."""
     candidats = [b for d, _, b in _bases(racine) if d == reference]
@@ -141,7 +148,7 @@ def lire_rapport(racine: Path, reference: date) -> dict | None:
     xlsx = dossier / f"{base}.xlsx"
     return {"base": base, "dossier": dossier, "resume": resume, "rapprochement": rapprochement,
             "justifications": _csv(dossier / f"{base}_justifications.csv"),
-            "doublons": _csv(dossier / f"{base}_doublons.csv"),
+            "doublons": _doublons(dossier / f"{base}_doublons.csv"),
             "xlsx": xlsx if xlsx.is_file() else None,
             "genere_le": datetime.fromtimestamp((dossier / f"{base}.csv").stat().st_mtime)}
 
@@ -155,8 +162,7 @@ def resume(rapport: dict) -> dict:
     just = rapport["justifications"]
     a_investiguer = int(just["cause"].isin(CAUSES_A_INVESTIGUER).sum()) if not just.empty else 0
     dbl = rapport.get("doublons", pd.DataFrame())
-    types = dbl["type"] if not dbl.empty else pd.Series(dtype=str)
-    return {"doublons": int((types == "DOUBLON").sum()), "similitudes": int((types == "SIMILITUDE").sum()),"statut_global": r.get("statut_global", "INCONNU"), "nb_cles": int(len(df)),
+    return {"doublons": len(dbl), "statut_global": r.get("statut_global", "INCONNU"), "nb_cles": int(len(df)),
             "nb_emis": int(df["nb_oracle"].sum()) if not df.empty else 0,
             "montant_emis": float(df["montant_oracle"].sum()) if not df.empty else 0.0,
             "en_attente": int((statut == "EN_ATTENTE").sum()),
@@ -202,10 +208,10 @@ def enregistrer(res: dict, con, quand: datetime | None = None) -> int:
     with con:
         cur = con.execute(
             "INSERT INTO pv_histo(reference, executed_at, statut_global, nb_cles, nb_emis, montant_emis, en_attente, anomalies, "
-            "signales, a_investiguer, doublons, similitudes, lignes_ko, avertissements, base) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+            "signales, a_investiguer, doublons, lignes_ko, avertissements, base) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
             (_iso(res["reference"]), maintenant, res["statut_global"], nb_cles, nb_emis, montant,
              int(ps.get("EN_ATTENTE", {}).get("cles", 0)), int(res.get("nb_anomalies") or 0), int(res.get("nb_signales") or 0),
-             int(res.get("nb_a_investiguer") or 0), int(res.get("nb_doublons") or 0), int(res.get("nb_similitudes") or 0),
+             int(res.get("nb_a_investiguer") or 0), int(res.get("nb_doublons") or 0),
              int(res.get("nb_lignes_ko") or 0), len(res.get("avertissements") or []), res.get("base")))
         histo_id = cur.lastrowid
         edf, rejets = res.get("edf") or [], res.get("rejets") or []
@@ -249,7 +255,7 @@ def historique(jours: int, con) -> pd.DataFrame:
     """Une ligne par date de référence (dernière exécution), sur les N derniers jours."""
     sql = """
     SELECT reference, executed_at, statut_global, nb_cles, nb_emis, montant_emis, en_attente, anomalies, signales,
-           a_investiguer, doublons, similitudes, lignes_ko, avertissements, fichier_rapport
+           a_investiguer, doublons, lignes_ko, avertissements, fichier_rapport
     FROM pv_histo h
     WHERE executed_at = (SELECT MAX(executed_at) FROM pv_histo WHERE reference = h.reference)
       AND reference >= date('now', ?)

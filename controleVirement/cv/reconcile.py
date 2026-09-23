@@ -194,10 +194,9 @@ def controle_lignes(guid, nom_lot, dkfin01_lots, ack):
 
 
 def _empreinte_ack(ack):
-    """Contenu metier d'un envoi, independant du nom de fichier et de l'ordre des lignes."""
-    return (ack.iban_payeur.strip(),
-            tuple(sorted((v.iban, v.montant_cts, _norm_nom(v.nom), v.bic.strip().upper())
-                         for v in ack.virements)))
+    """Contenu d'un envoi, independant du nom de fichier et de l'ordre des lignes : l'en-tete et chaque
+    ligne entiere, caractere pour caractere (seuls numeros de sequence et horodatage de creation ignores)."""
+    return (ack.contenu_entete(), tuple(sorted(v.contenu() for v in ack.virements)))
 
 
 def controle_doublons_ack(acks, references=frozenset()):
@@ -205,8 +204,7 @@ def controle_doublons_ack(acks, references=frozenset()):
 
     acks : liste de (guid, nom_fichier, LotAck), toutes instances confondues.
     references : ensemble de (guid, nom_fichier) des ACK connus d'Oracle.
-    Deux ACK sont des doublons s'ils portent le meme payeur et exactement les memes
-    virements. L'original est l'ACK reference par Oracle (celui rapproche aux niveaux
+    Deux ACK sont des doublons si leur en-tete et toutes leurs lignes sont identiques. L'original est l'ACK reference par Oracle (celui rapproche aux niveaux
     1 et 2), sinon le premier rencontre ; les autres sont signales.
     """
     doublons = []
