@@ -58,20 +58,25 @@ def _eur(v) -> str:
 
 
 def _importer_fichiers(fichiers) -> list[str]:
-    """Charge un lot de fichiers : l'état courant est vidé une fois avant le lot, puis les fichiers sont
-    importés dans l'ordre (le tableau ne montre que ce nouveau chargement)."""
-    msgs = []
+    """Charge un lot de fichiers, du plus ancien au plus récent (date du nom ExportCSV-JJ-MM-AAAA). Chaque
+    fichier va dans l'historique ; la situation actuelle est vidée avant chacun, donc elle ne montre à la fin
+    que le dernier fichier chargé. Rapprochements et historique sont conservés."""
+    fichiers = list(fichiers)
+    noms = [f.name if hasattr(f, "name") else Path(f).name for f in fichiers]
+    msgs, dernier = [], None
     with contextlib.closing(connect()) as con:
-        cf.vider_etat(con)
-        msgs.append("État précédent vidé (lignes, contrôle Oracle, exports).")
-        for f in fichiers:
-            nom = f.name if hasattr(f, "name") else Path(f).name
+        for i in cf.ordre_chronologique(noms):
+            f, nom = fichiers[i], noms[i]
             try:
                 e = cf.lire_export(f.getvalue() if hasattr(f, "getvalue") else Path(f), nom)
-                eid = cf.importer(e, con)
-                msgs.append(f"{nom} : {'déjà importé' if eid is None else f'{len(e.lignes)} lignes importées'}")
+                cf.vider_etat(con)
+                cf.importer(e, con)                    # met aussi à jour l'historique
+                dernier = nom
+                msgs.append(f"{nom} : {len(e.lignes)} lignes, historique mis à jour")
             except (ValueError, OSError, UnicodeDecodeError) as ex:
                 msgs.append(f"{nom} : ERREUR {ex}")
+    if dernier:
+        msgs.append(f"Situation actuelle : {dernier}")
     return msgs
 
 
@@ -149,8 +154,9 @@ def render(kpi):
         if c1.button("Importer les fichiers déposés", disabled=not fichiers, use_container_width=True, key="cf_imp_fichiers"):
             st.session_state["cf_import_log"] = _importer_fichiers(fichiers)
             st.rerun()
-        st.caption("Chaque chargement remplace le tableau : l'état précédent (lignes, contrôle Oracle, exports) est vidé, "
-                   "les rapprochements sont conservés.")
+        st.caption("Le tableau montre la situation actuelle, c'est-à-dire le dernier fichier chargé (le plus récent "
+                   "d'un lot). Chaque fichier est aussi versé dans l'historique (sous-onglet 📚 Historique), mis à jour "
+                   "sur la clé folio + date + fichier transmis. Les rapprochements sont conservés.")
         if c2.button("Importer le dossier ControleFolioRose", use_container_width=True, key="cf_imp_dossier",
                      help=str(DOSSIER_SAUVEGARDE)):
             csvs = sorted(DOSSIER_SAUVEGARDE.glob("ExportCSV-*.csv")) + sorted((DOSSIER_SAUVEGARDE / "sauvegarde").glob("ExportCSV-*.csv"))

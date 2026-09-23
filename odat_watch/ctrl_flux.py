@@ -241,12 +241,71 @@ def importer(export: Export, con: sqlite3.Connection) -> int | None:
                 "AND substr(date,7,4)||'-'||substr(date,4,2)||'-'||substr(date,1,2) BETWEEN ? AND ?",
                 (eid, d0.isoformat(), d1.isoformat()))
     export.id = eid
+    historiser(export, con)
     return eid
 
 
+COLS_HISTO = ["rang", "folio", "date", "type", "fichier", "fichier_base", "amont_nb", "amont_debit", "amont_credit",
+              "si_nb", "si_debit", "si_credit", "ecart_nb", "ecart_debit", "ecart_credit", "commentaire",
+              "piece_jointe", "lettrage", "age_j", "num"]
+
+
+def historiser(export: Export, con: sqlite3.Connection) -> int:
+    """Verse l'export dans l'historique : une ligne par clé folio + date + fichier transmis. Ligne inédite
+    créée ; ligne connue mise à jour seulement si l'export est au moins aussi récent que la dernière version
+    vue (recharger un vieux fichier n'écrase pas une donnée plus fraîche). Renvoie le nombre de lignes lues."""
+    now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    d = export.date_export.isoformat()
+    cols = [c for c in COLS_HISTO if c in export.lignes.columns]
+    maj = ", ".join(f"{c}=excluded.{c}" for c in cols)
+    with con:
+        deja = con.execute("SELECT 1 FROM fr_historique_exports WHERE file_hash = ?", (export.file_hash,)).fetchone()
+        con.execute("INSERT OR IGNORE INTO fr_historique_exports(file_hash, nom_fichier, date_export, periode_debut, "
+                    "periode_fin, nb_lignes, importe_le) VALUES (?,?,?,?,?,?,?)",
+                    (export.file_hash, export.nom, d, export.periode_debut, export.periode_fin, len(export.lignes), now))
+        con.executemany(
+            f"INSERT INTO fr_historique(empreinte, {','.join(cols)}, premier_vu, dernier_vu, premier_export, "
+            f"dernier_export, nb_exports, maj_le) VALUES (?{',?' * len(cols)},?,?,?,?,1,?) "
+            f"ON CONFLICT(empreinte) DO UPDATE SET "
+            # les valeurs suivent l'export le plus récent ; les bornes et le compteur suivent tous les exports
+            f"{', '.join(f'{c}=CASE WHEN excluded.dernier_vu >= fr_historique.dernier_vu THEN excluded.{c} ELSE fr_historique.{c} END' for c in cols)}, "
+            "dernier_export=CASE WHEN excluded.dernier_vu >= fr_historique.dernier_vu THEN excluded.dernier_export "
+            "                    ELSE fr_historique.dernier_export END, "
+            "premier_export=CASE WHEN excluded.premier_vu < fr_historique.premier_vu THEN excluded.premier_export "
+            "                    ELSE fr_historique.premier_export END, "
+            "dernier_vu=MAX(fr_historique.dernier_vu, excluded.dernier_vu), "
+            "premier_vu=MIN(fr_historique.premier_vu, excluded.premier_vu), "
+            f"nb_exports=fr_historique.nb_exports + {0 if deja else 1}, maj_le=excluded.maj_le",
+            [(row.empreinte, *[_valeur(c, getattr(row, c)) for c in cols], d, d, export.nom, export.nom, now)
+             for row in export.lignes.itertuples(index=False)])
+    return len(export.lignes)
+
+
+def historique(con: sqlite3.Connection) -> pd.DataFrame:
+    """Toutes les lignes jamais vues, avec la dernière version connue et leur présence dans le dernier export."""
+    df = pd.read_sql_query(
+        "SELECT h.*, (h.dernier_vu = (SELECT MAX(date_export) FROM fr_historique_exports)) AS dans_dernier "
+        "FROM fr_historique h "
+        "ORDER BY substr(h.date,7,4)||substr(h.date,4,2)||substr(h.date,1,2) DESC, h.folio, h.fichier", con)
+    df["dans_dernier"] = df["dans_dernier"].fillna(0).astype(bool)
+    return df
+
+
+def exports_historiques(con: sqlite3.Connection) -> pd.DataFrame:
+    return pd.read_sql_query("SELECT nom_fichier, date_export, periode_debut, periode_fin, nb_lignes, importe_le "
+                             "FROM fr_historique_exports ORDER BY date_export DESC, importe_le DESC", con)
+
+
+def ordre_chronologique(noms: list[str]) -> list[int]:
+    """Indices des fichiers triés par date d'export (nom ExportCSV-JJ-MM-AAAA), les noms sans date en tête :
+    le dernier chargé devient la situation actuelle, il doit donc être le plus récent."""
+    return sorted(range(len(noms)), key=lambda i: (date_export_du_nom(noms[i]) or date.min, noms[i]))
+
+
 def vider_etat(con: sqlite3.Connection) -> None:
-    """Vide l'état courant (lignes, résultats Oracle, exports) avant un nouveau chargement.
-    Les rapprochements sont conservés : attachés à la clé métier, ils s'appliquent à nouveau si la ligne revient."""
+    """Vide la situation actuelle (lignes, résultats Oracle, exports) avant un nouveau chargement. L'historique
+    (fr_historique*) et les rapprochements sont conservés : attachés à la clé métier, ceux-ci s'appliquent à
+    nouveau si la ligne revient."""
     with con:
         con.execute("DELETE FROM fr_lignes")
         con.execute("DELETE FROM fr_oracle")

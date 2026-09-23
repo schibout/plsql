@@ -100,7 +100,7 @@ def test_import_remplace_l_etat(app, monkeypatch):
     assert len(fichiers) >= 2
     autre = [f for f in fichiers if f.name != "ExportCSV-19-08-2026.csv"][0]
     msgs = ui_ctrl_flux._importer_fichiers([autre])
-    assert "vidé" in msgs[0] and "importées" in msgs[1]
+    assert "historique mis à jour" in msgs[0] and msgs[-1] == f"Situation actuelle : {autre.name}"
     con = db.connect(base)
     assert con.execute("SELECT COUNT(*) FROM fr_exports").fetchone()[0] == 1
     assert cf.exports(con).iloc[0]["nom_fichier"] == autre.name

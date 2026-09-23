@@ -28,6 +28,7 @@ Oracle EBS R12 pour répondre à : **qu'est-ce qui tourne ce soir, et demain ?**
 | `flux_ref.py` | **Référentiel des flux** : les 66 flux du schéma « Flux pour FIN01 - ORACLE » (`flux_fin01.json`), motif du nom de fichier, interlocuteurs, attributs libres, import / export CSV. |
 | `carte_flux.py` | État de chaque flux (Ctrl Flux, virements, prélèvements, relevés) et données du diagramme applications → Oracle → applications. |
 | `ui_carte_flux.py` | Sous-onglet Carte des flux : diagramme, tuiles, météo des flux, fiche d'un flux (motif, interlocuteurs, attributs). |
+| `ui_historique_flux.py` | Sous-onglet Historique de Ctrl Flux : toutes les lignes jamais chargées (clé folio + date + fichier transmis), filtres, export CSV, exports versés, reconstitution depuis le dossier. |
 | `ui_ctrl_flux.py` | Onglet Ctrl Flux : import, tableau avec sélection et somme des écarts en direct, rapprochements (manuels et groupes compensés), contrôle Oracle, rapport HTML, historique. |
 | `releves_scan.py` | **Relevés bancaires — acquisition** : section `[releves]` de `config.ini`, lecture des fichiers AFB120 (CFONB 120 : relevés, mouvements, banques, dates, md5, flux A/B), scan des exécutions PFE (`<uuid>/SOURCE,TARGET,TALEND`) et des `AFB120.txt_*` reçus par EBS, parseurs des logs `RBAFBIMP` (synthèse des relevés, erreurs 001/025) et `DKA_SRBCTRLRB` (comptes en anomalie), comptes connus, chaîne Control-M `FINEXT_J14INT_05/06` lue dans les photos ODAT. Tables `rb_*`. |
 | `releves.py` | **Relevés bancaires — métier** : verdict de la matinée par flux (frise PFE · Control-M · Reçu EBS · Import · Contrôle, causes), chronologie des imports, continuité par compte SG (retard, trou), plan de reprise ordonné, `list_releves.txt` des logs manquants, vues PFE ↔ EBS et contrôles. Ré-exporte les noms publics de `releves_scan.py`. |
@@ -43,7 +44,7 @@ Oracle EBS R12 pour répondre à : **qu'est-ce qui tourne ce soir, et demain ?**
 | `referentiel.py` / `ui_profils.py` | **Profils + référentiel** : profil calculé de chaque job (onglet Profils) enrichi du référentiel jobs Control-M ↔ programmes Oracle Applications : alimenté automatiquement (photos ODAT + demandes Oracle : lanceur, filles, script `DKA_X_JOB.sh`), corrigeable à la main (saisie prioritaire partout), export CSV. Table `referentiel_jobs`. |
 | `ui_sql.py` | Onglet SQL : explorateur des tables SQLite (structure, volumes) et requêteur libre en lecture seule, exemples fournis, export CSV. |
 | `mock_oracle.py` | **Poste sans Oracle** : fabrique des demandes simulées à partir des exécutions Control-M (lanceur + programme métier, statuts alignés) et des logs présents. `python mock_oracle.py --reset`. Écrasé par les vraies données au premier `oracle_refresh.py`. |
-| `app.py` | Interface Streamlit : Ce soir, Demain, Maintenant, Matin, Banque (Relevés bancaires, Virements, Prélèvements), Ctrl Flux (Ctrl Flux, GDR, Carte des flux), Oracle, Historique, Profils (avec référentiel), Données, SQL. |
+| `app.py` | Interface Streamlit : Ce soir, Demain, Maintenant, Matin, Banque (Relevés bancaires, Virements, Prélèvements), Ctrl Flux (Ctrl Flux, Historique, GDR, Carte des flux), Oracle, Historique, Profils (avec référentiel), Données, SQL. |
 | `.streamlit/config.toml` | Thème de l'interface. |
 | `run.bat` | Import ODAT + lancement de l'interface. |
 | `config.ini.exemple` | Modèle de configuration (Oracle, filtres, dossiers de logs, section `[releves]`). Copier en `config.ini` (ignoré par git). |
@@ -274,6 +275,22 @@ nature, statut), le **motif du nom de fichier** (joker `*` / `?`, ou expression 
 mail, téléphone) et des **attributs libres** clé / valeur (criticité, heure attendue, ticket, procédure, job
 Control-M…). Export et import CSV du référentiel complet. Tables `flux_referentiel`, `flux_interlocuteurs`,
 `flux_attributs`.
+
+### Situation actuelle et historique
+
+Le tableau de Ctrl Flux montre la **situation actuelle** : le dernier fichier chargé, et seulement lui. Un lot
+de fichiers est chargé du plus ancien au plus récent (date du nom `ExportCSV-JJ-MM-AAAA`) et la situation est
+vidée avant chacun, donc c'est le plus récent qui reste affiché. Les rapprochements, attachés à la clé
+métier, sont conservés.
+
+Chaque fichier chargé est aussi versé dans l'**historique** (sous-onglet **📚 Historique**, tables
+`fr_historique` et `fr_historique_exports`), sur la clé **folio + date + nom du fichier transmis**. Une ligne
+inédite est créée ; une ligne connue prend les valeurs de l'export le plus récent, et recharger un vieux
+fichier n'écrase pas une donnée plus fraîche (seules les bornes premier / dernier vu et le compteur
+d'exports bougent). Rien n'est jamais supprimé. Le sous-onglet filtre par folio, type, recherche libre,
+écarts et lignes absentes du dernier export, exporte en CSV et liste les exports versés ; « Reconstituer
+depuis le dossier ControleFolioRose » verse tous les `ExportCSV-*.csv` du dossier sans toucher à la
+situation actuelle.
 
 `Verifier_Factures.ps1` reste utilisable en parallèle (aucune dépendance vers l'onglet).
 

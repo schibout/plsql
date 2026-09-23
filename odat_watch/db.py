@@ -238,6 +238,34 @@ CREATE TABLE IF NOT EXISTS fr_rapprochement_lignes (
 );
 CREATE INDEX IF NOT EXISTS ix_fr_rl_empreinte ON fr_rapprochement_lignes(empreinte);
 
+-- Historique Ctrl Flux : fr_lignes ne garde que le dernier fichier charge (situation actuelle) ; ici, chaque
+-- ligne jamais vue, une par cle metier folio + date + fichier transmis (+ rang), mise a jour a chaque
+-- chargement plus recent. Rien n'est jamais supprime.
+CREATE TABLE IF NOT EXISTS fr_historique (
+    empreinte       TEXT PRIMARY KEY,
+    rang            INTEGER NOT NULL DEFAULT 0,
+    folio           TEXT, date TEXT, type TEXT, fichier TEXT, fichier_base TEXT,
+    amont_nb        REAL, amont_debit REAL, amont_credit REAL,
+    si_nb           REAL, si_debit REAL, si_credit REAL,
+    ecart_nb        REAL, ecart_debit REAL, ecart_credit REAL,
+    commentaire     TEXT, piece_jointe TEXT, lettrage TEXT,
+    age_j           INTEGER, num INTEGER,
+    premier_vu      TEXT,                          -- AAAA-MM-JJ, date du premier export qui la contient
+    dernier_vu      TEXT,                          -- AAAA-MM-JJ, date du dernier export qui la contient
+    premier_export  TEXT, dernier_export TEXT,     -- noms des fichiers ExportCSV
+    nb_exports      INTEGER NOT NULL DEFAULT 1,
+    maj_le          TEXT
+);
+CREATE INDEX IF NOT EXISTS ix_fr_historique_cle ON fr_historique(folio, date, fichier);
+CREATE TABLE IF NOT EXISTS fr_historique_exports (
+    file_hash     TEXT PRIMARY KEY,
+    nom_fichier   TEXT NOT NULL,
+    date_export   TEXT NOT NULL,                 -- AAAA-MM-JJ
+    periode_debut TEXT, periode_fin TEXT,
+    nb_lignes     INTEGER,
+    importe_le    TEXT NOT NULL
+);
+
 -- GDR : photos quotidiennes des rejets ouverts (AP / AR / GL) et etat courant des lignes rejetees
 CREATE TABLE IF NOT EXISTS gdr_fichiers (
     id          INTEGER PRIMARY KEY AUTOINCREMENT,
