@@ -1,7 +1,7 @@
 /** Configuration du dashboard. Seul FOLDER_ID est a renseigner. */
 const DASHBOARD_CONFIG = Object.freeze({
   // Dossier Drive ou export_csv.bat depose les CSV.
-  FOLDER_ID: 'ID_DU_DOSSIER_DRIVE',
+  FOLDER_ID: '1kG2s3RLN9IB5_DXgsakhTlY4UL9Td7AInj3zlbSJcGTn1hC9XH1Jp92R',
   // Au-dela, un CSV est affiche comme perime (export horaire en retard ou en echec).
   STALE_HOURS: 3,
   // Rafraichissement automatique de la page.
