@@ -94,6 +94,54 @@
   .day .tot { font-variant-numeric: tabular-nums; font-weight: 600; text-align: right; }
   .demat .tables { margin-top: 12px; }
   .demat .tables details { margin: 0 0 8px; }
+
+  /* --- Panneaux graphiques par onglet --- */
+  :root { --c1: #2a78d6; --c2: #eb6834; --c3: #1baf7a; --c4: #eda100; --c5: #e87ba4; --cx: #898781; }
+  @media (prefers-color-scheme: dark) { :root { --c1: #3987e5; --c2: #d95926; --c3: #199e70; --c4: #c98500; --c5: #d55181; } }
+  .panel { background: var(--card); border: 1px solid var(--line); border-radius: 8px; margin-bottom: 10px; padding: 12px; }
+  .panel-head { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-bottom: 10px; }
+  .panel-head h2 { font-size: 15px; margin: 0; flex: 1 1 auto; }
+  .panel-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 20px 28px; align-items: start; }
+  .tiles { display: flex; flex-wrap: wrap; gap: 16px; } .tiles > div { flex: 1 1 110px; max-width: 170px; }
+  .sub { font-size: 12px; color: var(--muted); margin: 0 0 6px; display: flex; gap: 8px; align-items: baseline; }
+  .sub b { color: var(--text); font-size: 20px; font-weight: 600; }
+  .hero { display: flex; align-items: center; gap: 12px; padding: 14px; border-radius: 8px; background: var(--ok-bg); color: var(--ok); font-weight: 600; }
+  .hero.ko { background: var(--ko-bg); color: var(--ko); }
+  .hero .big { font-size: 28px; }
+  @keyframes growY { from { transform: scaleY(0); } }
+  @keyframes growX { from { transform: scaleX(0); } }
+  @keyframes pop { from { transform: scale(0); opacity: 0; } }
+  /* colonnes */
+  .cols { display: flex; align-items: flex-end; gap: 8px; height: 118px; }
+  .col { flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; height: 100%; }
+  .col .val { font-size: 11px; margin-bottom: 3px; font-variant-numeric: tabular-nums; }
+  .col .bar { width: 100%; max-width: 24px; height: calc(var(--h) * 78px); min-height: 2px; border-radius: 4px 4px 0 0;
+              background: var(--c1); transform-origin: bottom; animation: growY .6s cubic-bezier(.2,.8,.2,1); }
+  .col .lbl { font-size: 11px; color: var(--muted); margin-top: 5px; white-space: nowrap; }
+  .cols.mini { height: 54px; gap: 4px; } .cols.mini .col .bar { height: calc(var(--h) * 36px); max-width: 14px; } .cols.mini .val { display: none; }
+  /* barres horizontales (empilees) */
+  .hb { display: grid; grid-template-columns: minmax(90px, 32%) 1fr 56px; gap: 8px; align-items: center; font-size: 12px; margin-bottom: 6px; }
+  .hb .lbl { color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .hb .bar { display: flex; gap: 2px; height: 16px; transform-origin: left; animation: growX .6s cubic-bezier(.2,.8,.2,1); }
+  .hb .bar span:first-child { border-radius: 4px 0 0 4px; } .hb .bar span:last-child { border-radius: 0 4px 4px 0; } .hb .bar span:only-child { border-radius: 4px; }
+  .hb .tot { text-align: right; font-variant-numeric: tabular-nums; font-weight: 600; }
+  .key { display: flex; flex-wrap: wrap; gap: 4px 14px; font-size: 12px; color: var(--muted); margin: 6px 0 0; }
+  .key i { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 5px; vertical-align: -1px; }
+  /* horloge / frise */
+  svg.chart { width: 100%; height: auto; display: block; overflow: visible; }
+  svg.chart text { font-size: 11px; fill: var(--muted); }
+  svg.chart .grid { stroke: var(--line); stroke-width: 1; }
+  svg.chart .dot { animation: pop .5s cubic-bezier(.2,.8,.2,1) backwards; transform-box: fill-box; transform-origin: center; }
+  svg.chart .dot:hover { stroke: var(--text); stroke-width: 2; }
+  .gantt { display: grid; grid-template-columns: minmax(120px, 26%) 1fr; gap: 2px 8px; font-size: 11px; }
+  .gantt .lbl { color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; line-height: 14px; }
+  .gantt .track { position: relative; overflow: hidden; height: 14px; background: repeating-linear-gradient(to right, var(--line) 0 1px, transparent 1px calc(100% / var(--nh))); }
+  .gantt .track span { position: absolute; top: 2px; height: 10px; border-radius: 3px; min-width: 3px; transform-origin: left; animation: growX .5s cubic-bezier(.2,.8,.2,1); }
+  .gantt .axis { position: relative; height: 14px; color: var(--muted); }
+  .gantt .axis span { position: absolute; transform: translateX(-50%); }
+  .st-OK { background: var(--cx); opacity: .55; } .st-WARNING { background: var(--w); } .st-ERREUR { background: var(--ko); } .st-EN_COURS { background: var(--c1); }
+  .meter { display: flex; gap: 2px; height: 14px; margin: 4px 0 8px; }
+  .meter span { border-radius: 3px; min-width: 3px; }
 </style>
 </head>
 <body>
@@ -167,13 +215,20 @@
 
   function renderSections() {
     const D = CONFIG.DEMAT;
+    const seen = {};
     document.getElementById('sections').innerHTML = data.sections
       .filter(visible)
       .filter(s => s.file !== D.JOUR_FILE)  // rendu dans le panneau demat
       .map(s => {
-        if (s.file === D.STATUT_FILE) return dematPanel(s);
+        // Panneau graphique de l'onglet, une fois, avant sa premiere section (pas en mode tuile).
+        let panel = '';
+        if (focus === null && PANELS[s.group] && !seen[s.group]) {
+          seen[s.group] = true;
+          try { panel = PANELS[s.group](); } catch (e) { panel = '<div class="empty">Graphique ' + esc(s.group) + ' indisponible : ' + esc(e.message) + '</div>'; }
+        }
+        if (s.file === D.STATUT_FILE) return panel + dematPanel(s);
         const alert = s.alertIfRows && s.rows.length > 0 ? '<span class="badge b-KO">a traiter</span>' : '';
-        return '<details' + (s.rows.length || focus !== null ? ' open' : '') + '><summary>' + esc(s.title) +
+        return panel + '<details' + (s.rows.length || focus !== null ? ' open' : '') + '><summary>' + esc(s.title) +
                '<span class="badge">' + s.rows.length + '</span>' + alert + freshness(s) + '</summary>' + tableHtml(s) + '</details>';
       }).join('');
     // Les arcs partent de zero puis s'etirent (transition CSS sur stroke-dasharray).
@@ -244,6 +299,187 @@
       '<div class="tables"><details><summary>Tableau : stock par statut</summary>' + tableHtml(s) + '</details>' +
       '<details><summary>Tableau : arrivees par jour</summary>' + tableHtml(jours) + '</details></div></section>';
   }
+
+  // --- Boite a outils graphique (HTML/SVG, sans bibliotheque) ---
+  const num = v => Number(String(v == null ? '' : v).replace(/\s/g, '').replace(',', '.')) || 0;
+  const fmtN = n => Math.round(n).toLocaleString('fr-FR');
+  const dayLbl = (d, j) => esc(String(d || '').slice(0, 5)) + (j ? ' <small>' + esc(String(j).slice(0, 3).toLowerCase()) + '</small>' : '');
+  // "23/09 21:32", "24/09 03:02:54" ou "24/09/26" -> Date. ponytail: sans annee dans le CSV on prend l'annee
+  // courante ; faux uniquement la nuit du 31/12 au 01/01.
+  const parseDT = s => {
+    const m = /^(\d{2})\/(\d{2})(?:\/(\d{2}))?(?:\s+(\d{2}):(\d{2})(?::(\d{2}))?)?/.exec(String(s || '').trim());
+    if (!m) return null;
+    return new Date(m[3] ? 2000 + +m[3] : new Date().getFullYear(), +m[2] - 1, +m[1], +(m[4] || 0), +(m[5] || 0), +(m[6] || 0));
+  };
+  const rowsOf = (s, ...names) => { const idx = names.map(n => s.header.indexOf(n)); return s.rows.map(r => idx.map(i => r[i])); };
+  const chrono = s => Object.assign({}, s, {rows: s.rows.slice().reverse()});  // les CSV sont tries date DESC
+  const truncate = (t, n) => { t = String(t || ''); return t.length > n ? t.slice(0, n - 1) + '…' : t; };
+
+  function panelCard(title, badges, body, ...secs) {
+    const fresh = secs.filter(Boolean).map(freshness).find(f => f.indexOf('b-') !== -1) || (secs[0] ? freshness(secs[0]) : '');
+    return '<section class="panel"><div class="panel-head"><h2>' + esc(title) + '</h2>' + (badges || '') + fresh + '</div>' + body + '</section>';
+  }
+  /** Colonnes : items = [{lbl, v, color?, title?}]. */
+  function colsChart(items, opts) {
+    opts = opts || {};
+    const max = Math.max(1, ...items.map(x => x.v));
+    return '<div class="cols' + (opts.mini ? ' mini' : '') + '">' + items.map(x =>
+      '<div class="col" title="' + esc(x.title || x.lbl + ' : ' + fmtN(x.v)) + '"><span class="val">' + fmtN(x.v) + '</span>' +
+      '<div class="bar" style="--h:' + (x.v / max) + (x.color ? ';background:' + x.color : '') + '"></div>' +
+      (opts.mini ? '' : '<span class="lbl">' + x.lbl + '</span>') + '</div>').join('') + '</div>';
+  }
+  /** Barres horizontales empilees : items = [{lbl, segs: [{v, color, title}], tot?}]. */
+  function hbars(items) {
+    const max = Math.max(1, ...items.map(x => x.segs.reduce((a, s) => a + s.v, 0)));
+    return items.map(x => {
+      const tot = x.segs.reduce((a, s) => a + s.v, 0);
+      return '<div class="hb"><span class="lbl" title="' + esc(x.lbl) + '">' + esc(x.lbl) + '</span><div class="bar" style="width:' + (tot / max * 100) + '%">' +
+        x.segs.filter(s => s.v > 0).map(s => '<span style="flex:' + s.v + ' 0 0;background:' + s.color + '" title="' + esc(s.title || s.v) + '"></span>').join('') +
+        '</div><span class="tot">' + fmtN(x.tot != null ? x.tot : tot) + '</span></div>';
+    }).join('');
+  }
+  const keyHtml = items => '<div class="key">' + items.map(k => '<span><i style="background:' + k.color + '"></i>' + esc(k.lbl) + '</span>').join('') + '</div>';
+
+  // --- DSP : horloge des arrivees (heure lue dans le nom de fichier _YYYYMMDDHHMMSS_) ---
+  const DSP_TYPES = [['FOURNISSEURS', 'var(--c1)'], ['COMMANDES', 'var(--c2)'], ['RECEPTIONS', 'var(--c3)'], ['DEBLOCAGE', 'var(--c4)'], ['AUTRE', 'var(--cx)']];
+  function dspPanel() {
+    const s = section('01_dsp_flux.csv'), syn = chrono(section('02_dsp_synthese.csv'));
+    const days = [...new Set(rowsOf(s, 'DATE_CR').map(r => r[0]))].reverse();
+    const color = t => (DSP_TYPES.find(x => x[0] === t) || DSP_TYPES[4])[1];
+    const H = 24, W = 1200, L = 60, top = 18;
+    let svg = '<svg class="chart" viewBox="0 0 ' + W + ' ' + (top + days.length * H + 6) + '">';
+    for (let h = 0; h <= 24; h += 3) {
+      const x = L + h / 24 * (W - L - 8);
+      svg += '<line class="grid" x1="' + x + '" y1="' + top + '" x2="' + x + '" y2="' + (top + days.length * H) + '"/><text x="' + x + '" y="11" text-anchor="middle">' + h + 'h</text>';
+    }
+    days.forEach((d, i) => {
+      const y = top + i * H + H / 2;
+      svg += '<text x="' + (L - 8) + '" y="' + (y + 4) + '" text-anchor="end">' + esc(d.slice(0, 5)) + '</text>';
+      rowsOf(s, 'DATE_CR', 'TYPE_FLUX', 'FILE_NAME').filter(r => r[0] === d).forEach((r, k) => {
+        const m = /_(\d{8})(\d{2})(\d{2})(\d{2})?_/.exec(r[2]) || [];
+        const hr = m[2] ? +m[2] + (+m[3] || 0) / 60 : 12;
+        svg += '<circle class="dot" cx="' + (L + hr / 24 * (W - L - 8)) + '" cy="' + y + '" r="6" stroke="var(--card)" stroke-width="2" fill="' + color(r[1]) + '" style="animation-delay:' + (k * 60) + 'ms"><title>' +
+          esc(r[1] + ' — ' + (m[2] ? m[2] + ':' + m[3] : 'heure inconnue') + '\n' + r[2]) + '</title></circle>';
+      });
+    });
+    svg += '</svg>';
+    const cols = colsChart(rowsOf(syn, 'DATE_CR', 'JOUR', 'TOTAL').map(r => ({lbl: dayLbl(r[0], r[1]), v: num(r[2]), color: num(r[2]) >= 5 ? 'var(--c3)' : 'var(--w)'})));
+    const last = syn.rows.length ? num(rowsOf(syn, 'TOTAL').slice(-1)[0][0]) : 0;
+    return panelCard('Flux DSP', '<span class="badge ' + (last >= 5 ? 'b-OK' : 'b-W') + '">' + last + ' / 5 attendus</span>',
+      '<div class="panel-grid"><div style="grid-column:1/-1"><p class="sub">Heure d\'arrivee des fichiers, par jour</p>' + svg + keyHtml(DSP_TYPES.map(t => ({lbl: t[0].toLowerCase(), color: t[1]}))) + '</div>' +
+      '<div><p class="sub">Fichiers par jour</p>' + cols + '</div></div>', s, syn);
+  }
+
+  // --- Factures : sparklines par source, notes de frais, AR acceptees/rejetees, age des Xerox sans image ---
+  const SRC_COLORS = {XEROX: 'var(--c1)', TRADESHIFT: 'var(--c2)', DSP: 'var(--c3)', AUTRES: 'var(--cx)'};
+  function facturesPanel() {
+    const src = chrono(section('04_factures_source.csv')), ndf = chrono(section('03_ndf_notilus.csv'));
+    const ar = section('07_fac_ar_recues.csv'), xer = section('05_xerox_sans_image.csv'), avec = section('06_xerox_avec_image.csv');
+    const days = [...new Set(rowsOf(src, 'DATE_CR').map(r => r[0]))];
+    const tiles = Object.keys(SRC_COLORS).map(name => {
+      const byDay = days.map(d => { const r = rowsOf(src, 'DATE_CR', 'SOURCE', 'NB_FACS').find(x => x[0] === d && x[1] === name); return {lbl: d.slice(0, 5), v: r ? num(r[2]) : 0, color: SRC_COLORS[name]}; });
+      const tot = byDay.reduce((a, x) => a + x.v, 0);
+      if (!tot && name === 'AUTRES') return '';
+      return '<div><p class="sub"><b>' + fmtN(byDay.length ? byDay[byDay.length - 1].v : 0) + '</b>' + esc(name.toLowerCase()) + ' <small>(veille)</small></p>' + colsChart(byDay, {mini: true}) + '</div>';
+    }).join('');
+    const ndfCols = colsChart(rowsOf(ndf, 'DATE_CR', 'JOUR', 'NB_NDF', 'MONTANT_TOT').map(r => ({lbl: dayLbl(r[0], r[1]), v: num(r[2]), color: 'var(--c5)', title: r[0] + ' : ' + fmtN(num(r[2])) + ' NDF, ' + fmtN(num(r[3])) + ' €'})));
+    const origins = [...new Set(rowsOf(ar, 'ORIGINE').map(r => r[0]))];
+    const arBars = hbars(origins.map(o => {
+      const get = st => rowsOf(ar, 'ORIGINE', 'STATUT_OA', 'NB_FACTURES').filter(r => r[0] === o && r[1] === st).reduce((a, r) => a + num(r[2]), 0);
+      return {lbl: o, segs: [{v: get('A'), color: 'var(--c1)', title: get('A') + ' acceptees'}, {v: get('R'), color: 'var(--ko)', title: get('R') + ' rejetees'}]};
+    }));
+    const nbRej = rowsOf(ar, 'STATUT_OA', 'NB_FACTURES').filter(r => r[0] === 'R').reduce((a, r) => a + num(r[1]), 0);
+    // Age des factures Xerox sans image : un point par facture, empiles par age.
+    const ages = rowsOf(xer, 'AGE_J', 'FOURNISSEUR', 'NUM_FACT', 'MONTANT').map(r => ({age: num(r[0]), t: r[1] + ' — ' + r[2] + ' (' + r[3] + ')'}));
+    const maxAge = Math.max(3, ...ages.map(a => a.age));
+    const stack = {}; const W = 420, L = 10, R = 10;
+    let strip = '';
+    if (ages.length) {
+      const rowsN = Math.max(1, ...Object.values(ages.reduce((m, a) => (m[a.age] = (m[a.age] || 0) + 1, m), {})));
+      const Hh = 16 + rowsN * 14;
+      strip = '<svg class="chart" viewBox="0 0 ' + W + ' ' + Hh + '">';
+      [0, Math.round(maxAge / 2), maxAge].forEach(t => { const x = L + t / maxAge * (W - L - R); strip += '<line class="grid" x1="' + x + '" y1="0" x2="' + x + '" y2="' + (Hh - 12) + '"/><text x="' + x + '" y="' + Hh + '" text-anchor="middle">' + t + ' j</text>'; });
+      ages.sort((a, b) => a.age - b.age).forEach((a, k) => {
+        stack[a.age] = (stack[a.age] || 0) + 1;
+        const x = L + a.age / maxAge * (W - L - R), y = Hh - 20 - (stack[a.age] - 1) * 14;
+        strip += '<circle class="dot" cx="' + x + '" cy="' + y + '" r="6" stroke="var(--card)" stroke-width="2" fill="' + (a.age > 7 ? 'var(--ko)' : a.age > 2 ? 'var(--w)' : 'var(--c1)') + '" style="animation-delay:' + (k * 40) + 'ms"><title>' + esc(a.t + ' — ' + a.age + ' j') + '</title></circle>';
+      });
+      strip += '</svg>';
+    }
+    const nbAvec = avec.rows.length ? num(avec.rows[0][0]) : 0;
+    return panelCard('Factures', (nbRej ? '<span class="badge b-KO">' + nbRej + ' AR rejetees</span>' : '') + (ages.length ? '<span class="badge b-W">' + ages.length + ' Xerox sans image</span>' : ''),
+      '<div class="panel-grid"><div><p class="sub">Factures par source et par jour</p><div class="tiles">' + tiles + '</div></div>' +
+      '<div><p class="sub">Notes de frais Notilus par jour</p>' + ndfCols + '</div>' +
+      '<div><p class="sub">Factures AR par origine (24 h)</p>' + (origins.length ? arBars + keyHtml([{lbl: 'acceptees', color: 'var(--c1)'}, {lbl: 'rejetees', color: 'var(--ko)'}]) : '<div class="empty">Aucune facture AR.</div>') + '</div>' +
+      '<div><p class="sub">Xerox sans image : age des factures <small>(' + fmtN(nbAvec) + ' avec image)</small></p>' + (ages.length ? strip : '<div class="hero">✓ Toutes les factures Xerox ont leur image</div>') + '</div></div>', src, ndf, ar, xer);
+  }
+
+  // --- GL : lignes creees par jour + top sources, stock en interface ---
+  function glPanel() {
+    const cre = chrono(section('10_gl_lignes.csv')), itf = section('09_gl_interface.csv');
+    const days = [...new Set(rowsOf(cre, 'DATE_CR').map(r => r[0]))];
+    const perDay = days.map(d => ({lbl: d.slice(0, 5), v: rowsOf(cre, 'DATE_CR', 'NB_LIGNES').filter(r => r[0] === d).reduce((a, r) => a + num(r[1]), 0)}));
+    const lastDay = days[days.length - 1];
+    const top = rowsOf(cre, 'DATE_CR', 'SOURCE', 'NB_LIGNES').filter(r => r[0] === lastDay).map(r => ({lbl: r[1] || 'Sans source (standard)', v: num(r[2])}))
+      .sort((a, b) => b.v - a.v).slice(0, 6).map(x => ({lbl: truncate(x.lbl, 34), segs: [{v: x.v, color: 'var(--c1)', title: x.lbl + ' : ' + fmtN(x.v)}]}));
+    const stock = rowsOf(itf, 'SOURCE', 'STATUS_GL', 'NB_LIGNES', 'AGE_J').map(r => ({lbl: truncate((r[0] || 'Sans source') + ' · ' + r[1], 34), segs: [{v: num(r[2]), color: num(r[3]) > 2 ? 'var(--ko)' : 'var(--w)', title: fmtN(num(r[2])) + ' lignes, depuis ' + r[3] + ' j'}]}));
+    const stockTot = stock.reduce((a, x) => a + x.segs[0].v, 0);
+    return panelCard('Ecritures GL', stockTot ? '<span class="badge b-W">' + fmtN(stockTot) + ' lignes en interface</span>' : '',
+      '<div class="panel-grid"><div><p class="sub">Lignes GL creees par jour</p>' + colsChart(perDay) + '</div>' +
+      '<div><p class="sub">Sources du ' + esc((lastDay || '').slice(0, 5)) + ' (top 6)</p>' + (top.length ? hbars(top) : '<div class="empty">Aucune ligne.</div>') + '</div>' +
+      '<div><p class="sub">Interface GL (stock en attente)</p>' + (stock.length ? hbars(stock) : '<div class="hero">✓ Interface GL vide</div>') + '</div></div>', cre, itf);
+  }
+
+  // --- Nuit : jauge des statuts + frise des traitements (Gantt) ---
+  function nuitPanel() {
+    const syn = section('11_nuit_synthese.csv'), longs = section('15_nuit_longs.csv'), enc = section('16_nuit_en_cours.csv'), err = section('13_nuit_erreurs_detail.csv'), warn = section('14_nuit_warnings.csv');
+    const stMap = {'OK': 'OK', 'WARNING': 'WARNING', '*** ERREUR ***': 'ERREUR', 'EN COURS': 'EN_COURS', 'ERREUR': 'ERREUR'};
+    const counts = rowsOf(syn, 'STATUT', 'NB').map(r => ({st: stMap[r[0]] || 'OK', lbl: r[0].replace(/\*/g, '').trim().toLowerCase(), v: num(r[1])}));
+    const total = counts.reduce((a, x) => a + x.v, 0);
+    const meter = '<div class="meter">' + counts.filter(x => x.v).map(x => '<span class="st-' + x.st + '" style="flex:' + x.v + ' 0 0" title="' + esc(x.lbl + ' : ' + fmtN(x.v)) + '"></span>').join('') + '</div>' +
+      keyHtml(counts.map(x => ({lbl: x.lbl + ' ' + fmtN(x.v), color: {OK: 'var(--cx)', WARNING: 'var(--w)', ERREUR: 'var(--ko)', EN_COURS: 'var(--c1)'}[x.st]})));
+    // Une demande = une barre ; la meme demande peut etre dans plusieurs fichiers, le statut le plus grave gagne.
+    const jobs = {};
+    const add = (s, st) => rowsOf(s, 'REQ_ID', 'PROGRAMME', 'DEBUT', 'DUREE_MIN', 'STATUT').forEach(r => {
+      const d0 = parseDT(r[2]); if (!d0) return;
+      const status = st || stMap[r[4]] || (r[4] === 'WARNING' ? 'WARNING' : 'OK');
+      const j = jobs[r[0]] || (jobs[r[0]] = {id: r[0], prog: r[1], start: d0, min: 0, st: 'OK'});
+      j.min = Math.max(j.min, num(r[3]));
+      if (['OK', 'WARNING', 'ERREUR', 'EN_COURS'].indexOf(status) > ['OK', 'WARNING', 'ERREUR', 'EN_COURS'].indexOf(j.st)) j.st = status;
+    });
+    add(longs); add(warn, 'WARNING'); add(err, 'ERREUR'); add(enc, 'EN_COURS');
+    // Fenetre : du premier debut jusqu'a la fin du dernier traitement termine (12 h mini, 16 h maxi) ;
+    // un "en cours" ne l'etire pas. Priorite d'affichage : erreurs, en cours, puis les plus longs.
+    const all = Object.values(jobs), MAX = 30;
+    const t0 = all.length ? Math.min(...all.map(j => j.start)) : 0;
+    let t1 = Math.max(t0 + 12 * 36e5, ...all.filter(j => j.st !== 'EN_COURS').map(j => j.start.getTime() + j.min * 6e4));
+    t1 = Math.min(t1, t0 + 16 * 36e5);
+    const sev = {ERREUR: 2, EN_COURS: 1, WARNING: 0, OK: 0};
+    const shown = all.filter(j => j.start < t1).sort((a, b) => sev[b.st] - sev[a.st] || b.min - a.min).slice(0, MAX).sort((a, b) => a.start - b.start);
+    const span = Math.max(1, t1 - t0), nh = Math.max(1, Math.round(span / 36e5));
+    const list = all;
+    const axis = '<div></div><div class="axis">' + Array.from({length: nh + 1}, (_, h) => { const t = new Date(t0 + h * 36e5); return '<span style="left:' + (h * 36e5 / span * 100) + '%">' + t.getHours() + 'h</span>'; }).join('') + '</div>';
+    const gantt = '<div class="gantt" style="--nh:' + nh + '">' + axis + shown.map((j, k) =>
+      '<span class="lbl" title="' + esc(j.prog) + '">' + esc(truncate(j.prog.replace(/^DKA : /, ''), 40)) + '</span><div class="track"><span class="st-' + j.st +
+      '" style="left:' + ((j.start - t0) / span * 100) + '%;width:' + (Math.min(j.min * 6e4, t1 - j.start) / span * 100) + '%;animation-delay:' + (k * 25) + 'ms" title="' +
+      esc(j.prog + '\n' + j.start.toLocaleString('fr-FR', {day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit'}) + ' · ' + j.min + ' min · ' + j.st.replace('_', ' ')) + '"></span></div>').join('') + '</div>';
+    const nbErr = counts.filter(x => x.st === 'ERREUR').reduce((a, x) => a + x.v, 0), nbEnc = Object.values(jobs).filter(j => j.st === 'EN_COURS').length;
+    return panelCard('Nuit', (nbErr ? '<span class="badge b-KO">' + nbErr + ' erreurs</span>' : '') + (nbEnc ? '<span class="badge b-W">' + nbEnc + ' en cours</span>' : ''),
+      '<p class="sub"><b>' + fmtN(total) + '</b>traitements cette nuit</p>' + meter +
+      '<p class="sub" style="margin-top:14px">Frise des traitements longs, en warning, en erreur ou en cours' + (list.length > MAX ? ' <small>(' + shown.length + ' sur ' + list.length + ' : erreurs, en cours, puis les plus longs)</small>' : '') + '</p>' +
+      (list.length ? gantt : '<div class="hero">✓ Rien a signaler cette nuit</div>'), syn, longs, warn, err, enc);
+  }
+
+  // --- RB : comptes charges par jour ---
+  function rbPanel() {
+    const s = chrono(section('17_rb_imports.csv'));
+    const items = rowsOf(s, 'DATE_CR', 'JOUR', 'NB_CTES').map(r => ({lbl: dayLbl(r[0], r[1]), v: num(r[2]), color: 'var(--c3)'}));
+    const last = items.length ? items[items.length - 1].v : 0;
+    return panelCard('Rapprochement bancaire', items.length ? '<span class="badge b-OK">' + items.length + ' jour(s) charge(s)</span>' : '<span class="badge b-KO">aucun import</span>',
+      '<div class="panel-grid"><div><p class="sub"><b>' + fmtN(last) + '</b>comptes charges au dernier import</p>' + (items.length ? colsChart(items) : '<div class="hero ko">Aucun import RB sur la periode</div>') + '</div></div>', s);
+  }
+
+  const PANELS = {DSP: dspPanel, Factures: facturesPanel, GL: glPanel, Nuit: nuitPanel, RB: rbPanel};
 
   let pinned = null;  // statut epingle par clic (survol = mise en avant temporaire)
   function dematHighlight(code) {

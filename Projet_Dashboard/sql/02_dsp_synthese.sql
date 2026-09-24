@@ -19,7 +19,7 @@ FROM (
            dih.file_name,
            CASE
                WHEN dih.file_name LIKE '%SUP%'                                  THEN 'FOURNISSEURS'
-               WHEN dih.file_name LIKE '%PO[_]%' ESCAPE '['
+               WHEN dih.file_name LIKE '%PO\_%' ESCAPE '\'
                  OR dih.file_name LIKE '%CDE%'
                  OR dih.file_name LIKE 'ORDER%'                                 THEN 'COMMANDES'
                WHEN dih.file_name LIKE '%REC%'                                  THEN 'RECEPTIONS'
@@ -29,7 +29,7 @@ FROM (
     FROM   dka_ipofrs_hist_entetes dih WHERE dih.creation_date > SYSDATE - &nb_jours_histo
     UNION ALL
     SELECT TRUNC(dih.creation_date), TO_CHAR(dih.creation_date, 'DAY', 'NLS_DATE_LANGUAGE=FRENCH'), dih.file_name,
-           CASE WHEN dih.file_name LIKE '%PO[_]%' ESCAPE '[' OR dih.file_name LIKE '%CDE%' THEN 'COMMANDES' ELSE 'AUTRE' END
+           CASE WHEN dih.file_name LIKE '%PO\_%' ESCAPE '\' OR dih.file_name LIKE '%CDE%' THEN 'COMMANDES' ELSE 'AUTRE' END
     FROM   dka_ipocde_hist_headers dih WHERE dih.creation_date > SYSDATE - &nb_jours_histo
     UNION ALL
     SELECT TRUNC(dih.creation_date), TO_CHAR(dih.creation_date, 'DAY', 'NLS_DATE_LANGUAGE=FRENCH'), dih.file_name,

@@ -11,7 +11,7 @@ SELECT 'DSP' AS SRC,
        -- apparait jamais, alors qu'AUTRE est present chaque jour.
        CASE
            WHEN file_name LIKE '%SUP%'                              THEN 'FOURNISSEURS'
-           WHEN file_name LIKE '%PO[_]%' ESCAPE '['
+           WHEN file_name LIKE '%PO\_%' ESCAPE '\'
              OR file_name LIKE '%CDE%'
              OR file_name LIKE 'ORDER%'                             THEN 'COMMANDES'
            WHEN file_name LIKE '%REC%'                              THEN 'RECEPTIONS'
