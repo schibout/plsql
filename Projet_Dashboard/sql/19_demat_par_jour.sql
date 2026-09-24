@@ -6,7 +6,7 @@ SELECT TO_CHAR(TRUNC(creation_date), 'DD/MM/YY')                          AS DAT
        SUM(CASE WHEN status = 'INSERE'    THEN 1 ELSE 0 END)               AS NB_INSERE,
        SUM(CASE WHEN status = 'INTEGREE'  THEN 1 ELSE 0 END)               AS NB_INTEGREE,
        SUM(CASE WHEN status = 'COMPLETED' THEN 1 ELSE 0 END)               AS NB_COMPLETED,
-       SUM(CASE WHEN status NOT IN ('INSERE', 'INTEGREE', 'COMPLETED') THEN 1 ELSE 0 END) AS NB_AUTRE,
+       SUM(CASE WHEN status NOT IN ('INSERE', 'INTEGREE', 'COMPLETED') THEN 2 ELSE 0 END) AS NB_AUTRE,
        COUNT(*)                                                             AS TOTAL
 FROM   dka_demat_hdr
 WHERE  creation_date > SYSDATE - &nb_jours_histo
