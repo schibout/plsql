@@ -1,0 +1,50 @@
+{
+  "code": 0,
+  "statut_global": "OK",
+  "base": "Rapprochement_Cle_Metier_20260915_131600",
+  "dossier": "C:\\Users\\samir.chibout\\Documents\\Project\\plsql\\CTRL_QUASI_AUTOMATIQUE_DES_PRELEVEMENTS\\rapport",
+  "reference": "2026-09-15",
+  "par_statut": {
+    "RAPPROCHE": {
+      "cles": 122,
+      "nb": 1254,
+      "montant": "6572772.98"
+    },
+    "EXPLIQUE_PAR_REJET": {
+      "cles": 2,
+      "nb": 16,
+      "montant": "320721.10"
+    },
+    "REJETE_INTEGRALEMENT": {
+      "cles": 1,
+      "nb": 1,
+      "montant": "3589.75"
+    },
+    "EN_ATTENTE": {
+      "cles": 5,
+      "nb": 28,
+      "montant": "561562.52"
+    }
+  },
+  "nb_anomalies": 0,
+  "nb_signales": 0,
+  "nb_a_investiguer": 0,
+  "nb_doublons": 0,
+  "nb_similitudes": 8,
+  "nb_justifications": 8,
+  "nb_justifie_par_rejet": 3,
+  "nb_lignes_ko": 0,
+  "avertissements": [],
+  "contexte": {
+    "Date de référence": "15/09/2026",
+    "Profondeur (jours)": 10,
+    "Échéances retenues": "05/09/2026 → 10/10/2026",
+    "Lignes Oracle": 3479,
+    "Lignes EDF": 679,
+    "Rejets retenus": 38,
+    "Rejets appariés Oracle": 14,
+    "Clés rapprochées": 130,
+    "Doublons d'émission": 0
+  },
+  "genere_le": "2026-09-21T13:16:00"
+}

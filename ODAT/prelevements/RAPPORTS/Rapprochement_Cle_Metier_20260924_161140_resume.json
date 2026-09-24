@@ -1,0 +1,43 @@
+{
+  "code": 3,
+  "statut_global": "DEGRADE",
+  "base": "Rapprochement_Cle_Metier_20260924_161140",
+  "dossier": "C:\\Users\\samir.chibout\\Documents\\Project\\plsql\\ODAT\\Prelevements\\RAPPORTS",
+  "reference": "2026-09-24",
+  "par_statut": {
+    "RAPPROCHE": {
+      "cles": 72,
+      "nb": 834,
+      "montant": "4510806.66"
+    },
+    "EN_ATTENTE": {
+      "cles": 5,
+      "nb": 28,
+      "montant": "561562.52"
+    }
+  },
+  "nb_anomalies": 0,
+  "nb_signales": 0,
+  "nb_a_investiguer": 0,
+  "nb_doublons": 0,
+  "nb_justifications": 5,
+  "nb_justifie_par_rejet": 0,
+  "nb_lignes_ko": 0,
+  "avertissements": [
+    "Aucun fichier EDF depuis 2026-09-21 (3 jours) : les statuts NON_RECU sont probablement dus a une interruption du flux."
+  ],
+  "contexte": {
+    "Date de référence": "24/09/2026",
+    "Profondeur (jours)": 10,
+    "Échéances retenues": "14/09/2026 → 19/10/2026",
+    "Lignes Oracle": 3479,
+    "Lignes EDF": 679,
+    "Rejets retenus": 38,
+    "Rejets appariés Oracle": 14,
+    "Clés rapprochées": 77,
+    "Doublons d'émission": 0
+  },
+  "dossier_edf": "C:\\Users\\samir.chibout\\Documents\\Project\\plsql\\ODAT\\Prelevements\\EDF",
+  "dossier_rejets": "C:\\Users\\samir.chibout\\Documents\\Project\\plsql\\ODAT\\Prelevements\\REJETS",
+  "genere_le": "2026-09-24T16:11:40"
+}
