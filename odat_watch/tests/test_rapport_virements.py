@@ -5,7 +5,7 @@ from test_virements_base import rapport_factice
 
 
 def _rapport(tmp_path, ok=True):
-    return vr.lire_rapport(rapport_factice(tmp_path / "rapport_18092026", ok=ok))
+    return vr.lire_rapport(rapport_factice(tmp_path / "RAPPORTS" / "rapport_18092026", ok=ok), tmp_path / "REJETS")
 
 
 def test_synthese_puis_details(tmp_path):

@@ -11,7 +11,8 @@ import ui_releves
 REF = Path(__file__).resolve().parents[2] / "ControleReleveBancaire"
 CFG = dict(dossier_pfe=REF / "fluxPFE", dossier_ebs=REF / "fichierBanque",
            dossiers_logs=[REF / "import", REF / "controle"], banque_flux_b="30003",
-           comptes_connus=["30003/03620/00020137269", "16807/00166/31990892212"])
+           comptes_connus=["30003/03620/00020137269", "16807/00166/31990892212"],
+           dossier_rapports=None, fichier_liste=None)     # fixés par les tests qui écrivent
 
 
 def _script():
@@ -74,8 +75,7 @@ def test_scan_puis_frise_et_plan(app):
 
 def test_rapport_html(app, tmp_path, monkeypatch):
     at, base = app
-    import rapport_releves
-    monkeypatch.setattr(rapport_releves, "DOSSIER_RAPPORTS", tmp_path / "rapports")
+    monkeypatch.setitem(CFG, "dossier_rapports", tmp_path / "rapports")
     at.button(key="rb_scanner").click().run()
     at.button(key="rb_btn_rapport").click().run()
     assert not at.exception

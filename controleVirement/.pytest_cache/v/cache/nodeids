@@ -12,6 +12,7 @@
   "tests/test_doublons.py::test_historique_ack_identique_fichier_rejoue_et_virement_deja_envoye",
   "tests/test_doublons.py::test_historique_sans_journee_precedente",
   "tests/test_doublons.py::test_intra_envoi_references_distinctes_a_verifier_meme_reference_ko",
+  "tests/test_doublons.py::test_intra_envoi_seule_la_ligne_identique_est_signalee",
   "tests/test_doublons.py::test_ref_paiement_extraite_du_libelle",
   "tests/test_doublons.py::test_sources_meme_nom_meme_contenu_et_reference_multiple",
   "tests/test_doublons.py::test_totaux_source_cible_seule_compare_entete_dkfin01",

@@ -466,7 +466,7 @@ def test_executer_ecrit_les_quatre_fichiers_et_le_resume(tmp_path):
     res = executer(reference="2026-09-14", racine=racine, jours=3)
     assert res["code"] == 0 and res["statut_global"] == "OK"
     assert res["par_statut"][RAPPROCHE]["cles"] == 1
-    dossier = racine / "rapport"
+    dossier = racine / "RAPPORTS"
     for suffixe in (".xlsx", ".csv", "_justifications.csv", "_resume.json"):
         assert (dossier / (res["base"] + suffixe)).is_file(), suffixe
     resume = json.loads((dossier / (res["base"] + "_resume.json")).read_text(encoding="utf-8"))
@@ -549,9 +549,9 @@ def test_executer_signale_les_doublons_comme_anomalie(tmp_path):
     res = executer(reference="2026-09-14", racine=racine, jours=3)
     assert res["nb_doublons"] == 1 and "nb_similitudes" not in res
     assert res["code"] == 1 and res["statut_global"] == "ANOMALIES"
-    csv_doublons = (racine / "rapport" / (res["base"] + "_doublons.csv")).read_text(encoding="utf-8-sig")
+    csv_doublons = (racine / "RAPPORTS" / (res["base"] + "_doublons.csv")).read_text(encoding="utf-8-sig")
     assert "DOUBLON;REF DOUBLE" in csv_doublons
-    resume = json.loads((racine / "rapport" / (res["base"] + "_resume.json")).read_text(encoding="utf-8"))
+    resume = json.loads((racine / "RAPPORTS" / (res["base"] + "_resume.json")).read_text(encoding="utf-8"))
     assert resume["nb_doublons"] == 1
 
 
@@ -592,5 +592,5 @@ def test_executer_expose_les_lignes_edf_et_rejets(tmp_path):
     assert res["fichiers_edf"][1]["date_fichier"] == date(2026, 9, 14) and len(res["edf"]) == 1
     assert [f["fichier"] for f in res["fichiers_rejets"]] == ["REJETS_INTERNES_DK.20260913.070000.csv"]
     # le JSON ecrit ne contient pas ces listes (elles ne sont pas serialisables telles quelles)
-    resume = json.loads((racine / "rapport" / (res["base"] + "_resume.json")).read_text(encoding="utf-8"))
+    resume = json.loads((racine / "RAPPORTS" / (res["base"] + "_resume.json")).read_text(encoding="utf-8"))
     assert "edf" not in resume and "rejets" not in resume

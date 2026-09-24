@@ -34,7 +34,7 @@ def _base_temporaire(monkeypatch, tmp_path):
 
 
 def test_onglet_affiche_le_rapport(monkeypatch, tmp_path):
-    _rapport(tmp_path / "rapport", "Rapprochement_Cle_Metier_20260914_081400")
+    _rapport(tmp_path / "RAPPORTS", "Rapprochement_Cle_Metier_20260914_081400")
     monkeypatch.setattr(pv, "config_prelevements", _cfg(tmp_path))
     at = AppTest.from_function(_script, default_timeout=60)
     at.run()
@@ -73,9 +73,9 @@ def test_onglet_racine_absente(monkeypatch, tmp_path):
 
 def test_lancer_affiche_message_et_journal(monkeypatch, tmp_path):
     def faux_lancer(reference, cfg):
-        _rapport(tmp_path / "rapport", f"Rapprochement_Cle_Metier_{reference:%Y%m%d}_120000")
+        _rapport(tmp_path / "RAPPORTS", f"Rapprochement_Cle_Metier_{reference:%Y%m%d}_120000")
         return {"statut_global": "OK", "par_statut": {"RAPPROCHE": {"cles": 1, "nb": 3, "montant": "300.00"}},
-                "nb_anomalies": 0, "reference": reference, "dossier": tmp_path / "rapport",
+                "nb_anomalies": 0, "reference": reference, "dossier": tmp_path / "RAPPORTS",
                 "dossier_edf": str(tmp_path / "EDF"), "dossier_rejets": str(tmp_path / "REJETS"), "edf": [], "rejets": [],
                 "base": f"Rapprochement_Cle_Metier_{reference:%Y%m%d}_120000",
                 "journal": "Oracle : 1 fichier(s), 1 ligne(s)\nEDF : 1 fichier(s)"}
@@ -92,7 +92,7 @@ def test_lancer_affiche_message_et_journal(monkeypatch, tmp_path):
 
 
 def test_onglet_signale_les_doublons(monkeypatch, tmp_path):
-    _rapport(tmp_path / "rapport", "Rapprochement_Cle_Metier_20260914_081400",
+    _rapport(tmp_path / "RAPPORTS", "Rapprochement_Cle_Metier_20260914_081400",
              doublons="DOUBLON;P1;RUM1;FR76A;FR76D;X;30/09/2026;100.00;2;f1 + f2;11/09/2026 + 12/09/2026\n")
     monkeypatch.setattr(pv, "config_prelevements", _cfg(tmp_path))
     at = AppTest.from_function(_script, default_timeout=60)
@@ -105,7 +105,7 @@ def test_onglet_signale_les_doublons(monkeypatch, tmp_path):
 
 def test_rapport_html_et_texte_mail(monkeypatch, tmp_path):
     import rapport_prelevements as rp
-    _rapport(tmp_path / "rapport", "Rapprochement_Cle_Metier_20260914_081400")
+    _rapport(tmp_path / "RAPPORTS", "Rapprochement_Cle_Metier_20260914_081400")
     monkeypatch.setattr(pv, "config_prelevements", _cfg(tmp_path))
     monkeypatch.setattr(rp, "DOSSIER_RAPPORTS", tmp_path / "rapports")
     at = AppTest.from_function(_script, default_timeout=60)

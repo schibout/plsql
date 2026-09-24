@@ -8,31 +8,37 @@ from streamlit.testing.v1 import AppTest
 import virements as vr
 
 OUTIL = Path(__file__).resolve().parents[2] / "controleVirement"
-RACINE = Path(__file__).resolve().parents[2] / "ODAT" / "virements"
+RACINE = Path(__file__).resolve().parents[2] / "ODAT" / "Virements"
 DATE = "18092026"
-CFG = {"outil": OUTIL, "racine": RACINE, "depot": RACINE / "import_virement", "historique_jours": 7}
-pytestmark = pytest.mark.skipif(not ((RACINE / DATE).is_dir() or (RACINE / f"{DATE}_cible").is_dir()),
-                                reason="données ODAT/virements absentes")
+
+
+def _cfg(racine: Path) -> dict:
+    return {"outil": OUTIL, "racine": racine, "depot": racine / "import_virement", "oracle": racine / "ORACLE",
+            "edf": racine / "EDF", "rejets": racine / "REJETS", "rapports": racine / "RAPPORTS", "historique_jours": 7}
+
+
+CFG = _cfg(RACINE)
+pytestmark = pytest.mark.skipif(not (RACINE / "ORACLE" / DATE).is_dir(), reason="données ODAT/Virements absentes")
 
 
 def test_dates_disponibles_les_plus_recentes_d_abord():
-    dates = vr.dates_disponibles(RACINE)
+    dates = vr.dates_disponibles(CFG["oracle"])
     assert DATE in dates and dates == sorted(dates, key=lambda d: d[4:8] + d[2:4] + d[0:2], reverse=True)
 
 
 def test_lancer_puis_lire_rapport():
     res = vr.lancer(DATE, CFG)
     assert res["ok"] is True and res["nb_instances"] == 2
-    rapport = vr.lire_rapport(RACINE / f"rapport_{DATE}")
+    rapport = vr.lire_rapport(vr.dossier_rapport(CFG["rapports"], DATE), CFG["rejets"])
     assert rapport is not None and len(rapport["totaux_edf"]) == 46
     r = vr.resume(rapport)
     assert r["ok"] and r["nb_envoyes"] == 205 and round(r["montant_envoye"], 2) == 2667877.07
-    assert r["ko"] == 0 and r["ecarts"] == 0 and not r["quartz"]
-    assert vr.nb_instances(RACINE, DATE) == 2
+    assert r["ko"] == 0 and r["ecarts"] == 0 and r["quartz"]   # Quartz lu dans EDF
+    assert vr.nb_instances(CFG["oracle"], DATE) == 2
 
 
 def test_lire_rapport_absent(tmp_path):
-    assert vr.lire_rapport(tmp_path / "rapport_x") is None
+    assert vr.lire_rapport(tmp_path / "RAPPORTS" / "rapport_x") is None
 
 
 def test_resume_compte_ko_et_a_verifier():
@@ -74,13 +80,14 @@ def test_onglet_affiche_le_rapport(monkeypatch):
 
 
 def test_dates_disponibles_accepte_les_deux_dispositions(tmp_path):
-    for nom in ("18092026", "15092026_cible", "rapport_18092026", "import_virement", "20260901"):
-        (tmp_path / nom).mkdir()
-    (tmp_path / "Liste des virements importes du jour18092026.xls").write_text("")
-    assert vr.dates_disponibles(tmp_path) == ["18092026", "15092026"]
-    (tmp_path / "18092026" / "uuid1").mkdir()
-    (tmp_path / "18092026" / "uuid2").mkdir()
-    assert vr.nb_instances(tmp_path, "18092026") == 2 and vr.nb_instances(tmp_path, "15092026") == 0
+    for nom in ("18092026", "15092026_cible", "20260901"):
+        (tmp_path / "ORACLE" / nom).mkdir(parents=True)
+    (tmp_path / "RAPPORTS" / "rapport_18092026").mkdir(parents=True)
+    assert vr.dates_disponibles(tmp_path / "ORACLE") == ["18092026", "15092026"]
+    (tmp_path / "ORACLE" / "18092026" / "uuid1").mkdir()
+    (tmp_path / "ORACLE" / "18092026" / "uuid2").mkdir()
+    oracle = tmp_path / "ORACLE"
+    assert vr.nb_instances(oracle, "18092026") == 2 and vr.nb_instances(oracle, "15092026") == 0
 
 
 def test_bouton_import_range_les_instances(monkeypatch, tmp_path):
@@ -89,7 +96,7 @@ def test_bouton_import_range_les_instances(monkeypatch, tmp_path):
     from test_virements_import import _instance
     racine = tmp_path / "virements"
     _instance(racine / vi.DEPOT, "uuid-x", "20260918")
-    cfg = {"outil": OUTIL, "racine": racine, "depot": racine / vi.DEPOT, "historique_jours": 7}
+    cfg = _cfg(racine)
     monkeypatch.setattr(vr, "config_virements", lambda: cfg)
     import ui_virements
     monkeypatch.setattr(ui_virements, "connect", lambda: __import__("db").connect(tmp_path / "t.db"))
@@ -101,6 +108,6 @@ def test_bouton_import_range_les_instances(monkeypatch, tmp_path):
     assert "1 élément(s)" in bouton.label
     bouton.click().run()
     assert not at.exception
-    assert (racine / "18092026" / "uuid-x").is_dir() and not (racine / vi.DEPOT / "uuid-x").exists()
+    assert (racine / "ORACLE" / "18092026" / "uuid-x").is_dir() and not (racine / vi.DEPOT / "uuid-x").exists()
     assert any("1 instance(s), 0 fichier(s) Quartz et 0 fichier(s) de rejets" in s.value for s in at.success)
     assert at.selectbox(key="vir_date").options == ["18/09/2026"]

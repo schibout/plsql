@@ -69,7 +69,7 @@ SEUIL_FICHIERS_EDF = 2
 LAG_MAX_EDF = 5
 
 # Tous les fichiers produits atterrissent ici, sous le dossier de sortie.
-DOSSIER_RAPPORT = "rapport"
+DOSSIER_RAPPORT = "RAPPORTS"
 
 COULEUR_ATTENTE = "FFFFF2CC"   # jaune pale
 COULEUR_SIGNALE = "FFFCE4D6"   # peche
@@ -986,7 +986,7 @@ def construire_parser():
 
 
 def trouver_dossier_rejets(edf_path):
-    """REJETS a cote d'EDF (disposition ODAT/prelevements), sinon sous EDF (ancienne disposition)."""
+    """REJETS a cote d'EDF (disposition ODAT/Prelevements), sinon sous EDF (ancienne disposition)."""
     for parent in (edf_path.parent, edf_path):
         if parent.is_dir():
             for d in parent.iterdir():
@@ -1103,7 +1103,7 @@ def executer(reference=None, racine=None, sortie=None, jours=10, nom_si="ORACLE"
              dossier_oracle="ORACLE", dossier_edf="EDF",
              motifs_oracle=("*PCX*", "*PCL*"), motif_edf="IMPORT_AVP_DK.*.*.csv",
              motif_rejets="REJETS_INTERNES_DK.*.csv"):
-    """Lance le rapprochement et ecrit rapport/<base>.xlsx, .csv, _justifications.csv, _resume.json.
+    """Lance le rapprochement et ecrit RAPPORTS/<base>.xlsx, .csv, _justifications.csv, _resume.json.
 
     Point d'entree importable (ODAT Watch). Retourne un dict :
     code (0 OK, 1 anomalies, 2 lignes Oracle non conformes, 3 degrade), statut_global,

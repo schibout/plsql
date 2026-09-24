@@ -52,7 +52,7 @@ BLANC = "FFFFFFFF"
 TAILLE_BASE = 11   # taille ecrite explicitement, comme le fait Excel via COM
 
 # Tous les fichiers produits atterrissent ici, sous le dossier de sortie.
-DOSSIER_RAPPORT = "rapport"
+DOSSIER_RAPPORT = "RAPPORTS"
 
 
 class ErreurTraitement(Exception):

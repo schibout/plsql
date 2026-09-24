@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Controle de bout en bout des virements source/cible pour une date donnee.
 
-Usage: python controle_virements.py DDMMYYYY [--racine .]
+Usage: python controle_virements.py DDMMYYYY [--racine .] [--sortie DOSSIER]
 """
 import argparse
 import sys
@@ -128,10 +128,11 @@ def qualifier_doublons(fichiers, doublons):
             ligne["detail"] = f"envoi identique a {d['fichier_original']}"
 
 
-def executer(date, racine=".", quartz=None, historique_jours=7):
+def executer(date, racine=".", quartz=None, historique_jours=7, sortie=None):
     """Lance le controle complet et ecrit les rapports. Retourne un dict :
     ok, dossier (Path des rapports), nb_instances, quartz (bool : retour tresorerie trouve),
     cible_seul, extras (controles complementaires), doublons, fichiers, totaux_edf.
+    Les rapports vont dans <sortie>/rapport_<date> (sortie : la racine par defaut).
     Leve FileNotFoundError si aucune instance n'existe pour la date."""
     racine = Path(racine)
     instances = discover_instances(racine, date)
@@ -180,7 +181,7 @@ def executer(date, racine=".", quartz=None, historique_jours=7):
         quartz_virements = parse_quartz_xls(quartz_path)
         quartz_totaux, quartz_ecarts = controle_quartz(tous_cible_virements, quartz_virements)
 
-    dossier = racine / f"rapport_{date}"
+    dossier = Path(sortie or racine) / f"rapport_{date}"
     ok = write_reports(dossier, tous_fichiers, tous_totaux_src, tous_totaux_edf, tous_ecarts,
                        quartz_totaux, quartz_ecarts, doublons, doublons_detail, extras)
     return {"ok": ok, "dossier": dossier, "nb_instances": len(instances), "quartz": quartz_ok,
@@ -197,10 +198,12 @@ def main(argv=None) -> int:
     parser.add_argument("--historique-jours", type=int, default=7,
                         help="Nb de jours en arriere pour chercher des envois deja transmis "
                              "dans les autres dossiers JJMMAAAA de la racine (defaut: 7, 0 = desactive)")
+    parser.add_argument("--sortie", default=None,
+                        help="Dossier ou ecrire rapport_<date> (defaut: la racine)")
     args = parser.parse_args(argv)
 
     try:
-        res = executer(args.date, args.racine, args.quartz, args.historique_jours)
+        res = executer(args.date, args.racine, args.quartz, args.historique_jours, args.sortie)
     except FileNotFoundError as e:
         print(e)
         return 1

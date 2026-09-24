@@ -1,11 +1,11 @@
-"""Import des virements déposés en vrac dans ODAT/virements/import_virement.
+"""Import des virements déposés en vrac dans ODAT/Virements/import_virement.
 
 On y dépose, sans les trier : des instances Talend (un dossier <uuid> contenant SOURCE, TALEND, TARGET), des
 exports Quartz (« Liste des virements importés du jour.xls », sous-dossier EDF du dépôt Drive) et les rejets
 bancaires de virements (« Liste des rejets bancaires du jour - Virement.xls », sous-dossier REJET). L'import date
 chaque élément par son nom (préfixe JJMMAAAA_ posé par l'Apps Script, ou suffixe) sinon par son contenu, le range
-dans ODAT/virements/JJMMAAAA/<uuid>, ODAT/virements/Liste des virements importés du jour<JJMMAAAA>.xls ou
-ODAT/virements/REJETS/JJMMAAAA_<nom>.xls, et enregistre les instances dans vir_imports. Un dossier JJMMAAAA déposé
+dans ODAT/Virements/ORACLE/JJMMAAAA/<uuid>, ODAT/Virements/EDF/Liste des virements importés du jour<JJMMAAAA>.xls
+ou ODAT/Virements/REJETS/JJMMAAAA_<nom>.xls, et enregistre les instances dans vir_imports. Un dossier JJMMAAAA déposé
 tel quel est accepté aussi (ses instances sont rangées).
 """
 from __future__ import annotations
@@ -22,7 +22,6 @@ RE_JOUR = re.compile(r"\d{8}")
 RE_PREFIXE_JOUR = re.compile(r"^(\d{8})_")                  # 18092026_Liste des … .xls (nommage Apps Script)
 QUARTZ_PREFIXE = "Liste des virements importés du jour"
 SOUS_DOSSIERS = {"EDF": "quartz", "REJET": "rejet", "REJETS": "rejet"}   # sous-dossiers du dépôt Drive → genre
-DOSSIER_REJETS = "REJETS"
 
 
 @dataclass
@@ -106,9 +105,11 @@ def _compter(dossier: Path) -> tuple[int, int]:
     return len(fichiers), sum(1 for f in fichiers if f.name.startswith("CDPG.NC4.IMPORT_ACK.") and not f.name.endswith(".asc"))
 
 
-def scanner(depot: Path, racine: Path) -> list[Element]:
-    """Ce que contient le dépôt et où chaque élément irait, sans rien déplacer."""
-    depot, racine = Path(depot), Path(racine)
+def scanner(depot: Path, cfg: dict) -> list[Element]:
+    """Ce que contient le dépôt et où chaque élément irait, sans rien déplacer. `cfg` : dossiers « oracle », « edf »,
+    « rejets » de virements.config_virements."""
+    depot = Path(depot)
+    oracle, edf, rejets = Path(cfg["oracle"]), Path(cfg["edf"]), Path(cfg["rejets"])
     out: list[Element] = []
     if not depot.is_dir():
         return out
@@ -128,7 +129,7 @@ def scanner(depot: Path, racine: Path) -> list[Element]:
             if not e.date:
                 e.etat = "date introuvable"
             else:
-                e.destination = racine / e.date / p.name
+                e.destination = oracle / e.date / p.name
                 e.etat = "déjà présent" if e.destination.exists() else "à importer"
         elif p.suffix.lower() == ".xls":
             e = Element(chemin=p, genre=genre or ("rejet" if "rejets" in p.name.lower() else "quartz"))
@@ -137,9 +138,9 @@ def scanner(depot: Path, racine: Path) -> list[Element]:
                 e.etat = "date introuvable"
             else:
                 if e.genre == "rejet":
-                    e.destination = racine / DOSSIER_REJETS / f"{e.date}_{RE_PREFIXE_JOUR.sub('', p.name)}"
+                    e.destination = rejets / f"{e.date}_{RE_PREFIXE_JOUR.sub('', p.name)}"
                 else:
-                    e.destination = racine / f"{QUARTZ_PREFIXE}{e.date}.xls"
+                    e.destination = edf / f"{QUARTZ_PREFIXE}{e.date}.xls"
                 e.etat = "déjà présent" if e.destination.exists() else "à importer"
         else:
             e = Element(chemin=p, genre="inconnu", etat="non reconnu")
@@ -147,11 +148,11 @@ def scanner(depot: Path, racine: Path) -> list[Element]:
     return out
 
 
-def importer(depot: Path, racine: Path, con=None, quand: datetime | None = None) -> Bilan:
+def importer(depot: Path, cfg: dict, con=None, quand: datetime | None = None) -> Bilan:
     """Déplace ce qui est datable vers son dossier de journée ; enregistre les instances dans vir_imports."""
     bilan = Bilan()
     quand = (quand or datetime.now()).strftime("%Y-%m-%d %H:%M:%S")
-    for e in scanner(depot, racine):
+    for e in scanner(depot, cfg):
         if e.etat != "à importer":
             bilan.ignores.append(e)
             continue

@@ -1,8 +1,8 @@
 """Onglet Prélèvements : pont vers l'outil CTRL_QUASI_AUTOMATIQUE_DES_PRELEVEMENTS (rapprochement par clé métier).
 
 Le code du contrôle vit dans ../CTRL_QUASI_AUTOMATIQUE_DES_PRELEVEMENTS (rapprochement_cle_metier.executer,
-config [prelevements] outil) ; les données (ORACLE/<AAAAMMJJ>, EDF, EDF/REJETS) et les rapports
-(rapport/Rapprochement_Cle_Metier_<AAAAMMJJ>_<HHMMSS>.*) dans ../ODAT/prelevements (config [prelevements] racine).
+config [prelevements] outil) ; les données (ORACLE/<AAAAMMJJ>, EDF, REJETS) et les rapports
+(RAPPORTS/Rapprochement_Cle_Metier_<AAAAMMJJ>_<HHMMSS>.*) dans ../ODAT/Prelevements (config [prelevements] racine).
 Ici on choisit la date de référence, on lance le rapprochement et on relit le dernier rapport de cette date.
 """
 from __future__ import annotations
@@ -21,7 +21,7 @@ from oracle_refresh import BASE_DIR, CONFIG
 
 DEFAUTS = {"outil": r"..\CTRL_QUASI_AUTOMATIQUE_DES_PRELEVEMENTS", "racine": r"..\ODAT\prelevements",
            "jours": "10", "nom_si": "ORACLE"}
-DOSSIER_RAPPORT = "rapport"
+DOSSIER_RAPPORT = "RAPPORTS"
 PREFIXE = "Rapprochement_Cle_Metier_"
 RE_BASE = re.compile(rf"{PREFIXE}(\d{{8}})_(\d{{6}})")
 

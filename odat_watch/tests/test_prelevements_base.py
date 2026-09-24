@@ -17,7 +17,7 @@ def _res(tmp_path: Path, statut="OK", **maj) -> dict:
     (edf / "IMPORT_AVP_DK.20260915.070100.csv").write_text("NOM DU SI;IBAN;ECH;NB;MONTANT;\nCIF;FR76C;30/09/2026;1;5,00;\n")
     (rejets / "REJETS_INTERNES_DK.20260914.070000.csv").write_text("x\n")
     res = {"code": 0, "statut_global": statut, "base": "Rapprochement_Cle_Metier_20260914_081400",
-           "dossier": tmp_path / "rapport", "reference": date(2026, 9, 14),
+           "dossier": tmp_path / "RAPPORTS", "reference": date(2026, 9, 14),
            "par_statut": {"RAPPROCHE": {"cles": 3, "nb": 10, "montant": Decimal("1000.00")},
                           "EN_ATTENTE": {"cles": 1, "nb": 2, "montant": Decimal("250.00")}},
            "nb_anomalies": 0, "nb_signales": 0, "nb_a_investiguer": 0, "nb_doublons": 0,

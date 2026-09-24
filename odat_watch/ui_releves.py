@@ -80,7 +80,7 @@ def render(kpi):
             with st.spinner("Lecture des fichiers PFE, EBS et des logs…"):
                 st.session_state["rb_msg"] = rb.scanner_tout(cfg, con)
         if b3.button("📋 list_releves.txt des logs manquants", use_container_width=True, key="rb_liste"):
-            st.session_state["rb_msg"] = rb.liste_logs_manquants(con)
+            st.session_state["rb_msg"] = rb.liste_logs_manquants(con, cfg["fichier_liste"])
         if st.session_state.get("rb_msg"):
             st.info(st.session_state.pop("rb_msg"))          # affiché une fois, ne colle pas aux relances
 
@@ -98,7 +98,7 @@ def render(kpi):
         ctl = rb.controles(con)
         if b4.button("📄 Rapport HTML", use_container_width=True, key="rb_btn_rapport"):
             bilan = rr.Bilan(journee=j, chronologie=ch, continuite=cont, plan=plan, pfe=pfe, controles=ctl)
-            chemin = rr.ecrire(bilan, rr.DOSSIER_RAPPORTS)
+            chemin = rr.ecrire(bilan, cfg["dossier_rapports"])
             st.session_state["rb_rapport"] = str(chemin)
         if st.session_state.get("rb_rapport"):
             st.success(f"Rapport écrit : `{st.session_state.pop('rb_rapport')}`")

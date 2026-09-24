@@ -34,13 +34,20 @@ programmes_generiques = DKA_SLAUNCHER
 dossiers = ..\ControleReleveBancaire\import;..\ControleReleveBancaire\controle;logs_ebs
 
 [releves]
-; Onglet Releves bancaires. Dossiers locaux alimentes a la main (copie des executions PFE, copy_ebs_logs.sh).
+; Onglet Releves bancaires. Racine des donnees, alimentee a la main (copie des executions PFE, copy_ebs_logs.sh). Hors git.
+racine = ..\ODAT\releve_bancaire
+; Sous-dossiers de la racine (ou chemins absolus).
 ; Un sous-dossier <uuid> par execution Talend (SOURCE / TARGET / TALEND)
-dossier_pfe = ..\ControleReleveBancaire\fluxPFE
+dossier_pfe = PFE
 ; Fichiers AFB120.txt_<AAAAMMJJHHMMSS> recus par EBS (data/traite)
-dossier_ebs = ..\ControleReleveBancaire\fichierBanque
-; Logs l<request_id>.req / o<request_id>.out des imports RBAFBIMP et des controles DKA_SRBCTRLRB (separes par ;)
-dossiers_logs = ..\ControleReleveBancaire\import;..\ControleReleveBancaire\controle
+dossier_ebs = EBS
+; Logs l<request_id>.req / o<request_id>.out des imports RBAFBIMP et des controles DKA_SRBCTRLRB (separes par ; ,
+; sous-dossiers inclus)
+dossiers_logs = LOGS
+; Rapports HTML de l'onglet
+dossier_rapports = RAPPORTS
+; Liste des logs manquants, a passer a copy_ebs_logs.sh sur le serveur EBS
+fichier_liste = list_releves.txt
 ; Flux B = fichier ne contenant que cette banque (Societe Generale)
 banque_flux_b = 30003
 ; Comptes en anomalie preexistante, ignores par le verdict (banque/guichet/compte, separes par ;)
@@ -49,13 +56,19 @@ comptes_connus = 30003/03620/00020137269;16807/00166/31990892212
 [virements]
 ; Onglet Virements. Code de l'outil (controle_virements.py)
 outil = ..\controleVirement
-; Donnees : un dossier JJMMAAAA par jour (un sous-dossier par instance : SOURCE, TALEND, TARGET), fichier Quartz
-; "Liste des virements importes du jour<date>.xls" ; les rapports rapport_<date> y sont ecrits. Hors git.
-racine = ..\ODAT\virements
+; Donnees : ORACLE\JJMMAAAA (un sous-dossier par instance : SOURCE, TALEND, TARGET), EDF\"Liste des virements
+; importes du jour<date>.xls" (Quartz), REJETS\JJMMAAAA_*.xls ; rapports ecrits dans RAPPORTS\rapport_<date>. Hors git.
+racine = ..\ODAT\Virements
 ; Depot en vrac (sous la racine, ou chemin absolu) : instances Talend (dossier uuid) et exports Quartz, ranges par
 ; journee par le bouton Importer de l'onglet
 depot = import_virement
-; Recherche des envois deja transmis dans les autres dossiers *_cible des N jours precedents (0 = desactive)
+; Sous-dossiers de la racine (ou chemins absolus) : instances Talend JJMMAAAA\<uuid>, fichiers Quartz,
+; rejets bancaires, rapports rapport_<date>
+dossier_oracle = ORACLE
+dossier_edf = EDF
+dossier_rejets = REJETS
+dossier_rapports = RAPPORTS
+; Recherche des envois deja transmis dans les autres journees du dossier ORACLE des N jours precedents (0 = desactive)
 historique_jours = 7
 
 [prelevements]
@@ -63,9 +76,9 @@ historique_jours = 7
 outil = ..\CTRL_QUASI_AUTOMATIQUE_DES_PRELEVEMENTS
 ; Donnees : dossiers ORACLE\<AAAAMMJJ> (fichiers *PCX* / *PCL* archives depuis DATA/Traite/OUT_SEPA), EDF
 ; (IMPORT_AVP_DK.*.csv, pieces jointes du mail "Synthese quotidienne des prelevements Dalkia recus par CashCollection")
-; et EDF\REJETS (REJETS_INTERNES_DK.*.csv). Rapports ecrits dans rapport\Rapprochement_Cle_Metier_<AAAAMMJJ>_<HHMMSS>.*
+; et REJETS (REJETS_INTERNES_DK.*.csv). Rapports ecrits dans RAPPORTS\Rapprochement_Cle_Metier_<AAAAMMJJ>_<HHMMSS>.*
 ; Hors git.
-racine = ..\ODAT\prelevements
+racine = ..\ODAT\Prelevements
 ; Profondeur du perimetre en jours calendaires (echeances de reference - jours a reference + 25 j)
 jours = 10
 ; Nom du SI dans les etats EDF (l'autre SI est CIF)

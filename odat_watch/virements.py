@@ -1,9 +1,9 @@
 """Onglet Virements : pont vers l'outil controleVirement (dossiers *_cible chargés à la main).
 
 Le code du contrôle vit dans ../controleVirement (controle_virements.executer, config [virements] outil) ;
-les données (dossiers JJMMAAAA/<uuid> avec SOURCE, TALEND, TARGET ; fichier Quartz ; rapports rapport_<date>)
-dans ../ODAT/virements
-(config [virements] racine). Ici on choisit la journée, on lance le contrôle et on relit son rapport.
+les données dans ../ODAT/Virements (config [virements] racine ; sous-dossiers dossier_oracle, dossier_edf, dossier_rejets,
+dossier_rapports) : ORACLE/JJMMAAAA/<uuid> (SOURCE, TALEND, TARGET), EDF/« Liste des virements importés du jour<date>.xls »
+(Quartz), REJETS/JJMMAAAA_*.xls, rapports RAPPORTS/rapport_<date>. Ici on choisit la journée, on lance le contrôle et on relit son rapport.
 """
 from __future__ import annotations
 import configparser
@@ -16,8 +16,9 @@ import pandas as pd
 
 from oracle_refresh import BASE_DIR, CONFIG
 
-DEFAUTS = {"outil": r"..\controleVirement", "racine": r"..\ODAT\virements", "depot": "import_virement",
-           "historique_jours": "7"}
+DEFAUTS = {"outil": r"..\controleVirement", "racine": r"..\ODAT\Virements", "depot": "import_virement",
+           "historique_jours": "7", "dossier_oracle": "ORACLE", "dossier_edf": "EDF", "dossier_rejets": "REJETS",
+           "dossier_rapports": "RAPPORTS"}
 
 # Fichiers du rapport : (clé, nom du CSV, libellé, gravité portée par la colonne « gravite » ou fixe)
 CSV_RAPPORT = [
@@ -50,17 +51,20 @@ def config_virements() -> dict:
         cfg.read(CONFIG, encoding="utf-8")
     val = {k: cfg.get("virements", k, fallback=v) for k, v in DEFAUTS.items()}
     racine = _chemin(val["racine"])
-    depot = Path(val["depot"].strip() or "import_virement")
-    return {"outil": _chemin(val["outil"]), "racine": racine,
-            "depot": depot if depot.is_absolute() else racine / depot,
-            "historique_jours": int(val["historique_jours"] or 0)}
+    def sous(cle: str) -> Path:     # sous la racine, ou chemin absolu
+        p = Path(val[cle].strip() or DEFAUTS[cle])
+        return p if p.is_absolute() else racine / p
+    return {"outil": _chemin(val["outil"]), "racine": racine, "depot": sous("depot"),
+            "oracle": sous("dossier_oracle"), "edf": sous("dossier_edf"), "rejets": sous("dossier_rejets"),
+            "rapports": sous("dossier_rapports"), "historique_jours": int(val["historique_jours"] or 0)}
 
 
-def dates_disponibles(racine: Path) -> list[str]:
-    """Dates JJMMAAAA ayant un dossier JJMMAAAA (ou JJMMAAAA_cible, ancienne disposition) sous la racine,
+def dates_disponibles(oracle: Path) -> list[str]:
+    """Dates JJMMAAAA ayant un dossier JJMMAAAA (ou JJMMAAAA_cible, ancienne disposition) dans le dossier ORACLE,
     la plus récente en premier."""
     dates = set()
-    for d in Path(racine).iterdir():
+    oracle = Path(oracle)
+    for d in (oracle.iterdir() if oracle.is_dir() else []):
         m = re.fullmatch(r"(\d{8})(?:_cible)?", d.name)
         if m and d.is_dir():
             try:
@@ -71,10 +75,10 @@ def dates_disponibles(racine: Path) -> list[str]:
     return sorted(dates, key=lambda d: datetime.strptime(d, "%d%m%Y"), reverse=True)
 
 
-def nb_instances(racine: Path, date: str) -> int:
+def nb_instances(oracle: Path, date: str) -> int:
     """Nombre de sous-dossiers (instances) du dossier du jour."""
     for nom in (date, f"{date}_cible"):
-        d = Path(racine) / nom
+        d = Path(oracle) / nom
         if d.is_dir():
             return sum(1 for x in d.iterdir() if x.is_dir())
     return 0
@@ -84,13 +88,13 @@ def date_lisible(d: str) -> str:
     return f"{d[0:2]}/{d[2:4]}/{d[4:8]}"
 
 
-def source_presente(racine: Path, date: str) -> bool:
-    return (Path(racine) / f"{date}_source").is_dir()
+def source_presente(oracle: Path, date: str) -> bool:
+    return (Path(oracle) / f"{date}_source").is_dir()
 
 
-def fichier_rejets(racine: Path, date: str) -> Path | None:
+def fichier_rejets(rejets: Path, date: str) -> Path | None:
     """Rejets bancaires de virements de la journée : REJETS/JJMMAAAA_*.xls (rangé par virements_import)."""
-    return next(iter(sorted((Path(racine) / "REJETS").glob(f"{date}_*.xls"))), None)
+    return next(iter(sorted(Path(rejets).glob(f"{date}_*.xls"))), None)
 
 
 COLONNES_REJETS = ["banque", "compte", "reference", "montant", "devise", "date_operation", "motif", "motif_libelle",
@@ -129,7 +133,7 @@ def lire_rejets(fichier: Path | None) -> pd.DataFrame:
 def fichier_quartz(cfg: dict, date: str) -> Path | None:
     _outil(cfg["outil"])
     import controle_virements
-    return controle_virements.trouver_fichier_quartz(Path(cfg["racine"]), date)
+    return controle_virements.trouver_fichier_quartz(Path(cfg["edf"]), date)
 
 
 def _outil(outil: Path) -> None:
@@ -155,15 +159,21 @@ def _recharger(noms) -> None:
 
 
 def lancer(date: str, cfg: dict) -> dict:
-    """Exécute le contrôle et écrit rapport_<date> sous la racine des données. Renvoie le dict de
-    controle_virements.executer."""
-    _outil(cfg["outil"])
+    """Exécute le contrôle sur ORACLE (instances) et EDF (Quartz), écrit RAPPORTS/rapport_<date>. Renvoie le dict
+    de controle_virements.executer."""
+    quartz = fichier_quartz(cfg, date)
     import controle_virements
-    return controle_virements.executer(date, cfg["racine"], historique_jours=cfg["historique_jours"])
+    return controle_virements.executer(date, cfg["oracle"], quartz=quartz, historique_jours=cfg["historique_jours"],
+                                       sortie=cfg["rapports"])
 
 
-def lire_rapport(dossier: Path) -> dict | None:
-    """Relit un dossier rapport_<date> : synthèses markdown + un DataFrame par CSV (vide si absent)."""
+def dossier_rapport(rapports: Path, date: str) -> Path:
+    return Path(rapports) / f"rapport_{date}"
+
+
+def lire_rapport(dossier: Path, rejets: Path | None = None) -> dict | None:
+    """Relit un dossier RAPPORTS/rapport_<date> : synthèses markdown + un DataFrame par CSV (vide si absent),
+    et les rejets bancaires du jour lus dans le dossier `rejets` (aucun si non fourni)."""
     dossier = Path(dossier)
     if not (dossier / "synthese.md").is_file():
         return None
@@ -179,7 +189,7 @@ def lire_rapport(dossier: Path) -> dict | None:
         else:
             out[cle] = pd.DataFrame()
     m = re.fullmatch(r"rapport_(\d{8})", dossier.name)
-    out["rejets"] = lire_rejets(fichier_rejets(dossier.parent, m.group(1)) if m else None)
+    out["rejets"] = lire_rejets(fichier_rejets(rejets, m.group(1)) if m and rejets else None)
     return out
 
 

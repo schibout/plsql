@@ -33,10 +33,11 @@ def render(kpi):
     racine = cfg["racine"]
     st.markdown("#### Virements · Oracle → FIN01.VIREMENT → VIREMENT.EDF01 (ACK banque) → Quartz")
     _import(cfg)
-    dates = vr.dates_disponibles(racine) if racine.is_dir() else []
+    dates = vr.dates_disponibles(cfg["oracle"])
     if not dates:
         st.caption(f"Aucune journée : copiez les dossiers `JJMMAAAA` (un sous-dossier par instance : SOURCE, "
-                   f"TALEND, TARGET) et le fichier Quartz dans `{racine}` — `config.ini [virements] racine`.")
+                   f"TALEND, TARGET) dans `{cfg['oracle']}` et le fichier Quartz dans `{cfg['edf']}` "
+                   "— `config.ini [virements] racine`.")
         return
 
     b1, b2, b3 = st.columns([1.2, 1.4, 3])
@@ -57,14 +58,14 @@ def render(kpi):
             except Exception as e:  # noqa: BLE001 — l'outil externe peut échouer sur un fichier mal formé
                 st.session_state["vir_msg"] = f"⚠ {type(e).__name__}: {e}"
     quartz = vr.fichier_quartz(cfg, date)
-    b3.caption(f"{vr.nb_instances(racine, date)} instance(s) dans `{date}` · "
+    b3.caption(f"{vr.nb_instances(cfg['oracle'], date)} instance(s) dans `{date}` · "
                f"Retour Quartz : {quartz.name if quartz else 'absent (niveau 3 ignoré)'}"
-               + (" · DK en euros fournis (dossier _source)" if vr.source_presente(racine, date) else ""))
+               + (" · DK en euros fournis (dossier _source)" if vr.source_presente(cfg["oracle"], date) else ""))
     if st.session_state.get("vir_msg"):
         msg = st.session_state.pop("vir_msg")
         (st.error if msg.startswith("⚠") else st.success)(msg)
 
-    rapport = vr.lire_rapport(racine / f"rapport_{date}")
+    rapport = vr.lire_rapport(vr.dossier_rapport(cfg["rapports"], date), cfg["rejets"])
     if rapport is None:
         st.caption("Cette journée n'a pas encore été contrôlée : cliquez sur **Lancer le contrôle**.")
         return
@@ -130,7 +131,7 @@ def render(kpi):
 def _import(cfg: dict) -> None:
     """Dépôt import_virement : instances, exports Quartz (EDF/) et rejets (REJET/) déposés en vrac, rangés en un clic."""
     depot = cfg["depot"]
-    elements = vi.scanner(depot, cfg["racine"]) if depot.is_dir() else []
+    elements = vi.scanner(depot, cfg) if depot.is_dir() else []
     a_importer = [e for e in elements if e.etat == "à importer"]
     c1, c2 = st.columns([1.4, 3])
     if c1.button(f"📥 Importer {len(a_importer)} élément(s) déposé(s)" if a_importer else "📥 Importer depuis le dépôt",
@@ -139,7 +140,7 @@ def _import(cfg: dict) -> None:
                       "et rejets de virements (REJET/), datés par leur nom ou leur contenu."):
         con = connect()
         try:
-            bilan = vi.importer(depot, cfg["racine"], con)
+            bilan = vi.importer(depot, cfg, con)
         finally:
             con.close()
         st.session_state["vir_import_msg"] = bilan.message

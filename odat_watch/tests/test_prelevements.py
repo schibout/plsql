@@ -41,7 +41,7 @@ def test_config_par_defaut_sans_section(monkeypatch, tmp_path):
     monkeypatch.setattr(pv, "CONFIG", tmp_path / "absent.ini")
     cfg = pv.config_prelevements()
     assert cfg["outil"].name == "CTRL_QUASI_AUTOMATIQUE_DES_PRELEVEMENTS"
-    assert cfg["racine"].parts[-2:] == ("ODAT", "prelevements")
+    assert cfg["racine"].parts[-2:] == ("ODAT", "Prelevements")
     assert cfg["jours"] == 10 and cfg["nom_si"] == "ORACLE"
 
 
@@ -55,7 +55,7 @@ def test_config_lue_depuis_config_ini(monkeypatch, tmp_path):
 
 
 def test_dates_disponibles_les_plus_recentes_d_abord(tmp_path):
-    r = tmp_path / "rapport"
+    r = tmp_path / "RAPPORTS"
     _rapport(r, "Rapprochement_Cle_Metier_20260806_120000")
     _rapport(r, "Rapprochement_Cle_Metier_20260914_081400")
     _rapport(r, "Rapprochement_Cle_Metier_20260914_093000")
@@ -67,7 +67,7 @@ def test_dates_disponibles_sans_dossier(tmp_path):
 
 
 def test_lire_rapport_prend_le_plus_recent_de_la_date(tmp_path):
-    r = tmp_path / "rapport"
+    r = tmp_path / "RAPPORTS"
     _rapport(r, "Rapprochement_Cle_Metier_20260914_081400", statut_global="ANOMALIES")
     _rapport(r, "Rapprochement_Cle_Metier_20260914_093000")
     rapport = pv.lire_rapport(tmp_path, date(2026, 9, 14))
@@ -82,7 +82,7 @@ def test_lire_rapport_absent(tmp_path):
 
 def test_lire_rapport_sans_resume_json_reste_lisible(tmp_path):
     """Rapports produits avant executer() : pas de _resume.json → statut global INCONNU, tables lues quand même."""
-    r = tmp_path / "rapport"
+    r = tmp_path / "RAPPORTS"
     _rapport(r, "Rapprochement_Cle_Metier_20260914_081400")
     (r / "Rapprochement_Cle_Metier_20260914_081400_resume.json").unlink()
     rapport = pv.lire_rapport(tmp_path, date(2026, 9, 14))
@@ -90,7 +90,7 @@ def test_lire_rapport_sans_resume_json_reste_lisible(tmp_path):
 
 
 def test_resume_chiffres_des_tuiles(tmp_path):
-    r = tmp_path / "rapport"
+    r = tmp_path / "RAPPORTS"
     _rapport(r, "Rapprochement_Cle_Metier_20260914_081400", avertissements=["Aucun fichier EDF depuis 2026-09-11 (3 jours)"])
     res = pv.resume(pv.lire_rapport(tmp_path, date(2026, 9, 14)))
     assert res["statut_global"] == "OK" and res["nb_cles"] == 2
@@ -100,7 +100,7 @@ def test_resume_chiffres_des_tuiles(tmp_path):
 
 
 def test_par_statut_respecte_l_ordre_metier(tmp_path):
-    r = tmp_path / "rapport"
+    r = tmp_path / "RAPPORTS"
     _rapport(r, "Rapprochement_Cle_Metier_20260914_081400")
     groupes = pv.par_statut(pv.lire_rapport(tmp_path, date(2026, 9, 14))["rapprochement"])
     assert [s for s, _ in groupes] == ["RAPPROCHE", "EN_ATTENTE"]
@@ -123,7 +123,7 @@ def test_lancer_capture_le_journal(monkeypatch, tmp_path):
 
 
 def test_resume_ignore_les_similitudes_des_anciens_rapports(tmp_path):
-    r = tmp_path / "rapport"
+    r = tmp_path / "RAPPORTS"
     _rapport(r, "Rapprochement_Cle_Metier_20260914_081400",
              doublons="DOUBLON;P1;RUM1;FR76A;FR76D;X;30/09/2026;100.00;2;f1 + f2;11/09/2026 + 12/09/2026\n"
                       "SIMILITUDE;P2 + P3;RUM2;FR76A;FR76D;Y;30/09/2026;50.00;2;f1;11/09/2026\n")
@@ -133,7 +133,7 @@ def test_resume_ignore_les_similitudes_des_anciens_rapports(tmp_path):
 
 def test_resume_sans_fichier_doublons(tmp_path):
     """Rapports anciens : pas de _doublons.csv → 0, pas d'erreur."""
-    r = tmp_path / "rapport"
+    r = tmp_path / "RAPPORTS"
     _rapport(r, "Rapprochement_Cle_Metier_20260914_081400")
     (r / "Rapprochement_Cle_Metier_20260914_081400_doublons.csv").unlink()
     res = pv.resume(pv.lire_rapport(tmp_path, date(2026, 9, 14)))

@@ -19,8 +19,11 @@ def test_config_releves_par_defaut(tmp_path, monkeypatch):
     monkeypatch.setattr(releves_scan, "CONFIG", tmp_path / "absent.ini")      # config_releves lit releves_scan.CONFIG
     cfg = rb.config_releves()
     assert cfg["banque_flux_b"] == "30003"
-    assert cfg["dossier_pfe"].name == "fluxPFE" and cfg["dossier_ebs"].name == "fichierBanque"
-    assert [d.name for d in cfg["dossiers_logs"]] == ["import", "controle"]
+    racine = cfg["racine"]
+    assert racine.parts[-2:] == ("ODAT", "releve_bancaire")
+    assert cfg["dossier_pfe"] == racine / "PFE" and cfg["dossier_ebs"] == racine / "EBS"
+    assert cfg["dossiers_logs"] == [racine / "LOGS"] and cfg["dossier_rapports"] == racine / "RAPPORTS"
+    assert cfg["fichier_liste"] == racine / "list_releves.txt"
     assert "30003/03620/00020137269" in cfg["comptes_connus"]
 
 

@@ -22,9 +22,13 @@ import logs
 BASE_DIR = Path(__file__).resolve().parent
 CONFIG = BASE_DIR / "config.ini"
 DEFAUTS = {
-    "dossier_pfe": r"..\ControleReleveBancaire\fluxPFE",
-    "dossier_ebs": r"..\ControleReleveBancaire\fichierBanque",
-    "dossiers_logs": r"..\ControleReleveBancaire\import;..\ControleReleveBancaire\controle",
+    "racine": r"..\ODAT\releve_bancaire",
+    # sous la racine, ou chemins absolus
+    "dossier_pfe": "PFE",
+    "dossier_ebs": "EBS",
+    "dossiers_logs": "LOGS",
+    "dossier_rapports": "RAPPORTS",
+    "fichier_liste": "list_releves.txt",
     "banque_flux_b": "30003",
     "comptes_connus": "30003/03620/00020137269;16807/00166/31990892212",
 }
@@ -41,10 +45,18 @@ def config_releves() -> dict:
     if CONFIG.exists():
         cfg.read(CONFIG, encoding="utf-8")
     val = {k: cfg.get("releves", k, fallback=v) for k, v in DEFAUTS.items()}
+    racine = _chemin(val["racine"])
+
+    def sous(txt: str) -> Path:
+        p = Path(txt.strip())
+        return p if p.is_absolute() else racine / p
     return {
-        "dossier_pfe": _chemin(val["dossier_pfe"]),
-        "dossier_ebs": _chemin(val["dossier_ebs"]),
-        "dossiers_logs": [_chemin(d) for d in val["dossiers_logs"].split(";") if d.strip()],
+        "racine": racine,
+        "dossier_pfe": sous(val["dossier_pfe"]),
+        "dossier_ebs": sous(val["dossier_ebs"]),
+        "dossiers_logs": [sous(d) for d in val["dossiers_logs"].split(";") if d.strip()],
+        "dossier_rapports": sous(val["dossier_rapports"]),
+        "fichier_liste": sous(val["fichier_liste"]),
         "banque_flux_b": val["banque_flux_b"].strip(),
         "comptes_connus": [c.strip() for c in val["comptes_connus"].split(";") if c.strip()],
     }

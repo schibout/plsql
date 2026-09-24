@@ -78,3 +78,14 @@ def test_enregistrer_puis_historique(tmp_path):
     assert len(h) == 1 and int(h.loc[0, "ok"]) == 0 and int(h.loc[0, "ko"]) == 1
     assert vr.imports_connus(con) == {"uuid1": "2026-09-18"}
     con.close()
+
+
+def test_config_sous_dossiers(monkeypatch, tmp_path):
+    ini = tmp_path / "config.ini"
+    ini.write_text("[virements]\n" r"racine = D:\vir" "\ndossier_edf = QUARTZ\n" r"dossier_rapports = E:\rapports" "\n",
+                   encoding="utf-8")
+    monkeypatch.setattr(vr, "CONFIG", ini)
+    cfg = vr.config_virements()
+    assert cfg["oracle"] == Path(r"D:\vir\ORACLE") and cfg["edf"] == Path(r"D:\vir\QUARTZ")
+    assert cfg["rejets"] == Path(r"D:\vir\REJETS") and cfg["rapports"] == Path(r"E:\rapports")
+    assert cfg["depot"] == Path(r"D:\vir\import_virement")
