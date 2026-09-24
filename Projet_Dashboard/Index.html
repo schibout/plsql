@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<base target="_top">
+<meta charset="utf-8">
+<style>
+  :root {
+    --bg: #f5f6f8; --card: #fff; --text: #1d2330; --muted: #6b7385; --line: #e3e6ec;
+    --ok: #1f8a4c; --ok-bg: #e5f5ec; --w: #a86300; --w-bg: #fdf1dc; --ko: #c62828; --ko-bg: #fde7e7;
+    --accent: #2458c6;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #12151b; --card: #1b2029; --text: #e4e7ee; --muted: #8b93a5; --line: #2b3240;
+      --ok: #4cc27f; --ok-bg: #173325; --w: #f0ad4e; --w-bg: #3a2c12; --ko: #ff6b6b; --ko-bg: #3d1a1a;
+      --accent: #7aa2ff;
+    }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; padding: 16px; background: var(--bg); color: var(--text);
+         font: 14px/1.4 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+  header { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin-bottom: 16px; }
+  h1 { font-size: 20px; margin: 0; flex: 1 1 auto; }
+  .meta { color: var(--muted); font-size: 13px; }
+  button { font: inherit; border: 1px solid var(--line); background: var(--card); color: var(--text);
+           border-radius: 6px; padding: 6px 12px; cursor: pointer; }
+  button[aria-pressed="true"] { border-color: var(--accent); color: var(--accent); font-weight: 600; }
+  .kpis { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 10px; margin-bottom: 16px; }
+  .kpi { background: var(--card); border: 1px solid var(--line); border-left: 4px solid var(--muted);
+         border-radius: 8px; padding: 10px 12px; }
+  .kpi .v { font-size: 26px; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .kpi .l { color: var(--muted); font-size: 12px; }
+  .s-OK { border-left-color: var(--ok); } .s-W { border-left-color: var(--w); } .s-KO { border-left-color: var(--ko); }
+  .badge { display: inline-block; font-size: 11px; font-weight: 600; padding: 1px 8px; border-radius: 10px;
+           background: var(--line); color: var(--text); margin-left: 6px; }
+  .b-OK { background: var(--ok-bg); color: var(--ok); } .b-W { background: var(--w-bg); color: var(--w); }
+  .b-KO { background: var(--ko-bg); color: var(--ko); }
+  .filters { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; }
+  details { background: var(--card); border: 1px solid var(--line); border-radius: 8px; margin-bottom: 10px; }
+  summary { padding: 10px 12px; cursor: pointer; font-weight: 600; }
+  summary .meta { font-weight: 400; margin-left: 8px; }
+  .scroll { overflow-x: auto; padding: 0 12px 12px; }
+  table { border-collapse: collapse; width: 100%; font-size: 13px; }
+  th, td { text-align: left; padding: 4px 8px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+  th { color: var(--muted); font-weight: 600; position: sticky; top: 0; background: var(--card); }
+  td.num { text-align: right; font-variant-numeric: tabular-nums; }
+  .empty { color: var(--muted); padding: 0 12px 12px; }
+  #error { color: var(--ko); }
+</style>
+</head>
+<body>
+<header>
+  <h1><?= config.TITLE ?></h1>
+  <span class="meta" id="status">Chargement...</span>
+  <button id="refresh" type="button">Actualiser</button>
+</header>
+<p id="error" hidden></p>
+<section class="kpis" id="kpis" aria-label="Indicateurs"></section>
+<nav class="filters" id="filters" aria-label="Filtrer par domaine"></nav>
+<main id="sections"></main>
+
+<script>
+  const CONFIG = <?!= JSON.stringify(config) ?>;
+  let data = null;
+  let group = 'Tous';
+
+  const esc = s => String(s).replace(/[&<>"']/g, c => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[c]));
+  const isNum = s => /^-?\d+([.,]\d+)?$/.test(s);
+  const ageHours = iso => (Date.now() - new Date(iso).getTime()) / 36e5;
+  const fmtTime = iso => new Date(iso).toLocaleString('fr-FR', {day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit'});
+
+  function freshness(t) {
+    if (t.missing) return '<span class="badge b-KO">CSV absent</span>';
+    const stale = ageHours(t.updated) > CONFIG.STALE_HOURS;
+    return '<span class="meta">maj ' + fmtTime(t.updated) + '</span>' + (stale ? '<span class="badge b-W">perime</span>' : '');
+  }
+
+  function renderKpis() {
+    const k = data.kpi;
+    const col = name => k.header.indexOf(name);
+    document.getElementById('kpis').innerHTML = k.rows.map(r => {
+      const st = esc(r[col('STATUT')] || '');
+      return '<div class="kpi s-' + st + '"><div class="v">' + esc(r[col('VALEUR')]) + '</div>' +
+             '<div class="l">' + esc(r[col('KPI')]) + '<span class="badge b-' + st + '">' + st + '</span></div></div>';
+    }).join('') || '<div class="empty">Synthese indisponible ' + freshness(k) + '</div>';
+  }
+
+  function renderFilters() {
+    const groups = ['Tous'].concat([...new Set(data.sections.map(s => s.group))]);
+    document.getElementById('filters').innerHTML = groups.map(g =>
+      '<button type="button" data-group="' + esc(g) + '" aria-pressed="' + (g === group) + '">' + esc(g) + '</button>').join('');
+  }
+
+  function renderSections() {
+    document.getElementById('sections').innerHTML = data.sections
+      .filter(s => group === 'Tous' || s.group === group)
+      .map(s => {
+        const alert = s.alertIfRows && s.rows.length > 0 ? '<span class="badge b-KO">a traiter</span>' : '';
+        const body = s.rows.length === 0 ? '<div class="empty">Aucune ligne.</div>' :
+          '<div class="scroll"><table><thead><tr>' + s.header.map(h => '<th>' + esc(h) + '</th>').join('') +
+          '</tr></thead><tbody>' + s.rows.map(r => '<tr>' + r.map(c =>
+            '<td' + (isNum(c) ? ' class="num"' : '') + '>' + esc(c) + '</td>').join('') + '</tr>').join('') +
+          '</tbody></table></div>';
+        return '<details' + (s.rows.length ? ' open' : '') + '><summary>' + esc(s.title) +
+               '<span class="badge">' + s.rows.length + '</span>' + alert + freshness(s) + '</summary>' + body + '</details>';
+      }).join('');
+  }
+
+  function load() {
+    document.getElementById('status').textContent = 'Chargement...';
+    google.script.run
+      .withSuccessHandler(result => {
+        data = result;
+        document.getElementById('error').hidden = true;
+        document.getElementById('status').textContent = 'Lu le ' + fmtTime(result.generatedAt);
+        renderKpis(); renderFilters(); renderSections();
+      })
+      .withFailureHandler(err => {
+        const el = document.getElementById('error');
+        el.textContent = 'Lecture impossible : ' + err.message;
+        el.hidden = false;
+        document.getElementById('status').textContent = '';
+      })
+      .getDashboardData();
+  }
+
+  document.getElementById('refresh').addEventListener('click', load);
+  document.getElementById('filters').addEventListener('click', e => {
+    const b = e.target.closest('button');
+    if (!b) return;
+    group = b.dataset.group;
+    renderFilters(); renderSections();
+  });
+  setInterval(load, CONFIG.REFRESH_MINUTES * 60 * 1000);
+  load();
+</script>
+</body>
+</html>

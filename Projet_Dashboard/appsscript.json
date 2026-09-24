@@ -1,0 +1,13 @@
+{
+  "timeZone": "Europe/Paris",
+  "dependencies": {},
+  "oauthScopes": [
+    "https://www.googleapis.com/auth/drive.readonly"
+  ],
+  "webapp": {
+    "executeAs": "USER_DEPLOYING",
+    "access": "MYSELF"
+  },
+  "exceptionLogging": "STACKDRIVER",
+  "runtimeVersion": "V8"
+}

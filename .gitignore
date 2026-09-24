@@ -56,3 +56,6 @@ odat_watch/.pytest_cache/
 # clasp : liaison locale au projet Apps Script (propre au poste / au compte)
 Projet_Virements/.clasp.json
 Projet_CTM/.clasp.json
+Projet_Dashboard/.clasp.json
+Projet_Dashboard/.deployment_id
+Projet_Dashboard/config.bat
