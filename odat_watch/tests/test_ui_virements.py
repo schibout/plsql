@@ -69,8 +69,9 @@ def test_onglet_affiche_le_rapport(monkeypatch):
     monkeypatch.setattr(vr, "config_virements", lambda: CFG)
     at = AppTest.from_function(_script, default_timeout=120)
     at.run()
+    at.selectbox(key="vir_date").set_value(DATE).run()          # d'autres journées plus récentes peuvent exister
     assert not at.exception
-    texte = "\n".join(m.value for m in at.markdown) + "\n".join(c.value for c in at.caption)
+    texte ="\n".join(m.value for m in at.markdown) + "\n".join(c.value for c in at.caption)
     assert "✅ OK résultat global [ok]" in texte and "205 virements envoyés" in texte
     assert "Rapport généré le" in texte
     # 18/09 : un seul point à vérifier (virement déjà payé le 15/09) → expander D5 ouvert, sinon message « Aucun doublon »

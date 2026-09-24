@@ -331,9 +331,13 @@ tab_plan, tab_calendriers, tab_soir, tab_demain, tab_now, tab_matin, tab_banque,
     ["🧭 Préparer ma nuit", "📥 Clôtures", "🌙 Ce soir", "📅 Demain", "🔴 Maintenant", "☀️ Matin", "🏦 Banque", "🔀 Ctrl Flux", "🅾 Oracle", "🕓 Control-M", "⌨ SQL"])
 
 with tab_controlm:
-    tab_plan_prod, tab_histo, tab_profils, tab_jobs_controlm = st.tabs(
-        ["📋 Plan de production", "🔎 Historique", "📈 Profils", "🗂 Jobs CtrlM"]
+    tab_plan_prod, tab_histo, tab_profils, tab_jobs_controlm, tab_mode_emploi = st.tabs(
+        ["📋 Plan de production", "🔎 Historique", "📈 Profils", "🗂 Jobs CtrlM", "📖 Mode d'emploi"]
     )
+
+with tab_mode_emploi:
+    import ui_mode_emploi
+    ui_mode_emploi.render()
 
 with tab_plan_prod:
     import ui_plan_prod
@@ -355,7 +359,8 @@ with tab_matin:
 
 # ------------------------------------------------------------------ banque : relevés, virements, prélèvements
 with tab_banque:
-    tab_releves, tab_vir, tab_prel = st.tabs(["📄 Relevés bancaires", "💸 Virements", "💳 Prélèvements"])
+    tab_releves, tab_vir, tab_prel, tab_banque_aide = st.tabs(
+        ["📄 Relevés bancaires", "💸 Virements", "💳 Prélèvements", "📖 Mode d'emploi"])
     with tab_releves:
         import ui_releves
         ui_releves.render(kpi)
@@ -365,10 +370,17 @@ with tab_banque:
     with tab_prel:
         import ui_prelevements
         ui_prelevements.render(kpi)
+    with tab_banque_aide:
+        import ui_mode_emploi_banque
+        ui_mode_emploi_banque.render()
 
 # ------------------------------------------------------------------ ctrl flux : contrôle des flux, rejets GDR
 with tab_folio:
-    sous_flux, sous_histo, sous_gdr, sous_carte = st.tabs(["🔀 Ctrl Flux", "📚 Historique", "🧾 GDR", "🗺 Carte des flux"])
+    sous_flux, sous_histo, sous_gdr, sous_carte, sous_aide = st.tabs(
+        ["🔀 Ctrl Flux", "📚 Historique", "🧾 GDR", "🗺 Carte des flux", "📖 Mode d'emploi"])
+    with sous_aide:
+        import ui_mode_emploi_flux
+        ui_mode_emploi_flux.render()
     with sous_histo:
         import ui_historique_flux
         ui_historique_flux.render(kpi)

@@ -45,10 +45,11 @@ def render(kpi):
     st.markdown("#### Prélèvements · Oracle (OUT_SEPA) → EDF CashCollection (état de réception, rejets internes)")
     if not racine.is_dir():
         st.caption(f"Dossier des données introuvable : `{racine}` — `config.ini [prelevements] racine` "
-                   "(y déposer ORACLE\\<AAAAMMJJ>, EDF et EDF\\REJETS ; les rapports s'écrivent dans son sous-dossier rapport).")
+                   "(y déposer ORACLE\\<AAAAMMJJ>, EDF et REJETS ; les rapports s'écrivent dans RAPPORTS — "
+                   "sous-dossiers réglables par `dossier_oracle`, `dossier_edf`, `dossier_rejets`, `dossier_rapports`).")
         return
 
-    dates = pv.dates_disponibles(racine)
+    dates = pv.dates_disponibles(cfg["rapports"])
     b1, b2, b3, b4 = st.columns([1.3, 0.8, 1.4, 3])
     reference = b1.date_input("Date de référence", value=date.today(), format="DD/MM/YYYY", key="pv_date",
                               help="Défaut : aujourd'hui. Choisir une date déjà contrôlée pour revoir son rapport.")
@@ -83,10 +84,10 @@ def render(kpi):
             with st.expander("Journal d'exécution (fichiers lus, avertissements)"):
                 st.code(journal, language=None)
 
-    rapport = pv.lire_rapport(racine, reference)
+    rapport = pv.lire_rapport(cfg["rapports"], reference)
     if rapport is None:
         st.caption("Aucun rapport pour cette date de référence : cliquez sur **Lancer le rapprochement**.")
-        _tresorerie(racine, reference)
+        _tresorerie(cfg, reference)
         return
     r = pv.resume(rapport)
     _tuiles(kpi, r)
@@ -146,7 +147,7 @@ def render(kpi):
     if c0.button("📄 Générer le rapport HTML", use_container_width=True, key="pv_rapport",
                  help="Synthèse en haut (statut, chiffres, à faire), tableaux de détail en bas. Même charte que le rapport du matin."):
         try:
-            st.session_state["pv_rapport_html"] = str(rp.ecrire(rapport, rp.DOSSIER_RAPPORTS))
+            st.session_state["pv_rapport_html"] = str(rp.ecrire(rapport, cfg["rapports"]))
             if st.session_state.get("pv_histo_id"):
                 con = connect()
                 try:
@@ -189,20 +190,20 @@ def render(kpi):
     with st.expander("✉ Texte court à coller dans un mail ou Teams"):
         st.code(rp.texte_court(rapport), language=None)
 
-    _tresorerie(racine, reference)
+    _tresorerie(cfg, reference)
 
 
 def _eur(v) -> str:
     return f"{float(v or 0):,.2f} €".replace(",", " ").replace(".", ",")
 
 
-def _tresorerie(racine, reference: date) -> None:
+def _tresorerie(cfg: dict, reference: date) -> None:
     """Mémoire persistante des états EDF et des rejets (base), indépendante des fichiers du dossier."""
     con = connect()
     try:
         t = pv.tresorerie(con, jours=90, reference=reference)
         h = pv.historique(60, con)
-        absents = pv.fichiers_absents(con, racine / "EDF", racine / "REJETS")
+        absents = pv.fichiers_absents(con, cfg["edf"], cfg["rejets"])
     finally:
         con.close()
     chrono = t["chronologie"]

@@ -22,7 +22,8 @@ def _script():
 
 
 def _cfg(racine):
-    return lambda: {"outil": racine, "racine": racine, "jours": 10, "nom_si": "ORACLE"}
+    return lambda: {"outil": racine, "racine": racine, "jours": 10, "nom_si": "ORACLE", "oracle": racine / "ORACLE",
+                    "edf": racine / "EDF", "rejets": racine / "REJETS", "rapports": racine / "RAPPORTS"}
 
 
 @pytest.fixture(autouse=True)
@@ -104,16 +105,14 @@ def test_onglet_signale_les_doublons(monkeypatch, tmp_path):
 
 
 def test_rapport_html_et_texte_mail(monkeypatch, tmp_path):
-    import rapport_prelevements as rp
     _rapport(tmp_path / "RAPPORTS", "Rapprochement_Cle_Metier_20260914_081400")
     monkeypatch.setattr(pv, "config_prelevements", _cfg(tmp_path))
-    monkeypatch.setattr(rp, "DOSSIER_RAPPORTS", tmp_path / "rapports")
     at = AppTest.from_function(_script, default_timeout=60)
     at.run()
     at.date_input[0].set_value(date(2026, 9, 14)).run()
     at.button(key="pv_rapport").click().run()
     assert not at.exception
-    fichiers = list((tmp_path / "rapports").glob("Prelevements_20260914_*.html"))
+    fichiers = list((tmp_path / "RAPPORTS").glob("Prelevements_20260914_*.html"))   # dossier_rapports
     assert len(fichiers) == 1
     assert any("Rapport HTML" in b.label for b in at.download_button)
     assert any("Prélèvements Oracle ↔ EDF au 14/09/2026 : OK" in c.value for c in at.code)

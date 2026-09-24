@@ -674,7 +674,7 @@ def construire_parser():
     p = argparse.ArgumentParser(
         description="Rapprochement des prelevements Oracle / EDF.",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-    p.add_argument("--racine", type=Path, default=Path(__file__).resolve().parent,
+    p.add_argument("--racine", type=Path, default=Path(__file__).resolve().parent.parent / "ODAT" / "Prelevements",
                    help="Racine de traitement")
     p.add_argument("--sortie", type=Path, default=None,
                    help="Dossier de sortie (defaut : la racine). Le classeur est "

@@ -8,7 +8,7 @@ from test_prelevements import _rapport
 
 def _charger(tmp_path, **kw):
     _rapport(tmp_path / "RAPPORTS", "Rapprochement_Cle_Metier_20260914_081400", **kw)
-    return pv.lire_rapport(tmp_path, date(2026, 9, 14))
+    return pv.lire_rapport(tmp_path / "RAPPORTS", date(2026, 9, 14))
 
 
 def test_synthese_en_haut_puis_tableaux(tmp_path):

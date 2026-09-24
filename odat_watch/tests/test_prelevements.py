@@ -59,25 +59,25 @@ def test_dates_disponibles_les_plus_recentes_d_abord(tmp_path):
     _rapport(r, "Rapprochement_Cle_Metier_20260806_120000")
     _rapport(r, "Rapprochement_Cle_Metier_20260914_081400")
     _rapport(r, "Rapprochement_Cle_Metier_20260914_093000")
-    assert pv.dates_disponibles(tmp_path) == [date(2026, 9, 14), date(2026, 8, 6)]
+    assert pv.dates_disponibles(tmp_path / "RAPPORTS") == [date(2026, 9, 14), date(2026, 8, 6)]
 
 
 def test_dates_disponibles_sans_dossier(tmp_path):
-    assert pv.dates_disponibles(tmp_path) == []
+    assert pv.dates_disponibles(tmp_path / "RAPPORTS") == []
 
 
 def test_lire_rapport_prend_le_plus_recent_de_la_date(tmp_path):
     r = tmp_path / "RAPPORTS"
     _rapport(r, "Rapprochement_Cle_Metier_20260914_081400", statut_global="ANOMALIES")
     _rapport(r, "Rapprochement_Cle_Metier_20260914_093000")
-    rapport = pv.lire_rapport(tmp_path, date(2026, 9, 14))
+    rapport = pv.lire_rapport(tmp_path / "RAPPORTS", date(2026, 9, 14))
     assert rapport["base"].endswith("_093000") and rapport["resume"]["statut_global"] == "OK"
     assert list(rapport["rapprochement"]["statut"]) == ["EN_ATTENTE", "RAPPROCHE"]
     assert len(rapport["justifications"]) == 1 and rapport["xlsx"].is_file()
 
 
 def test_lire_rapport_absent(tmp_path):
-    assert pv.lire_rapport(tmp_path, date(2026, 9, 14)) is None
+    assert pv.lire_rapport(tmp_path / "RAPPORTS", date(2026, 9, 14)) is None
 
 
 def test_lire_rapport_sans_resume_json_reste_lisible(tmp_path):
@@ -85,14 +85,14 @@ def test_lire_rapport_sans_resume_json_reste_lisible(tmp_path):
     r = tmp_path / "RAPPORTS"
     _rapport(r, "Rapprochement_Cle_Metier_20260914_081400")
     (r / "Rapprochement_Cle_Metier_20260914_081400_resume.json").unlink()
-    rapport = pv.lire_rapport(tmp_path, date(2026, 9, 14))
+    rapport = pv.lire_rapport(tmp_path / "RAPPORTS", date(2026, 9, 14))
     assert rapport["resume"]["statut_global"] == "INCONNU" and len(rapport["rapprochement"]) == 2
 
 
 def test_resume_chiffres_des_tuiles(tmp_path):
     r = tmp_path / "RAPPORTS"
     _rapport(r, "Rapprochement_Cle_Metier_20260914_081400", avertissements=["Aucun fichier EDF depuis 2026-09-11 (3 jours)"])
-    res = pv.resume(pv.lire_rapport(tmp_path, date(2026, 9, 14)))
+    res = pv.resume(pv.lire_rapport(tmp_path / "RAPPORTS", date(2026, 9, 14)))
     assert res["statut_global"] == "OK" and res["nb_cles"] == 2
     assert res["nb_emis"] == 592 and round(res["montant_emis"], 2) == 2780519.23
     assert res["en_attente"] == 1 and res["anomalies"] == 0 and res["signales"] == 0
@@ -102,7 +102,7 @@ def test_resume_chiffres_des_tuiles(tmp_path):
 def test_par_statut_respecte_l_ordre_metier(tmp_path):
     r = tmp_path / "RAPPORTS"
     _rapport(r, "Rapprochement_Cle_Metier_20260914_081400")
-    groupes = pv.par_statut(pv.lire_rapport(tmp_path, date(2026, 9, 14))["rapprochement"])
+    groupes = pv.par_statut(pv.lire_rapport(tmp_path / "RAPPORTS", date(2026, 9, 14))["rapprochement"])
     assert [s for s, _ in groupes] == ["RAPPROCHE", "EN_ATTENTE"]
     assert len(groupes[1][1]) == 1
 
@@ -118,7 +118,8 @@ def test_lancer_capture_le_journal(monkeypatch, tmp_path):
         return {"statut_global": "OK", "base": "x"}
     faux.executer = executer
     monkeypatch.setitem(sys.modules, "rapprochement_cle_metier", faux)
-    res = pv.lancer(date(2026, 9, 21), {"outil": tmp_path, "racine": tmp_path, "jours": 10, "nom_si": "ORACLE"})
+    res = pv.lancer(date(2026, 9, 21), {"outil": tmp_path, "racine": tmp_path, "jours": 10, "nom_si": "ORACLE", "oracle": tmp_path / "ORACLE",
+                                             "edf": tmp_path / "EDF", "rejets": tmp_path / "REJETS", "rapports": tmp_path / "RAPPORTS"})
     assert res["journal"] == "Oracle : 2 fichier(s)\nAVERTISSEMENT : test"
 
 
@@ -127,7 +128,7 @@ def test_resume_ignore_les_similitudes_des_anciens_rapports(tmp_path):
     _rapport(r, "Rapprochement_Cle_Metier_20260914_081400",
              doublons="DOUBLON;P1;RUM1;FR76A;FR76D;X;30/09/2026;100.00;2;f1 + f2;11/09/2026 + 12/09/2026\n"
                       "SIMILITUDE;P2 + P3;RUM2;FR76A;FR76D;Y;30/09/2026;50.00;2;f1;11/09/2026\n")
-    res = pv.resume(pv.lire_rapport(tmp_path, date(2026, 9, 14)))
+    res = pv.resume(pv.lire_rapport(tmp_path / "RAPPORTS", date(2026, 9, 14)))
     assert res["doublons"] == 1 and "similitudes" not in res
 
 
@@ -136,5 +137,15 @@ def test_resume_sans_fichier_doublons(tmp_path):
     r = tmp_path / "RAPPORTS"
     _rapport(r, "Rapprochement_Cle_Metier_20260914_081400")
     (r / "Rapprochement_Cle_Metier_20260914_081400_doublons.csv").unlink()
-    res = pv.resume(pv.lire_rapport(tmp_path, date(2026, 9, 14)))
+    res = pv.resume(pv.lire_rapport(tmp_path / "RAPPORTS", date(2026, 9, 14)))
     assert res["doublons"] == 0
+
+
+def test_config_sous_dossiers(monkeypatch, tmp_path):
+    ini = tmp_path / "config.ini"
+    ini.write_text("[prelevements]\n" r"racine = D:\pv" "\ndossier_edf = CASH\n" r"dossier_rapports = E:\rapports" "\n",
+                   encoding="utf-8")
+    monkeypatch.setattr(pv, "CONFIG", ini)
+    cfg = pv.config_prelevements()
+    assert cfg["oracle"] == Path(r"D:\pv\ORACLE") and cfg["edf"] == Path(r"D:\pv\CASH")
+    assert cfg["rejets"] == Path(r"D:\pv\REJETS") and cfg["rapports"] == Path(r"E:\rapports")

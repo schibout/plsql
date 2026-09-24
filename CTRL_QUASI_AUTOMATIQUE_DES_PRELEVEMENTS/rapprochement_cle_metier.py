@@ -967,7 +967,7 @@ def construire_parser():
     p = argparse.ArgumentParser(
         description="Rapprochement des prelevements Oracle / EDF par cle metier.",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-    p.add_argument("--racine", type=Path, default=Path(__file__).resolve().parent,
+    p.add_argument("--racine", type=Path, default=Path(__file__).resolve().parent.parent / "ODAT" / "Prelevements",
                    help="Racine de traitement")
     p.add_argument("--sortie", type=Path, default=None,
                    help="Dossier de sortie (defaut : la racine). Les rapports sont "
@@ -978,11 +978,22 @@ def construire_parser():
                    help="Profondeur du perimetre, en jours calendaires")
     p.add_argument("--dossier-oracle", default="ORACLE")
     p.add_argument("--dossier-edf", default="EDF")
+    p.add_argument("--dossier-rejets", default=None,
+                   help="Dossier des rejets internes (defaut : REJETS a cote d'EDF, sinon sous EDF)")
+    p.add_argument("--dossier-rapports", default=DOSSIER_RAPPORT,
+                   help="Sous-dossier de la sortie ou ecrire les rapports")
     p.add_argument("--motifs-oracle", nargs="+", default=["*PCX*", "*PCL*"])
     p.add_argument("--motif-edf", default="IMPORT_AVP_DK.*.*.csv")
     p.add_argument("--motif-rejets", default="REJETS_INTERNES_DK.*.csv")
     p.add_argument("--nom-si", default="ORACLE")
     return p
+
+
+def resoudre_dossier_rejets(racine, dossier_edf, dossier_rejets=None):
+    """Dossier des rejets : celui configure (sous la racine, ou absolu), sinon recherche a cote d'EDF."""
+    if dossier_rejets:
+        return Path(racine) / dossier_rejets
+    return trouver_dossier_rejets(Path(racine) / dossier_edf)
 
 
 def trouver_dossier_rejets(edf_path):
@@ -1023,7 +1034,7 @@ def analyser(args, diag):
           + (f", dont {diag.fichiers_edf_sans_si} fichier(s) sans ligne '{args.nom_si}'"
              if diag.fichiers_edf_sans_si else "") + ".")
 
-    rejets = charger_rejets(trouver_dossier_rejets(edf_path), args.motif_rejets, diag)
+    rejets = charger_rejets(resoudre_dossier_rejets(racine, args.dossier_edf, args.dossier_rejets), args.motif_rejets, diag)
     print(f"Rejets : {diag.fichiers_rejets} fichier(s), {diag.lignes_rejets} ligne(s)"
           + (f", {diag.rejets_dupliques} doublon(s) ecarte(s)" if diag.rejets_dupliques else "")
           + ".")
@@ -1100,10 +1111,12 @@ STATUT_GLOBAL_PAR_CODE = {0: "OK", 1: "ANOMALIES", 2: "ERREUR", 3: "DEGRADE"}
 
 
 def executer(reference=None, racine=None, sortie=None, jours=10, nom_si="ORACLE",
-             dossier_oracle="ORACLE", dossier_edf="EDF",
+             dossier_oracle="ORACLE", dossier_edf="EDF", dossier_rejets=None, dossier_rapports=DOSSIER_RAPPORT,
              motifs_oracle=("*PCX*", "*PCL*"), motif_edf="IMPORT_AVP_DK.*.*.csv",
              motif_rejets="REJETS_INTERNES_DK.*.csv"):
     """Lance le rapprochement et ecrit RAPPORTS/<base>.xlsx, .csv, _justifications.csv, _resume.json.
+
+    Dossiers relatifs a la racine (rapports : a la sortie), ou absolus. dossier_rejets=None : REJETS a cote d'EDF.
 
     Point d'entree importable (ODAT Watch). Retourne un dict :
     code (0 OK, 1 anomalies, 2 lignes Oracle non conformes, 3 degrade), statut_global,
@@ -1115,7 +1128,7 @@ def executer(reference=None, racine=None, sortie=None, jours=10, nom_si="ORACLE"
     args = argparse.Namespace(
         racine=Path(racine) if racine else Path(__file__).resolve().parent,
         sortie=Path(sortie) if sortie else None, date=reference, jours=int(jours),
-        dossier_oracle=dossier_oracle, dossier_edf=dossier_edf,
+        dossier_oracle=dossier_oracle, dossier_edf=dossier_edf, dossier_rejets=dossier_rejets,
         motifs_oracle=list(motifs_oracle), motif_edf=motif_edf,
         motif_rejets=motif_rejets, nom_si=nom_si)
     diag = Diagnostic()
@@ -1123,7 +1136,7 @@ def executer(reference=None, racine=None, sortie=None, jours=10, nom_si="ORACLE"
 
     # Les rapports sont toujours regroupes dans un sous-dossier dedie : ils
     # ne se melangent jamais aux fichiers sources analyses.
-    dossier = (args.sortie or args.racine).resolve() / DOSSIER_RAPPORT
+    dossier = (args.sortie or args.racine).resolve() / dossier_rapports
     dossier.mkdir(parents=True, exist_ok=True)
     base = f"Rapprochement_Cle_Metier_{reference.strftime('%Y%m%d')}_"            f"{datetime.now().strftime('%H%M%S')}"
 
@@ -1161,9 +1174,9 @@ def executer(reference=None, racine=None, sortie=None, jours=10, nom_si="ORACLE"
         # Lignes lues, pour persistance par l'appelant (non serialisees dans le JSON)
         "edf": lignes_edf(agregats_edf, nom_si), "rejets": lignes_rejets(rejets),
         "dossier_edf": str((args.racine / dossier_edf).resolve()),
-        "dossier_rejets": str(trouver_dossier_rejets(args.racine / dossier_edf).resolve()),
+        "dossier_rejets": str(resoudre_dossier_rejets(args.racine, dossier_edf, args.dossier_rejets).resolve()),
         "fichiers_edf": fichiers_dates(args.racine / dossier_edf, motif_edf),
-        "fichiers_rejets": fichiers_dates(trouver_dossier_rejets(args.racine / dossier_edf), motif_rejets),
+        "fichiers_rejets": fichiers_dates(resoudre_dossier_rejets(args.racine, dossier_edf, args.dossier_rejets), motif_rejets),
     }
     serialisable = dict(
         {k: v for k, v in res.items() if k not in ("edf", "rejets", "fichiers_edf", "fichiers_rejets")},
@@ -1181,7 +1194,8 @@ def main(argv=None):
     try:
         res = executer(reference=args.date, racine=args.racine, sortie=args.sortie, jours=args.jours,
                        nom_si=args.nom_si, dossier_oracle=args.dossier_oracle,
-                       dossier_edf=args.dossier_edf, motifs_oracle=args.motifs_oracle,
+                       dossier_edf=args.dossier_edf, dossier_rejets=args.dossier_rejets,
+                       dossier_rapports=args.dossier_rapports, motifs_oracle=args.motifs_oracle,
                        motif_edf=args.motif_edf, motif_rejets=args.motif_rejets)
     except ErreurTraitement as exc:
         print(f"Erreur critique : {exc}", file=sys.stderr)

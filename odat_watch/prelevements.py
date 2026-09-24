@@ -19,9 +19,10 @@ import pandas as pd
 
 from oracle_refresh import BASE_DIR, CONFIG
 
-DEFAUTS = {"outil": r"..\CTRL_QUASI_AUTOMATIQUE_DES_PRELEVEMENTS", "racine": r"..\ODAT\prelevements",
-           "jours": "10", "nom_si": "ORACLE"}
-DOSSIER_RAPPORT = "RAPPORTS"
+DEFAUTS = {"outil": r"..\CTRL_QUASI_AUTOMATIQUE_DES_PRELEVEMENTS", "racine": r"..\ODAT\Prelevements",
+           "jours": "10", "nom_si": "ORACLE",
+           # sous la racine, ou chemins absolus
+           "dossier_oracle": "ORACLE", "dossier_edf": "EDF", "dossier_rejets": "REJETS", "dossier_rapports": "RAPPORTS"}
 PREFIXE = "Rapprochement_Cle_Metier_"
 RE_BASE = re.compile(rf"{PREFIXE}(\d{{8}})_(\d{{6}})")
 
@@ -67,23 +68,29 @@ def config_prelevements() -> dict:
     if CONFIG.exists():
         cfg.read(CONFIG, encoding="utf-8")
     val = {k: cfg.get("prelevements", k, fallback=v) for k, v in DEFAUTS.items()}
-    return {"outil": _chemin(val["outil"]), "racine": _chemin(val["racine"]), "jours": int(val["jours"] or 10),
-            "nom_si": val["nom_si"].strip() or "ORACLE"}
+    racine = _chemin(val["racine"])
+
+    def sous(cle: str) -> Path:
+        p = Path(val[cle].strip() or DEFAUTS[cle])
+        return p if p.is_absolute() else racine / p
+    return {"outil": _chemin(val["outil"]), "racine": racine, "jours": int(val["jours"] or 10),
+            "nom_si": val["nom_si"].strip() or "ORACLE", "oracle": sous("dossier_oracle"), "edf": sous("dossier_edf"),
+            "rejets": sous("dossier_rejets"), "rapports": sous("dossier_rapports")}
 
 
-def _bases(racine: Path) -> list[tuple[date, str, str]]:
-    """(date de référence, horodatage, base) de chaque rapport présent, du plus récent au plus ancien."""
+def _bases(rapports: Path) -> list[tuple[date, str, str]]:
+    """(date de référence, horodatage, base) de chaque rapport du dossier, du plus récent au plus ancien."""
     out = []
-    for f in (Path(racine) / DOSSIER_RAPPORT).glob(f"{PREFIXE}*.csv"):
+    for f in Path(rapports).glob(f"{PREFIXE}*.csv"):
         m = RE_BASE.fullmatch(f.stem)
         if m:
             out.append((datetime.strptime(m.group(1), "%Y%m%d").date(), m.group(2), f.stem))
     return sorted(out, reverse=True)
 
 
-def dates_disponibles(racine: Path) -> list[date]:
+def dates_disponibles(rapports: Path) -> list[date]:
     """Dates de référence déjà contrôlées, la plus récente en premier."""
-    return sorted({d for d, _, _ in _bases(racine)}, reverse=True)
+    return sorted({d for d, _, _ in _bases(rapports)}, reverse=True)
 
 
 def _outil(outil: Path) -> None:
@@ -106,8 +113,10 @@ def lancer(reference: date, cfg: dict) -> dict:
     import rapprochement_cle_metier
     journal = io.StringIO()
     with contextlib.redirect_stdout(journal), contextlib.redirect_stderr(journal):
-        res = rapprochement_cle_metier.executer(reference=reference.isoformat(), racine=cfg["racine"],
-                                                jours=cfg["jours"], nom_si=cfg["nom_si"])
+        res = rapprochement_cle_metier.executer(
+            reference=reference.isoformat(), racine=cfg["racine"], jours=cfg["jours"], nom_si=cfg["nom_si"],
+            dossier_oracle=cfg["oracle"], dossier_edf=cfg["edf"], dossier_rejets=cfg["rejets"],
+            dossier_rapports=cfg["rapports"])
     res["journal"] = journal.getvalue().strip()
     return res
 
@@ -125,13 +134,13 @@ def _doublons(f: Path) -> pd.DataFrame:
     return dbl[dbl["type"] == "DOUBLON"].reset_index(drop=True) if "type" in dbl.columns else dbl
 
 
-def lire_rapport(racine: Path, reference: date) -> dict | None:
+def lire_rapport(rapports: Path, reference: date) -> dict | None:
     """Relit le rapport le plus récent de la date de référence : rapprochement, justifications, résumé, classeur."""
-    candidats = [b for d, _, b in _bases(racine) if d == reference]
+    candidats = [b for d, _, b in _bases(rapports) if d == reference]
     if not candidats:
         return None
     base = candidats[0]
-    dossier = Path(racine) / DOSSIER_RAPPORT
+    dossier = Path(rapports)
     resume_f = dossier / f"{base}_resume.json"
     if resume_f.is_file():
         resume = json.loads(resume_f.read_text(encoding="utf-8"))

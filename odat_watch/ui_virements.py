@@ -124,7 +124,7 @@ def render(kpi):
         st.download_button("⬇ Télécharger synthese.md", rapport["synthese"].encode("utf-8"),
                            f"synthese_virements_{date}.md", "text/markdown", key="vir_md")
 
-    _rapport_et_mail(rapport, date)
+    _rapport_et_mail(rapport, date, cfg)
     _historique()
 
 
@@ -158,13 +158,13 @@ def _import(cfg: dict) -> None:
         st.success(st.session_state.pop("vir_import_msg"))
 
 
-def _rapport_et_mail(rapport: dict, date: str) -> None:
+def _rapport_et_mail(rapport: dict, date: str, cfg: dict) -> None:
     st.markdown("##### Rapport et envoi")
     c0, c1 = st.columns([1, 2])
     if c0.button("📄 Générer le rapport HTML", use_container_width=True, key="vir_rapport",
                  help="Synthèse en haut (résultat, chiffres, points d'attention), tableaux de détail en bas."):
         try:
-            chemin = rp.ecrire(rapport, date, rp.DOSSIER_RAPPORTS)
+            chemin = rp.ecrire(rapport, date, cfg["rapports"])
             st.session_state["vir_rapport_html"] = str(chemin)
             if st.session_state.get("vir_histo_id"):
                 con = connect()

@@ -51,7 +51,7 @@ python rapprochement_cle_metier.py --date 2026-08-06 --jours 10
 |---|---|---|
 | `--date` | aujourd'hui | Date de référence, au format **AAAA-MM-JJ** |
 | `--jours` | `10` | Profondeur du périmètre, en jours calendaires |
-| `--racine` | dossier du script | Où se trouvent `ORACLE\` et `EDF\` |
+| `--racine` | `..\ODAT\Prelevements` | Où se trouvent `ORACLE\`, `EDF\` et `REJETS\` |
 | `--sortie` | la racine | Où écrire le rapport |
 | `--nom-si` | `ORACLE` | SI à rapprocher (les fichiers EDF contiennent aussi `CIF`) |
 
@@ -156,14 +156,14 @@ Rejets : 11 fichier(s), 18 ligne(s), 1 doublon(s) ecarte(s).
 **155 clés, aucune anomalie, code retour 0.** À comparer à l'ancien outil qui, sur les mêmes
 données, affichait **7 dates « en écart » sans aucune explication**.
 
-Trois fichiers sont produits, tous dans le **sous-dossier `rapport\`** — jamais au milieu des
+Trois fichiers sont produits, tous dans le **sous-dossier `RAPPORTS\`** — jamais au milieu des
 fichiers sources. Le dossier est créé automatiquement, et `--sortie` désigne son **parent**.
 
 | Fichier | Usage |
 |---|---|
-| `rapport\Rapprochement_Cle_Metier_<date>_<heure>.xlsx` | Lecture — commencer par l'onglet *Justification des écarts* |
-| `rapport\..._justifications.csv` | **Les écarts justifiés**, un par ligne, exploitable en machine |
-| `rapport\....csv` | Le rapprochement complet, toutes clés |
+| `RAPPORTS\Rapprochement_Cle_Metier_<date>_<heure>.xlsx` | Lecture — commencer par l'onglet *Justification des écarts* |
+| `RAPPORTS\..._justifications.csv` | **Les écarts justifiés**, un par ligne, exploitable en machine |
+| `RAPPORTS\....csv` | Le rapprochement complet, toutes clés |
 
 ---
 

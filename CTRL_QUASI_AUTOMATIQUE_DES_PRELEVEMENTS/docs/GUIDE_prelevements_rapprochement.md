@@ -22,7 +22,7 @@ journées qui ne tombent pas juste.
   ORACLE/<date>/*PCX*|*PCL*.txt   ──►   EDF/IMPORT_AVP_DK.<date>.<heure>.csv
   ordres émis un jour donné              état de réception d'un jour donné
 
-  EDF/REJETS/REJETS_INTERNES_DK.<date>.<heure>.csv
+  REJETS/REJETS_INTERNES_DK.<date>.<heure>.csv
   prélèvements refusés (recopiés bruts, à titre d'information)
 ```
 
@@ -52,7 +52,7 @@ python prelevements_rapprochement.py --sortie D:\rapports
 
 | Option | Défaut | Rôle |
 |---|---|---|
-| `--racine` | dossier du script | Où se trouvent `ORACLE\` et `EDF\` |
+| `--racine` | `..\ODAT\Prelevements` | Où se trouvent `ORACLE\`, `EDF\` et `REJETS\` |
 | `--sortie` | la racine | Où écrire le classeur |
 | `--nom-si` | `ORACLE` | SI à rapprocher (les fichiers EDF contiennent aussi `CIF`) |
 | `--recherche-jn N` | `0` (désactivé) | **Chercher** la date EDF parmi J+1..J+N au lieu d'appliquer la règle fixe — voir §5 |
@@ -103,18 +103,19 @@ Les compteurs affichés avant le classeur sont un contrôle en soi : si le nombr
 lignes s'écarte de l'ordinaire, le rapport est suspect avant même d'être ouvert.
 
 Le classeur s'appelle `Rapprochement_Oracle_EDF_<AAAAMMJJ>_<HHMMSS>.xlsx` — horodaté, donc jamais
-écrasé — et il est écrit dans le **sous-dossier `rapport\`**, jamais au milieu des fichiers
+écrasé — et il est écrit dans le **sous-dossier `RAPPORTS\`**, jamais au milieu des fichiers
 sources analysés. Le dossier est créé automatiquement.
 
 ```
-CTRL_QUASI_AUTOMATIQUE_DES_PRELEVEMENTS\
+ODAT\Prelevements\
 ├── ORACLE\        <- sources analysées
 ├── EDF\           <- sources analysées
-└── rapport\       <- tout ce qui est produit
+├── REJETS\        <- sources analysées
+└── RAPPORTS\      <- tout ce qui est produit
     └── Rapprochement_Oracle_EDF_20260807_235122.xlsx
 ```
 
-`--sortie` désigne le dossier **parent** : le sous-dossier `rapport\` y est toujours ajouté.
+`--sortie` désigne le dossier **parent** : le sous-dossier `RAPPORTS\` y est toujours ajouté.
 
 ---
 
