@@ -29,6 +29,20 @@ const DASHBOARD_KPI_LINKS = Object.freeze({
   'Factures demat en attente': ['18_demat_statut.csv', '19_demat_par_jour.csv', '20_demat_en_attente.csv'],
 });
 
+/** Panneau Factures dematerialisees : donut des statuts + arrivees par jour (a la place des tableaux 18 et 19). */
+const DASHBOARD_DEMAT = Object.freeze({
+  KPI: 'Factures demat en attente',
+  STATUT_FILE: '18_demat_statut.csv',
+  JOUR_FILE: '19_demat_par_jour.csv',
+  // Ordre fixe des statuts (= ordre des couleurs) et libelles affiches.
+  STATUTS: [
+    {code: 'INSERE', label: 'En attente'},
+    {code: 'INTEGREE', label: 'Integree'},
+    {code: 'COMPLETED', label: 'Terminee'},
+    {code: 'AUTRE', label: 'Autre'},
+  ],
+});
+
 /** Sections affichees, dans l'ordre. Un fichier absent du dossier est signale. */
 const DASHBOARD_SECTIONS = Object.freeze([
   {file: '01_dsp_flux.csv', title: 'DSP - Detail des flux', group: 'DSP'},

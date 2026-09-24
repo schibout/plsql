@@ -32,7 +32,13 @@
   button.kpi:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
   .kpi[aria-pressed="true"] { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent); }
   .kpis.focused .kpi[aria-pressed="false"] { opacity: .55; }
-  .kpi .v { font-size: 26px; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .kpi { position: relative; }
+  .kpi:has(.mini) { padding-right: 62px; }
+  .kpi .mini { position: absolute; top: 10px; right: 10px; width: 44px; height: 44px; }
+  .kpi .mini svg { width: 100%; height: 100%; transform: rotate(-90deg); overflow: visible; }
+  .kpi .mini circle { fill: none; transition: stroke-dasharray .9s cubic-bezier(.2,.8,.2,1); }
+  .kpi .mini circle.track { stroke: var(--line); }
+  .kpi .v { font-size: 26px; font-weight: 700; }
   .kpi .l { color: var(--muted); font-size: 12px; }
   .s-OK { border-left-color: var(--ok); } .s-W { border-left-color: var(--w); } .s-KO { border-left-color: var(--ko); }
   .badge { display: inline-block; font-size: 11px; font-weight: 600; padding: 1px 8px; border-radius: 10px;
@@ -50,6 +56,44 @@
   td.num { text-align: right; font-variant-numeric: tabular-nums; }
   .empty { color: var(--muted); padding: 0 12px 12px; }
   #error { color: var(--ko); }
+
+  /* --- Factures dematerialisees : series (palette validee, ordre fixe) --- */
+  :root { --s-INSERE: #eb6834; --s-INTEGREE: #2a78d6; --s-COMPLETED: #1baf7a; --s-AUTRE: #898781; }
+  @media (prefers-color-scheme: dark) {
+    :root { --s-INSERE: #d95926; --s-INTEGREE: #3987e5; --s-COMPLETED: #199e70; }
+  }
+  .demat { background: var(--card); border: 1px solid var(--line); border-radius: 8px; margin-bottom: 10px; padding: 12px; }
+  .demat-head { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-bottom: 8px; }
+  .demat-head h2 { font-size: 15px; margin: 0; flex: 1 1 auto; }
+  .demat-body { display: grid; grid-template-columns: 220px 1fr; gap: 20px; align-items: center; }
+  @media (max-width: 640px) { .demat-body { grid-template-columns: 1fr; } }
+  .donut { position: relative; width: 220px; height: 220px; margin: 0 auto; }
+  .donut svg { width: 100%; height: 100%; transform: rotate(-90deg); overflow: visible; }
+  .donut circle { fill: none; stroke-width: 22; transition: stroke-dasharray .9s cubic-bezier(.2,.8,.2,1), stroke-width .2s, opacity .2s; cursor: pointer; }
+  .donut circle.track { stroke: var(--line); stroke-width: 22; cursor: default; }
+  .donut.dim circle.seg:not(.on) { opacity: .35; }
+  .donut circle.seg.on { stroke-width: 28; }
+  .donut .center { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; pointer-events: none; }
+  .donut .center .n { font-size: 40px; font-weight: 600; line-height: 1; }
+  .donut .center .t { color: var(--muted); font-size: 12px; margin-top: 4px; max-width: 120px; }
+  .legend { list-style: none; margin: 0 0 14px; padding: 0; display: grid; gap: 4px; }
+  .legend li { display: grid; grid-template-columns: 12px 1fr auto auto; gap: 10px; align-items: center; padding: 6px 8px; border-radius: 6px; cursor: pointer; transition: background .15s; }
+  .legend li:hover, .legend li.on { background: var(--bg); }
+  .legend .sw { width: 12px; height: 12px; border-radius: 3px; }
+  .legend .pct { color: var(--muted); font-size: 12px; min-width: 40px; text-align: right; }
+  .legend .n { font-variant-numeric: tabular-nums; font-weight: 600; min-width: 48px; text-align: right; }
+  .days { display: grid; gap: 6px; }
+  .day { display: grid; grid-template-columns: 76px 1fr 48px; gap: 8px; align-items: center; font-size: 12px; }
+  .day .lbl { color: var(--muted); }
+  .day .bar { display: flex; gap: 2px; height: 18px; }
+  .day .bar span { border-radius: 0; transition: flex-basis .6s cubic-bezier(.2,.8,.2,1), opacity .2s; }
+  .day .bar span:first-child { border-radius: 4px 0 0 4px; }
+  .day .bar span:last-child { border-radius: 0 4px 4px 0; }
+  .day .bar span:only-child { border-radius: 4px; }
+  .demat.dim .day .bar span:not(.on) { opacity: .3; }
+  .day .tot { font-variant-numeric: tabular-nums; font-weight: 600; text-align: right; }
+  .demat .tables { margin-top: 12px; }
+  .demat .tables details { margin: 0 0 8px; }
 </style>
 </head>
 <body>
@@ -88,10 +132,17 @@
     box.innerHTML = k.rows.map(r => {
       const st = esc(r[col('STATUT')] || '');
       const name = r[col('KPI')];
+      // La tuile demat porte un mini donut des statuts (memes couleurs que le panneau).
+      let mini = '';
+      if (name === CONFIG.DEMAT.KPI) {
+        const {list, total} = dematStats();
+        if (total) mini = '<div class="mini">' + donutSvg(list, total, 40, false) + '</div>';
+      }
       return '<button type="button" class="kpi s-' + st + '" data-kpi="' + esc(name) + '" aria-pressed="' + (name === focus) + '"' +
-             ' title="Voir le detail"><div class="v">' + esc(r[col('VALEUR')]) + '</div>' +
+             ' title="Voir le detail">' + mini + '<div class="v">' + esc(r[col('VALEUR')]) + '</div>' +
              '<div class="l">' + esc(name) + '<span class="badge b-' + st + '">' + st + '</span></div></button>';
     }).join('') || '<div class="empty">Synthese indisponible ' + freshness(k) + '</div>';
+    requestAnimationFrame(() => box.querySelectorAll('.mini circle.seg').forEach(c => c.setAttribute('stroke-dasharray', c.dataset.dash)));
   }
 
   function renderFilters() {
@@ -106,20 +157,119 @@
     return group === 'Tous' || s.group === group;
   }
 
+  function tableHtml(s) {
+    if (s.rows.length === 0) return '<div class="empty">Aucune ligne.</div>';
+    return '<div class="scroll"><table><thead><tr>' + s.header.map(h => '<th>' + esc(h) + '</th>').join('') +
+      '</tr></thead><tbody>' + s.rows.map(r => '<tr>' + r.map(c =>
+        '<td' + (isNum(c) ? ' class="num"' : '') + '>' + esc(c) + '</td>').join('') + '</tr>').join('') +
+      '</tbody></table></div>';
+  }
+
   function renderSections() {
+    const D = CONFIG.DEMAT;
     document.getElementById('sections').innerHTML = data.sections
       .filter(visible)
+      .filter(s => s.file !== D.JOUR_FILE)  // rendu dans le panneau demat
       .map(s => {
+        if (s.file === D.STATUT_FILE) return dematPanel(s);
         const alert = s.alertIfRows && s.rows.length > 0 ? '<span class="badge b-KO">a traiter</span>' : '';
-        const body = s.rows.length === 0 ? '<div class="empty">Aucune ligne.</div>' :
-          '<div class="scroll"><table><thead><tr>' + s.header.map(h => '<th>' + esc(h) + '</th>').join('') +
-          '</tr></thead><tbody>' + s.rows.map(r => '<tr>' + r.map(c =>
-            '<td' + (isNum(c) ? ' class="num"' : '') + '>' + esc(c) + '</td>').join('') + '</tr>').join('') +
-          '</tbody></table></div>';
         return '<details' + (s.rows.length || focus !== null ? ' open' : '') + '><summary>' + esc(s.title) +
-               '<span class="badge">' + s.rows.length + '</span>' + alert + freshness(s) + '</summary>' + body + '</details>';
+               '<span class="badge">' + s.rows.length + '</span>' + alert + freshness(s) + '</summary>' + tableHtml(s) + '</details>';
       }).join('');
+    // Les arcs partent de zero puis s'etirent (transition CSS sur stroke-dasharray).
+    requestAnimationFrame(() => document.querySelectorAll('.donut circle.seg').forEach(c => {
+      c.setAttribute('stroke-dasharray', c.dataset.dash);
+    }));
   }
+
+  // --- Factures dematerialisees : donut des statuts + arrivees par jour ---
+  const section = file => data.sections.find(s => s.file === file) || {missing: true, header: [], rows: []};
+
+  function dematStats() {
+    const D = CONFIG.DEMAT, s = section(D.STATUT_FILE);
+    const iS = s.header.indexOf('STATUT'), iN = s.header.indexOf('NB');
+    const counts = {};
+    s.rows.forEach(r => {
+      const code = D.STATUTS.some(x => x.code === r[iS]) ? r[iS] : 'AUTRE';
+      counts[code] = (counts[code] || 0) + (Number(r[iN]) || 0);
+    });
+    const total = Object.values(counts).reduce((a, b) => a + b, 0);
+    const list = D.STATUTS.map(x => ({code: x.code, label: x.label, n: counts[x.code] || 0}))
+      .filter(x => x.n > 0 || x.code !== 'AUTRE');
+    list.forEach(x => { x.pct = total ? Math.round(x.n / total * 1000) / 10 : 0; });
+    return {list, total, section: s};
+  }
+
+  function donutSvg(list, total, r, big) {
+    // pathLength=100 : dasharray en % du perimetre ; 1 unite de gap = 2 px sur le grand donut.
+    const gap = list.filter(x => x.n).length > 1 ? 1 : 0;
+    let start = 0;
+    const segs = list.filter(x => x.n).map(x => {
+      const len = x.n / total * 100;
+      const html = '<circle class="seg" cx="50" cy="50" r="' + r + '" pathLength="100" data-code="' + x.code + '"' +
+        ' stroke="var(--s-' + x.code + ')" stroke-dasharray="0 100" data-dash="' + Math.max(len - gap, 0.2) + ' 100"' +
+        ' stroke-dashoffset="' + (-start - gap / 2) + '"><title>' + esc(x.label) + ' : ' + x.n + ' (' + x.pct + ' %)</title></circle>';
+      start += len;
+      return html;
+    }).join('');
+    return '<svg viewBox="0 0 100 100" aria-hidden="true"' + (big ? '' : ' style="stroke-width:14"') + '>' +
+      '<circle class="track" cx="50" cy="50" r="' + r + '"' + (big ? '' : ' style="stroke-width:14"') + '/>' + segs + '</svg>';
+  }
+
+  function dematPanel(s) {
+    const D = CONFIG.DEMAT, {list, total} = dematStats();
+    const jours = section(D.JOUR_FILE);
+    const col = n => jours.header.indexOf(n);
+    const maxTot = Math.max(1, ...jours.rows.map(r => Number(r[col('TOTAL')]) || 0));
+    const days = jours.rows.map(r => {
+      const tot = Number(r[col('TOTAL')]) || 0;
+      const segs = D.STATUTS.map(x => ({code: x.code, n: Number(r[col('NB_' + x.code)]) || 0})).filter(x => x.n > 0);
+      return '<div class="day"><span class="lbl">' + esc(r[col('DATE_CR')]) + ' <small>' + esc((r[col('JOUR')] || '').slice(0, 3).toLowerCase()) + '</small></span>' +
+        '<div class="bar" style="width:' + (tot / maxTot * 100) + '%">' + segs.map(x =>
+          '<span data-code="' + x.code + '" style="flex:' + x.n + ' 0 0;background:var(--s-' + x.code + ')" title="' + x.n + '"></span>').join('') +
+        '</div><span class="tot">' + tot + '</span></div>';
+    }).join('');
+    const attente = list.find(x => x.code === 'INSERE');
+    const badge = total === 0 ? '' : attente && attente.n > 0
+      ? '<span class="badge b-W">' + attente.n + ' en attente</span>' : '<span class="badge b-OK">rien en attente</span>';
+    return '<section class="demat" id="demat" aria-label="Factures dematerialisees">' +
+      '<div class="demat-head"><h2>Factures dematerialisees</h2>' + badge + freshness(s) + '</div>' +
+      '<div class="demat-body"><div class="donut">' + donutSvg(list, total, 38, true) +
+        '<div class="center"><div class="n">' + total + '</div><div class="t">' + (total ? 'factures au total' : 'aucune facture') + '</div></div></div>' +
+      '<div><ul class="legend">' + list.map(x =>
+        '<li data-code="' + x.code + '" tabindex="0"><span class="sw" style="background:var(--s-' + x.code + ')"></span>' +
+        '<span>' + esc(x.label) + ' <small class="meta">' + x.code + '</small></span><span class="pct">' + x.pct + ' %</span><span class="n">' + x.n + '</span></li>').join('') +
+      '</ul>' + (days ? '<div class="meta" style="margin-bottom:6px">Arrivees par jour (' + jours.rows.length + ' j)</div><div class="days">' + days + '</div>' : '') +
+      '</div></div>' +
+      '<div class="tables"><details><summary>Tableau : stock par statut</summary>' + tableHtml(s) + '</details>' +
+      '<details><summary>Tableau : arrivees par jour</summary>' + tableHtml(jours) + '</details></div></section>';
+  }
+
+  let pinned = null;  // statut epingle par clic (survol = mise en avant temporaire)
+  function dematHighlight(code) {
+    const panel = document.getElementById('demat');
+    if (!panel) return;
+    const {list, total} = dematStats();
+    const x = list.find(y => y.code === code);
+    panel.classList.toggle('dim', !!x);
+    panel.querySelector('.donut').classList.toggle('dim', !!x);
+    panel.querySelectorAll('[data-code]').forEach(el => el.classList.toggle('on', !!x && el.dataset.code === code));
+    panel.querySelector('.center .n').textContent = x ? x.n : total;
+    panel.querySelector('.center .t').textContent = x ? x.label + ' · ' + x.pct + ' %' : (total ? 'factures au total' : 'aucune facture');
+  }
+  const codeOf = e => { const el = e.target.closest('.demat [data-code]'); return el ? el.dataset.code : null; };
+  document.getElementById('sections').addEventListener('mouseover', e => { const c = codeOf(e); if (c) dematHighlight(c); });
+  document.getElementById('sections').addEventListener('mouseout', e => { if (codeOf(e)) dematHighlight(pinned); });
+  document.getElementById('sections').addEventListener('click', e => {
+    const c = codeOf(e); if (!c) return;
+    pinned = pinned === c ? null : c;
+    dematHighlight(pinned);
+  });
+  document.getElementById('sections').addEventListener('keydown', e => {
+    if (e.key !== 'Enter' && e.key !== ' ') return;
+    const c = codeOf(e); if (!c) return;
+    e.preventDefault(); pinned = pinned === c ? null : c; dematHighlight(pinned);
+  });
 
   function load() {
     document.getElementById('status').textContent = 'Chargement...';
