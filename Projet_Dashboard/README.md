@@ -1,7 +1,7 @@
 # Dashboard contrôle EBS
 
 Application web Google Apps Script qui affiche les CSV d'un dossier Drive.
-Les CSV sont produits toutes les heures par `export_csv.bat`, qui exécute les
+Les CSV sont produits toutes les heures par `export_csv.bat` (→ `export_csv.py`), qui exécute les
 requêtes de `sql/` (extraites de `ControleMatinGenerique/Controle_Quotidien_Complet.sql`).
 
 ```
@@ -14,8 +14,8 @@ Oracle EBS --export_csv.bat (horaire)--> CSV_DIR (Drive pour ordinateur) --> dos
 |---|---|
 | `sql/00_kpi.sql` | Synthèse du jour (bloc PL/SQL d'origine réécrit en SELECT) → tuiles |
 | `sql/01..17_*.sql` | Une requête par tableau du dashboard |
-| `export.sql` | Enveloppe SQL*Plus : CSV, variables (`nb_jours_histo`=3, `heure_fermeture`=19, `heure_ouverture`=7) |
-| `export_csv.bat` | Exécute toutes les requêtes, un CSV par requête |
+| `export_csv.py` | Exécute toutes les requêtes (python-oracledb, connexion d'odat_watch), un CSV par requête ; variables `nb_jours_histo`=3, `heure_fermeture`=19, `heure_ouverture`=7 |
+| `export_csv.bat` | Lanceur pour la tâche planifiée : fixe `CSV_DIR` et `PYTHON` (surchargeables dans un `config.bat` optionnel) |
 | `Config.gs` | ID du dossier Drive, seuil « périmé », liste des sections |
 | `Code.gs` / `Index.html` | App web |
 | `deploy.bat` | Tests locaux puis `clasp push` (+ `clasp deploy` si `.deployment_id`) |
@@ -26,9 +26,11 @@ tant que les deux ne correspondent pas.
 
 ## Première installation
 
-1. **Export Oracle** : copier `config.exemple.bat` en `config.bat`, renseigner
-   la connexion et `CSV_DIR` (un dossier synchronisé par Google Drive pour
-   ordinateur). SQL*Plus 12.2+ requis. Lancer `export_csv.bat` une fois.
+1. **Export Oracle** : la connexion est celle d'odat_watch (`odat_watch/config.ini`,
+   section `[database]` : dsn, user, password, schema, mode, client_dir) — rien à
+   ressaisir. Régler `CSV_DIR` (dossier synchronisé par Google Drive pour ordinateur)
+   dans `export_csv.bat` ou dans un `config.bat` (`set CSV_DIR=...`, `set PYTHON=...`).
+   Lancer `export_csv.bat` une fois : une ligne `[OK]`/`[KO]` par requête.
 2. **Planification horaire** :
    ```
    schtasks /create /tn "Dashboard EBS export" /sc hourly /tr "\"%CD%\export_csv.bat\""
@@ -49,6 +51,6 @@ tant que les deux ne correspondent pas.
 
 - Tuiles : `OK` / `W` / `KO`, mêmes règles que le contrôle du matin (J-1).
 - « périmé » : CSV non mis à jour depuis plus de `STALE_HOURS` (3 h) — export
-  en échec pour cette requête (le CSV précédent est conservé, voir le log dans `%TEMP%`).
+  en échec pour cette requête (le CSV précédent est conservé, le message d'erreur est dans la sortie de `export_csv.bat`).
 - « à traiter » : section qui ne devrait pas avoir de ligne (rejets, erreurs, images manquantes).
 - La page se recharge toute seule toutes les 15 minutes.
