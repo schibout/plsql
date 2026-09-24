@@ -1,0 +1,91 @@
+REQ_ID,PROGRAMME,DEBUT,FIN,DUREE_MIN,STATUT
+49116128,DKA : Lanceur (SHELL),23/09 21:32,23/09 23:35,122.7,OK
+49116129,Report Set,23/09 21:32,23/09 23:34,122.4,OK
+49126939,DKA : Lanceur (SHELL),24/09 04:37,24/09 06:37,120.4,OK
+49126958,DKA : Situation Oracle du matin,24/09 04:37,24/09 06:37,120.2,OK
+49118159,DKA : Lanceur (SHELL),24/09 00:40,24/09 02:08,87.7,WARNING
+49118160,DKA : Règlements automatiques toutes sociétés des factures fournisseurs,24/09 00:40,24/09 02:08,87.4,WARNING
+49115946,DKA : Lanceur (SHELL),23/09 20:35,23/09 21:27,52,OK
+49115947,DKA : Intégration des factures XEROX,23/09 20:35,23/09 21:26,51.8,OK
+49117750,Request Set Stage,23/09 22:43,23/09 23:34,51.3,OK
+49117752,DKA : PAC : Importer les factures fournisseurs depuis Oracle AP,23/09 22:43,23/09 23:34,51.3,OK
+49117774,PRC: Interface Supplier Costs,23/09 22:43,23/09 23:34,51.1,OK
+49117766,PRC: Interface Supplier Costs,23/09 22:43,23/09 23:34,50.9,OK
+49117768,PRC: Interface Supplier Costs,23/09 22:43,23/09 23:34,50.8,OK
+49117806,PRC: Interface Supplier Costs,23/09 22:43,23/09 23:34,50.8,OK
+49117770,PRC: Interface Supplier Costs,23/09 22:43,23/09 23:34,50.8,OK
+49117775,PRC: Interface Supplier Costs,23/09 22:43,23/09 23:34,50.7,OK
+49117763,PRC: Interface Supplier Costs,23/09 22:43,23/09 23:34,50.7,OK
+49117762,PRC: Interface Expense Reports from Payables,23/09 22:43,23/09 23:34,50.7,OK
+49117757,PRC: Interface Expense Reports from Payables,23/09 22:43,23/09 23:34,50.7,OK
+49117755,PRC: Interface Expense Reports from Payables,23/09 22:43,23/09 23:34,50.7,OK
+49117753,PRC: Interface Expense Reports from Payables,23/09 22:43,23/09 23:34,50.7,OK
+49117759,PRC: Interface Expense Reports from Payables,23/09 22:43,23/09 23:34,50.7,OK
+49117780,PRC: Interface Supplier Costs,23/09 22:43,23/09 23:34,50.7,OK
+49117783,PRC: Interface Supplier Costs,23/09 22:43,23/09 23:34,50.7,OK
+49117800,PRC: Interface Supplier Costs,23/09 22:43,23/09 23:34,50.7,OK
+49117841,PRC: Interface Supplier Costs,23/09 22:43,23/09 23:34,50.7,OK
+49117809,PRC: Interface Supplier Costs,23/09 22:43,23/09 23:34,50.7,OK
+49117811,PRC: Interface Supplier Costs,23/09 22:43,23/09 23:34,50.7,OK
+49117812,PRC: Interface Supplier Costs,23/09 22:43,23/09 23:34,50.7,OK
+49117814,PRC: Interface Supplier Costs,23/09 22:43,23/09 23:34,50.7,OK
+49117815,PRC: Interface Supplier Costs,23/09 22:43,23/09 23:34,50.7,OK
+49117804,PRC: Interface Supplier Costs,23/09 22:43,23/09 23:34,50.7,OK
+49117807,PRC: Interface Supplier Costs,23/09 22:43,23/09 23:34,50.7,OK
+49117808,PRC: Interface Supplier Costs,23/09 22:43,23/09 23:34,50.7,OK
+49117781,PRC: Interface Supplier Costs,23/09 22:43,23/09 23:34,50.7,OK
+49117785,PRC: Interface Supplier Costs,23/09 22:43,23/09 23:34,50.7,OK
+49117786,PRC: Interface Supplier Costs,23/09 22:43,23/09 23:34,50.7,OK
+49117788,PRC: Interface Supplier Costs,23/09 22:43,23/09 23:34,50.7,OK
+49117794,PRC: Interface Supplier Costs,23/09 22:43,23/09 23:34,50.7,OK
+49117796,PRC: Interface Supplier Costs,23/09 22:43,23/09 23:34,50.7,OK
+49117797,PRC: Interface Supplier Costs,23/09 22:43,23/09 23:34,50.7,OK
+49117799,PRC: Interface Supplier Costs,23/09 22:43,23/09 23:34,50.7,OK
+49117801,PRC: Interface Supplier Costs,23/09 22:43,23/09 23:34,50.7,OK
+49117802,PRC: Interface Supplier Costs,23/09 22:43,23/09 23:34,50.7,OK
+49117835,PRC: Interface Supplier Costs,23/09 22:43,23/09 23:34,50.7,OK
+49117822,PRC: Interface Supplier Costs,23/09 22:43,23/09 23:34,50.7,OK
+49117829,PRC: Interface Supplier Costs,23/09 22:43,23/09 23:34,50.7,OK
+49117826,PRC: Interface Supplier Costs,23/09 22:43,23/09 23:34,50.7,OK
+49117824,PRC: Interface Supplier Costs,23/09 22:43,23/09 23:34,50.7,OK
+49117846,PRC: Interface Supplier Costs,23/09 22:43,23/09 23:34,50.7,OK
+49117845,PRC: Interface Supplier Costs,23/09 22:43,23/09 23:34,50.7,OK
+49117844,PRC: Interface Supplier Costs,23/09 22:43,23/09 23:34,50.7,OK
+49117840,PRC: Interface Supplier Costs,23/09 22:43,23/09 23:34,50.7,OK
+49117838,PRC: Interface Supplier Costs,23/09 22:43,23/09 23:34,50.7,OK
+49117837,PRC: Interface Supplier Costs,23/09 22:43,23/09 23:34,50.7,OK
+49117836,PRC: Interface Supplier Costs,23/09 22:43,23/09 23:34,50.7,OK
+49117817,PRC: Interface Supplier Costs,23/09 22:43,23/09 23:34,50.7,OK
+49117818,PRC: Interface Supplier Costs,23/09 22:43,23/09 23:34,50.7,OK
+49117820,PRC: Interface Supplier Costs,23/09 22:43,23/09 23:34,50.7,OK
+49117831,PRC: Interface Supplier Costs,23/09 22:43,23/09 23:34,50.7,OK
+49117860,PRC: Interface Supplier Costs,23/09 22:43,23/09 23:34,50.7,OK
+49117858,PRC: Interface Supplier Costs,23/09 22:43,23/09 23:34,50.7,OK
+49117855,PRC: Interface Supplier Costs,23/09 22:43,23/09 23:34,50.7,OK
+49117854,PRC: Interface Supplier Costs,23/09 22:43,23/09 23:34,50.7,OK
+49117852,PRC: Interface Supplier Costs,23/09 22:43,23/09 23:34,50.7,OK
+49117777,PRC: Interface Supplier Costs,23/09 22:43,23/09 23:34,50.7,OK
+49117791,PRC: Interface Supplier Costs,23/09 22:43,23/09 23:34,50.7,OK
+49117850,PRC: Interface Supplier Costs,23/09 22:43,23/09 23:34,50.7,OK
+49117871,PRC: Interface Supplier Costs,23/09 22:43,23/09 23:34,50.6,OK
+49117861,PRC: Interface Supplier Costs,23/09 22:43,23/09 23:34,50.6,OK
+49117877,PRC: Interface Supplier Costs,23/09 22:43,23/09 23:34,50.6,OK
+49117876,PRC: Interface Supplier Costs,23/09 22:43,23/09 23:34,50.6,OK
+49117875,PRC: Interface Supplier Costs,23/09 22:43,23/09 23:34,50.6,OK
+49117878,PRC: Interface Supplier Costs,23/09 22:43,23/09 23:34,50.6,OK
+49117870,PRC: Interface Supplier Costs,23/09 22:43,23/09 23:34,50.6,OK
+49117863,PRC: Interface Supplier Costs,23/09 22:43,23/09 23:34,50.6,OK
+49117872,PRC: Interface Supplier Costs,23/09 22:43,23/09 23:34,50.6,OK
+49117853,PRC: Interface Supplier Costs,23/09 22:43,23/09 23:34,50.6,OK
+49117859,PRC: Interface Supplier Costs,23/09 22:43,23/09 23:34,50.6,OK
+49117867,PRC: Interface Supplier Costs,23/09 22:43,23/09 23:34,50.6,OK
+49117868,PRC: Interface Supplier Costs,23/09 22:43,23/09 23:34,50.6,OK
+49111925,DKA : Lanceur (SHELL),23/09 19:01,23/09 19:48,46.7,OK
+49111929,Report Set,23/09 19:01,23/09 19:48,46.6,OK
+49116512,Request Set Stage,23/09 21:32,23/09 22:14,41.3,OK
+49116513,DKA : Approbation toutes sociétés des factures fournisseurs,23/09 21:32,23/09 22:14,41.3,OK
+49112424,Request Set Stage,23/09 19:02,23/09 19:38,35.7,OK
+49112425,DKA : Calculer les plus- et moins-values,23/09 19:02,23/09 19:38,35.7,OK
+49123445,DKA : Lanceur (SHELL),24/09 03:27,24/09 04:00,32.4,OK
+49116652,Invoice Validation,23/09 21:42,23/09 22:14,31.7,OK
+49116576,Invoice Validation,23/09 21:42,23/09 22:12,30.1,OK

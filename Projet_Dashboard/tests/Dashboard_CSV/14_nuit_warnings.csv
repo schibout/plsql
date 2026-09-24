@@ -1,0 +1,53 @@
+REQ_ID,PROGRAMME,DEBUT,DUREE_MIN,MSG
+49122987,Request Set Stage,24/09 03:02:54,0.4,
+49122988,DKA : Imputation GL,24/09 03:02:54,0.3,
+49122986,Report Set,24/09 03:02:53,2.8,
+49122975,DKA : Lanceur (SHELL),24/09 03:02:52,3,Fin Anormale
+49121141,DKA : Génération des pièces répétitives,24/09 02:50:30,11.4,
+49121139,DKA : Lanceur (SHELL),24/09 02:50:29,27,Fin Anormale
+49121140,DKA : Lanceur (SHELL),24/09 02:50:29,11.7,Fin Anormale
+49118160,DKA : Règlements automatiques toutes sociétés des factures fournisseurs,24/09 00:40:55,87.4,
+49118159,DKA : Lanceur (SHELL),24/09 00:40:54,87.7,Fin Anormale
+49118129,Accounting Program,24/09 00:37:54,0.2,
+49117279,Accounting Program,23/09 22:15:30,26.7,
+49117200,Accounting Program,23/09 22:15:22,0.5,
+49116948,Invoice Validation Child Worker Process,23/09 21:48:06,11.3,
+49116935,Invoice Validation Child Worker Process,23/09 21:47:44,15.1,
+49116931,Invoice Validation Child Worker Process,23/09 21:47:44,15.2,
+49116939,Invoice Validation Child Worker Process,23/09 21:47:44,9.7,
+49116938,Invoice Validation Child Worker Process,23/09 21:47:44,9.7,
+49116923,Invoice Validation Child Worker Process,23/09 21:47:32,7.6,
+49116919,Invoice Validation Child Worker Process,23/09 21:47:01,7.6,
+49116918,Invoice Validation Child Worker Process,23/09 21:47:01,7.8,
+49116908,Invoice Validation Child Worker Process,23/09 21:46:53,14.3,
+49116909,Invoice Validation Child Worker Process,23/09 21:46:53,14.6,
+49116845,Invoice Validation Child Worker Process,23/09 21:43:40,9.1,
+49116753,Invoice Validation Child Worker Process,23/09 21:42:59,0.1,
+49116126,DKA : Import des codes de déblocage Facture depuis IVALUA,23/09 21:28:34,1.9,
+49116125,DKA : Contrôle des flux IVALUA,23/09 21:28:32,0,
+49116122,DKA : Lanceur (SHELL),23/09 21:28:31,0.4,Fin Anormale
+49116123,DKA : Lanceur (SHELL),23/09 21:28:31,2,Fin Anormale
+49115750,DKA : Import des données Réceptions depuis iValua,23/09 19:48:44,8.9,
+49115749,DKA : Lanceur (SHELL),23/09 19:48:41,9,Fin Anormale
+49115255,DKA : Import des contrats SSTR depuis iValua,23/09 19:46:39,0.7,
+49115254,DKA : Lanceur (SHELL),23/09 19:46:38,0.7,Fin Anormale
+49114287,Periodic Mass Copy,23/09 19:38:39,0.1,Programme simultané n'a renvoyé aucun motif d'échec.
+49114270,Periodic Mass Copy,23/09 19:38:38,0.1,Programme simultané n'a renvoyé aucun motif d'échec.
+49114278,Periodic Mass Copy,23/09 19:38:38,0.1,Programme simultané n'a renvoyé aucun motif d'échec.
+49114160,Periodic Mass Copy,23/09 19:38:26,0.1,Programme simultané n'a renvoyé aucun motif d'échec.
+49114121,Periodic Mass Copy,23/09 19:38:21,0.1,Programme simultané n'a renvoyé aucun motif d'échec.
+49114102,Periodic Mass Copy,23/09 19:38:19,0.1,Programme simultané n'a renvoyé aucun motif d'échec.
+49114075,Periodic Mass Copy,23/09 19:38:16,0.1,Programme simultané n'a renvoyé aucun motif d'échec.
+49114070,Periodic Mass Copy,23/09 19:38:16,0.1,Programme simultané n'a renvoyé aucun motif d'échec.
+49114045,Periodic Mass Copy,23/09 19:38:13,0.1,Programme simultané n'a renvoyé aucun motif d'échec.
+49114016,Periodic Mass Copy,23/09 19:38:09,0.1,Programme simultané n'a renvoyé aucun motif d'échec.
+49113974,Periodic Mass Copy,23/09 19:38:07,0.1,Programme simultané n'a renvoyé aucun motif d'échec.
+49113973,DKA : Copie en haut volume périodique,23/09 19:38:04,0.7,
+49113972,Request Set Stage,23/09 19:38:03,0.7,
+49113769,DKA : Import des commandes depuis iValua,23/09 19:24:01,20.5,
+49113768,DKA : Lanceur (SHELL),23/09 19:23:57,20.7,Fin Anormale
+49113309,DKA : Import des données Fournisseurs depuis iValua,23/09 19:13:32,8.6,
+49113293,DKA : Lanceur (SHELL),23/09 19:13:30,8.7,Fin Anormale
+49113132,Journal Import,23/09 19:03:20,0,Données introuvables dans la table GL_INTERFACE.
+49113071,Journal Import,23/09 19:03:11,0,Données introuvables dans la table GL_INTERFACE.
+49112823,Journal Import,23/09 19:02:45,0,Données introuvables dans la table GL_INTERFACE.
