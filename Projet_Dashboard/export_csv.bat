@@ -19,9 +19,23 @@ if not defined SQLPLUS (
   echo Aucun client Oracle trouve ^(sqlcl, sql ou sqlplus^).
   exit /b 97
 )
-echo Client : %SQLPLUS% - connexion %ORA_USER%@%ORA_HOST%:%ORA_PORT%/%ORA_SERVICE%
+rem "Error 6 initializing SQL*Plus / SP2-0667" = ORACLE_HOME absent ou faux. S'il n'a pas de
+rem sqlplus\mesg, on le deduit de l'emplacement du client (client complet : ...\bin\sqlplus.exe).
+rem Instant Client (pas de mesg) : ORACLE_HOME ne sert pas et un mauvais le casse, on le vide.
+rem ORACLE_HOME peut aussi etre fixe dans config.bat.
+set CLIENT_EXE=
+if exist "%SQLPLUS%" (set "CLIENT_EXE=%SQLPLUS%") else for /f "delims=" %%P in ('where "%SQLPLUS%" 2^>nul') do if not defined CLIENT_EXE set "CLIENT_EXE=%%P"
+if defined CLIENT_EXE if not exist "%ORACLE_HOME%\sqlplus\mesg" (
+  for %%D in ("!CLIENT_EXE!\..") do set "CLIENT_DIR=%%~fD"
+  for %%D in ("!CLIENT_DIR!") do if /i "%%~nxD"=="bin" (for %%H in ("!CLIENT_DIR!\..") do set "GUESS_HOME=%%~fH") else set "GUESS_HOME=!CLIENT_DIR!"
+  if exist "!GUESS_HOME!\sqlplus\mesg" (set "ORACLE_HOME=!GUESS_HOME!") else set ORACLE_HOME=
+)
+echo Client : %CLIENT_EXE% - ORACLE_HOME=%ORACLE_HOME%
+echo Connexion : %ORA_USER%@%ORA_HOST%:%ORA_PORT%/%ORA_SERVICE%
 if not exist "%CSV_DIR%" mkdir "%CSV_DIR%"
-set NLS_LANG=FRENCH_FRANCE.AL32UTF8
+rem AMERICAN : fichiers de messages anglais, toujours installes (le francais sp1f.msb manque souvent),
+rem et point decimal dans les CSV. Les jours en francais sont forces dans les requetes (NLS_DATE_LANGUAGE).
+set NLS_LANG=AMERICAN_AMERICA.AL32UTF8
 set KO=0
 set NB=0
 rem cmd ne connait pas [0-9] dans un motif : toutes les .sql de sql\ sont des requetes.
