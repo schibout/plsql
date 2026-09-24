@@ -1,0 +1,59 @@
++---------------------------------------------------------------------------+
+Application Specifique DKA: Version : 12.2
+
+Copyright (c) 1998, 2013, Oracle and/or its affiliates. All rights reserved.
+
+DKA_SLAUNCHER: DKA : Lanceur (SHELL)
+Request id: 49076954
++---------------------------------------------------------------------------+
+
+Current system time is 18-SEP-2026 23:08:28
+
++---------------------------------------------------------------------------+
+
+Request_id  49076954
+Liste des arguments soumis :
+Shell script ---->  DKA_SAPEXTDATABLOC_JOB.sh
+Param1 ----------> 
+Param2 ----------> 
+Param3 ----------> 
+Param4 ----------> 
+Param5 ----------> 
+DÃ©clenchement du traitement  DKA_SAPEXTDATABLOC_JOB.sh
+########## Lancement du Shell sans parametre
+###############################################
+LANCEMENT DE DKA_SAPEXTDATABLOC
+Recuperation des identifiants user
+Recuperation des identifiants programme
+Initialisation dans le contexte OA
+Ajout du param
+Recuperation des parametres
+Soumission du traitement
+Validation pour que les GTS puissent prendre la demande
+Traitement numero : 49076957
+
+>>> Fin normale
+
+Procédure PL/SQL terminée avec succès.
+
+
+:RET_CODE
+--------------------------------------------------------------------------------
+SUCCESS
+
+###############################################
+Fin du traitement: CODE RETOUR:  0
+
+
+
++---------------------------------------------------------------------------+
+No completion options were requested.
+
+Output file size: 
+
+
++---------------------------------------------------------------------------+
+Concurrent request completed successfully
+Current system time is 18-SEP-2026 23:08:49
+
++---------------------------------------------------------------------------+
