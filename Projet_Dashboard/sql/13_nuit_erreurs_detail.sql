@@ -1,6 +1,6 @@
 -- NUIT - Detail des erreurs (30 plus recentes)
 -- Extrait de ControleMatinGenerique/Controle_Quotidien_Complet.sql.
--- Variables fournies par _export.sql : &nb_jours_histo, &heure_fermeture, &heure_ouverture.
+-- Variables fournies par export.sql : &nb_jours_histo, &heure_fermeture, &heure_ouverture.
 
 SELECT * FROM (
     SELECT fcr.request_id                                                            AS REQ_ID,

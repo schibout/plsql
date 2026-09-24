@@ -1,6 +1,6 @@
 -- DSP - Synthese par jour et type
 -- Extrait de ControleMatinGenerique/Controle_Quotidien_Complet.sql.
--- Variables fournies par _export.sql : &nb_jours_histo, &heure_fermeture, &heure_ouverture.
+-- Variables fournies par export.sql : &nb_jours_histo, &heure_fermeture, &heure_ouverture.
 
 -- Cette synthese comptait des libelles constants issus d'un DISTINCT, donc
 -- au plus 1 par table et par jour : elle indiquait "1 fournisseur" un jour ou

@@ -1,6 +1,6 @@
 -- RAPPROCHEMENT BANCAIRE - Imports
 -- Extrait de ControleMatinGenerique/Controle_Quotidien_Complet.sql.
--- Variables fournies par _export.sql : &nb_jours_histo, &heure_fermeture, &heure_ouverture.
+-- Variables fournies par export.sql : &nb_jours_histo, &heure_fermeture, &heure_ouverture.
 
 SELECT 'RB_IMPORTS'                                                               AS CONTROLE,
        TO_CHAR(TRUNC(import_date), 'DD/MM/YY')                                     AS DATE_CR,

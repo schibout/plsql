@@ -1,6 +1,6 @@
 -- DSP - Detail des flux (fichiers)
 -- Extrait de ControleMatinGenerique/Controle_Quotidien_Complet.sql.
--- Variables fournies par _export.sql : &nb_jours_histo, &heure_fermeture, &heure_ouverture.
+-- Variables fournies par export.sql : &nb_jours_histo, &heure_fermeture, &heure_ouverture.
 
 SELECT 'DSP' AS SRC,
        TO_CHAR(date_creation, 'DD/MM/YY') AS DATE_CR,

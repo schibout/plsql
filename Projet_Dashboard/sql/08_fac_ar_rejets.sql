@@ -1,6 +1,6 @@
 -- FACTURES AR - Rejetees par AutoInvoice
 -- Extrait de ControleMatinGenerique/Controle_Quotidien_Complet.sql.
--- Variables fournies par _export.sql : &nb_jours_histo, &heure_fermeture, &heure_ouverture.
+-- Variables fournies par export.sql : &nb_jours_histo, &heure_fermeture, &heure_ouverture.
 
 SELECT ril.trx_number AS FACTURE, ril.batch_source_name AS SOURCE, ril.interface_line_context AS CONTEXTE,
        TO_CHAR(MIN(ril.creation_date), 'DD/MM HH24:MI') AS EN_INTERFACE_DEPUIS,

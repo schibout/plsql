@@ -1,6 +1,6 @@
 -- NOTILUS - Comptage des notes de frais
 -- Extrait de ControleMatinGenerique/Controle_Quotidien_Complet.sql.
--- Variables fournies par _export.sql : &nb_jours_histo, &heure_fermeture, &heure_ouverture.
+-- Variables fournies par export.sql : &nb_jours_histo, &heure_fermeture, &heure_ouverture.
 
 SELECT 'NOTILUS'                                                                  AS CONTROLE,
        TO_CHAR(TRUNC(creation_date), 'DD/MM/YY')                                  AS DATE_CR,

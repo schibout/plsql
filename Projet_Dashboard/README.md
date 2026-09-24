@@ -14,7 +14,7 @@ Oracle EBS --export_csv.bat (horaire)--> CSV_DIR (Drive pour ordinateur) --> dos
 |---|---|
 | `sql/00_kpi.sql` | Synthèse du jour (bloc PL/SQL d'origine réécrit en SELECT) → tuiles |
 | `sql/01..17_*.sql` | Une requête par tableau du dashboard |
-| `sql/_export.sql` | Enveloppe SQL*Plus : CSV, variables (`nb_jours_histo`=3, `heure_fermeture`=19, `heure_ouverture`=7) |
+| `export.sql` | Enveloppe SQL*Plus : CSV, variables (`nb_jours_histo`=3, `heure_fermeture`=19, `heure_ouverture`=7) |
 | `export_csv.bat` | Exécute toutes les requêtes, un CSV par requête |
 | `Config.gs` | ID du dossier Drive, seuil « périmé », liste des sections |
 | `Code.gs` / `Index.html` | App web |

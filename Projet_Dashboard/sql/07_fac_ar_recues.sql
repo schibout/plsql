@@ -1,6 +1,6 @@
 -- FACTURES AR - Recues (24 h) par origine et statut
 -- Extrait de ControleMatinGenerique/Controle_Quotidien_Complet.sql.
--- Variables fournies par _export.sql : &nb_jours_histo, &heure_fermeture, &heure_ouverture.
+-- Variables fournies par export.sql : &nb_jours_histo, &heure_fermeture, &heure_ouverture.
 
 SELECT dii.origin AS ORIGINE, dii.oa_status AS STATUT_OA,
        COUNT(DISTINCT dii.invoice_number) AS NB_FACTURES, COUNT(*) AS NB_LIGNES,

@@ -1,6 +1,6 @@
 -- NUIT - Erreurs regroupees par programme
 -- Extrait de ControleMatinGenerique/Controle_Quotidien_Complet.sql.
--- Variables fournies par _export.sql : &nb_jours_histo, &heure_fermeture, &heure_ouverture.
+-- Variables fournies par export.sql : &nb_jours_histo, &heure_fermeture, &heure_ouverture.
 
 SELECT fcp.user_concurrent_program_name                       AS PROGRAMME,
        COUNT(*)                                                AS NB_ERR,

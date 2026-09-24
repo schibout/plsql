@@ -1,6 +1,6 @@
 -- XEROX - Factures SANS images
 -- Extrait de ControleMatinGenerique/Controle_Quotidien_Complet.sql.
--- Variables fournies par _export.sql : &nb_jours_histo, &heure_fermeture, &heure_ouverture.
+-- Variables fournies par export.sql : &nb_jours_histo, &heure_fermeture, &heure_ouverture.
 
 -- invoice_num n'etant pas unique en multi-organisation, la meme facture
 -- ressortait plusieurs fois (F-2026-07-1 dans le log du 28/07) : une ligne par

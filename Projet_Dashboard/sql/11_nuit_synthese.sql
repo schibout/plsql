@@ -1,6 +1,6 @@
 -- NUIT - Synthese par statut
 -- Extrait de ControleMatinGenerique/Controle_Quotidien_Complet.sql.
--- Variables fournies par _export.sql : &nb_jours_histo, &heure_fermeture, &heure_ouverture.
+-- Variables fournies par export.sql : &nb_jours_histo, &heure_fermeture, &heure_ouverture.
 
 SELECT 'NUIT_SYNTHESE' AS CONTROLE,
        CASE status_code

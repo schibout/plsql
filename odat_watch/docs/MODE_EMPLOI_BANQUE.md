@@ -1,4 +1,4 @@
-# Mode d'emploi — Banque
+et# Mode d'emploi — Banque
 
 Chaque onglet de 🏦 Banque suit le même cycle : **déposer** les fichiers du jour dans les dossiers indiqués
 ci-dessus (réglables dans `config.ini`), **lancer** le contrôle depuis l'onglet, **lire** les tuiles puis les

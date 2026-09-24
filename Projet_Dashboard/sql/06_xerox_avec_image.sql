@@ -1,6 +1,6 @@
 -- XEROX - Factures AVEC images (compteur)
 -- Extrait de ControleMatinGenerique/Controle_Quotidien_Complet.sql.
--- Variables fournies par _export.sql : &nb_jours_histo, &heure_fermeture, &heure_ouverture.
+-- Variables fournies par export.sql : &nb_jours_histo, &heure_fermeture, &heure_ouverture.
 
 -- COUNT(DISTINCT num_fact) : la double jointure (multi-organisation cote
 -- ap_invoices_all, plusieurs documents cote fnd_documents) multipliait les
