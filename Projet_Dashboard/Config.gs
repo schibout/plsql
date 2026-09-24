@@ -12,6 +12,23 @@ const DASHBOARD_CONFIG = Object.freeze({
 /** Fichier de synthese : colonnes ORDRE, KPI, VALEUR, STATUT. */
 const DASHBOARD_KPI_FILE = '00_kpi.csv';
 
+/** Tuile cliquee (colonne KPI de 00_kpi.csv) -> sections de detail affichees. */
+const DASHBOARD_KPI_LINKS = Object.freeze({
+  'Flux DSP': ['01_dsp_flux.csv', '02_dsp_synthese.csv'],
+  'Notes de frais': ['03_ndf_notilus.csv'],
+  'Factures Xerox': ['04_factures_source.csv', '05_xerox_sans_image.csv', '06_xerox_avec_image.csv'],
+  'Factures Tradeshift': ['04_factures_source.csv'],
+  'Factures DSP': ['04_factures_source.csv', '02_dsp_synthese.csv'],
+  'GL interface': ['09_gl_interface.csv'],
+  'Lignes GL creees': ['10_gl_lignes.csv'],
+  'Imports RB': ['17_rb_imports.csv'],
+  'Traitements nuit': ['11_nuit_synthese.csv', '15_nuit_longs.csv', '16_nuit_en_cours.csv'],
+  'Erreurs nuit': ['12_nuit_erreurs_programme.csv', '13_nuit_erreurs_detail.csv'],
+  'Avertissements nuit': ['14_nuit_warnings.csv'],
+  'Images Xerox manquantes': ['05_xerox_sans_image.csv'],
+  'Factures demat en attente': ['18_demat_statut.csv', '19_demat_par_jour.csv', '20_demat_en_attente.csv'],
+});
+
 /** Sections affichees, dans l'ordre. Un fichier absent du dossier est signale. */
 const DASHBOARD_SECTIONS = Object.freeze([
   {file: '01_dsp_flux.csv', title: 'DSP - Detail des flux', group: 'DSP'},
@@ -31,4 +48,7 @@ const DASHBOARD_SECTIONS = Object.freeze([
   {file: '15_nuit_longs.csv', title: 'Nuit - Traitements > 30 min', group: 'Nuit'},
   {file: '16_nuit_en_cours.csv', title: 'Nuit - Traitements en cours', group: 'Nuit'},
   {file: '17_rb_imports.csv', title: 'Rapprochement bancaire - Imports', group: 'RB'},
+  {file: '18_demat_statut.csv', title: 'Factures demat - Stock par statut', group: 'Demat'},
+  {file: '19_demat_par_jour.csv', title: 'Factures demat - Arrivees par jour', group: 'Demat'},
+  {file: '20_demat_en_attente.csv', title: 'Factures demat - En attente (INSERE)', group: 'Demat', alertIfRows: true},
 ]);

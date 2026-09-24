@@ -27,7 +27,11 @@
   button[aria-pressed="true"] { border-color: var(--accent); color: var(--accent); font-weight: 600; }
   .kpis { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 10px; margin-bottom: 16px; }
   .kpi { background: var(--card); border: 1px solid var(--line); border-left: 4px solid var(--muted);
-         border-radius: 8px; padding: 10px 12px; }
+         border-radius: 8px; padding: 10px 12px; text-align: left; transition: transform .1s, box-shadow .1s; }
+  button.kpi:hover { transform: translateY(-1px); box-shadow: 0 2px 8px rgba(0,0,0,.12); }
+  button.kpi:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .kpi[aria-pressed="true"] { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent); }
+  .kpis.focused .kpi[aria-pressed="false"] { opacity: .55; }
   .kpi .v { font-size: 26px; font-weight: 700; font-variant-numeric: tabular-nums; }
   .kpi .l { color: var(--muted); font-size: 12px; }
   .s-OK { border-left-color: var(--ok); } .s-W { border-left-color: var(--w); } .s-KO { border-left-color: var(--ko); }
@@ -63,6 +67,7 @@
   const CONFIG = <?!= JSON.stringify(config) ?>;
   let data = null;
   let group = 'Tous';
+  let focus = null;  // KPI clique : n'affiche que ses sections (CONFIG.KPI_LINKS)
 
   const esc = s => String(s).replace(/[&<>"']/g, c => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[c]));
   const isNum = s => /^-?\d+([.,]\d+)?$/.test(s);
@@ -78,22 +83,32 @@
   function renderKpis() {
     const k = data.kpi;
     const col = name => k.header.indexOf(name);
-    document.getElementById('kpis').innerHTML = k.rows.map(r => {
+    const box = document.getElementById('kpis');
+    box.classList.toggle('focused', focus !== null);
+    box.innerHTML = k.rows.map(r => {
       const st = esc(r[col('STATUT')] || '');
-      return '<div class="kpi s-' + st + '"><div class="v">' + esc(r[col('VALEUR')]) + '</div>' +
-             '<div class="l">' + esc(r[col('KPI')]) + '<span class="badge b-' + st + '">' + st + '</span></div></div>';
+      const name = r[col('KPI')];
+      return '<button type="button" class="kpi s-' + st + '" data-kpi="' + esc(name) + '" aria-pressed="' + (name === focus) + '"' +
+             ' title="Voir le detail"><div class="v">' + esc(r[col('VALEUR')]) + '</div>' +
+             '<div class="l">' + esc(name) + '<span class="badge b-' + st + '">' + st + '</span></div></button>';
     }).join('') || '<div class="empty">Synthese indisponible ' + freshness(k) + '</div>';
   }
 
   function renderFilters() {
     const groups = ['Tous'].concat([...new Set(data.sections.map(s => s.group))]);
     document.getElementById('filters').innerHTML = groups.map(g =>
-      '<button type="button" data-group="' + esc(g) + '" aria-pressed="' + (g === group) + '">' + esc(g) + '</button>').join('');
+      '<button type="button" data-group="' + esc(g) + '" aria-pressed="' + (focus === null && g === group) + '">' + esc(g) + '</button>').join('') +
+      (focus === null ? '' : '<button type="button" data-group="Tous" aria-pressed="true">' + esc(focus) + ' &times;</button>');
+  }
+
+  function visible(s) {
+    if (focus !== null) return (CONFIG.KPI_LINKS[focus] || []).indexOf(s.file) !== -1;
+    return group === 'Tous' || s.group === group;
   }
 
   function renderSections() {
     document.getElementById('sections').innerHTML = data.sections
-      .filter(s => group === 'Tous' || s.group === group)
+      .filter(visible)
       .map(s => {
         const alert = s.alertIfRows && s.rows.length > 0 ? '<span class="badge b-KO">a traiter</span>' : '';
         const body = s.rows.length === 0 ? '<div class="empty">Aucune ligne.</div>' :
@@ -101,7 +116,7 @@
           '</tr></thead><tbody>' + s.rows.map(r => '<tr>' + r.map(c =>
             '<td' + (isNum(c) ? ' class="num"' : '') + '>' + esc(c) + '</td>').join('') + '</tr>').join('') +
           '</tbody></table></div>';
-        return '<details' + (s.rows.length ? ' open' : '') + '><summary>' + esc(s.title) +
+        return '<details' + (s.rows.length || focus !== null ? ' open' : '') + '><summary>' + esc(s.title) +
                '<span class="badge">' + s.rows.length + '</span>' + alert + freshness(s) + '</summary>' + body + '</details>';
       }).join('');
   }
@@ -129,7 +144,15 @@
     const b = e.target.closest('button');
     if (!b) return;
     group = b.dataset.group;
-    renderFilters(); renderSections();
+    focus = null;
+    renderKpis(); renderFilters(); renderSections();
+  });
+  document.getElementById('kpis').addEventListener('click', e => {
+    const b = e.target.closest('button.kpi');
+    if (!b) return;
+    focus = focus === b.dataset.kpi ? null : b.dataset.kpi;
+    renderKpis(); renderFilters(); renderSections();
+    if (focus !== null) document.getElementById('filters').scrollIntoView({behavior: 'smooth', block: 'start'});
   });
   setInterval(load, CONFIG.REFRESH_MINUTES * 60 * 1000);
   load();

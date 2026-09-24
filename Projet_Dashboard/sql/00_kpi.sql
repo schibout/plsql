@@ -55,6 +55,9 @@ WITH flux AS (
                        WHERE  fd.creation_date > SYSDATE - 30
                        AND    (SUBSTR(fd.file_name, 1, LENGTH(fd.file_name) - 4) = aia.attribute3
                                OR fd.file_name = aia.attribute3))
+), demat AS (
+    -- Factures dematerialisees recues mais pas encore integrees.
+    SELECT COUNT(*) AS n FROM dka_demat_hdr WHERE status = 'INSERE'
 )
 SELECT ORDRE, KPI, VALEUR, STATUT FROM (
     SELECT 1  AS ORDRE, 'Flux DSP' AS KPI, flux.n AS VALEUR, CASE WHEN flux.n >= 5 THEN 'OK' ELSE 'W' END AS STATUT FROM flux
@@ -69,5 +72,6 @@ SELECT ORDRE, KPI, VALEUR, STATUT FROM (
     UNION ALL SELECT 10, 'Erreurs nuit',            nuit.err,       CASE WHEN nuit.err > 0 THEN 'KO' ELSE 'OK' END FROM nuit
     UNION ALL SELECT 11, 'Avertissements nuit',     nuit.warn,      CASE WHEN nuit.warn > 0 THEN 'W' ELSE 'OK' END FROM nuit
     UNION ALL SELECT 12, 'Images Xerox manquantes', img.n,          CASE WHEN img.n > 0 THEN 'KO' ELSE 'OK' END FROM img
+    UNION ALL SELECT 13, 'Factures demat en attente', demat.n,        CASE WHEN demat.n > 0 THEN 'W' ELSE 'OK' END FROM demat
 )
 ORDER BY ORDRE;

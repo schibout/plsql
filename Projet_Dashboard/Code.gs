@@ -1,7 +1,7 @@
 /** Point d'entree de l'application web. */
 function doGet() {
   const page = HtmlService.createTemplateFromFile('Index');
-  page.config = DASHBOARD_CONFIG;
+  page.config = Object.assign({KPI_LINKS: DASHBOARD_KPI_LINKS}, DASHBOARD_CONFIG);
   return page.evaluate()
     .setTitle(DASHBOARD_CONFIG.TITLE)
     .addMetaTag('viewport', 'width=device-width, initial-scale=1');

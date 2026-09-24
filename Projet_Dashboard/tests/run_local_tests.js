@@ -26,4 +26,12 @@ const sqlFiles = fs.readdirSync(path.join(root, 'sql'))
 const configured = run('[DASHBOARD_KPI_FILE].concat(DASHBOARD_SECTIONS.map(s => s.file))');
 assert.deepStrictEqual(Array.from(configured).sort(), sqlFiles);
 
+// Tuiles cliquables : chaque KPI de 00_kpi.sql a ses sections, et elles existent.
+const kpiSql = fs.readFileSync(path.join(root, 'sql', '00_kpi.sql'), 'utf8');
+const kpiNames = [...kpiSql.matchAll(/SELECT \d+,?\s+(?:AS ORDRE, )?'([^']+)'/g)].map(m => m[1]);
+assert.strictEqual(kpiNames.length, 13, 'KPI trouves dans 00_kpi.sql : ' + kpiNames);
+const links = run('DASHBOARD_KPI_LINKS');
+assert.deepStrictEqual(Object.keys(links).sort(), kpiNames.sort());
+Object.values(links).forEach(files => files.forEach(f => assert.ok(configured.includes(f), f)));
+
 console.log('OK - ' + sqlFiles.length + ' requetes, parse CSV valide.');
