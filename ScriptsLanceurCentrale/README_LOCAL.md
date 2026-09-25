@@ -45,7 +45,7 @@ machine RPA :
    renseigner son emplacement dans `[paths] LIBRARY_PATH`.
    **Sans elles, aucun accès au Drive n'est possible.**
 2. **Le jeton OAuth** utilisé par `gdrive(token="générique")`, sans quoi
-   l'authentification Google échouera.
+   l'authentification Google échouera. Procédure : [README_GDRIVE_TOKEN.md](README_GDRIVE_TOKEN.md).
 3. **Le client Oracle**, sans quoi `cx_Oracle.init_oracle_client()` échoue.
 
 ⚠️ `cx_Oracle` ne se compile pas sous Python 3.13 : sa dernière version
