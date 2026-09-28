@@ -25,7 +25,7 @@ def _tuiles(kpi, r: dict) -> None:
 
 
 def _table(df, hauteur: int = 320) -> None:
-    st.dataframe(df, hide_index=True, use_container_width=True, height=min(hauteur, 38 * len(df) + 40))
+    st.dataframe(df, hide_index=True, width="stretch", height=min(hauteur, 38 * len(df) + 40))
 
 
 def render(kpi):
@@ -42,7 +42,7 @@ def render(kpi):
 
     b1, b2, b3 = st.columns([1.2, 1.4, 3])
     date = b1.selectbox("Journée", dates, format_func=vr.date_lisible, key="vir_date")
-    if b2.button("▶ Lancer le contrôle", type="primary", use_container_width=True, key="vir_lancer",
+    if b2.button("▶ Lancer le contrôle", type="primary", width="stretch", key="vir_lancer",
                  help=f"Racine : {racine}\nHistorique : {cfg['historique_jours']} jour(s)"):
         with st.spinner("Contrôle des virements…"):
             try:
@@ -135,7 +135,7 @@ def _import(cfg: dict) -> None:
     a_importer = [e for e in elements if e.etat == "à importer"]
     c1, c2 = st.columns([1.4, 3])
     if c1.button(f"📥 Importer {len(a_importer)} élément(s) déposé(s)" if a_importer else "📥 Importer depuis le dépôt",
-                 key="vir_import", use_container_width=True, disabled=not a_importer,
+                 key="vir_import", width="stretch", disabled=not a_importer,
                  help=f"Dépôt : {depot}\nInstances (dossier uuid avec SOURCE, TALEND, TARGET), exports Quartz (EDF/) "
                       "et rejets de virements (REJET/), datés par leur nom ou leur contenu."):
         con = connect()
@@ -161,7 +161,7 @@ def _import(cfg: dict) -> None:
 def _rapport_et_mail(rapport: dict, date: str, cfg: dict) -> None:
     st.markdown("##### Rapport et envoi")
     c0, c1 = st.columns([1, 2])
-    if c0.button("📄 Générer le rapport HTML", use_container_width=True, key="vir_rapport",
+    if c0.button("📄 Générer le rapport HTML", width="stretch", key="vir_rapport",
                  help="Synthèse en haut (résultat, chiffres, points d'attention), tableaux de détail en bas."):
         try:
             chemin = rp.ecrire(rapport, date, cfg["rapports"])
@@ -180,7 +180,7 @@ def _rapport_et_mail(rapport: dict, date: str, cfg: dict) -> None:
         return
     d1, d2, d3 = st.columns(3)
     d1.download_button("⬇ Rapport HTML", Path(chemin).read_bytes(), Path(chemin).name, "text/html",
-                       key="vir_html", use_container_width=True)
+                       key="vir_html", width="stretch")
     cfg_mail = mail.config_mail()
     dest = mail.destinataires(cfg_mail, "virements")
     texte = rp.texte_court(rapport, date)
@@ -190,10 +190,10 @@ def _rapport_et_mail(rapport: dict, date: str, cfg: dict) -> None:
     msg = mail.composer(sujet, Path(chemin).read_text(encoding="utf-8"), texte, pieces,
                         expediteur=cfg_mail["expediteur"], destinataires=dest)
     d2.download_button("✉ Mail prêt à envoyer (.eml)", mail.eml(msg), mail.nom_fichier("Virements", date),
-                       "message/rfc822", key="vir_eml", use_container_width=True,
+                       "message/rfc822", key="vir_eml", width="stretch",
                        help="S'ouvre dans Outlook en mode composition : rapport HTML dans le corps, CSV des écarts en pièces jointes.")
     if cfg_mail["smtp_hote"] and dest:
-        if d3.button(f"📤 Envoyer à {len(dest)} destinataire(s)", key="vir_envoyer", use_container_width=True):
+        if d3.button(f"📤 Envoyer à {len(dest)} destinataire(s)", key="vir_envoyer", width="stretch"):
             try:
                 st.success(mail.envoyer(msg, cfg_mail))
             except Exception as e:  # noqa: BLE001 — relais SMTP injoignable, refus, etc.
@@ -221,4 +221,4 @@ def _historique() -> None:
         st.dataframe(h[["journée", "résultat", "nb_instances", "nb_envoyes", "montant_envoye", "ko", "a_verifier", "ecarts", "executed_at"]]
                      .rename(columns={"nb_instances": "instances", "nb_envoyes": "virements", "montant_envoye": "montant",
                                       "ko": "bloquants", "a_verifier": "à vérifier", "ecarts": "écarts", "executed_at": "contrôlé le"}),
-                     hide_index=True, use_container_width=True)
+                     hide_index=True, width="stretch")

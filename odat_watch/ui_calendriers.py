@@ -47,7 +47,7 @@ def render() -> None:
                 tabs = st.tabs(months)
                 for tab, month in zip(tabs, months):
                     with tab:
-                        st.dataframe(data[data["période"] == month], use_container_width=True, hide_index=True,
+                        st.dataframe(data[data["période"] == month], width="stretch", hide_index=True,
                                      height=420)
                 valid = len(months) == 3
                 if st.button("Enregistrer et activer ce calendrier", type="primary", disabled=not valid):
@@ -76,7 +76,7 @@ def render() -> None:
     history = pd.DataFrame([dict(r) for r in rows])
     history["état"] = history["statut"].map({"active": "Actif", "inactive": "Historique"}).fillna(history["statut"])
     st.dataframe(history[["état", "nom_fichier", "importe_le", "nb_mois", "nb_operations", "message"]],
-                 use_container_width=True, hide_index=True)
+                 width="stretch", hide_index=True)
 
 
 def _consulter(con, rows) -> None:
@@ -115,4 +115,4 @@ def _consulter(con, rows) -> None:
         with onglet:
             t = ev[ev["periode_comptable"] == periode][list(colonnes)].rename(columns=colonnes)
             t.insert(1, "jour", pd.to_datetime(t["date"]).dt.strftime("%a"))
-            st.dataframe(t, use_container_width=True, hide_index=True, height=min(600, 38 * len(t) + 40))
+            st.dataframe(t, width="stretch", hide_index=True, height=min(600, 38 * len(t) + 40))

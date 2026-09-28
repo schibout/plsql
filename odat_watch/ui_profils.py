@@ -86,7 +86,7 @@ def render(profils: pd.DataFrame, application: str, now: datetime, filtrer):
         st.caption(f"{len(vue)} job(s) affiché(s).")
 
         edite = st.data_editor(
-            vue.rename(columns=LIBELLES), use_container_width=True, hide_index=True, height=min(700, 38 * len(vue) + 40),
+            vue.rename(columns=LIBELLES), width="stretch", hide_index=True, height=min(700, 38 * len(vue) + 40),
             num_rows="fixed", key="prof_editeur",
             disabled=[LIBELLES[c] for c in COLONNES if c not in COLS_SAISIE],
             column_config={

@@ -141,7 +141,7 @@ def _pieces_gdr(sel, pieces_gdr: dict) -> None:
                 columns={"type": "Type", "numero_piece": "N° pièce", "code_rejet": "Code rejet",
                          "libelle_rejet": "Libellé rejet", "montant": "Montant", "nb_lignes": "Lignes",
                          "vu_depuis": "Rejetée depuis"})
-            st.dataframe(aff, use_container_width=True, hide_index=True,
+            st.dataframe(aff, width="stretch", hide_index=True,
                          column_config={"Montant": st.column_config.NumberColumn("Montant", format="euro")})
 
 
@@ -151,13 +151,13 @@ def render(kpi):
         fichiers = st.file_uploader("Glisser-déposer un ou plusieurs ExportCSV-*.csv", type=["csv"],
                                     accept_multiple_files=True, key="cf_upload")
         c1, c2 = st.columns(2)
-        if c1.button("Importer les fichiers déposés", disabled=not fichiers, use_container_width=True, key="cf_imp_fichiers"):
+        if c1.button("Importer les fichiers déposés", disabled=not fichiers, width="stretch", key="cf_imp_fichiers"):
             st.session_state["cf_import_log"] = _importer_fichiers(fichiers)
             st.rerun()
         st.caption("Le tableau montre la situation actuelle, c'est-à-dire le dernier fichier chargé (le plus récent "
                    "d'un lot). Chaque fichier est aussi versé dans l'historique (sous-onglet 📚 Historique), mis à jour "
                    "sur la clé folio + date + fichier transmis. Les rapprochements sont conservés.")
-        if c2.button("Importer le dossier ControleFolioRose", use_container_width=True, key="cf_imp_dossier",
+        if c2.button("Importer le dossier ControleFolioRose", width="stretch", key="cf_imp_dossier",
                      help=str(DOSSIER_SAUVEGARDE)):
             csvs = sorted(DOSSIER_SAUVEGARDE.glob("ExportCSV-*.csv")) + sorted((DOSSIER_SAUVEGARDE / "sauvegarde").glob("ExportCSV-*.csv"))
             st.session_state["cf_import_log"] = _importer_fichiers(csvs)
@@ -182,7 +182,7 @@ def render(kpi):
 
         # ------------------------------------------------------------ Oracle + rapport
         o1, o2 = st.columns(2)
-        if o1.button("🅾 Contrôler dans Oracle", disabled=not CONFIG.exists(), use_container_width=True, key="cf_oracle"):
+        if o1.button("🅾 Contrôler dans Oracle", disabled=not CONFIG.exists(), width="stretch", key="cf_oracle"):
             with st.spinner("Interrogation Oracle…"):
                 try:
                     st.session_state["cf_oracle_msg"] = cf.controler_oracle(con)
@@ -191,7 +191,7 @@ def render(kpi):
                     st.error(f"Contrôle impossible : {e}")
         if st.session_state.get("cf_oracle_msg"):
             o1.caption(st.session_state["cf_oracle_msg"])
-        if o2.button("📄 Générer le rapport HTML", use_container_width=True, key="cf_btn_rapport"):
+        if o2.button("📄 Générer le rapport HTML", width="stretch", key="cf_btn_rapport"):
             try:
                 chemin = rp.ecrire(export, lignes, groupes, cf.rapprochements(con))
                 st.session_state["cf_rapport"] = str(chemin)
@@ -264,7 +264,7 @@ def render(kpi):
         # dès que l'ensemble (ou l'ordre) des lignes affichées change, sinon la sélection survit au filtre.
         sig = hashlib.blake2b("|".join(list(vue["empreinte"].astype(str)) + colonnes).encode("utf-8"),
                               digest_size=6).hexdigest()
-        ev = st.dataframe(_style(aff, styles), use_container_width=True, hide_index=True, height=420,
+        ev = st.dataframe(_style(aff, styles), width="stretch", hide_index=True, height=420,
                           column_config={k: v for k, v in COLONNES_CONFIG.items() if k in aff.columns},
                           on_select="rerun", selection_mode="multi-row",
                           key=f"cf_table_{eid}_{sig}")

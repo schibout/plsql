@@ -39,7 +39,7 @@ def render(kpi):
         ex = cf.exports_historiques(con)
 
     c1, c2 = st.columns([1.3, 3])
-    if c1.button("📥 Reconstituer depuis le dossier ControleFolioRose", use_container_width=True, key="hf_reconst",
+    if c1.button("📥 Reconstituer depuis le dossier ControleFolioRose", width="stretch", key="hf_reconst",
                  help=f"Verse dans l'historique tous les ExportCSV-*.csv de {DOSSIER_SAUVEGARDE} et de son "
                       "sous-dossier sauvegarde, du plus ancien au plus récent. La situation actuelle n'est pas touchée."):
         csvs = list(DOSSIER_SAUVEGARDE.glob("ExportCSV-*.csv")) + list((DOSSIER_SAUVEGARDE / "sauvegarde").glob("ExportCSV-*.csv"))
@@ -85,7 +85,7 @@ def render(kpi):
 
     st.markdown(f"#### Lignes ({len(vue)})")
     aff = vue[list(COLS)].rename(columns=COLS)
-    st.dataframe(aff, use_container_width=True, hide_index=True, height=520,
+    st.dataframe(aff, width="stretch", hide_index=True, height=520,
                  column_config={**{c: st.column_config.NumberColumn(c, format="euro") for c in EUROS},
                                 "Dans le dernier export": st.column_config.CheckboxColumn(disabled=True)})
     st.download_button("⬇ Exporter la sélection (CSV)", aff.to_csv(sep=";", index=False).encode("utf-8-sig"),
@@ -95,4 +95,4 @@ def render(kpi):
         st.dataframe(ex.rename(columns={"nom_fichier": "Fichier", "date_export": "Date export",
                                         "periode_debut": "Période début", "periode_fin": "Période fin",
                                         "nb_lignes": "Lignes", "importe_le": "Versé le"}),
-                     use_container_width=True, hide_index=True)
+                     width="stretch", hide_index=True)

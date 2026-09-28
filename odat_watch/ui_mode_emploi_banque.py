@@ -75,10 +75,10 @@ def render() -> None:
     for tab, (_, titre, onglet) in zip(st.tabs([o[0] for o in ONGLETS]), ONGLETS):
         with tab:
             st.markdown(f"##### Où sont les fichiers — section `[{onglet}]` de config.ini")
-            st.dataframe(dossiers(onglet), hide_index=True, use_container_width=True)
+            st.dataframe(dossiers(onglet), hide_index=True, width="stretch")
             st.caption("Chemins relatifs à `racine` (ou absolus), eux-mêmes relatifs au dossier de l'application. "
                        "Modifier config.ini puis recharger la page.")
             st.markdown(corps.get(titre, "_Section absente du guide._"))
             if onglet == "prelevements":
                 st.markdown("##### Statuts des clés")
-                st.dataframe(_statuts_prelevements(), hide_index=True, use_container_width=True)
+                st.dataframe(_statuts_prelevements(), hide_index=True, width="stretch")

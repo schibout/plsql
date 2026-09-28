@@ -144,7 +144,7 @@ def render(jobs: pd.DataFrame, application: str = "FIN-FINANCE") -> None:
     table = preparer_table(selection)
     st.dataframe(
         table,
-        use_container_width=True,
+        width="stretch",
         hide_index=True,
         height=min(650, 38 * len(table) + 40),
         column_config={

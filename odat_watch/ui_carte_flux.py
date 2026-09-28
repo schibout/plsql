@@ -109,7 +109,7 @@ def _fiche(con, code: str) -> None:
                 "dossier_unix": st.column_config.TextColumn("Dossier Unix", width="medium"),
                 "commentaire": st.column_config.TextColumn("Commentaire", width="medium")}
     edit = st.data_editor(pd.DataFrame([{c: fiche.get(c, "") for c in fx.COLS_FLUX if c != "code"}]),
-                          hide_index=True, use_container_width=True, key=f"cf_fiche_{code}", column_config=colonnes)
+                          hide_index=True, width="stretch", key=f"cf_fiche_{code}", column_config=colonnes)
     nb, exemples = fx.apercu_motif(con, edit.iloc[0]["motif"])
     if str(edit.iloc[0]["motif"] or "").strip():
         (st.success if nb else st.warning)(f"Le motif reconnaît {nb} fichier(s) transmis connu(s)."
@@ -118,11 +118,11 @@ def _fiche(con, code: str) -> None:
         st.caption("Sans motif, l'état de ce flux ne peut venir que d'une source d'état (virements, prélèvements, "
                    "relevés). Saisissez le motif des fichiers transmis pour le suivre par Ctrl Flux.")
     b1, b2 = st.columns([1, 1])
-    if b1.button("💾 Enregistrer la fiche", key=f"cf_save_{code}", use_container_width=True):
+    if b1.button("💾 Enregistrer la fiche", key=f"cf_save_{code}", width="stretch"):
         fx.enregistrer(con, {"code": code, **edit.iloc[0].to_dict()})
         st.session_state["cf_msg"] = "Fiche enregistrée."
         st.rerun()
-    if b2.button("🗑 Supprimer ce flux", key=f"cf_del_{code}", use_container_width=True):
+    if b2.button("🗑 Supprimer ce flux", key=f"cf_del_{code}", width="stretch"):
         fx.supprimer(con, code)
         st.session_state["cf_msg"] = f"Flux {code} supprimé."
         st.rerun()
@@ -132,7 +132,7 @@ def _fiche(con, code: str) -> None:
         st.markdown("**Interlocuteurs** — qui appeler, selon le rôle")
         inter = fx.interlocuteurs(con, code)
         ed_i = st.data_editor(inter[fx.COLS_INTER] if not inter.empty else pd.DataFrame(columns=fx.COLS_INTER),
-                              num_rows="dynamic", use_container_width=True, key=f"cf_inter_{code}",
+                              num_rows="dynamic", width="stretch", key=f"cf_inter_{code}",
                               column_config={"nom": st.column_config.TextColumn("Nom"),
                                              "role": st.column_config.SelectboxColumn("Rôle", options=list(fx.ROLES)),
                                              "mail": st.column_config.TextColumn("Mail"),
@@ -146,7 +146,7 @@ def _fiche(con, code: str) -> None:
         st.markdown("**Attributs libres** — clé / valeur, autant qu'il en faut")
         attrs = fx.attributs(con, code)
         df_a = pd.DataFrame(sorted(attrs.items()), columns=["cle", "valeur"]) if attrs else pd.DataFrame(columns=["cle", "valeur"])
-        ed_a = st.data_editor(df_a, num_rows="dynamic", use_container_width=True, key=f"cf_attr_{code}",
+        ed_a = st.data_editor(df_a, num_rows="dynamic", width="stretch", key=f"cf_attr_{code}",
                               column_config={"cle": st.column_config.TextColumn("Clé"),
                                              "valeur": st.column_config.TextColumn("Valeur", width="medium")})
         st.caption("Exemples : `criticite`, `heure_attendue`, `jours`, `ticket`, `procedure`, `job_ctm`.")
@@ -164,7 +164,7 @@ def _fiche(con, code: str) -> None:
             st.markdown("**Derniers fichiers transmis reconnus**")
             st.dataframe(vus.rename(columns={"date": "Date", "folio": "Folio", "fichier": "Fichier", "amont_nb": "Pièces",
                                              "amont_debit": "Montant", "ecart_debit": "Écart"}),
-                         use_container_width=True, hide_index=True, height=min(360, 38 * len(vus) + 40),
+                         width="stretch", hide_index=True, height=min(360, 38 * len(vus) + 40),
                          column_config={"Montant": st.column_config.NumberColumn("Montant", format="euro"),
                                         "Écart": st.column_config.NumberColumn("Écart", format="euro")})
 
@@ -183,7 +183,7 @@ def render(kpi):
         nb_cat = len(fx.catalogue_fin01())
         manquants = nb_cat - int(df["commentaire"].eq("schéma Flux-FIN01 - ORACLE").sum()) if not df.empty else nb_cat
         if a1.button(f"🗺 Charger les flux du schéma FIN01 ({manquants} à ajouter)", disabled=manquants <= 0,
-                     use_container_width=True, key="cf_charger",
+                     width="stretch", key="cf_charger",
                      help="Les 66 flux du schéma « Flux pour FIN01 - ORACLE », avec leur domaine et leur nature. "
                           "Les fiches déjà présentes ne sont pas touchées."):
             n = fx.charger_catalogue(con)
@@ -191,7 +191,7 @@ def render(kpi):
             st.rerun()
         propositions = fx.decouvrir(con)
         if a2.button(f"🔍 Déclarer les fichiers inconnus ({len(propositions)})", disabled=not propositions,
-                     use_container_width=True, key="cf_decouvrir",
+                     width="stretch", key="cf_decouvrir",
                      help="Une fiche par famille de fichiers transmis qu'aucun motif ne reconnaît. Chargez d'abord "
                           "les flux du schéma : leurs motifs reconnaissent déjà les fichiers SRC de factures et "
                           "d'écritures, il ne reste alors que les fichiers intermédiaires ou inattendus."):
@@ -202,9 +202,9 @@ def render(kpi):
             st.session_state["cf_msg"] = f"{len(propositions)} flux déclaré(s) depuis les fichiers connus."
             st.rerun()
         a3.download_button("⬇ Exporter (CSV)", fx.exporter_csv(con), file_name="flux_referentiel.csv",
-                           mime="text/csv", use_container_width=True, key="cf_dl", disabled=df.empty)
+                           mime="text/csv", width="stretch", key="cf_dl", disabled=df.empty)
         depot = a4.file_uploader("Importer un export CSV", type=["csv"], key="cf_up", label_visibility="collapsed")
-        if depot is not None and a4.button("📥 Importer", key="cf_imp", use_container_width=True):
+        if depot is not None and a4.button("📥 Importer", key="cf_imp", width="stretch"):
             st.session_state["cf_msg"] = f"{fx.importer_csv(con, depot.getvalue())} flux importé(s)."
             st.rerun()
 
@@ -265,7 +265,7 @@ def render(kpi):
         table["Sens"] = table["Sens"].map({"entrant": "→ Oracle", "sortant": "Oracle →"})
         for c in COLS_NOMBRE + COLS_EUROS:
             table[c] = pd.to_numeric(table[c], errors="coerce").replace(0, pd.NA)
-        st.dataframe(table, use_container_width=True, hide_index=True, height=min(520, 38 * len(table) + 40),
+        st.dataframe(table, width="stretch", hide_index=True, height=min(520, 38 * len(table) + 40),
                      column_config={"": st.column_config.TextColumn("", width="small"),
                                     **{c: st.column_config.NumberColumn(c, format="%d") for c in COLS_NOMBRE},
                                     **{c: st.column_config.NumberColumn(c, format="euro") for c in COLS_EUROS}})

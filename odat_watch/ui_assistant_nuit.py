@@ -17,7 +17,7 @@ def render(plan: pd.DataFrame, contexte: str, debut, fin) -> None:
     ]
     cols = st.columns(4)
     for col, label, question in zip(cols, keys, questions):
-        if col.button(label, key=f"assistant_{label}", use_container_width=True):
+        if col.button(label, key=f"assistant_{label}", width="stretch"):
             st.session_state["assistant_question"] = question
     question = st.text_input("Votre question", value=st.session_state.get("assistant_question", ""),
                              placeholder="Ex. Quels traitements sont les plus longs ?", key="assistant_input")
@@ -26,6 +26,6 @@ def render(plan: pd.DataFrame, contexte: str, debut, fin) -> None:
         st.info(response)
         if not result.empty:
             st.dataframe(result[["heure_prevue", "job", "description", "duree_min", "fiabilite", "nb_obs", "confiance"]],
-                         use_container_width=True, hide_index=True, height=min(350, 40 * len(result) + 40),
+                         width="stretch", hide_index=True, height=min(350, 40 * len(result) + 40),
                          column_config={"duree_min": st.column_config.NumberColumn("durée médiane (min)", format="%.1f"),
                                         "fiabilite": st.column_config.NumberColumn("taux OK (%)", format="%.0f")})

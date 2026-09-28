@@ -77,14 +77,14 @@ def render() -> None:
 
     st.markdown("#### Les cellules de la grille")
     leg = pd.DataFrame(LEGENDE, columns=["cellule", "signification", "exemple"])
-    st.dataframe(ui_plan_prod._grille_stylee(leg, ["cellule"]), hide_index=True, use_container_width=True,
+    st.dataframe(ui_plan_prod._grille_stylee(leg, ["cellule"]), hide_index=True, width="stretch",
                  column_config={"signification": st.column_config.TextColumn(width="large"),
                                 "exemple": st.column_config.TextColumn(width="large")})
     st.caption("Quand les jobs d'une chaîne n'ont pas tous le même état, le pire l'emporte : ✖ > ▶ > ⏸ > ✔ > ⊘.")
 
     st.markdown("#### Une grille d'exemple, ligne par ligne")
     t, jours = _exemple()
-    st.dataframe(ui_plan_prod._grille_stylee(t, jours), hide_index=True, use_container_width=True)
+    st.dataframe(ui_plan_prod._grille_stylee(t, jours), hide_index=True, width="stretch")
     st.markdown("""
 - **FINEXT_J17GEN_06_M (TIERS EXPRESS)** : ✖ à J-5 et J-2 = incidents (pas de virement à J-5) ; ○ à J = règle
   « jamais le jour de la clôture », d'où l'écart **−J** qui revient chaque mois.
@@ -115,11 +115,11 @@ un écart **isolé** est un incident à expliquer.
     with g:
         st.markdown("#### Origine d'une chaîne")
         st.dataframe(pd.DataFrame(ORIGINES, columns=["origine", "signification"]), hide_index=True,
-                     use_container_width=True)
+                     width="stretch")
     with d:
         st.markdown("#### Les 5 tuiles")
         st.dataframe(pd.DataFrame(TUILES, columns=["tuile", "liseré", "ce qu'elle compte"]), hide_index=True,
-                     use_container_width=True)
+                     width="stretch")
 
     st.markdown("#### Écrire une planification")
     st.markdown("""

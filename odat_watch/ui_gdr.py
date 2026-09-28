@@ -45,7 +45,7 @@ def _table(df: pd.DataFrame, colonnes: list[str], libelles: dict, hauteur: int) 
     for c in COLS_MONTANTS:
         if c in aff.columns:
             aff[c] = pd.to_numeric(aff[c], errors="coerce")
-    st.dataframe(aff, use_container_width=True, hide_index=True, height=hauteur, column_config=_config(aff.columns))
+    st.dataframe(aff, width="stretch", hide_index=True, height=hauteur, column_config=_config(aff.columns))
 
 
 def render(kpi):
@@ -53,7 +53,7 @@ def render(kpi):
     with contextlib.closing(connect()) as con:
         # ------------------------------------------------------------ import
         c1, c2 = st.columns([1, 3])
-        if c1.button("📥 Importer les nouveaux exports", use_container_width=True, key="gdr_import",
+        if c1.button("📥 Importer les nouveaux exports", width="stretch", key="gdr_import",
                      help=str(racine)):
             st.session_state["gdr_import_log"] = gd.importer_dossier(racine, con)
             st.session_state.pop("cf_gdr_log", None)     # l'onglet Ctrl Flux rebalaiera le dossier
@@ -137,13 +137,13 @@ def render(kpi):
             g1.markdown("**Par code rejet**")
             g1.dataframe(par_code.rename(columns={"code_rejet": "Code", "libelle_rejet": "Libellé",
                                                   "pieces": "Pièces", "montant": "Montant"}),
-                         use_container_width=True, hide_index=True, height=220,
+                         width="stretch", hide_index=True, height=220,
                          column_config={"Montant": st.column_config.NumberColumn("Montant", format="euro")})
             par_folio = (pcs.groupby("folio").agg(pieces=("id_gdr", "size"), montant=("montant", "sum"))
                          .reset_index().sort_values("montant", ascending=False))
             g2.markdown("**Par folio**")
             g2.dataframe(par_folio.rename(columns={"folio": "Folio", "pieces": "Pièces", "montant": "Montant"}),
-                         use_container_width=True, hide_index=True, height=220,
+                         width="stretch", hide_index=True, height=220,
                          column_config={"Montant": st.column_config.NumberColumn("Montant", format="euro")})
 
         # ------------------------------------------------------------ historique des imports
@@ -151,4 +151,4 @@ def render(kpi):
             st.dataframe(fichiers.rename(columns={"nom_fichier": "Fichier", "type": "Type", "date_photo": "Photo",
                                                   "rang": "Rang", "importe_le": "Importé le",
                                                   "nb_lignes": "Lignes"}).drop(columns=["id"]),
-                         use_container_width=True, hide_index=True, height=260)
+                         width="stretch", hide_index=True, height=260)

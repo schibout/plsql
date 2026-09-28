@@ -32,7 +32,7 @@ def _timeline(plan: pd.DataFrame, begin: datetime, end: datetime) -> None:
                       xaxis=dict(range=[begin, end], title=None), yaxis=dict(title=None),
                       legend=dict(orientation="h", y=1.08, title=None),
                       plot_bgcolor="rgba(0,0,0,0)", paper_bgcolor="rgba(0,0,0,0)")
-    st.plotly_chart(fig, use_container_width=True)
+    st.plotly_chart(fig, width="stretch")
 
 
 def _tree(plan: pd.DataFrame) -> None:
@@ -45,7 +45,7 @@ def _tree(plan: pd.DataFrame) -> None:
               .reset_index())
     groups["début"] = pd.to_datetime(groups["début"]).dt.strftime("%H:%M")
     groups["fin"] = pd.to_datetime(groups["fin"]).dt.strftime("%H:%M")
-    st.dataframe(groups, use_container_width=True, hide_index=True, height=300)
+    st.dataframe(groups, width="stretch", hide_index=True, height=300)
 
 
 def _table(plan: pd.DataFrame, mode: str, programmes: dict[str, str]) -> None:
@@ -59,7 +59,7 @@ def _table(plan: pd.DataFrame, mode: str, programmes: dict[str, str]) -> None:
             "confiance", "nb_obs"]
     if mode != "Préparer":
         cols.insert(7, "suivi")
-    st.dataframe(table[cols], use_container_width=True, hide_index=True, height=min(700, 38 * len(table) + 40),
+    st.dataframe(table[cols], width="stretch", hide_index=True, height=min(700, 38 * len(table) + 40),
                  column_config={"duree_min": st.column_config.NumberColumn("durée médiane (min)", format="%.1f"),
                                 "nb_obs": st.column_config.NumberColumn("observations"),
                                 "groupe": st.column_config.TextColumn("chaîne", width="medium"),
@@ -101,7 +101,7 @@ def render(con: sqlite3.Connection, profs, last: pd.DataFrame, now: datetime, kp
                 w1.warning(f"La dernière photo Control-M porte sur la nuit du **{odate_photo:%d/%m/%Y}** : elle ne couvre pas "
                            f"la plage choisie, les compteurs restent à zéro. Choisissez cette date, ou importez une photo "
                            f"plus récente pour suivre la nuit en cours.")
-                if w2.button(f"→ Nuit du {odate_photo:%d/%m}", key="plan_nuit_photo", use_container_width=True):
+                if w2.button(f"→ Nuit du {odate_photo:%d/%m}", key="plan_nuit_photo", width="stretch"):
                     st.session_state["plan_day_demande"] = odate_photo
                     st.rerun()
     st.caption(f"{begin:%d/%m %H:%M} → {end:%d/%m %H:%M} · {context} · filtre : {context_filter}")
@@ -110,7 +110,7 @@ def render(con: sqlite3.Connection, profs, last: pd.DataFrame, now: datetime, kp
             e = events.copy()
             e["libellé"] = e[["arrete", "traitement", "restitution"]].fillna("").agg(" · ".join, axis=1).str.strip(" ·")
             st.dataframe(e[["date_operation", "decalage_j", "moment", "libellé", "source_sheet", "source_row"]],
-                         use_container_width=True, hide_index=True)
+                         width="stretch", hide_index=True)
     counts = night_monitoring.compteurs(shown if mode != "Préparer" else pd.DataFrame())
     cards = st.columns(5)
     kpi(cards[0], len(shown), "jobs attendus")

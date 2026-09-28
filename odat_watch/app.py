@@ -145,7 +145,7 @@ with st.sidebar:
     with st.expander("📂 Sources d'import", expanded=st.session_state.pop("src_ouvert", not dossiers_perso)):
         defauts = st.checkbox("Scanner aussi ODAT et Téléchargements", True,
                               help=" · ".join(str(d) for d in sources.SOURCES_DEFAUT))
-        if st.button("📂 Parcourir…", use_container_width=True, help="Boîte de dialogue Windows de choix de dossier"):
+        if st.button("📂 Parcourir…", width="stretch", help="Boîte de dialogue Windows de choix de dossier"):
             choix = sources.choisir_dossier()
             if choix:
                 con = connect(); sources.ajouter_dossier(con, choix); con.close()
@@ -153,7 +153,7 @@ with st.sidebar:
                 st.rerun()
         with st.form("src_form", clear_on_submit=True, border=False):
             saisie = st.text_input("Dossier à ajouter", placeholder="…ou coller un chemin", label_visibility="collapsed")
-            if st.form_submit_button("Ajouter ce dossier", use_container_width=True) and saisie.strip():
+            if st.form_submit_button("Ajouter ce dossier", width="stretch") and saisie.strip():
                 con = connect(); sources.ajouter_dossier(con, saisie); con.close()
                 st.session_state["src_ouvert"] = True
                 st.rerun()
@@ -165,7 +165,7 @@ with st.sidebar:
                 st.session_state["src_ouvert"] = True
                 st.rerun()
     roots = (sources.SOURCES_DEFAUT if defauts else []) + dossiers_perso
-    if st.button("📥 Importer les nouveaux fichiers ODAT", use_container_width=True, disabled=not roots):
+    if st.button("📥 Importer les nouveaux fichiers ODAT", width="stretch", disabled=not roots):
         with st.spinner("Import en cours…"):
             logs = ingest.run(roots)
         import referentiel
@@ -192,7 +192,7 @@ with st.sidebar:
     tout = st.checkbox("Tout recharger (chargement initial)", False, key="ora_complet",
                        help="Ignore la borne du delta et recharge jours_initial jours d'historique")
     c_a, c_b = st.columns(2)
-    if c_a.button("🔄 Demandes", use_container_width=True, help="FND_CONCURRENT_REQUESTS : tout l'historique la première fois (jours_initial), ensuite seulement le delta"):
+    if c_a.button("🔄 Demandes", width="stretch", help="FND_CONCURRENT_REQUESTS : tout l'historique la première fois (jours_initial), ensuite seulement le delta"):
         try:
             with st.spinner("Oracle…"):
                 st.session_state["log_oracle"] = oracle_refresh.refresh_requests(complet=tout)
@@ -201,7 +201,7 @@ with st.sidebar:
         except Exception as e:  # noqa: BLE001
             st.session_state["log_oracle"] = f"⚠ {type(e).__name__}: {e}"
         st.cache_data.clear()
-    if c_b.button("📚 Programmes", use_container_width=True, help="Référentiel FND_CONCURRENT_PROGRAMS"):
+    if c_b.button("📚 Programmes", width="stretch", help="Référentiel FND_CONCURRENT_PROGRAMS"):
         try:
             with st.spinner("Oracle…"):
                 st.session_state["log_oracle"] = oracle_refresh.refresh_programs(complet=tout)
@@ -210,7 +210,7 @@ with st.sidebar:
         except Exception as e:  # noqa: BLE001
             st.session_state["log_oracle"] = f"⚠ {type(e).__name__}: {e}"
         st.cache_data.clear()
-    if st.button("🧾 Analyser les logs .req / .out", use_container_width=True):
+    if st.button("🧾 Analyser les logs .req / .out", width="stretch"):
         import logs as logmod
         with st.spinner("Analyse des logs…"):
             st.session_state["log_oracle"] = "\n".join(logmod.run()[-8:])
@@ -268,7 +268,7 @@ def timeline_chaines(prev: pd.DataFrame, debut: datetime, fin: datetime, titre: 
                       yaxis=dict(title=None, tickfont=dict(size=11)),
                       legend=dict(orientation="h", y=1.08, title=None), title=titre,
                       plot_bgcolor="rgba(0,0,0,0)", paper_bgcolor="rgba(0,0,0,0)")
-    st.plotly_chart(fig, use_container_width=True)
+    st.plotly_chart(fig, width="stretch")
 
 
 def table_prevision(prev: pd.DataFrame):
@@ -291,7 +291,7 @@ def table_prevision(prev: pd.DataFrame):
     cols = ["jour", "heure", "état", "job", "groupe", "description", "programme Oracle", "duree_min", "fiabilité",
             "frequence", "cyclique", "script", "réel", "nb_obs"]
     st.dataframe(
-        t[cols], use_container_width=True, hide_index=True, height=min(600, 38 * len(t) + 40),
+        t[cols], width="stretch", hide_index=True, height=min(600, 38 * len(t) + 40),
         column_config={
             "duree_min": st.column_config.NumberColumn("durée (min)", format="%.1f"),
             "fiabilité": st.column_config.ProgressColumn("fiabilité", min_value=0, max_value=100, format="%d %%"),
@@ -447,14 +447,14 @@ with tab_now:
             a["début"] = pd.to_datetime(a["debut"]).dt.strftime("%d/%m %H:%M")
             a["fin"] = pd.to_datetime(a["fin"]).dt.strftime("%d/%m %H:%M")
             st.dataframe(a[["état", "job", "motif", "début", "fin", "description", "groupe"]],
-                         use_container_width=True, hide_index=True)
+                         width="stretch", hide_index=True)
         st.markdown("#### Toute la photo")
         l = filtrer(last.rename(columns={"job_name": "job", "member": "script"})).copy()
         l["état"] = l["status"].map(badge)
         l = l.fillna("")
         st.dataframe(l[["état", "job", "start_time", "end_time", "rerun", "cyclic", "description", "script", "group_name"]]
                      .sort_values(["état", "start_time"]),
-                     use_container_width=True, hide_index=True, height=500)
+                     width="stretch", hide_index=True, height=500)
 
 # ------------------------------------------------------------------ historique
 with tab_histo:
@@ -487,16 +487,16 @@ with tab_histo:
                               yaxis=dict(title="heure (0–24)", gridcolor="rgba(128,128,128,.15)"),
                               xaxis=dict(title=None), legend=dict(orientation="h", y=1.15),
                               plot_bgcolor="rgba(0,0,0,0)", paper_bgcolor="rgba(0,0,0,0)")
-            g1.plotly_chart(fig, use_container_width=True)
+            g1.plotly_chart(fig, width="stretch")
             fig2 = go.Figure(go.Bar(x=hh["start_time"], y=hh["duree_min"], marker_color="#2F6FED", width=1000 * 3600 * 2,
                                     hovertemplate="%{x|%d/%m %H:%M}<br>%{y:.1f} min<extra></extra>"))
             fig2.update_layout(title="Durée (min)", height=300, margin=dict(l=10, r=10, t=40, b=10),
                                yaxis=dict(gridcolor="rgba(128,128,128,.15)"), xaxis=dict(title=None),
                                plot_bgcolor="rgba(0,0,0,0)", paper_bgcolor="rgba(0,0,0,0)")
-            g2.plotly_chart(fig2, use_container_width=True)
+            g2.plotly_chart(fig2, width="stretch")
             hh["état"] = hh["status"].map(badge)
             st.dataframe(hh[["odate", "état", "start_time", "end_time", "duree_min", "rerun", "order_id"]],
-                         use_container_width=True, hide_index=True,
+                         width="stretch", hide_index=True,
                          column_config={"duree_min": st.column_config.NumberColumn("durée (min)", format="%.1f")})
 
 # ------------------------------------------------------------------ profils + référentiel
@@ -526,4 +526,4 @@ with tab_jobs_controlm:
         chg = filtrer(chg.rename(columns={"job_name": "job", "description_B": "description"}))
         st.caption(f"{len(chg)} job(s) ont changé entre les deux photos.")
         st.dataframe(chg[["job", "status_A", "status_B", "start_time_B", "end_time_B", "rerun_B", "description"]],
-                     use_container_width=True, hide_index=True, height=450)
+                     width="stretch", hide_index=True, height=450)

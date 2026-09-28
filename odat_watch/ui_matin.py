@@ -108,7 +108,7 @@ def render(now: datetime, kpi):
         st.caption(f"Traitements de nuit du {debut:%d/%m %H:%M} au {fin:%d/%m %H:%M} · veille = {debut:%d/%m} · jour = {fin:%d/%m}"
                    + (f" · **veille = {motif} : volumes non contrôlés**" if motif else ""))
         forcer = st.checkbox("Contrôler les volumes malgré tout (week-end / férié)", False, key="m_forcer") if motif else False
-        if st.button("▶ Lancer le contrôle", type="primary", use_container_width=True, key="m_lancer"):
+        if st.button("▶ Lancer le contrôle", type="primary", width="stretch", key="m_lancer"):
             if fin <= debut:
                 st.error("La fin de la plage doit être après son début.")
             else:
@@ -165,7 +165,7 @@ def render(now: datetime, kpi):
                 elif sec.df is None or sec.df.empty:
                     st.caption("Aucune ligne.")
                 else:
-                    st.dataframe(sec.df, use_container_width=True, hide_index=True)
+                    st.dataframe(sec.df, width="stretch", hide_index=True)
 
         if focus:
             # défilement vers l'ancre de la section : le script tourne dans l'iframe du composant,
@@ -175,7 +175,7 @@ def render(now: datetime, kpi):
 
         st.markdown("#### Rapport")
         r1, r2 = st.columns([1, 3])
-        if r1.button("📄 Générer le rapport HTML", use_container_width=True, key="m_rapport"):
+        if r1.button("📄 Générer le rapport HTML", width="stretch", key="m_rapport"):
             try:
                 chemin = rm.ecrire(res)
                 if res.histo_id:
@@ -204,7 +204,7 @@ def _bloc_programmer():
                    "poste allumé et session ouverte.")
     c1, c2, c3 = st.columns([1, 1.2, 1])
     heure = c1.time_input("Heure", dtime(7, 15), key="m_hp", step=900)
-    if c2.button("Programmer", use_container_width=True, type="secondary", key="m_programmer"):
+    if c2.button("Programmer", width="stretch", type="secondary", key="m_programmer"):
         try:
             pm.creer(heure.strftime("%H:%M"))
             _etat_tache.clear()
@@ -212,7 +212,7 @@ def _bloc_programmer():
         except (RuntimeError, OSError, subprocess.SubprocessError) as e:
             st.error(f"schtasks a échoué : {e}")
             st.code(subprocess.list2cmdline(pm.commande(heure.strftime("%H:%M"))), language="bat")
-    if c3.button("Supprimer", use_container_width=True, disabled=etat is None, key="m_supprimer"):
+    if c3.button("Supprimer", width="stretch", disabled=etat is None, key="m_supprimer"):
         try:
             pm.supprimer()
             _etat_tache.clear()
@@ -254,4 +254,4 @@ def _tendance(con):
                       legend=dict(orientation="h", y=1.08), hovermode="x unified",
                       xaxis=dict(tickformat="%d/%m", showgrid=False),
                       yaxis=dict(rangemode="normal", gridcolor="#EEF1F5", zeroline=True, zerolinecolor="#C9CED4"))
-    st.plotly_chart(fig, use_container_width=True)
+    st.plotly_chart(fig, width="stretch")

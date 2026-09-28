@@ -36,7 +36,7 @@ def _tuiles(kpi, r: dict) -> None:
 
 
 def _table(df, hauteur: int = 320) -> None:
-    st.dataframe(df, hide_index=True, use_container_width=True, height=min(hauteur, 38 * len(df) + 40))
+    st.dataframe(df, hide_index=True, width="stretch", height=min(hauteur, 38 * len(df) + 40))
 
 
 def render(kpi):
@@ -54,7 +54,7 @@ def render(kpi):
     reference = b1.date_input("Date de référence", value=date.today(), format="DD/MM/YYYY", key="pv_date",
                               help="Défaut : aujourd'hui. Choisir une date déjà contrôlée pour revoir son rapport.")
     jours = b2.number_input("Profondeur (j)", min_value=1, max_value=90, value=cfg["jours"], key="pv_jours")
-    if b3.button("▶ Lancer le rapprochement", type="primary", use_container_width=True, key="pv_lancer",
+    if b3.button("▶ Lancer le rapprochement", type="primary", width="stretch", key="pv_lancer",
                  help=f"Racine : {racine}\nSI : {cfg['nom_si']}"):
         with st.spinner("Rapprochement Oracle ↔ EDF…"):
             try:
@@ -144,7 +144,7 @@ def render(kpi):
 
     st.markdown("##### Rapport et envoi")
     c0, c1, c2 = st.columns(3)
-    if c0.button("📄 Générer le rapport HTML", use_container_width=True, key="pv_rapport",
+    if c0.button("📄 Générer le rapport HTML", width="stretch", key="pv_rapport",
                  help="Synthèse en haut (statut, chiffres, à faire), tableaux de détail en bas. Même charte que le rapport du matin."):
         try:
             st.session_state["pv_rapport_html"] = str(rp.ecrire(rapport, cfg["rapports"]))
@@ -158,16 +158,16 @@ def render(kpi):
             st.error(f"Écriture du rapport impossible : {e}")
     c1.download_button("⬇ Rapprochement complet (CSV)",
                        rapport["rapprochement"].to_csv(index=False, sep=";").encode("utf-8-sig"),
-                       f"{rapport['base']}.csv", "text/csv", key="pv_csv", use_container_width=True)
+                       f"{rapport['base']}.csv", "text/csv", key="pv_csv", width="stretch")
     if rapport["xlsx"]:
         c2.download_button("⬇ Classeur Excel", rapport["xlsx"].read_bytes(), rapport["xlsx"].name,
                            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", key="pv_xlsx",
-                           use_container_width=True)
+                           width="stretch")
     chemin = st.session_state.get("pv_rapport_html")
     if chemin and Path(chemin).is_file() and rapport["base"][len(pv.PREFIXE):len(pv.PREFIXE) + 8] in Path(chemin).name:
         d1, d2, d3 = st.columns(3)
         d1.download_button("⬇ Rapport HTML", Path(chemin).read_bytes(), Path(chemin).name, "text/html",
-                           key="pv_html", use_container_width=True)
+                           key="pv_html", width="stretch")
         cfg_mail = mail.config_mail()
         dest = mail.destinataires(cfg_mail, "prelevements")
         texte = rp.texte_court(rapport)
@@ -177,10 +177,10 @@ def render(kpi):
                             expediteur=cfg_mail["expediteur"], destinataires=dest)
         d2.download_button("✉ Mail prêt à envoyer (.eml)", mail.eml(msg),
                            mail.nom_fichier("Prelevements", rapport["base"][len(pv.PREFIXE):len(pv.PREFIXE) + 8]),
-                           "message/rfc822", key="pv_eml", use_container_width=True,
+                           "message/rfc822", key="pv_eml", width="stretch",
                            help="S'ouvre dans Outlook en mode composition : rapport HTML dans le corps, classeur et CSV en pièces jointes.")
         if cfg_mail["smtp_hote"] and dest:
-            if d3.button(f"📤 Envoyer à {len(dest)} destinataire(s)", key="pv_envoyer", use_container_width=True):
+            if d3.button(f"📤 Envoyer à {len(dest)} destinataire(s)", key="pv_envoyer", width="stretch"):
                 try:
                     st.success(mail.envoyer(msg, cfg_mail))
                 except Exception as e:  # noqa: BLE001
@@ -229,20 +229,20 @@ def _tresorerie(cfg: dict, reference: date) -> None:
             df = chrono.copy()
             df["montant"] = df["montant"].map(_eur)
             st.dataframe(df.rename(columns={"date_fichier": "reçu le", "nb": "prélèvements", "cles": "clés", "rejets": "rejets du jour"}),
-                         hide_index=True, use_container_width=True, height=min(400, 38 * len(df) + 40))
+                         hide_index=True, width="stretch", height=min(400, 38 * len(df) + 40))
         with st.expander(f"Rejets internes — {len(t['rejets'])} sur 90 jours"
                          + (f", {len(t['recidives'])} mandat(s) rejeté(s) plusieurs fois" if not t["recidives"].empty else ""),
                          expanded=not t["recidives"].empty):
             if not t["recidives"].empty:
                 st.markdown("**Mandats rejetés plusieurs fois** — à signaler au métier (mandat ou débiteur à revoir)")
-                st.dataframe(t["recidives"], hide_index=True, use_container_width=True)
+                st.dataframe(t["recidives"], hide_index=True, width="stretch")
             if t["rejets"].empty:
                 st.caption("Aucun rejet sur la période.")
             else:
                 df = t["rejets"].copy()
                 df["appariee"] = df["appariee"].map({1: "oui", 0: "autre SI"})
                 st.dataframe(df.rename(columns={"appariee": "émission Oracle connue"}), hide_index=True,
-                             use_container_width=True, height=min(400, 38 * len(df) + 40))
+                             width="stretch", height=min(400, 38 * len(df) + 40))
     with st.expander(f"Historique des rapprochements — {len(h)} date(s) sur 60 jours"):
         if h.empty:
             st.caption("Aucun rapprochement enregistré.")
@@ -255,4 +255,4 @@ def _tresorerie(cfg: dict, reference: date) -> None:
                          .rename(columns={"reference": "référence", "statut_global": "statut", "nb_cles": "clés", "nb_emis": "émis",
                                           "montant_emis": "montant", "en_attente": "en attente", "a_investiguer": "à investiguer",
                                           "executed_at": "lancé le"}),
-                         hide_index=True, use_container_width=True)
+                         hide_index=True, width="stretch")

@@ -75,7 +75,7 @@ def _section_referentiel(con, ref: pd.DataFrame, df_runs: pd.DataFrame) -> None:
         else:
             resume = ", ".join(f"{n} {c}" for c, n in journal["changement"].value_counts().items())
             with st.expander(f"Synchronisation ODAT : {resume}", expanded=True):
-                st.dataframe(journal, hide_index=True, use_container_width=True, height=min(400, 36 * len(journal) + 40))
+                st.dataframe(journal, hide_index=True, width="stretch", height=min(400, 36 * len(journal) + 40))
 
 
 def _bandeau(con, cal: pd.DataFrame, entetes: list[str]) -> None:
@@ -87,7 +87,7 @@ def _bandeau(con, cal: pd.DataFrame, entetes: list[str]) -> None:
                  for d, o in zip(cal["date"], cal["ouvre"])],
         "jalons clôture": [str(par_jour.get(d.isoformat(), "")) for d in cal["date"]],
     }
-    st.dataframe(pd.DataFrame(lignes, index=entetes).T, use_container_width=True, height=142)
+    st.dataframe(pd.DataFrame(lignes, index=entetes).T, width="stretch", height=142)
     if not jalons.empty:
         with st.expander(f"Jalons du calendrier de clôture sur la fenêtre ({len(jalons)})"):
             labels = dict(zip(cal["date"].map(date.isoformat), cal["label_j"]))
@@ -95,7 +95,7 @@ def _bandeau(con, cal: pd.DataFrame, entetes: list[str]) -> None:
                               libellé=jalons[["arrete", "traitement", "restitution"]].fillna("")
                               .agg(" · ".join, axis=1).str.strip(" ·"))
             st.dataframe(t[["date_operation", "J", "decalage_j", "moment", "libellé"]], hide_index=True,
-                         use_container_width=True)
+                         width="stretch")
 
 
 def _qualifier(con, ref: pd.DataFrame, synth: pd.DataFrame) -> None:
@@ -119,7 +119,7 @@ def _qualifier(con, ref: pd.DataFrame, synth: pd.DataFrame) -> None:
                    "(« J-2, J, J+4 ») ; les labels Control-M sont acceptés (« L3, D4 »).")
         edite = st.data_editor(
             ref[["code", *pp.EDITABLES, "planification_ref", "jours_reference", "source", "maj_le"]],
-            key="pdp_editeur", hide_index=True, use_container_width=True, height=420,
+            key="pdp_editeur", hide_index=True, width="stretch", height=420,
             disabled=["code", "planification_ref", "jours_reference", "source", "maj_le"],
             column_config={
                 "statut": st.column_config.SelectboxColumn("statut", options=["bible", "nouvelle", "supprimee"]),
@@ -154,7 +154,7 @@ def _fiche(df_runs, profs, programmes, cal, entetes, synth: pd.DataFrame) -> Non
         **{"durée (min)": None if p.duree_mediane is None else round(p.duree_mediane, 1),
            "fiabilité": None if p.taux_ok is None else round(p.taux_ok)},
         fréquence=p.frequence, jours=" ".join(pp.JOURS[i] for i in sorted(p.jours_semaine)),
-        exécutions=p.nb_exec) for p in jobs]), hide_index=True, use_container_width=True,
+        exécutions=p.nb_exec) for p in jobs]), hide_index=True, width="stretch",
         column_config={"fiabilité": st.column_config.ProgressColumn("fiabilité", min_value=0, max_value=100,
                                                                       format="%d %%")})
     g = pp.grille(df_runs[df_runs["group_name"] == chaine], cal, cle="job_name")
@@ -165,7 +165,7 @@ def _fiche(df_runs, profs, programmes, cal, entetes, synth: pd.DataFrame) -> Non
     g["cellule"] = [f"{pp.ICONES.get(s, '•')}" for s in g["statut"]]
     t = (g.assign(jour=g["odate"].map(heads)).pivot(index="job_name", columns="jour", values="cellule")
          .reindex(columns=entetes).fillna("").reset_index().rename(columns={"job_name": "job"}))
-    st.dataframe(_grille_stylee(t, entetes), hide_index=True, use_container_width=True)
+    st.dataframe(_grille_stylee(t, entetes), hide_index=True, width="stretch")
 
 
 def render(df_runs: pd.DataFrame, profs: dict, programmes: dict[str, str], kpi) -> None:
@@ -230,7 +230,7 @@ def render(df_runs: pd.DataFrame, profs: dict, programmes: dict[str, str], kpi) 
             st.info("Aucune chaîne ne correspond aux filtres.")
         else:
             table = vue[[*FIXES, *entetes]].rename(columns=LIBELLES)
-            st.dataframe(_grille_stylee(table, entetes), hide_index=True, use_container_width=True,
+            st.dataframe(_grille_stylee(table, entetes), hide_index=True, width="stretch",
                          height=min(720, 36 * len(table) + 40),
                          column_config={"chaîne": st.column_config.TextColumn(width="medium"),
                                         "description": st.column_config.TextColumn(width="medium"),

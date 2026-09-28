@@ -125,7 +125,7 @@ def _recuperer_logs(df: pd.DataFrame, colonnes: list[str], cle: str, hauteur: in
     # la clé d'un st.dataframe n'intègre pas les données : elle doit changer avec les lignes affichées,
     # sinon la sélection survit aux filtres
     sig = hashlib.blake2b("|".join(vue["request_id"].astype(str)).encode("utf-8"), digest_size=6).hexdigest()
-    ev = st.dataframe(vue[cols], use_container_width=True, hide_index=True,
+    ev = st.dataframe(vue[cols], width="stretch", hide_index=True,
                       height=hauteur or min(400, 38 * len(vue) + 40), on_select="rerun",
                       selection_mode="multi-row", key=f"{cle}_{sig}")
     rows = list(ev.selection.rows) if ev and ev.selection else []
@@ -147,12 +147,12 @@ def _recuperer_logs(df: pd.DataFrame, colonnes: list[str], cle: str, hauteur: in
         st.warning(f"{len(sans_chemin)} demande(s) sans chemin de log connu : "
                    + ", ".join(str(i['request_id']) for i in sans_chemin[:8]))
     b1, b2, b3 = st.columns(3)
-    if b1.button("📝 Écrire list.txt", key=f"{cle}_liste", use_container_width=True,
+    if b1.button("📝 Écrire list.txt", key=f"{cle}_liste", width="stretch",
                  help="Liste des chemins .req et .out à passer à copy_ebs_logs.sh sur le serveur EBS."):
         st.session_state[f"{cle}_msg"] = logmod.ecrire_liste(request_ids=ids)
     b2.download_button("⬇ Télécharger la liste", contenu or "", file_name="list.txt", mime="text/plain",
-                       key=f"{cle}_dl", use_container_width=True, disabled=not contenu)
-    if b3.button("🧾 Analyser les logs présents", key=f"{cle}_analyse", use_container_width=True,
+                       key=f"{cle}_dl", width="stretch", disabled=not contenu)
+    if b3.button("🧾 Analyser les logs présents", key=f"{cle}_analyse", width="stretch",
                  help="Relit les dossiers de config.ini [logs] et charge les .req / .out rapatriés."):
         st.session_state[f"{cle}_msg"] = "\n".join(logmod.run())
         st.cache_data.clear()
@@ -161,7 +161,7 @@ def _recuperer_logs(df: pd.DataFrame, colonnes: list[str], cle: str, hauteur: in
     st.dataframe(pd.DataFrame(infos).rename(columns={"request_id": "request_id", "job_name": "job",
                                                      "logfile_name": "fichier .req", "outfile_name": "fichier .out",
                                                      "deja_local": "déjà en local"}),
-                 use_container_width=True, hide_index=True, height=min(240, 38 * len(infos) + 40),
+                 width="stretch", hide_index=True, height=min(240, 38 * len(infos) + 40),
                  column_config={"déjà en local": st.column_config.CheckboxColumn("déjà en local", disabled=True)})
 
 
@@ -290,7 +290,7 @@ def render(application, recherche, now: datetime, kpi, badge):
                 n["récurrence"] = n["resubmit_interval"].fillna("").astype(str) + " " + n["resubmit_unit"].fillna("")
                 st.dataframe(n[["état", "quand", "request_id", "job_name", "program_short", "program_name",
                                 "récurrence", "requestor", "argument_text"]],
-                             use_container_width=True, hide_index=True, height=min(600, 38 * len(n) + 40))
+                             width="stretch", hide_index=True, height=min(600, 38 * len(n) + 40))
 
     # ------------------------------------------------------------ toutes
     with s_all:
@@ -312,7 +312,7 @@ def render(application, recherche, now: datetime, kpi, badge):
             l = _filtre(l.rename(columns={"program": "program_name"}), recherche, application)
             st.dataframe(l[["request_id", "kind", "program_name", "started", "ended", "nb_erreurs", "codes", "path"]]
                          .sort_values(["request_id", "kind"], ascending=[False, True]),
-                         use_container_width=True, hide_index=True, height=500)
+                         width="stretch", hide_index=True, height=500)
             rid = st.selectbox("Voir le détail", sorted(l["request_id"].unique(), reverse=True), key="log_detail")
             if rid:
                 _detail_request(rid, req, logs)
@@ -330,7 +330,7 @@ def render(application, recherche, now: datetime, kpi, badge):
                 p = p[m]
             st.dataframe(p[["program_short", "program_name", "application_short", "execution_method",
                             "executable_name", "execution_file", "description"]],
-                         use_container_width=True, hide_index=True, height=600)
+                         width="stretch", hide_index=True, height=600)
 
 
 def _libelle(rid, req, logs) -> str:

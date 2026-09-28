@@ -63,7 +63,7 @@ def _tendance(ch: pd.DataFrame) -> None:
     fig.update_layout(barmode="stack", height=230, margin=dict(l=10, r=10, t=10, b=10), template="plotly_white",
                       legend=dict(orientation="h", y=1.12, x=0), xaxis_title=None, yaxis_title="relevés",
                       xaxis=dict(tickangle=-45, tickfont=dict(size=10)))
-    st.plotly_chart(fig, use_container_width=True)
+    st.plotly_chart(fig, width="stretch")
 
 
 def render(kpi):
@@ -75,11 +75,11 @@ def render(kpi):
         # valeur par défaut portée par session_state (pas de `value` + `key` déjà en état : StreamlitAPIException)
         st.session_state.setdefault("rb_jour", date.today())
         jour = b1.date_input("Matinée", key="rb_jour", format="DD/MM/YYYY")
-        if b2.button("🔄 Scanner les dossiers", type="primary", use_container_width=True, key="rb_scanner",
+        if b2.button("🔄 Scanner les dossiers", type="primary", width="stretch", key="rb_scanner",
                      help=f"PFE : {cfg['dossier_pfe']}\nEBS : {cfg['dossier_ebs']}\nLogs : {'; '.join(str(d) for d in cfg['dossiers_logs'])}"):
             with st.spinner("Lecture des fichiers PFE, EBS et des logs…"):
                 st.session_state["rb_msg"] = rb.scanner_tout(cfg, con)
-        if b3.button("📋 list_releves.txt des logs manquants", use_container_width=True, key="rb_liste"):
+        if b3.button("📋 list_releves.txt des logs manquants", width="stretch", key="rb_liste"):
             st.session_state["rb_msg"] = rb.liste_logs_manquants(con, cfg["fichier_liste"])
         if st.session_state.get("rb_msg"):
             st.info(st.session_state.pop("rb_msg"))          # affiché une fois, ne colle pas aux relances
@@ -96,7 +96,7 @@ def render(kpi):
         ch = rb.chronologie(con, 15, jour)
         pfe = rb.rapprochement_pfe(con)
         ctl = rb.controles(con)
-        if b4.button("📄 Rapport HTML", use_container_width=True, key="rb_btn_rapport"):
+        if b4.button("📄 Rapport HTML", width="stretch", key="rb_btn_rapport"):
             bilan = rr.Bilan(journee=j, chronologie=ch, continuite=cont, plan=plan, pfe=pfe, controles=ctl)
             chemin = rr.ecrire(bilan, cfg["dossier_rapports"])
             st.session_state["rb_rapport"] = str(chemin)
@@ -117,11 +117,11 @@ def render(kpi):
             st.error("Rupture de continuité : rejouer ces fichiers **un par un, dans l'ordre**, en attendant la fin de "
                      "chaque request RBAFBIMP (copier sous `AFB120.txt` dans `data/in`, lancer l'import, vérifier "
                      "`Relevés chargés`). Puis lancer DKA_SRBCTRLRB.")
-            st.dataframe(pd.DataFrame(plan)[list(rb.COLONNES_PLAN)], hide_index=True, use_container_width=True,
+            st.dataframe(pd.DataFrame(plan)[list(rb.COLONNES_PLAN)], hide_index=True, width="stretch",
                          column_config=rb.COLONNES_PLAN)
 
         st.markdown("##### Chronologie des imports (15 jours)")
-        st.dataframe(ch[list(rb.COLONNES_CHRONO)], hide_index=True, use_container_width=True,
+        st.dataframe(ch[list(rb.COLONNES_CHRONO)], hide_index=True, width="stretch",
                      column_config={**rb.COLONNES_CHRONO,
                                     "request_id": st.column_config.NumberColumn(rb.COLONNES_CHRONO["request_id"], format="%d")})
         if not ch.empty:
@@ -132,11 +132,11 @@ def render(kpi):
                 st.caption("Aucun import chargé pour cette banque.")
             else:
                 vue = cont.sort_values(["trou", "retard_j"], ascending=[False, False])
-                st.dataframe(vue[list(rb.COLONNES_CONTINUITE)], hide_index=True, use_container_width=True, height=320,
+                st.dataframe(vue[list(rb.COLONNES_CONTINUITE)], hide_index=True, width="stretch", height=320,
                              column_config=rb.COLONNES_CONTINUITE)
 
         with st.expander("Rapprochement PFE ↔ EBS"):
-            st.dataframe(pfe[list(rb.COLONNES_PFE)], hide_index=True, use_container_width=True,
+            st.dataframe(pfe[list(rb.COLONNES_PFE)], hide_index=True, width="stretch",
                          column_config={**rb.COLONNES_PFE,
                                         "request_id": st.column_config.NumberColumn(rb.COLONNES_PFE["request_id"], format="%d")})
 
@@ -148,17 +148,17 @@ def render(kpi):
                 st.caption(f"Photo du {d['photo']} · conflit MOV 05/06 : {'oui' if d['conflit_mov'] else 'non'} · "
                            f"06_ZIP01 Not OK : {'oui' if d['zip06_not_ok'] else 'non'} · 06_IMP01 exécuté : {'oui' if d['import06_execute'] else 'non'}")
                 st.dataframe(j.controlm_df[["job_name", "group_name", "status", "start_time", "end_time", "rerun"]],
-                             hide_index=True, use_container_width=True)
+                             hide_index=True, width="stretch")
 
         with st.expander("Contrôles DKA_SRBCTRLRB"):
-            st.dataframe(ctl, hide_index=True, use_container_width=True)
+            st.dataframe(ctl, hide_index=True, width="stretch")
             if not ctl.empty:
                 rid = st.selectbox("Détail du contrôle", ctl["request_id"].tolist(), key="rb_ctl")
-                st.dataframe(rb.lignes_controle(con, int(rid)), hide_index=True, use_container_width=True, height=300)
+                st.dataframe(rb.lignes_controle(con, int(rid)), hide_index=True, width="stretch", height=300)
 
         with st.expander("Comptes connus (anomalies préexistantes ignorées par le verdict)"):
             df = pd.read_sql_query("SELECT cle, motif FROM rb_comptes_connus ORDER BY cle", con)
-            edite = st.data_editor(df, num_rows="dynamic", hide_index=True, use_container_width=True, key="rb_connus",
+            edite = st.data_editor(df, num_rows="dynamic", hide_index=True, width="stretch", key="rb_connus",
                                    column_config={"cle": "banque/guichet/compte", "motif": "Motif"})
             if st.button("💾 Enregistrer les comptes connus", key="rb_connus_save"):
                 rb.enregistrer_comptes_connus(edite, con)

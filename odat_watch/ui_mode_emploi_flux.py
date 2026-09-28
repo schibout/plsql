@@ -87,7 +87,7 @@ def render() -> None:
     for tab, (_, titre) in zip(st.tabs([o[0] for o in ONGLETS]), ONGLETS):
         with tab:
             st.markdown("##### Où sont les fichiers")
-            st.dataframe(dossiers(titre), hide_index=True, use_container_width=True)
+            st.dataframe(dossiers(titre), hide_index=True, width="stretch")
             st.markdown(corps.get(titre, "_Section absente du guide._"))
             if titre == "Ctrl Flux":
                 st.markdown("##### Couleur des lignes, de la règle la plus forte à la plus faible")
