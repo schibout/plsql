@@ -59,3 +59,8 @@ Projet_CTM/.clasp.json
 Projet_Dashboard/.clasp.json
 Projet_Dashboard/.deployment_id
 Projet_Dashboard/config.bat
+
+# Secrets OAuth Google (ne jamais versionner)
+credentials.json
+token.json
+token.pickle
