@@ -20,6 +20,11 @@ Oracle EBS --export_csv.bat (horaire)--> CSV_DIR (Drive pour ordinateur) --> dos
 | `Code.gs` / `Index.html` | App web |
 | `deploy.bat` | Tests locaux puis `clasp push` (+ `clasp deploy` si `.deployment_id`) |
 
+**Aperçu local** sans déployer : `node tests/preview.js` puis ouvrir `tests/preview.html`
+(données = les CSV d'exemple de `tests/Dashboard_CSV`, à rafraîchir en y copiant une
+sortie de `export_csv.bat`). `node tests/run_local_tests.js` vérifie aussi que chaque
+graphique trouve ses colonnes dans ces CSV.
+
 Ajouter une requête : déposer `sql/18_xxx.sql`, puis ajouter la ligne
 `18_xxx.csv` dans `DASHBOARD_SECTIONS` (`Config.gs`) — le test local échoue
 tant que les deux ne correspondent pas.
