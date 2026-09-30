@@ -5,19 +5,16 @@ const path = require('path');
 const vm = require('vm');
 
 const root = path.join(__dirname, '..');
-const ctx = {
-  // Substitut minimal de Utilities.parseCsv (pas de guillemets dans les jeux de test).
-  Utilities: {parseCsv: text => text.split(/\r?\n/).map(line => line.split(','))},
-};
+const ctx = {Utilities: {parseCsv: require('./parse_csv')}};
 vm.createContext(ctx);
 ['Config.gs', 'Code.gs'].forEach(f => vm.runInContext(fs.readFileSync(path.join(root, f), 'utf8'), ctx));
 const run = code => vm.runInContext(code, ctx);
 
-// Parse : BOM, lignes vides de SPOOL et espaces retires.
-ctx.sample = '﻿\r\n"KPI","VALEUR"\r\nFlux DSP, 5 \r\n\r\n';
+// Parse : BOM, lignes vides et espaces retires, separateur ";" et guillemets, en-tetes en majuscules.
+ctx.sample = '﻿\r\n"kpi";"valeur"\r\n"Flux; DSP"; 5 \r\n\r\n';
 const table = run('dashboardParseCsv_(sample)');
-assert.deepStrictEqual(Array.from(table.header), ['"KPI"', '"VALEUR"']);
-assert.deepStrictEqual(table.rows.map(r => Array.from(r)), [['Flux DSP', '5']]);
+assert.deepStrictEqual(Array.from(table.header), ['KPI', 'VALEUR']);
+assert.deepStrictEqual(table.rows.map(r => Array.from(r)), [['Flux; DSP', '5']]);
 assert.strictEqual(run('dashboardParseCsv_("")').rows.length, 0);
 
 // Chaque requete de sql\ a sa section dans Config.gs, et inversement.

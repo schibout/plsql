@@ -18,8 +18,9 @@ bénéficiaire, le motif, et les trois fichiers concernés — celui qui a émis
 celui qui a confirmé.
 
 ```
-  ORACLE                         EDF                          REJETS INTERNES
-  ORACLE/<date>/*PCL*.txt        IMPORT_AVP_DK.<date>.csv     REJETS_INTERNES_DK.<date>.csv
+  ORACLE                         EDF                          REJETS BANCAIRES (Quartz)
+  ORACLE/<date>/*PCL*.txt        IMPORT_AVP_DK.<date>.csv     REJETS/JJMMAAAA_Liste des rejets
+                                                              bancaires du jour - Prélèvement.xls
   ordres émis, ligne à ligne     accusé de réception,         prélèvements refusés
                                  agrégé par créancier         (mandat absent, invalide…)
 ```
@@ -184,7 +185,7 @@ Motif         CC01 — MANDAT INVALIDE
 Émis le       11/07/2026
 
   Fichier ORACLE d'origine : DK_30003-0001DSWPCLFRST-20260711-48460413_20260711-022706.txt
-  Fichier REJET            : REJETS_INTERNES_DK.20260715.070020.csv
+  Fichier REJET            : 15072026_Liste des rejets bancaires du jour - Prélèvement.xls
   Fichier EDF              : IMPORT_AVP_DK.20260715.070101.csv
 ```
 
@@ -352,14 +353,17 @@ Prendre « la dernière valeur » donnerait 1 au lieu de 103. **Elles se somment
 
 Deux raisons, toutes deux vérifiées :
 
-1. **Les fichiers de rejets ne portent pas le nom du SI**, et **3 IBAN créanciers sont partagés
-   entre CIF et ORACLE**. Attribuer un rejet par IBAN seul est ambigu sur ces clés.
+1. **Les fichiers de rejets ne portent ni le nom du SI ni l'IBAN créancier** (seulement le libellé
+   du compte, « 0001 - DALKIA - BNP PARIBAS - EUR »). L'IBAN du tiers est l'IBAN complet du
+   débiteur, alors qu'Oracle porte un BBAN : il ne sert pas de clé.
 2. **Un rejet peut être republié à l'identique** dans un fichier ultérieur — vérifié : le rejet
    `NVCI0003392620230414001 / 150,00 €` figure à la fois le 20/07 et le 24/07. Le compter deux
    fois fausserait l'écart.
 
-L'outil rattache donc chaque rejet à une ligne Oracle sur **(IBAN créancier, RUM, échéance)**, et
-dédoublonne au préalable. L'onglet *Rejets* affiche le résultat de ce tri :
+L'outil rattache donc chaque rejet à une ligne Oracle sur **(RUM, échéance)** — l'échéance est la
+colonne « Date de règlement de l'opération d'origine » — et reprend l'IBAN créancier de cette ligne.
+Il dédoublonne au préalable : un rejet republié dans un fichier ultérieur compte une fois, mais deux
+lignes identiques dans un même fichier sont deux rejets (deux prélèvements de même montant). L'onglet *Rejets* affiche le résultat de ce tri :
 
 | RUM | Apparié Oracle |
 |---|---|

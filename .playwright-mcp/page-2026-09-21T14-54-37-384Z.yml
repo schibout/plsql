@@ -1,0 +1,169 @@
+- generic [ref=f1e2]:
+  - generic [ref=f1e11]:
+    - heading "🕓 ODAT Watch" [level=2] [ref=f1e16]
+    - paragraph [ref=f1e21]: Control-M · Oracle EBS · FIN-FINANCE
+    - generic [ref=f1e23]:
+      - paragraph [ref=f1e27]: Application
+      - group [ref=f1e29]:
+        - combobox "Application" [ref=f1e30]: FIN-FINANCE
+        - button "Open" [ref=f1e31] [cursor=pointer]
+    - generic [ref=f1e36]:
+      - paragraph [ref=f1e40]: Filtre (job, description, script)
+      - textbox "Filtre (job, description, script)" [ref=f1e43]:
+        - /placeholder: ""
+    - separator [ref=f1e48]
+    - group [ref=f1e51]:
+      - generic "keyboard_arrow_right 📂 Sources d'import" [ref=f1e52] [cursor=pointer]:
+        - generic [ref=f1e53]:
+          - generic [ref=f1e54]: keyboard_arrow_right
+          - paragraph [ref=f1e58]: 📂 Sources d'import
+    - button [ref=f1e61] [cursor=pointer]:
+      - paragraph [ref=f1e66]: 📥 Importer les nouveaux fichiers ODAT
+    - separator [ref=f1e71]
+    - paragraph [ref=f1e76]:
+      - strong [ref=f1e77]: Oracle Apps
+    - paragraph [ref=f1e82]: "5996 demandes en base, du 2026-08-15 au 2026-09-21 · dernier chargement : 21/09 09:27"
+    - generic [ref=f1e85] [cursor=pointer]:
+      - checkbox "Tout recharger (chargement initial)" [ref=f1e87]
+      - generic [ref=f1e89]:
+        - paragraph [ref=f1e93]: Tout recharger (chargement initial)
+        - button "Help for Tout recharger (chargement initial)" [ref=f1e97]
+    - generic [ref=f1e102]:
+      - button [ref=f1e110] [cursor=pointer]:
+        - paragraph [ref=f1e115]: 🔄 Demandes
+      - button [ref=f1e123] [cursor=pointer]:
+        - paragraph [ref=f1e128]: 📚 Programmes
+    - button [ref=f1e131] [cursor=pointer]:
+      - paragraph [ref=f1e136]: 🧾 Analyser les logs .req / .out
+  - generic [ref=f1e3]:
+    - banner [ref=f1e139]:
+      - generic [ref=f1e142]:
+        - button "Deploy" [ref=f1e152] [cursor=pointer]
+        - button "Main menu" [ref=f1e156] [cursor=pointer]
+    - generic [ref=f1e160]:
+      - generic [ref=f1e165]:
+        - generic [ref=f1e166]:
+          - heading "FIN-FINANCE" [level=1] [ref=f1e168]:
+            - text: FIN-FINANCE
+            - generic [ref=f1e169]:
+              - link "Link to heading":
+                - /url: "#fin-finance"
+          - generic [ref=f1e170]: Lundi 21/09/2026, 16:54 — qu'est-ce qui tourne ce soir, et demain ?
+        - generic [ref=f1e171]: Dernière photo Control-M 21/09 08:07 · odate 2026-09-20il y a 8 h 47 min · 709 photos · 206 jours d'historique
+      - generic [ref=f1e173]:
+        - tablist [ref=f1e174]:
+          - tab [selected] [ref=f1e175] [cursor=pointer]:
+            - paragraph [ref=f1e177]: 🧭 Préparer ma nuit
+          - tab [ref=f1e179] [cursor=pointer]:
+            - paragraph [ref=f1e181]: 📥 Clôtures
+          - tab [ref=f1e182] [cursor=pointer]:
+            - paragraph [ref=f1e184]: 🌙 Ce soir
+          - tab [ref=f1e185] [cursor=pointer]:
+            - paragraph [ref=f1e187]: 📅 Demain
+          - tab [ref=f1e188] [cursor=pointer]:
+            - paragraph [ref=f1e190]: 🔴 Maintenant
+          - tab [ref=f1e191] [cursor=pointer]:
+            - paragraph [ref=f1e193]: ☀️ Matin
+          - tab [ref=f1e194] [cursor=pointer]:
+            - paragraph [ref=f1e196]: 🏦 Banque
+          - tab [ref=f1e197] [cursor=pointer]:
+            - paragraph [ref=f1e199]: 🌹 Folio Rose
+          - tab [ref=f1e200] [cursor=pointer]:
+            - paragraph [ref=f1e202]: 🅾 Oracle
+          - tab [ref=f1e203] [cursor=pointer]:
+            - paragraph [ref=f1e205]: 🔎 Historique
+          - tab [ref=f1e206] [cursor=pointer]:
+            - paragraph [ref=f1e208]: 📈 Profils
+          - tab [ref=f1e209] [cursor=pointer]:
+            - paragraph [ref=f1e211]: 🗂 Jobs CtrlM
+          - tab [ref=f1e212] [cursor=pointer]:
+            - paragraph [ref=f1e214]: ⌨ SQL
+        - tabpanel "🧭 Préparer ma nuit" [ref=f1e215]:
+          - generic [ref=f1e216]:
+            - heading "Préparer ma nuit" [level=3] [ref=f1e221]:
+              - text: Préparer ma nuit
+              - generic [ref=f1e222]:
+                - link "Link to heading":
+                  - /url: "#preparer-ma-nuit"
+            - paragraph [ref=f1e227]: Prévision issue de l'historique Control-M ; le suivi utilise la dernière photo importée et n'est pas une supervision temps réel.
+            - generic [ref=f1e229]:
+              - generic [ref=f1e233]:
+                - paragraph [ref=f1e237]: Date de début
+                - generic [ref=f1e240]:
+                  - group "Date de début" [ref=f1e242]:
+                    - spinbutton "year, Date de début" [ref=f1e243]: "2026"
+                    - generic [aria-hidden] [ref=f1e244]: /
+                    - spinbutton "month, Date de début" [ref=f1e245]: "09"
+                    - generic [aria-hidden] [ref=f1e246]: /
+                    - spinbutton "day, Date de début" [ref=f1e247]: "21"
+                  - textbox [ref=f1e249]: 2026-09-21
+              - generic [ref=f1e253]:
+                - paragraph [ref=f1e257]: Début
+                - group "Début" [ref=f1e261]:
+                  - spinbutton "heure, Début" [ref=f1e262]: "19"
+                  - generic [aria-hidden] [ref=f1e263]: ":"
+                  - spinbutton "minute, Début" [ref=f1e264]: "00"
+              - generic [ref=f1e268]:
+                - paragraph [ref=f1e272]: Fin
+                - group "Fin" [ref=f1e276]:
+                  - spinbutton "heure, Fin" [ref=f1e277]: "07"
+                  - generic [aria-hidden] [ref=f1e278]: ":"
+                  - spinbutton "minute, Fin" [ref=f1e279]: "00"
+              - generic [ref=f1e283]:
+                - paragraph [ref=f1e287]: Mode
+                - radiogroup "Mode" [ref=f1e288]:
+                  - generic [ref=f1e290] [cursor=pointer]:
+                    - radio "Préparer" [ref=f1e292]
+                    - paragraph [ref=f1e297]: Préparer
+                  - generic [ref=f1e299] [cursor=pointer]:
+                    - radio "Suivre la nuit" [ref=f1e301]
+                    - paragraph [ref=f1e306]: Suivre la nuit
+                  - generic [ref=f1e308] [cursor=pointer]:
+                    - radio "Bilan" [checked] [ref=f1e310]
+                    - paragraph [ref=f1e315]: Bilan
+            - generic [ref=f1e317]:
+              - generic [ref=f1e318]:
+                - paragraph [ref=f1e321]: Contexte
+                - button "Help for Contexte" [ref=f1e325] [cursor=pointer]
+              - radiogroup "Contexte" [ref=f1e329]:
+                - generic [ref=f1e331] [cursor=pointer]:
+                  - radio "Toutes" [checked] [ref=f1e333]
+                  - paragraph [ref=f1e338]: Toutes
+                - generic [ref=f1e340] [cursor=pointer]:
+                  - radio "Hors clôture" [ref=f1e342]
+                  - paragraph [ref=f1e347]: Hors clôture
+                - generic [ref=f1e349] [cursor=pointer]:
+                  - radio "Clôture" [ref=f1e351]
+                  - paragraph [ref=f1e356]: Clôture
+                - generic [ref=f1e358] [cursor=pointer]:
+                  - radio "Inconnu" [ref=f1e360]
+                  - paragraph [ref=f1e365]: Inconnu
+            - generic [ref=f1e656]:
+              - alert [ref=f1e661]:
+                - paragraph [ref=f1e665]:
+                  - text: La dernière photo Control-M porte sur la nuit du
+                  - strong [ref=f1e666]: 20/09/2026
+                  - text: ": elle ne couvre pas la plage choisie, les compteurs restent à zéro. Choisissez cette date, ou importez une photo plus récente pour suivre la nuit en cours."
+              - button [active] [ref=f1e671] [cursor=pointer]:
+                - generic "→ Nuit du 20/09" [ref=f1e672]:
+                  - paragraph [ref=f1e676]: → Nuit du 20/09
+      - alert [ref=f1e914]:
+        - generic [ref=f1e916]:
+          - paragraph [ref=f1e919]:
+            - strong [ref=f1e920]: streamlit.errors.StreamlitWidgetAlreadyInstantiatedError
+            - text: ":"
+            - code [ref=f1e921]: st.session_state.plan_day
+            - text: cannot be modified after the widget with key
+            - code [ref=f1e922]: plan_day
+            - text: is instantiated.
+          - generic [ref=f1e923]:
+            - generic [ref=f1e924]: "Traceback:"
+            - code [ref=f1e927]:
+              - generic [ref=f1e928]: File "C:\Users\samir.chibout\Documents\Project\plsql\odat_watch\app.py", line 336, in <module> ui_preproduction.render(con, profs, last, now, kpi) ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+              - generic [ref=f1e929]: File "C:\Users\samir.chibout\Documents\Project\plsql\odat_watch\ui_preproduction.py", line 102, in render st.session_state["plan_day"] = odate_photo ~~~~~~~~~~~~~~~~^^^^^^^^^^^^
+          - generic [ref=f1e930]:
+            - button "Copy" [ref=f1e931] [cursor=pointer]
+            - link "Ask Google" [ref=f1e932] [cursor=pointer]:
+              - /url: https://www.google.com/search?q=streamlit.errors.StreamlitWidgetAlreadyInstantiatedError%3A%20%60st.session_state.plan_day%60%20cannot%20be%20modified%20after%20the%20widget%20with%20key%20%60plan_day%60%20is%20instantiated.
+            - link "Ask ChatGPT" [ref=f1e933] [cursor=pointer]:
+              - /url: https://chatgpt.com/?q=streamlit.errors.StreamlitWidgetAlreadyInstantiatedError%3A%20%60st.session_state.plan_day%60%20cannot%20be%20modified%20after%20the%20widget%20with%20key%20%60plan_day%60%20is%20instantiated.%0A%0AFile%20%22C%3A%5CUsers%5Csamir.chibout%5CDocuments%5CProject%5Cplsql%5Codat_watch%5Capp.py%22%2C%20line%20336%2C%20in%20%3Cmodule%3E%0A%20%20%20%20ui_preproduction.render(con%2C%20profs%2C%20last%2C%20now%2C%20kpi)%0A%20%20%20%20~~~~~~~~~~~~~~~~~~~~~~~%5E%5E%5E%5E%5E%5E%5E%5E%5E%5E%5E%5E%5E%5E%5E%5E%5E%5E%5E%5E%5E%5E%5E%5E%5E%5E%5E%5E%0AFile%20%22C%3A%5CUsers%5Csamir.chibout%5CDocuments%5CProject%5Cplsql%5Codat_watch%5Cui_preproduction.py%22%2C%20line%20102%2C%20in%20render%0A%20%20%20%20st.session_state%5B%22plan_day%22%5D%20%3D%20odate_photo%0A%20%20%20%20~~~~~~~~~~~~~~~~%5E%5E%5E%5E%5E%5E%5E%5E%5E%5E%5E%5E

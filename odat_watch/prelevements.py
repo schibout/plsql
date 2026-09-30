@@ -43,7 +43,7 @@ LIBELLES_STATUT = {
 EXPLICATIONS = {
     "RAPPROCHE": "Nombre et montant identiques de part et d'autre.",
     "RAPPROCHE_AVEC_REJET_POSTERIEUR": "Totaux conformes, mais un rejet est arrivé après la remontée EDF : le prélèvement échouera.",
-    "EXPLIQUE_PAR_REJET": "L'écart correspond exactement aux rejets internes.",
+    "EXPLIQUE_PAR_REJET": "L'écart correspond exactement aux rejets bancaires.",
     "REJETE_INTEGRALEMENT": "Tous les prélèvements ont été rejetés : EDF ne remonte donc aucune ligne.",
     "REJET_PARTIEL_NON_CONFIRME": "Des rejets existent mais EDF n'a encore rien remonté pour cette clé.",
     "EN_ATTENTE": "Émis, pas encore confirmé par EDF, dans le délai normal.",

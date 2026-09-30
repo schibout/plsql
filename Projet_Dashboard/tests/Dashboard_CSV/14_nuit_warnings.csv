@@ -1,53 +1,52 @@
-REQ_ID,PROGRAMME,DEBUT,DUREE_MIN,MSG
-49122987,Request Set Stage,24/09 03:02:54,0.4,
-49122988,DKA : Imputation GL,24/09 03:02:54,0.3,
-49122986,Report Set,24/09 03:02:53,2.8,
-49122975,DKA : Lanceur (SHELL),24/09 03:02:52,3,Fin Anormale
-49121141,DKA : Génération des pièces répétitives,24/09 02:50:30,11.4,
-49121139,DKA : Lanceur (SHELL),24/09 02:50:29,27,Fin Anormale
-49121140,DKA : Lanceur (SHELL),24/09 02:50:29,11.7,Fin Anormale
-49118160,DKA : Règlements automatiques toutes sociétés des factures fournisseurs,24/09 00:40:55,87.4,
-49118159,DKA : Lanceur (SHELL),24/09 00:40:54,87.7,Fin Anormale
-49118129,Accounting Program,24/09 00:37:54,0.2,
-49117279,Accounting Program,23/09 22:15:30,26.7,
-49117200,Accounting Program,23/09 22:15:22,0.5,
-49116948,Invoice Validation Child Worker Process,23/09 21:48:06,11.3,
-49116935,Invoice Validation Child Worker Process,23/09 21:47:44,15.1,
-49116931,Invoice Validation Child Worker Process,23/09 21:47:44,15.2,
-49116939,Invoice Validation Child Worker Process,23/09 21:47:44,9.7,
-49116938,Invoice Validation Child Worker Process,23/09 21:47:44,9.7,
-49116923,Invoice Validation Child Worker Process,23/09 21:47:32,7.6,
-49116919,Invoice Validation Child Worker Process,23/09 21:47:01,7.6,
-49116918,Invoice Validation Child Worker Process,23/09 21:47:01,7.8,
-49116908,Invoice Validation Child Worker Process,23/09 21:46:53,14.3,
-49116909,Invoice Validation Child Worker Process,23/09 21:46:53,14.6,
-49116845,Invoice Validation Child Worker Process,23/09 21:43:40,9.1,
-49116753,Invoice Validation Child Worker Process,23/09 21:42:59,0.1,
-49116126,DKA : Import des codes de déblocage Facture depuis IVALUA,23/09 21:28:34,1.9,
-49116125,DKA : Contrôle des flux IVALUA,23/09 21:28:32,0,
-49116122,DKA : Lanceur (SHELL),23/09 21:28:31,0.4,Fin Anormale
-49116123,DKA : Lanceur (SHELL),23/09 21:28:31,2,Fin Anormale
-49115750,DKA : Import des données Réceptions depuis iValua,23/09 19:48:44,8.9,
-49115749,DKA : Lanceur (SHELL),23/09 19:48:41,9,Fin Anormale
-49115255,DKA : Import des contrats SSTR depuis iValua,23/09 19:46:39,0.7,
-49115254,DKA : Lanceur (SHELL),23/09 19:46:38,0.7,Fin Anormale
-49114287,Periodic Mass Copy,23/09 19:38:39,0.1,Programme simultané n'a renvoyé aucun motif d'échec.
-49114270,Periodic Mass Copy,23/09 19:38:38,0.1,Programme simultané n'a renvoyé aucun motif d'échec.
-49114278,Periodic Mass Copy,23/09 19:38:38,0.1,Programme simultané n'a renvoyé aucun motif d'échec.
-49114160,Periodic Mass Copy,23/09 19:38:26,0.1,Programme simultané n'a renvoyé aucun motif d'échec.
-49114121,Periodic Mass Copy,23/09 19:38:21,0.1,Programme simultané n'a renvoyé aucun motif d'échec.
-49114102,Periodic Mass Copy,23/09 19:38:19,0.1,Programme simultané n'a renvoyé aucun motif d'échec.
-49114075,Periodic Mass Copy,23/09 19:38:16,0.1,Programme simultané n'a renvoyé aucun motif d'échec.
-49114070,Periodic Mass Copy,23/09 19:38:16,0.1,Programme simultané n'a renvoyé aucun motif d'échec.
-49114045,Periodic Mass Copy,23/09 19:38:13,0.1,Programme simultané n'a renvoyé aucun motif d'échec.
-49114016,Periodic Mass Copy,23/09 19:38:09,0.1,Programme simultané n'a renvoyé aucun motif d'échec.
-49113974,Periodic Mass Copy,23/09 19:38:07,0.1,Programme simultané n'a renvoyé aucun motif d'échec.
-49113973,DKA : Copie en haut volume périodique,23/09 19:38:04,0.7,
-49113972,Request Set Stage,23/09 19:38:03,0.7,
-49113769,DKA : Import des commandes depuis iValua,23/09 19:24:01,20.5,
-49113768,DKA : Lanceur (SHELL),23/09 19:23:57,20.7,Fin Anormale
-49113309,DKA : Import des données Fournisseurs depuis iValua,23/09 19:13:32,8.6,
-49113293,DKA : Lanceur (SHELL),23/09 19:13:30,8.7,Fin Anormale
-49113132,Journal Import,23/09 19:03:20,0,Données introuvables dans la table GL_INTERFACE.
-49113071,Journal Import,23/09 19:03:11,0,Données introuvables dans la table GL_INTERFACE.
-49112823,Journal Import,23/09 19:02:45,0,Données introuvables dans la table GL_INTERFACE.
+﻿"req_id";"programme";"debut";"duree_min";"msg"
+49191296;"Invoice Validation Child Worker Process";"30/09 23:28:14";"8.30000";""
+49191284;"Invoice Validation Child Worker Process";"30/09 23:28:04";"9.90000";""
+49191271;"Invoice Validation Child Worker Process";"30/09 23:27:45";"9.50000";""
+49191253;"Invoice Validation Child Worker Process";"30/09 23:27:28";"11.50000";""
+49191257;"Invoice Validation Child Worker Process";"30/09 23:27:28";"10.10000";""
+49191267;"Invoice Validation Child Worker Process";"30/09 23:27:28";"5.70000";""
+49191256;"Invoice Validation Child Worker Process";"30/09 23:27:28";"11.10000";""
+49191265;"Invoice Validation Child Worker Process";"30/09 23:27:28";"5.80000";""
+49191249;"Invoice Validation Child Worker Process";"30/09 23:27:27";"11.90000";""
+49191246;"Invoice Validation Child Worker Process";"30/09 23:27:07";"10.80000";""
+49191200;"Invoice Validation Child Worker Process";"30/09 23:24:55";"5.70000";""
+49191103;"Invoice Validation Child Worker Process";"30/09 23:24:19";"0.90000";""
+49191101;"Invoice Validation Child Worker Process";"30/09 23:24:19";"0.10000";""
+49190644;"Posting";"30/09 22:41:36";"8.70000";"Les lots sélectionnés n'ont pas tous été imputés avec s"
+49190642;"DKA : Imputation GL";"30/09 22:41:28";"9.00000";""
+49190641;"Request Set Stage";"30/09 22:41:28";"9.00000";""
+49190640;"Report Set";"30/09 22:41:27";"11.30000";""
+49190638;"DKA : Lanceur (SHELL)";"30/09 22:41:26";"11.40000";"Fin Anormale"
+49189708;"Invoice Validation Child Worker Process";"30/09 21:53:53";"11.00000";""
+49189700;"Invoice Validation Child Worker Process";"30/09 21:53:23";"10.20000";""
+49189685;"Invoice Validation Child Worker Process";"30/09 21:52:55";"11.00000";""
+49189681;"Invoice Validation Child Worker Process";"30/09 21:52:00";"6.30000";""
+49189679;"Invoice Validation Child Worker Process";"30/09 21:52:00";"6.70000";""
+49189667;"Invoice Validation Child Worker Process";"30/09 21:51:45";"13.80000";""
+49189670;"Invoice Validation Child Worker Process";"30/09 21:51:45";"13.20000";""
+49189671;"Invoice Validation Child Worker Process";"30/09 21:51:45";"13.20000";""
+49189663;"Invoice Validation Child Worker Process";"30/09 21:51:44";"14.50000";""
+49189660;"Invoice Validation Child Worker Process";"30/09 21:51:32";"14.20000";""
+49189609;"Invoice Validation Child Worker Process";"30/09 21:49:24";"8.00000";""
+49189603;"Invoice Validation Child Worker Process";"30/09 21:49:05";"0.60000";""
+49189517;"Invoice Validation Child Worker Process";"30/09 21:48:45";"0.20000";""
+49188886;"DKA : Import des codes de déblocage Facture depuis IVALUA";"30/09 21:33:01";"2.20000";""
+49188885;"DKA : Lanceur (SHELL)";"30/09 21:32:59";"2.40000";"Fin Anormale"
+49188685;"DKA : Intégration des factures XEROX";"30/09 20:35:42";"55.00000";""
+49188684;"DKA : Lanceur (SHELL)";"30/09 20:35:41";"55.40000";"Fin Anormale"
+49188087;"DKA : Import des données Réceptions depuis iValua";"30/09 19:52:47";"12.90000";""
+49188086;"DKA : Lanceur (SHELL)";"30/09 19:52:45";"13.00000";"Fin Anormale"
+49187915;"DKA : Import des contrats SSTR depuis iValua";"30/09 19:50:37";"0.70000";""
+49187914;"DKA : Lanceur (SHELL)";"30/09 19:50:35";"1.00000";"Fin Anormale"
+49186750;"Periodic Mass Copy";"30/09 19:43:33";"0.20000";"Programme simultané n'a renvoyé aucun motif d'échec."
+49186748;"Request Set Stage";"30/09 19:43:27";"0.70000";""
+49186749;"DKA : Copie en haut volume périodique";"30/09 19:43:27";"0.70000";""
+49186634;"DKA : Import des commandes depuis iValua";"30/09 19:24:34";"23.20000";""
+49186633;"DKA : Lanceur (SHELL)";"30/09 19:24:31";"23.40000";"Fin Anormale"
+49186521;"DKA : Import des données Fournisseurs depuis iValua";"30/09 19:13:35";"9.90000";""
+49186435;"DKA : Lanceur (SHELL)";"30/09 19:13:30";"10.00000";"Fin Anormale"
+49186374;"Journal Import";"30/09 19:03:15";"0.00000";"Données introuvables dans la table GL_INTERFACE."
+49186349;"Journal Import";"30/09 19:02:52";"0.10000";"Données introuvables dans la table GL_INTERFACE."
+49186317;"Journal Import";"30/09 19:02:31";"0.00000";"Données introuvables dans la table GL_INTERFACE."
+49185944;"Journal Import";"30/09 19:02:08";"0.10000";"Données introuvables dans la table GL_INTERFACE."
+49185938;"Journal Import";"30/09 19:02:02";"0.10000";"Données introuvables dans la table GL_INTERFACE."

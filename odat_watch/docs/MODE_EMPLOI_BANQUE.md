@@ -91,7 +91,7 @@ L'**historique** en bas de page reprend les 60 derniers jours.
 ## Prélèvements
 
 Rapprochement des prélèvements émis par Oracle avec l'état de réception EDF CashCollection, par **clé métier**
-(IBAN créancier × échéance), chaque écart étant expliqué par les rejets internes.
+(IBAN créancier × échéance), chaque écart étant expliqué par les rejets bancaires.
 
 ### 1. Déposer
 
@@ -99,7 +99,7 @@ Rapprochement des prélèvements émis par Oracle avec l'état de réception EDF
 |---|---|
 | `dossier_oracle` | `<AAAAMMJJ>\` : fichiers `*PCX*` / `*PCL*` archivés depuis `DATA/Traite/OUT_SEPA` |
 | `dossier_edf` | `IMPORT_AVP_DK.<date>.<heure>.csv`, pièces jointes du mail « Synthèse quotidienne des prélèvements Dalkia reçus par CashCollection » |
-| `dossier_rejets` | `REJETS_INTERNES_DK.<date>.<heure>.csv` |
+| `dossier_rejets` | `JJMMAAAA_Liste des rejets bancaires du jour - Prélèvement.xls` : export Quartz des rejets bancaires, daté par le préfixe du nom |
 
 Garder l'historique : le rapprochement a besoin des émissions et des états EDF des jours précédents.
 
@@ -121,7 +121,7 @@ sur les mêmes dossiers.
   INEXPLIQUE et SANS_ORACLE sont **à investiguer**.
 - **Prélèvements émis en double** : ligne entière identique, caractère pour caractère.
 - **Clés par statut** : voir le tableau des statuts ci-dessous.
-- **Trésorerie EDF** (base, 90 jours) : chronologie des états reçus, jours ouvrés sans état, rejets internes,
+- **Trésorerie EDF** (base, 90 jours) : chronologie des états reçus, jours ouvrés sans état, rejets bancaires,
   mandats rejetés plusieurs fois. Les fichiers connus en base mais disparus du disque sont signalés.
 
 ### 4. Diffuser

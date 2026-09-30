@@ -5,7 +5,7 @@ production : les jeux d'essai reproduisent la structure exacte des fichiers.
 """
 import json
 import sys
-from datetime import date
+from datetime import date, datetime
 from decimal import Decimal
 from pathlib import Path
 
@@ -19,7 +19,7 @@ from rapprochement_cle_metier import (  # noqa: E402
     montant_oracle, statut_cle, AgregatEdf, Tranche, LigneRejet,
     ECART_PARTIEL, EDF_SANS_ORACLE, EN_ATTENTE, EXPLIQUE_PAR_REJET,
     HORS_PERIMETRE_HISTORIQUE, NON_RECU, RAPPROCHE, RAPPROCHE_REJET_POSTERIEUR,
-    REJET_PARTIEL_NON_CONFIRME, REJETE_INTEGRALEMENT, executer, detecter_doublons,
+    REJET_PARTIEL_NON_CONFIRME, REJETE_INTEGRALEMENT, executer, detecter_doublons, MOTIF_REJETS,
 )
 
 # --- Construction des jeux d'essai ----------------------------------------
@@ -78,14 +78,38 @@ def ecrire_edf(racine, date_fichier, lignes_si):
         "\n".join(contenu), encoding="latin-1")
 
 
-def ecrire_rejets(racine, date_fichier, lignes):
-    d = racine / "EDF" / "REJETS"
+ENTETE_REJETS = ["Banque", "Description du compte", "Montant de saisie", "Devise de saisie", "Date de transaction",
+                 "Date de règlement de l'opération d'origine", "Identification de mandat", "Nom du tiers",
+                 "Identité bancaire du tiers", "Informations complémentaires", "Motif", "Description du motif"]
+
+
+def ecrire_rejets(racine, date_fichier, lignes, dossier=("EDF", "REJETS")):
+    """Export Quartz « Liste des rejets bancaires du jour - Prélèvement » (.xls) : titres, en-tete, une ligne par
+    rejet (lignes « RUM;IBAN DEBITEUR;JJ/MM/AAAA;150,00;CODE;MOTIF »), sous-total et total sans banque."""
+    import xlwt
+    d = racine.joinpath(*dossier)
     d.mkdir(parents=True, exist_ok=True)
-    contenu = ["", "LISTE DES REJETS INTERNES",
-               "IBAN CREANCIER;RUM;IBAN DEBITEUR;DATE D'ECHEANCE;MONTANT;CODE REJET;MOTIF DU REJET;"]
-    contenu += lignes
-    (d / f"REJETS_INTERNES_DK.{date_fichier}.070000.csv").write_text(
-        "\n".join(contenu), encoding="latin-1")
+    wb = xlwt.Workbook()
+    ws = wb.add_sheet("Rejets")
+    ws.write(0, 0, "De: 01/01/2026 à 01/01/2026")
+    ws.write(1, 0, "Devise de conversion")
+    for c, lib in enumerate(ENTETE_REJETS):
+        ws.write(2, c, lib)
+    r, total = 3, 0.0
+    for ligne in lignes:
+        rum, debiteur, echeance, montant, code, motif = ligne.rstrip(";").split(";")
+        montant = float(montant.replace(",", "."))
+        jour = (datetime.strptime(echeance, "%d/%m/%Y") - datetime(1899, 12, 30)).days
+        for c, v in enumerate(["BNP", "0001 - DALKIA - BNP PARIBAS - EUR", montant, "EUR", float(jour), float(jour),
+                               rum, "BANQUE", debiteur, "/SQTP/RCUR", code, motif]):
+            ws.write(r, c, v)
+        total += montant
+        r += 1
+    for _ in range(2):                                  # sous-total du compte, total general
+        ws.write(r, 2, total)
+        r += 1
+    jjmmaaaa = f"{date_fichier[6:8]}{date_fichier[4:6]}{date_fichier[:4]}"
+    wb.save(str(d / f"{jjmmaaaa}_Liste des rejets bancaires du jour - Prélèvement.xls"))
 
 
 MOTIFS = ["*PCX*", "*PCL*"]
@@ -136,22 +160,22 @@ def test_cle_sur_plusieurs_fichiers_edf_est_sommee(tmp_path):
 
 # --- 3 et 4. Dedoublonnage des rejets --------------------------------------
 def test_rejet_republie_a_l_identique_est_compte_une_fois(tmp_path):
-    rejet = f"{IBAN_B};NVCI0003392620230414001;FR7615135001800400386505735;04/08/2026;150,00;CC01;MANDAT INVALIDE;"
+    rejet = "NVCI0003392620230414001;FR7615135001800400386505735;04/08/2026;150,00;CC01;MANDAT INVALIDE;"
     ecrire_rejets(tmp_path, "20260720", [rejet])
     ecrire_rejets(tmp_path, "20260724", [rejet])
 
     diag = Diagnostic()
-    rejets = charger_rejets(tmp_path / "EDF" / "REJETS", "REJETS_INTERNES_DK.*.csv", diag)
+    rejets = charger_rejets(tmp_path / "EDF" / "REJETS", MOTIF_REJETS, diag)
     assert len(rejets) == 1
     assert diag.rejets_dupliques == 1
 
 
 def test_meme_rum_sur_deux_echeances_reste_deux_rejets(tmp_path):
     ecrire_rejets(tmp_path, "20260720", [
-        f"{IBAN_A};NVOA0136895605062026001;FR7611111111111;04/08/2026;150,00;CC01;MANDAT INVALIDE;",
-        f"{IBAN_A};NVOA0136895605062026001;FR7611111111111;10/08/2026;150,00;CC01;MANDAT INVALIDE;",
+        "NVOA0136895605062026001;FR7611111111111;04/08/2026;150,00;CC01;MANDAT INVALIDE;",
+        "NVOA0136895605062026001;FR7611111111111;10/08/2026;150,00;CC01;MANDAT INVALIDE;",
     ])
-    rejets = charger_rejets(tmp_path / "EDF" / "REJETS", "REJETS_INTERNES_DK.*.csv", Diagnostic())
+    rejets = charger_rejets(tmp_path / "EDF" / "REJETS", MOTIF_REJETS, Diagnostic())
     assert len(rejets) == 2
 
 
@@ -163,16 +187,41 @@ def test_rejet_attribue_au_bon_si_via_le_rum(tmp_path):
     ecrire_oracle(tmp_path, "20260724", "DK_x-PCL-20260725-1_20260725-01.txt",
                   [ligne_oracle(partage, "08/10/2026", "500.00", rum="NVOA0000111")])
     ecrire_rejets(tmp_path, "20260728", [
-        f"{partage};NVOA0000111;FR7611111111111;10/08/2026;500,00;CC01;MANDAT INVALIDE;",
-        f"{partage};NVCI0009999;FR7622222222222;10/08/2026;300,00;CC01;MANDAT INVALIDE;",
+        "NVOA0000111;FR7611111111111;10/08/2026;500,00;CC01;MANDAT INVALIDE;",
+        "NVCI0009999;FR7622222222222;10/08/2026;300,00;CC01;MANDAT INVALIDE;",
     ])
 
     lignes, _ = charger_oracle(tmp_path / "ORACLE", MOTIFS, Diagnostic())
-    rejets = charger_rejets(tmp_path / "EDF" / "REJETS", "REJETS_INTERNES_DK.*.csv", Diagnostic())
+    rejets = charger_rejets(tmp_path / "EDF" / "REJETS", MOTIF_REJETS, Diagnostic())
     apparies = apparier_rejets(lignes, rejets)
 
     assert [r.rum for r in apparies[(partage, date(2026, 8, 10))]] == ["NVOA0000111"]
     assert [r.appariee for r in rejets] == [True, False]   # le rejet CIF est ecarte
+    assert [r.iban_creancier for r in rejets] == [partage, ""]   # repris de la ligne Oracle
+
+
+def test_deux_lignes_identiques_dans_un_fichier_sont_deux_rejets(tmp_path):
+    """Deux prelevements de meme montant, meme mandat, meme echeance rejetes le meme jour : deux rejets.
+    Republies le lendemain a l'identique : toujours deux."""
+    ligne = "NVCI0003362120240626001;FR7120041010060880841M02720;09/06/2026;30,00;AC04;Compte cloture;"
+    ecrire_rejets(tmp_path, "20260605", [ligne, ligne])
+    ecrire_rejets(tmp_path, "20260606", [ligne, ligne])
+    diag = Diagnostic()
+    rejets = charger_rejets(tmp_path / "EDF" / "REJETS", MOTIF_REJETS, diag)
+    assert len(rejets) == 2 and diag.rejets_dupliques == 2
+    r = rejets[0]
+    assert (r.rum, r.iban_debiteur, r.echeance, r.montant, r.code, r.motif, r.date_fichier) == (
+        "NVCI0003362120240626001", "FR7120041010060880841M02720", date(2026, 6, 9), Decimal("30.00"), "AC04",
+        "Compte cloture", date(2026, 6, 5))
+
+
+def test_fichier_de_rejets_sans_prefixe_de_date_est_ignore_et_signale(tmp_path):
+    ecrire_rejets(tmp_path, "20260605", ["R;FR76;09/06/2026;30,00;AC04;M;"])
+    f = next((tmp_path / "EDF" / "REJETS").iterdir())
+    f.rename(f.with_name("Liste des rejets bancaires du jour - Prélèvement.xls"))
+    diag = Diagnostic()
+    assert charger_rejets(tmp_path / "EDF" / "REJETS", MOTIF_REJETS, diag) == []
+    assert any("prefixe" in a for a in diag.avertissements)
 
 
 # --- 6. Rejet posterieur a la remontee EDF ---------------------------------
@@ -570,11 +619,8 @@ def test_rejets_a_cote_d_edf_prioritaire(tmp_path):
 def test_executer_expose_les_lignes_edf_et_rejets(tmp_path):
     racine = _jeu_minimal(tmp_path)
     # rejet range a cote d'EDF, apparie a la ligne Oracle (meme RUM, meme echeance)
-    d = racine / "REJETS"
-    d.mkdir()
-    (d / "REJETS_INTERNES_DK.20260913.070000.csv").write_text(
-        "\nLISTE DES REJETS INTERNES\nIBAN CREANCIER;RUM;IBAN DEBITEUR;DATE D'ECHEANCE;MONTANT;CODE REJET;MOTIF DU REJET;\n"
-        f"{IBAN_A};NVOA0001;FR7611111111111;30/09/2026;100,00;AM04;Provision insuffisante;\n", encoding="latin-1")
+    ecrire_rejets(racine, "20260913", ["NVOA0001;FR7611111111111;30/09/2026;100,00;AM04;Provision insuffisante;"],
+                  dossier=("REJETS",))
     res = executer(reference="2026-09-14", racine=racine, jours=3)
     assert res["dossier_rejets"].endswith("REJETS") and "EDF" not in Path(res["dossier_rejets"]).name
     assert len(res["edf"]) == 1
@@ -584,13 +630,15 @@ def test_executer_expose_les_lignes_edf_et_rejets(tmp_path):
     assert e["date_fichier"] == date(2026, 9, 13) and e["echeance"] == date(2026, 9, 30)
     assert len(res["rejets"]) == 1
     r = res["rejets"][0]
-    assert (r["rum"], r["code"], r["montant"], r["appariee"], r["beneficiaire"]) == ("NVOA0001", "AM04", Decimal("100.00"), True, "BENEF")
+    assert (r["rum"], r["code"], r["montant"], r["appariee"], r["beneficiaire"], r["iban_creancier"]) == \
+        ("NVOA0001", "AM04", Decimal("100.00"), True, "BENEF", IBAN_A)
     # tous les fichiers recus sont listes, meme un etat EDF sans ligne du SI
     ecrire_edf(racine, "20260914", ["CIF;FR7612345678901;30/09/2026;1;5,00;"])
     res = executer(reference="2026-09-14", racine=racine, jours=3)
     assert [f["fichier"] for f in res["fichiers_edf"]] == ["IMPORT_AVP_DK.20260913.070100.csv", "IMPORT_AVP_DK.20260914.070100.csv"]
     assert res["fichiers_edf"][1]["date_fichier"] == date(2026, 9, 14) and len(res["edf"]) == 1
-    assert [f["fichier"] for f in res["fichiers_rejets"]] == ["REJETS_INTERNES_DK.20260913.070000.csv"]
+    assert [(f["fichier"], f["date_fichier"]) for f in res["fichiers_rejets"]] == \
+        [("13092026_Liste des rejets bancaires du jour - Prélèvement.xls", date(2026, 9, 13))]
     # le JSON ecrit ne contient pas ces listes (elles ne sont pas serialisables telles quelles)
     resume = json.loads((racine / "RAPPORTS" / (res["base"] + "_resume.json")).read_text(encoding="utf-8"))
     assert "edf" not in resume and "rejets" not in resume

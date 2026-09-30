@@ -1,0 +1,177 @@
+- generic [ref=f2e2]:
+  - generic [ref=f2e24]:
+    - heading "🕓 ODAT Watch" [level=2] [ref=f2e29]
+    - paragraph [ref=f2e34]: Control-M · Oracle EBS · FIN-FINANCE
+    - generic [ref=f2e36]:
+      - paragraph [ref=f2e40]: Application
+      - group [ref=f2e42]:
+        - combobox "Application" [ref=f2e43]: FIN-FINANCE
+        - button "Open" [ref=f2e44] [cursor=pointer]
+    - generic [ref=f2e49]:
+      - paragraph [ref=f2e53]: Filtre (job, description, script)
+      - textbox "Filtre (job, description, script)" [ref=f2e56]:
+        - /placeholder: ""
+    - separator [ref=f2e61]
+    - group [ref=f2e64]:
+      - generic "keyboard_arrow_right 📂 Sources d'import" [ref=f2e65] [cursor=pointer]:
+        - generic [ref=f2e66]:
+          - generic [ref=f2e67]: keyboard_arrow_right
+          - paragraph [ref=f2e71]: 📂 Sources d'import
+    - button [ref=f2e74] [cursor=pointer]:
+      - paragraph [ref=f2e79]: 📥 Importer les nouveaux fichiers ODAT
+    - separator [ref=f2e84]
+    - paragraph [ref=f2e89]:
+      - strong [ref=f2e90]: Oracle Apps
+    - paragraph [ref=f2e95]: "6065 demandes en base, du 2026-08-15 au 2026-09-21 · dernier chargement : 21/09 16:09"
+    - generic [ref=f2e98] [cursor=pointer]:
+      - checkbox "Tout recharger (chargement initial)" [ref=f2e100]
+      - generic [ref=f2e102]:
+        - paragraph [ref=f2e106]: Tout recharger (chargement initial)
+        - button "Help for Tout recharger (chargement initial)" [ref=f2e110]
+    - generic [ref=f2e115]:
+      - button [ref=f2e123] [cursor=pointer]:
+        - paragraph [ref=f2e128]: 🔄 Demandes
+      - button [ref=f2e136] [cursor=pointer]:
+        - paragraph [ref=f2e141]: 📚 Programmes
+    - button [ref=f2e144] [cursor=pointer]:
+      - paragraph [ref=f2e149]: 🧾 Analyser les logs .req / .out
+  - generic [ref=f2e3]:
+    - banner [ref=f2e4]:
+      - generic [ref=f2e7]:
+        - generic [ref=f2e153]:
+          - img "Running..." [ref=f2e154]
+          - button "Stop" [ref=f2e159] [cursor=pointer]
+        - button "Deploy" [ref=f2e9] [cursor=pointer]
+        - button "Main menu" [ref=f2e13] [cursor=pointer]
+    - generic [ref=f2e160]:
+      - generic [ref=f2e165]:
+        - generic [ref=f2e166]:
+          - heading "FIN-FINANCE" [level=1] [ref=f2e168]:
+            - text: FIN-FINANCE
+            - generic [ref=f2e169]:
+              - link "Link to heading":
+                - /url: "#fin-finance"
+          - generic [ref=f2e170]: Mercredi 23/09/2026, 23:13 — qu'est-ce qui tourne ce soir, et demain ?
+        - generic [ref=f2e171]: Dernière photo Control-M 22/09 08:07 · odate 2026-09-21il y a 39 h 6 min · 714 photos · 207 jours d'historique
+      - generic [ref=f2e173]:
+        - tablist [ref=f2e174]:
+          - tab [ref=f2e175] [cursor=pointer]:
+            - paragraph [ref=f2e177]: 🧭 Préparer ma nuit
+          - tab [ref=f2e178] [cursor=pointer]:
+            - paragraph [ref=f2e180]: 📥 Clôtures
+          - tab [ref=f2e181] [cursor=pointer]:
+            - paragraph [ref=f2e183]: 🌙 Ce soir
+          - tab [ref=f2e184] [cursor=pointer]:
+            - paragraph [ref=f2e186]: 📅 Demain
+          - tab [ref=f2e187] [cursor=pointer]:
+            - paragraph [ref=f2e189]: 🔴 Maintenant
+          - tab [ref=f2e190] [cursor=pointer]:
+            - paragraph [ref=f2e192]: ☀️ Matin
+          - tab [ref=f2e193] [cursor=pointer]:
+            - paragraph [ref=f2e195]: 🏦 Banque
+          - tab [ref=f2e196] [cursor=pointer]:
+            - paragraph [ref=f2e198]: 🔀 Ctrl Flux
+          - tab [ref=f2e199] [cursor=pointer]:
+            - paragraph [ref=f2e201]: 🅾 Oracle
+          - tab [active] [selected] [ref=f2e202] [cursor=pointer]:
+            - paragraph [ref=f2e204]: 🕓 Control-M
+          - tab [ref=f2e206] [cursor=pointer]:
+            - paragraph [ref=f2e208]: ⌨ SQL
+        - tabpanel "🕓 Control-M" [ref=f2e209]:
+          - generic [ref=f2e212]:
+            - tablist [ref=f2e213]:
+              - tab [selected] [ref=f2e214] [cursor=pointer]:
+                - paragraph [ref=f2e216]: 📋 Plan de production
+              - tab [ref=f2e218] [cursor=pointer]:
+                - paragraph [ref=f2e220]: 🔎 Historique
+              - tab [ref=f2e221] [cursor=pointer]:
+                - paragraph [ref=f2e223]: 📈 Profils
+              - tab [ref=f2e224] [cursor=pointer]:
+                - paragraph [ref=f2e226]: 🗂 Jobs CtrlM
+            - tabpanel "📋 Plan de production" [ref=f2e227]:
+              - generic [ref=f2e228]:
+                - paragraph [ref=f2e233]: "La bible des chaînes Control-M (fichier de Lionel, juin 2025) confrontée aux photos ODAT, mois par mois autour de la clôture : J = dernier jour ouvré du mois, de J-7 à J+16 en jours ouvrés (Control-M en rappel : J-6 = L7, J = L1, J+1 = D1)."
+                - group [ref=f2e236]:
+                  - 'generic "keyboard_arrow_right 📚 Référentiel : 137 chaîne(s) · bible importée le 2026-09-23 23:10:05" [ref=f2e237] [cursor=pointer]':
+                    - generic [ref=f2e238]:
+                      - generic [ref=f2e239]: keyboard_arrow_right
+                      - paragraph [ref=f2e243]: "📚 Référentiel : 137 chaîne(s) · bible importée le 2026-09-23 23:10:05"
+                - generic [ref=f2e245]:
+                  - paragraph [ref=f2e249]: Mois comptable
+                  - group [ref=f2e251]:
+                    - combobox "Mois comptable" [ref=f2e252]: Août 2026 · J = lun 31/08
+                    - button "Open" [ref=f2e253] [cursor=pointer]
+                - generic [ref=f2e261]:
+                  - button "Show/hide columns" [ref=f2e265] [cursor=pointer]
+                  - button "Download as CSV" [ref=f2e271] [cursor=pointer]
+                  - button "Search" [ref=f2e277] [cursor=pointer]
+                  - button "Fullscreen" [ref=f2e283] [cursor=pointer]
+                - group [ref=f2e297]:
+                  - generic "keyboard_arrow_right Jalons du calendrier de clôture sur la fenêtre (87)" [ref=f2e298] [cursor=pointer]:
+                    - generic [ref=f2e299]:
+                      - generic [ref=f2e300]: keyboard_arrow_right
+                      - paragraph [ref=f2e304]: Jalons du calendrier de clôture sur la fenêtre (87)
+                - generic [ref=f2e306]:
+                  - generic [ref=f2e313]:
+                    - generic [ref=f2e314]: "136"
+                    - generic [ref=f2e315]: chaînes au référentiel
+                  - generic [ref=f2e322]:
+                    - generic [ref=f2e323]: "141"
+                    - generic [ref=f2e324]: chaînes observées sur le mois
+                  - generic [ref=f2e331]:
+                    - generic [ref=f2e332]: "29"
+                    - generic [ref=f2e333]: nouvelles, à qualifier
+                  - generic [ref=f2e340]:
+                    - generic [ref=f2e341]: "24"
+                    - generic [ref=f2e342]: absentes des photos
+                  - generic [ref=f2e349]:
+                    - generic [ref=f2e350]: "72"
+                    - generic [ref=f2e351]: écarts de planification
+                - generic [ref=f2e353]:
+                  - generic [ref=f2e357]:
+                    - paragraph [ref=f2e361]: Recherche
+                    - textbox "Recherche" [ref=f2e364]:
+                      - /placeholder: Chaîne, description, job ou programme Oracle…
+                  - generic [ref=f2e368]:
+                    - paragraph [ref=f2e372]: Catégorie
+                    - group [ref=f2e374]:
+                      - combobox "Catégorie" [ref=f2e376]
+                      - button "Open" [ref=f2e377] [cursor=pointer]
+                  - generic [ref=f2e384]:
+                    - paragraph [ref=f2e388]: Origine
+                    - group [ref=f2e390]:
+                      - combobox "Origine" [ref=f2e392]
+                      - button "Open" [ref=f2e393] [cursor=pointer]
+                  - generic [ref=f2e398]:
+                    - generic [ref=f2e401] [cursor=pointer]:
+                      - checkbox "Écarts uniquement" [ref=f2e403]
+                      - generic "Écarts uniquement" [ref=f2e406]:
+                        - paragraph [ref=f2e409]: Écarts uniquement
+                    - generic [ref=f2e412] [cursor=pointer]:
+                      - checkbox "Masquer supprimées" [checked] [ref=f2e414]
+                      - generic "Masquer supprimées" [ref=f2e419]:
+                        - paragraph [ref=f2e422]: Masquer supprimées
+                - paragraph [ref=f2e427]:
+                  - text: 165 chaîne(s) affichée(s) sur 166. ✔ OK · ✖ en erreur · ▶ en cours · ⏸ en attente (chiffre = nb de jobs) ·
+                  - strong [ref=f2e428]: +
+                  - text: tourné hors planification · ○ prévu mais absent des photos du jour · · prévu, à venir · ? prévu, aucune photo ce jour-là
+                - generic [ref=f2e433]:
+                  - button "Show/hide columns" [ref=f2e437] [cursor=pointer]
+                  - button "Download as CSV" [ref=f2e443] [cursor=pointer]
+                  - button "Search" [ref=f2e449] [cursor=pointer]
+                  - button "Fullscreen" [ref=f2e455] [cursor=pointer]
+                - group [ref=f2e469]:
+                  - generic "keyboard_arrow_right ✏️ Qualifier et enrichir le référentiel" [ref=f2e470] [cursor=pointer]:
+                    - generic [ref=f2e471]:
+                      - generic [ref=f2e472]: keyboard_arrow_right
+                      - paragraph [ref=f2e476]: ✏️ Qualifier et enrichir le référentiel
+                - heading "Fiche chaîne" [level=4] [ref=f2e482]:
+                  - text: Fiche chaîne
+                  - generic [ref=f2e483]:
+                    - link "Link to heading":
+                      - /url: "#fiche-chaine"
+                - generic [ref=f2e485]:
+                  - paragraph [ref=f2e489]: Chaîne
+                  - group [ref=f2e491]:
+                    - combobox "Chaîne" [ref=f2e492]
+                    - button "Open" [ref=f2e493] [cursor=pointer]

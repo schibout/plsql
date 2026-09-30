@@ -6,7 +6,7 @@ const vm = require('vm');
 
 const root = path.join(__dirname, '..');
 const csvDir = path.join(__dirname, 'Dashboard_CSV');
-const ctx = {Utilities: {parseCsv: text => text.split(/\r?\n/).map(line => line.split(','))}};
+const ctx = {Utilities: {parseCsv: require('./parse_csv')}};
 vm.createContext(ctx);
 ['Config.gs', 'Code.gs'].forEach(f => vm.runInContext(fs.readFileSync(path.join(root, f), 'utf8'), ctx));
 vm.runInContext('this.config = Object.assign({KPI_LINKS: DASHBOARD_KPI_LINKS, DEMAT: DASHBOARD_DEMAT}, DASHBOARD_CONFIG);' +

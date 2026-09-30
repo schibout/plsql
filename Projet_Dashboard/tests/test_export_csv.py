@@ -47,7 +47,7 @@ with tempfile.TemporaryDirectory() as d:
     assert ex.exporter(con, d / "sql", d / "out") == (2, 1)
     assert not con.journal[0].endswith(";")
     with open(d / "out" / "01_ok.csv", encoding="utf-8", newline="") as f:
-        assert list(csv.reader(f)) == [["A", "B"], ["1", "24/09/2026 07:05:00"], ["", "x,y"]]
+        assert list(csv.reader(f, delimiter=";")) == [["A", "B"], ["1", "24/09/2026 07:05:00"], ["", "x,y"]]
     # Une requete en echec garde son CSV precedent et ne laisse pas de .tmp.
     assert (d / "out" / "02_ko.csv").read_text(encoding="utf-8") == "ancien"
     assert not list((d / "out").glob("*.tmp"))

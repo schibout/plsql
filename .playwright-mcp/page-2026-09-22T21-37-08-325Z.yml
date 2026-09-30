@@ -1,0 +1,185 @@
+- generic:
+  - generic [ref=e164]:
+    - log
+    - log
+  - generic [ref=e2]:
+    - generic [ref=e11]:
+      - heading "🕓 ODAT Watch" [level=2] [ref=e16]
+      - paragraph [ref=e21]: Control-M · Oracle EBS · FIN-FINANCE
+      - generic [ref=e23]:
+        - paragraph [ref=e27]: Application
+        - group [ref=e29]:
+          - combobox "Application" [ref=e30]: FIN-FINANCE
+          - button "Open" [ref=e31] [cursor=pointer]
+      - generic [ref=e36]:
+        - paragraph [ref=e40]: Filtre (job, description, script)
+        - textbox "Filtre (job, description, script)" [ref=e43]:
+          - /placeholder: ""
+      - separator [ref=e48]
+      - group [ref=e51]:
+        - generic "keyboard_arrow_right 📂 Sources d'import" [ref=e52] [cursor=pointer]:
+          - generic [ref=e53]:
+            - generic [ref=e54]: keyboard_arrow_right
+            - paragraph [ref=e58]: 📂 Sources d'import
+      - button [ref=e61] [cursor=pointer]:
+        - paragraph [ref=e66]: 📥 Importer les nouveaux fichiers ODAT
+      - separator [ref=e71]
+      - paragraph [ref=e76]:
+        - strong [ref=e77]: Oracle Apps
+      - paragraph [ref=e82]: "5996 demandes en base, du 2026-08-15 au 2026-09-21 · dernier chargement : 21/09 09:27"
+      - generic [ref=e85] [cursor=pointer]:
+        - checkbox "Tout recharger (chargement initial)" [ref=e87]
+        - generic [ref=e89]:
+          - paragraph [ref=e93]: Tout recharger (chargement initial)
+          - button "Help for Tout recharger (chargement initial)" [ref=e97]
+      - generic [ref=e102]:
+        - button [ref=e110] [cursor=pointer]:
+          - paragraph [ref=e115]: 🔄 Demandes
+        - button [ref=e123] [cursor=pointer]:
+          - paragraph [ref=e128]: 📚 Programmes
+      - button [ref=e131] [cursor=pointer]:
+        - paragraph [ref=e136]: 🧾 Analyser les logs .req / .out
+    - generic [ref=e3]:
+      - banner [ref=e139]:
+        - generic [ref=e142]:
+          - button "Deploy" [ref=e152] [cursor=pointer]
+          - button "Main menu" [ref=e156] [cursor=pointer]
+      - generic [ref=e165]:
+        - generic [ref=e170]:
+          - generic [ref=e171]:
+            - heading "FIN-FINANCE" [level=1] [ref=e173]:
+              - text: FIN-FINANCE
+              - generic [ref=e174]:
+                - link "Link to heading":
+                  - /url: "#fin-finance"
+            - generic [ref=e175]: Mardi 22/09/2026, 23:36 — qu'est-ce qui tourne ce soir, et demain ?
+          - generic [ref=e176]: Dernière photo Control-M 21/09 08:07 · odate 2026-09-20il y a 39 h 29 min · 709 photos · 206 jours d'historique
+        - generic [ref=e178]:
+          - tablist [ref=e179]:
+            - tab [ref=e180] [cursor=pointer]:
+              - paragraph [ref=e182]: 🧭 Préparer ma nuit
+            - tab [ref=e183] [cursor=pointer]:
+              - paragraph [ref=e185]: 📥 Clôtures
+            - tab [ref=e186] [cursor=pointer]:
+              - paragraph [ref=e188]: 🌙 Ce soir
+            - tab [ref=e189] [cursor=pointer]:
+              - paragraph [ref=e191]: 📅 Demain
+            - tab [ref=e192] [cursor=pointer]:
+              - paragraph [ref=e194]: 🔴 Maintenant
+            - tab [ref=e195] [cursor=pointer]:
+              - paragraph [ref=e197]: ☀️ Matin
+            - tab [ref=e198] [cursor=pointer]:
+              - paragraph [ref=e200]: 🏦 Banque
+            - tab [ref=e201] [cursor=pointer]:
+              - paragraph [ref=e203]: 🌹 Folio Rose
+            - tab [ref=e204] [cursor=pointer]:
+              - paragraph [ref=e206]: 🅾 Oracle
+            - tab [selected] [ref=e207] [cursor=pointer]:
+              - paragraph [ref=e209]: 🔎 Historique
+            - tab [ref=e211] [cursor=pointer]:
+              - paragraph [ref=e213]: 📈 Profils
+            - tab [ref=e214] [cursor=pointer]:
+              - paragraph [ref=e216]: 🗂 Jobs CtrlM
+            - tab [ref=e217] [cursor=pointer]:
+              - paragraph [ref=e219]: ⌨ SQL
+          - tabpanel "🔎 Historique" [ref=e220]:
+            - generic [ref=e221]:
+              - generic [ref=e223]:
+                - paragraph [ref=e227]: Job
+                - group [ref=e229]:
+                  - combobox "Job" [active] [ref=e230]: "FINCID_J11INT_05_IMP01_M — FINANCE : G00C8 - Chargement du fichier -- D7"
+                  - button "Open" [ref=e231] [cursor=pointer]
+              - generic [ref=e236]:
+                - generic [ref=e243]:
+                  - generic [ref=e244]: 23:15
+                  - generic [ref=e245]: heure habituelle
+                - generic [ref=e252]:
+                  - generic [ref=e253]: 2.6 min
+                  - generic [ref=e254]: durée médiane
+                - generic [ref=e261]:
+                  - generic [ref=e262]: 100 %
+                  - generic [ref=e263]: taux OK
+                - generic [ref=e270]:
+                  - generic [ref=e271]: "7"
+                  - generic [ref=e272]: exécutions observées
+                - generic [ref=e279]:
+                  - generic [ref=e280]: Ma Me Je Ve
+                  - generic [ref=e281]: jours
+                - generic [ref=e288]:
+                  - generic [ref=e289]: Mensuel
+                  - generic [ref=e290]: fréquence
+              - generic [ref=e292]:
+                - generic [ref=e300]:
+                  - img:
+                    - generic:
+                      - generic:
+                        - generic:
+                          - generic: Feb 2026
+                          - generic: Mar 2026
+                          - generic: Apr 2026
+                          - generic: May 2026
+                          - generic: Jun 2026
+                          - generic: Jul 2026
+                          - generic: Aug 2026
+                          - generic: Sep 2026
+                        - generic:
+                          - generic: "0"
+                          - generic: "5"
+                          - generic: "10"
+                          - generic: "15"
+                          - generic: "20"
+                          - generic: "25"
+                  - img:
+                    - generic:
+                      - generic: Heure de démarrage
+                      - generic: heure (0–24)
+                  - toolbar [ref=e314]:
+                    - button "Download plot as a PNG" [ref=e316] [cursor=pointer]
+                    - generic [ref=e319]:
+                      - button "Zoom" [ref=e320] [cursor=pointer]
+                      - button "Pan" [ref=e323] [cursor=pointer]
+                    - generic [ref=e326]:
+                      - button "Zoom in" [ref=e327] [cursor=pointer]
+                      - button "Zoom out" [ref=e330] [cursor=pointer]
+                      - button "Autoscale" [ref=e333] [cursor=pointer]
+                      - button "Reset axes" [ref=e336] [cursor=pointer]
+                    - button "Fullscreen" [ref=e340] [cursor=pointer]
+                - generic [ref=e350]:
+                  - img:
+                    - generic:
+                      - generic:
+                        - generic:
+                          - generic: Feb 2026
+                          - generic: Mar 2026
+                          - generic: Apr 2026
+                          - generic: May 2026
+                          - generic: Jun 2026
+                          - generic: Jul 2026
+                          - generic: Aug 2026
+                          - generic: Sep 2026
+                        - generic:
+                          - generic: "0"
+                          - generic: "0.5"
+                          - generic: "1"
+                          - generic: "1.5"
+                          - generic: "2"
+                          - generic: "2.5"
+                          - generic: "3"
+                  - img:
+                    - generic: Durée (min)
+                  - toolbar [ref=e364]:
+                    - button "Download plot as a PNG" [ref=e366] [cursor=pointer]
+                    - generic [ref=e369]:
+                      - button "Zoom" [ref=e370] [cursor=pointer]
+                      - button "Pan" [ref=e373] [cursor=pointer]
+                    - generic [ref=e376]:
+                      - button "Zoom in" [ref=e377] [cursor=pointer]
+                      - button "Zoom out" [ref=e380] [cursor=pointer]
+                      - button "Autoscale" [ref=e383] [cursor=pointer]
+                      - button "Reset axes" [ref=e386] [cursor=pointer]
+                    - button "Fullscreen" [ref=e390] [cursor=pointer]
+              - generic [ref=e397]:
+                - button "Show/hide columns" [ref=e401] [cursor=pointer]
+                - button "Download as CSV" [ref=e407] [cursor=pointer]
+                - button "Search" [ref=e413] [cursor=pointer]
+                - button "Fullscreen" [ref=e419] [cursor=pointer]

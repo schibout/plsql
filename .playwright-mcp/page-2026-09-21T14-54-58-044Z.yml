@@ -1,0 +1,8 @@
+- generic [ref=f2e2]:
+  - generic [ref=f2e8]:
+    - heading "🕓 ODAT Watch" [level=2] [ref=f2e13]
+    - paragraph [ref=f2e18]: Control-M · Oracle EBS · FIN-FINANCE
+  - banner [ref=f2e22]:
+    - generic [ref=f2e25]:
+      - button "Deploy" [ref=f2e27] [cursor=pointer]
+      - button "Main menu" [ref=f2e31] [cursor=pointer]

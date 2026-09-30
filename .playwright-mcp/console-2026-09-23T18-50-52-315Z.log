@@ -1,0 +1,33 @@
+[    6129ms] [WARNING] Unrecognized feature: 'ambient-light-sensor'. @ http://localhost:8501/static/js/react-dom.BzV73oHg.js:0
+[    6130ms] [WARNING] Unrecognized feature: 'battery'. @ http://localhost:8501/static/js/react-dom.BzV73oHg.js:0
+[    6130ms] [WARNING] Unrecognized feature: 'document-domain'. @ http://localhost:8501/static/js/react-dom.BzV73oHg.js:0
+[    6130ms] [WARNING] Unrecognized feature: 'layout-animations'. @ http://localhost:8501/static/js/react-dom.BzV73oHg.js:0
+[    6130ms] [WARNING] Unrecognized feature: 'legacy-image-formats'. @ http://localhost:8501/static/js/react-dom.BzV73oHg.js:0
+[    6130ms] [WARNING] Unrecognized feature: 'oversized-images'. @ http://localhost:8501/static/js/react-dom.BzV73oHg.js:0
+[    6130ms] [WARNING] Unrecognized feature: 'vr'. @ http://localhost:8501/static/js/react-dom.BzV73oHg.js:0
+[    6130ms] [WARNING] Unrecognized feature: 'wake-lock'. @ http://localhost:8501/static/js/react-dom.BzV73oHg.js:0
+[    6166ms] [WARNING] An iframe which has both allow-scripts and allow-same-origin for its sandbox attribute can escape its sandboxing. @ about:srcdoc:0
+[   99046ms] [WARNING] WebSocket onclose @ http://localhost:8765/static/js/index.CcFifQPt.js:28
+[   99411ms] [ERROR] Failed to load resource: the server responded with a status of 404 (File not found) @ http://localhost:8765/_stcore/health:0
+[   99411ms] [ERROR] Failed to load resource: the server responded with a status of 404 (File not found) @ http://localhost:8765/_stcore/host-config:0
+[   99526ms] [ERROR] Failed to load resource: the server responded with a status of 404 (File not found) @ http://localhost:8765/_stcore/health:0
+[   99530ms] [ERROR] Failed to load resource: the server responded with a status of 404 (File not found) @ http://localhost:8765/_stcore/host-config:0
+[   99737ms] [ERROR] Failed to load resource: the server responded with a status of 404 (File not found) @ http://localhost:8765/_stcore/health:0
+[   99738ms] [ERROR] Failed to load resource: the server responded with a status of 404 (File not found) @ http://localhost:8765/_stcore/host-config:0
+[  100129ms] [ERROR] Failed to load resource: the server responded with a status of 404 (File not found) @ http://localhost:8765/_stcore/health:0
+[  100129ms] [ERROR] Failed to load resource: the server responded with a status of 404 (File not found) @ http://localhost:8765/_stcore/host-config:0
+[  100899ms] [ERROR] Failed to load resource: the server responded with a status of 404 (File not found) @ http://localhost:8765/_stcore/health:0
+[  100903ms] [ERROR] Failed to load resource: the server responded with a status of 404 (File not found) @ http://localhost:8765/_stcore/host-config:0
+[  102235ms] [ERROR] Failed to load resource: the server responded with a status of 404 (File not found) @ http://localhost:8765/_stcore/health:0
+[  102235ms] [ERROR] Client Error: response received with status 404 when attempting to reach /_stcore/health @ http://localhost:8765/static/js/index.CcFifQPt.js:27
+[  102236ms] [ERROR] Connection failed with status 404. @ http://localhost:8765/static/js/index.CcFifQPt.js:32
+[  102269ms] [ERROR] Failed to load resource: the server responded with a status of 404 (File not found) @ http://localhost:8765/_stcore/host-config:0
+[  137765ms] [WARNING] Unrecognized feature: 'ambient-light-sensor'. @ http://localhost:8765/static/js/react-dom.BzV73oHg.js:0
+[  137765ms] [WARNING] Unrecognized feature: 'battery'. @ http://localhost:8765/static/js/react-dom.BzV73oHg.js:0
+[  137765ms] [WARNING] Unrecognized feature: 'document-domain'. @ http://localhost:8765/static/js/react-dom.BzV73oHg.js:0
+[  137765ms] [WARNING] Unrecognized feature: 'layout-animations'. @ http://localhost:8765/static/js/react-dom.BzV73oHg.js:0
+[  137765ms] [WARNING] Unrecognized feature: 'legacy-image-formats'. @ http://localhost:8765/static/js/react-dom.BzV73oHg.js:0
+[  137765ms] [WARNING] Unrecognized feature: 'oversized-images'. @ http://localhost:8765/static/js/react-dom.BzV73oHg.js:0
+[  137765ms] [WARNING] Unrecognized feature: 'vr'. @ http://localhost:8765/static/js/react-dom.BzV73oHg.js:0
+[  137765ms] [WARNING] Unrecognized feature: 'wake-lock'. @ http://localhost:8765/static/js/react-dom.BzV73oHg.js:0
+[  137789ms] [WARNING] An iframe which has both allow-scripts and allow-same-origin for its sandbox attribute can escape its sandboxing. @ about:srcdoc:0

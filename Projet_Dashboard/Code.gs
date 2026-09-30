@@ -30,13 +30,13 @@ function dashboardReadCsv_(folder, fileName) {
 }
 
 /**
- * CSV SQL*Plus -> {header, rows}. Retire le BOM et les lignes vides que
- * SPOOL ajoute en tete et en fin de fichier.
+ * CSV (separateur ';') -> {header, rows}. Retire le BOM et les lignes vides,
+ * en-tetes mis en majuscules (les noms de colonnes de Index.html le sont).
  * @private
  */
 function dashboardParseCsv_(text) {
-  const lines = Utilities.parseCsv(String(text).replace(/^﻿/, ''))
+  const lines = Utilities.parseCsv(String(text).replace(/^﻿/, ''), ';')
     .map(function(row) { return row.map(function(cell) { return cell.trim(); }); })
     .filter(function(row) { return row.some(function(cell) { return cell !== ''; }); });
-  return {header: lines[0] || [], rows: lines.slice(1)};
+  return {header: (lines[0] || []).map(function(h) { return h.toUpperCase(); }), rows: lines.slice(1)};
 }

@@ -1,0 +1,58 @@
+[   15265ms] [WARNING] Unrecognized feature: 'ambient-light-sensor'. @ http://localhost:8591/static/js/react-dom.BzV73oHg.js:0
+[   15265ms] [WARNING] Unrecognized feature: 'battery'. @ http://localhost:8591/static/js/react-dom.BzV73oHg.js:0
+[   15265ms] [WARNING] Unrecognized feature: 'document-domain'. @ http://localhost:8591/static/js/react-dom.BzV73oHg.js:0
+[   15265ms] [WARNING] Unrecognized feature: 'layout-animations'. @ http://localhost:8591/static/js/react-dom.BzV73oHg.js:0
+[   15266ms] [WARNING] Unrecognized feature: 'legacy-image-formats'. @ http://localhost:8591/static/js/react-dom.BzV73oHg.js:0
+[   15266ms] [WARNING] Unrecognized feature: 'oversized-images'. @ http://localhost:8591/static/js/react-dom.BzV73oHg.js:0
+[   15266ms] [WARNING] Unrecognized feature: 'vr'. @ http://localhost:8591/static/js/react-dom.BzV73oHg.js:0
+[   15266ms] [WARNING] Unrecognized feature: 'wake-lock'. @ http://localhost:8591/static/js/react-dom.BzV73oHg.js:0
+[   15284ms] [WARNING] An iframe which has both allow-scripts and allow-same-origin for its sandbox attribute can escape its sandboxing. @ about:srcdoc:0
+[   90096ms] [WARNING] An iframe which has both allow-scripts and allow-same-origin for its sandbox attribute can escape its sandboxing. @ about:srcdoc:0
+[   92974ms] [WARNING] WebSocket onclose @ http://localhost:8591/static/js/index.CcFifQPt.js:28
+[   93398ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8591/_stcore/health:0
+[   93398ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8591/_stcore/host-config:0
+[   93506ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8591/_stcore/health:0
+[   93506ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8591/_stcore/host-config:0
+[   93721ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8591/_stcore/health:0
+[   93721ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8591/_stcore/host-config:0
+[   94074ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8591/_stcore/health:0
+[   94075ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8591/_stcore/host-config:0
+[   94696ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8591/_stcore/health:0
+[   94696ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8591/_stcore/host-config:0
+[   96197ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8591/_stcore/health:0
+[   96198ms] [ERROR] Client Error in reaching server endpoint - No response received when attempting to reach /_stcore/health @ http://localhost:8591/static/js/index.CcFifQPt.js:27
+[   96198ms] [ERROR] Is Streamlit still running? If you accidentally stopped Streamlit, just restart it in your terminal: @ http://localhost:8591/static/js/index.CcFifQPt.js:32
+[   96199ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8591/_stcore/host-config:0
+[   96249ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8591/static/media/SourceCodeVF-Upright.ttf.BjWn63N-.woff2:0
+[   99150ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8591/_stcore/health:0
+[   99150ms] [ERROR] Client Error in reaching server endpoint - No response received when attempting to reach /_stcore/health @ http://localhost:8591/static/js/index.CcFifQPt.js:27
+[   99150ms] [ERROR] Is Streamlit still running? If you accidentally stopped Streamlit, just restart it in your terminal: @ http://localhost:8591/static/js/index.CcFifQPt.js:32
+[   99150ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8591/_stcore/host-config:0
+[  103046ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8591/_stcore/health:0
+[  103046ms] [ERROR] Client Error in reaching server endpoint - No response received when attempting to reach /_stcore/health @ http://localhost:8591/static/js/index.CcFifQPt.js:27
+[  103046ms] [ERROR] Is Streamlit still running? If you accidentally stopped Streamlit, just restart it in your terminal: @ http://localhost:8591/static/js/index.CcFifQPt.js:32
+[  103047ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8591/_stcore/host-config:0
+[  106902ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8591/_stcore/health:0
+[  106903ms] [ERROR] Client Error in reaching server endpoint - No response received when attempting to reach /_stcore/health @ http://localhost:8591/static/js/index.CcFifQPt.js:27
+[  106903ms] [ERROR] Is Streamlit still running? If you accidentally stopped Streamlit, just restart it in your terminal: @ http://localhost:8591/static/js/index.CcFifQPt.js:32
+[  106903ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8591/_stcore/host-config:0
+[  110323ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8591/_stcore/health:0
+[  110323ms] [ERROR] Client Error in reaching server endpoint - No response received when attempting to reach /_stcore/health @ http://localhost:8591/static/js/index.CcFifQPt.js:27
+[  110324ms] [ERROR] Is Streamlit still running? If you accidentally stopped Streamlit, just restart it in your terminal: @ http://localhost:8591/static/js/index.CcFifQPt.js:32
+[  110324ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8591/_stcore/host-config:0
+[  114325ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8591/_stcore/health:0
+[  114326ms] [ERROR] Client Error in reaching server endpoint - No response received when attempting to reach /_stcore/health @ http://localhost:8591/static/js/index.CcFifQPt.js:27
+[  114326ms] [ERROR] Is Streamlit still running? If you accidentally stopped Streamlit, just restart it in your terminal: @ http://localhost:8591/static/js/index.CcFifQPt.js:32
+[  114326ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8591/_stcore/host-config:0
+[  130971ms] [WARNING] Unrecognized feature: 'ambient-light-sensor'. @ http://localhost:8593/static/js/react-dom.BzV73oHg.js:0
+[  130972ms] [WARNING] Unrecognized feature: 'battery'. @ http://localhost:8593/static/js/react-dom.BzV73oHg.js:0
+[  130972ms] [WARNING] Unrecognized feature: 'document-domain'. @ http://localhost:8593/static/js/react-dom.BzV73oHg.js:0
+[  130972ms] [WARNING] Unrecognized feature: 'layout-animations'. @ http://localhost:8593/static/js/react-dom.BzV73oHg.js:0
+[  130972ms] [WARNING] Unrecognized feature: 'legacy-image-formats'. @ http://localhost:8593/static/js/react-dom.BzV73oHg.js:0
+[  130972ms] [WARNING] Unrecognized feature: 'oversized-images'. @ http://localhost:8593/static/js/react-dom.BzV73oHg.js:0
+[  130972ms] [WARNING] Unrecognized feature: 'vr'. @ http://localhost:8593/static/js/react-dom.BzV73oHg.js:0
+[  130972ms] [WARNING] Unrecognized feature: 'wake-lock'. @ http://localhost:8593/static/js/react-dom.BzV73oHg.js:0
+[  130984ms] [WARNING] An iframe which has both allow-scripts and allow-same-origin for its sandbox attribute can escape its sandboxing. @ about:srcdoc:0
+[  262634ms] [WARNING] An iframe which has both allow-scripts and allow-same-origin for its sandbox attribute can escape its sandboxing. @ about:srcdoc:0
+[  274673ms] [WARNING] An iframe which has both allow-scripts and allow-same-origin for its sandbox attribute can escape its sandboxing. @ about:srcdoc:0
+[  282217ms] [WARNING] An iframe which has both allow-scripts and allow-same-origin for its sandbox attribute can escape its sandboxing. @ about:srcdoc:0

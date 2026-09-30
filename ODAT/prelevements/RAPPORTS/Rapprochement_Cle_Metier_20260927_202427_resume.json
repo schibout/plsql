@@ -1,0 +1,51 @@
+{
+  "code": 1,
+  "statut_global": "ANOMALIES",
+  "base": "Rapprochement_Cle_Metier_20260927_202427",
+  "dossier": "C:\\Users\\samir.chibout\\Documents\\Project\\plsql\\ODAT\\Prelevements\\RAPPORTS",
+  "reference": "2026-09-27",
+  "par_statut": {
+    "RAPPROCHE": {
+      "cles": 131,
+      "nb": 1199,
+      "montant": "8076977.19"
+    },
+    "EN_ATTENTE": {
+      "cles": 3,
+      "nb": 4,
+      "montant": "106213.71"
+    },
+    "NON_RECU": {
+      "cles": 4,
+      "nb": 27,
+      "montant": "560072.34"
+    },
+    "ECART_PARTIEL": {
+      "cles": 5,
+      "nb": 162,
+      "montant": "1045084.84"
+    }
+  },
+  "nb_anomalies": 9,
+  "nb_signales": 0,
+  "nb_a_investiguer": 5,
+  "nb_doublons": 0,
+  "nb_justifications": 12,
+  "nb_justifie_par_rejet": 0,
+  "nb_lignes_ko": 0,
+  "avertissements": [],
+  "contexte": {
+    "Date de référence": "27/09/2026",
+    "Profondeur (jours)": 10,
+    "Échéances retenues": "17/09/2026 → 22/10/2026",
+    "Lignes Oracle": 4010,
+    "Lignes EDF": 744,
+    "Rejets retenus": 38,
+    "Rejets appariés Oracle": 14,
+    "Clés rapprochées": 143,
+    "Doublons d'émission": 0
+  },
+  "dossier_edf": "C:\\Users\\samir.chibout\\Documents\\Project\\plsql\\ODAT\\Prelevements\\EDF",
+  "dossier_rejets": "C:\\Users\\samir.chibout\\Documents\\Project\\plsql\\ODAT\\Prelevements\\REJETS",
+  "genere_le": "2026-09-28T20:24:27"
+}

@@ -10,7 +10,7 @@ metier exacte portee par les deux sources :
     Oracle : ENTITYBANKACCOUNTNUMBER x TRANSACTIONDATE
     EDF    : IBAN CREANCIER          x DATE D'ECHEANCE
 
-Les rejets internes sont apparies ligne a ligne sur le RUM (SEPAMANDATEID), ce
+Les rejets bancaires (exports Quartz .xls) sont apparies ligne a ligne sur le RUM (SEPAMANDATEID), ce
 qui permet de qualifier chaque ecart au lieu de le constater.
 
 Usage : python rapprochement_cle_metier.py [--date AAAA-MM-JJ] [--jours 10]
@@ -28,7 +28,7 @@ import json
 import os
 import re
 import sys
-from collections import defaultdict
+from collections import Counter, defaultdict
 from dataclasses import dataclass, field
 from datetime import date, datetime, timedelta
 from decimal import Decimal, InvalidOperation
@@ -100,7 +100,7 @@ ORDRE_STATUTS = [
 EXPLICATIONS = {
     RAPPROCHE: "Nombre et montant identiques de part et d'autre.",
     RAPPROCHE_REJET_POSTERIEUR: "Totaux conformes, mais un rejet est arrive apres la remontee EDF : le prelevement echouera.",
-    EXPLIQUE_PAR_REJET: "L'ecart correspond exactement aux rejets internes.",
+    EXPLIQUE_PAR_REJET: "L'ecart correspond exactement aux rejets bancaires.",
     REJETE_INTEGRALEMENT: "Tous les prelevements ont ete rejetes : EDF ne remonte donc aucune ligne.",
     REJET_PARTIEL_NON_CONFIRME: "Des rejets existent mais EDF n'a encore rien remonte pour cette cle.",
     EN_ATTENTE: "Emis, pas encore confirme par EDF, dans le delai normal.",
@@ -404,53 +404,109 @@ def charger_edf(edf_path, motif, nom_si, diag):
     return agregats, sorted(dates_fichiers)
 
 
-def charger_rejets(rejets_path, motif, diag):
-    """Charge les rejets en dedoublonnant les republications a l'identique.
+# Export Quartz « Liste des rejets bancaires du jour - Prelevement » : colonnes lues par leur libelle.
+MOTIF_REJETS = "*rejets bancaires du jour*.xls"
+RE_DATE_REJET = re.compile(r"^(\d{8})_")          # 24092026_Liste des rejets ... .xls (nommage Apps Script)
+COLONNES_REJET = {"rum": "Identification de mandat", "iban_debiteur": "Identité bancaire du tiers",
+                  "montant": "Montant de saisie", "echeance": "Date de règlement de l'opération d'origine",
+                  "code": "Motif", "motif": "Description du motif"}
 
-    Un meme rejet peut etre republie dans un fichier ulterieur (verifie). Deux
-    RUM identiques sur des echeances DIFFERENTES sont en revanche legitimes :
-    l'echeance fait donc partie de la signature.
+
+def date_nom_rejet(nom):
+    """Date du fichier de rejets, portee par le prefixe JJMMAAAA_ de son nom."""
+    m = RE_DATE_REJET.match(nom)
+    if not m:
+        raise ValueError(f"prefixe JJMMAAAA_ absent : {nom}")
+    return datetime.strptime(m.group(1), "%d%m%Y").date()
+
+
+def lire_classeur_rejets(fichier):
+    """Lignes de detail du classeur Quartz, en dict {cle de COLONNES_REJET: valeur brute}, et son datemode.
+
+    Deux lignes de titre, l'en-tete « Banque ... », puis une ligne par rejet ; les
+    sous-totaux (colonne Banque vide) sont ignores."""
+    try:
+        import xlrd
+    except ImportError:  # pragma: no cover
+        raise ErreurTraitement("Le module 'xlrd' est requis pour lire les rejets (.xls). "
+                               "Installez-le avec : python -m pip install -r requirements.txt")
+    wb = xlrd.open_workbook(str(fichier))
+    sh = wb.sheet_by_index(0)
+    index, lignes = None, []
+    for r in range(sh.nrows):
+        v = sh.row_values(r)
+        if index is None:
+            if str(v[0]).strip() == "Banque":
+                entete = [str(c).strip() for c in v]
+                manquantes = [lib for lib in COLONNES_REJET.values() if lib not in entete]
+                if manquantes:
+                    raise ValueError(f"colonnes absentes : {', '.join(manquantes)}")
+                index = {cle: entete.index(lib) for cle, lib in COLONNES_REJET.items()}
+            continue
+        if str(v[0]).strip():
+            lignes.append({cle: v[i] for cle, i in index.items()})
+    if index is None:
+        raise ValueError("en-tete « Banque » introuvable")
+    return lignes, wb.datemode
+
+
+def _date_cellule(valeur, datemode):
+    """Date Excel (numero de serie) ou texte JJ/MM/AAAA."""
+    if isinstance(valeur, float):
+        import xlrd
+        return xlrd.xldate_as_datetime(valeur, datemode).date()
+    return date_fr(str(valeur))
+
+
+def charger_rejets(rejets_path, motif, diag):
+    """Charge les rejets bancaires (exports Quartz .xls) en dedoublonnant les republications.
+
+    Un meme rejet republie dans un fichier ulterieur n'est compte qu'une fois. Deux
+    lignes identiques dans UN fichier sont en revanche deux rejets (deux prelevements
+    de meme montant) : on garde, par signature, le plus grand nombre vu dans un fichier.
+    Deux RUM identiques sur des echeances DIFFERENTES sont legitimes : l'echeance fait
+    partie de la signature. L'IBAN creancier est absent du fichier : il est repris de la
+    ligne Oracle a l'appariement.
     """
     rejets = []
     if not rejets_path.is_dir():
         diag.avertir(f"Dossier de rejets introuvable : {rejets_path}.")
         return rejets
 
-    vues = set()
+    retenus = Counter()
     fichiers = sorted(p for p in rejets_path.iterdir()
                       if p.is_file() and fnmatch.fnmatch(p.name, motif))
     diag.fichiers_rejets = len(fichiers)
 
     for fichier in fichiers:
-        segments = fichier.name.split(".")
         try:
-            date_fichier = date_compacte(segments[1])
-        except (IndexError, ValueError):
-            diag.avertir(f"Date illisible dans le nom du fichier de rejets : {fichier.name}")
+            date_fichier = date_nom_rejet(fichier.name)
+            lignes, datemode = lire_classeur_rejets(fichier)
+        except ErreurTraitement:
+            raise
+        except Exception as exc:  # classeur illisible : signale, les autres fichiers sont lus
+            diag.avertir(f"Fichier de rejets ignore, {fichier.name} : {exc}")
             continue
 
-        for ligne in lire_lignes(fichier):
-            champs = ligne.split(";")
-            if len(champs) < 7 or not champs[0].strip().startswith("FR"):
-                continue
+        vus_ici = Counter()
+        for brut in lignes:
             try:
-                echeance = date_fr(champs[3])
-                montant = montant_edf(champs[4])
-            except (ValueError, InvalidOperation) as exc:
-                diag.avertir(f"Ligne de rejet illisible dans {fichier.name} ({exc}) : {ligne}")
+                echeance = _date_cellule(brut["echeance"], datemode)
+                montant = Decimal(f"{float(brut['montant']):.2f}")
+            except (ValueError, TypeError, InvalidOperation) as exc:
+                diag.avertir(f"Ligne de rejet illisible dans {fichier.name} ({exc}) : {brut}")
                 continue
-
-            signature = (champs[0].strip(), champs[1].strip(), champs[2].strip(),
-                         echeance, montant)
-            if signature in vues:
+            rum, iban_debiteur = str(brut["rum"]).strip(), str(brut["iban_debiteur"]).strip()
+            signature = (rum, iban_debiteur, echeance, montant)
+            vus_ici[signature] += 1
+            if vus_ici[signature] <= retenus[signature]:
                 diag.rejets_dupliques += 1
                 continue
-            vues.add(signature)
+            retenus[signature] += 1
 
             rejets.append(LigneRejet(
-                iban_creancier=champs[0].strip(), rum=champs[1].strip(),
-                iban_debiteur=champs[2].strip(), echeance=echeance, montant=montant,
-                code=champs[5].strip(), motif=champs[6].strip(),
+                iban_creancier="", rum=rum, iban_debiteur=iban_debiteur, echeance=echeance,
+                montant=montant, code=str(brut["code"]).strip(), motif=str(brut["motif"]).strip(),
                 fichier=fichier.name, date_fichier=date_fichier))
             diag.lignes_rejets += 1
 
@@ -461,22 +517,23 @@ def charger_rejets(rejets_path, motif, diag):
 # Appariement des rejets sur le RUM
 # ---------------------------------------------------------------------------
 def apparier_rejets(lignes_oracle, rejets):
-    """Apparie chaque rejet a une ligne Oracle sur (IBAN creancier, RUM, echeance).
+    """Apparie chaque rejet a une ligne Oracle sur (RUM, echeance).
 
-    Indispensable : les fichiers de rejets ne portent pas le nom du SI, et
-    plusieurs IBAN creanciers sont partages entre CIF et ORACLE. Le RUM est le
-    seul discriminant fiable ; un rejet non apparie releve d'un autre SI.
+    Les rejets bancaires ne portent ni le nom du SI ni l'IBAN creancier. Le RUM est
+    le seul discriminant fiable ; un rejet non apparie releve d'un autre SI (RUM
+    NVCI... de CIF). L'IBAN creancier du rejet apparie est repris de la ligne Oracle.
     """
     index = defaultdict(list)
     for lo in lignes_oracle:
-        index[(lo.iban_creancier, lo.rum, lo.echeance)].append(lo)
+        index[(lo.rum, lo.echeance)].append(lo)
 
     apparies = defaultdict(list)   # cle (iban, echeance) -> [LigneRejet]
     for rejet in rejets:
-        candidats = index.get((rejet.iban_creancier, rejet.rum, rejet.echeance))
+        candidats = index.get((rejet.rum, rejet.echeance))
         if not candidats:
             continue
         rejet.appariee = True
+        rejet.iban_creancier = candidats[0].iban_creancier
         # On retient la ligne Oracle d'origine : elle designe le fichier emetteur.
         rejet.origine = candidats[0]
         apparies[(rejet.iban_creancier, rejet.echeance)].append(rejet)
@@ -979,12 +1036,12 @@ def construire_parser():
     p.add_argument("--dossier-oracle", default="ORACLE")
     p.add_argument("--dossier-edf", default="EDF")
     p.add_argument("--dossier-rejets", default=None,
-                   help="Dossier des rejets internes (defaut : REJETS a cote d'EDF, sinon sous EDF)")
+                   help="Dossier des rejets bancaires Quartz .xls (defaut : REJETS a cote d'EDF, sinon sous EDF)")
     p.add_argument("--dossier-rapports", default=DOSSIER_RAPPORT,
                    help="Sous-dossier de la sortie ou ecrire les rapports")
     p.add_argument("--motifs-oracle", nargs="+", default=["*PCX*", "*PCL*"])
     p.add_argument("--motif-edf", default="IMPORT_AVP_DK.*.*.csv")
-    p.add_argument("--motif-rejets", default="REJETS_INTERNES_DK.*.csv")
+    p.add_argument("--motif-rejets", default=MOTIF_REJETS)
     p.add_argument("--nom-si", default="ORACLE")
     return p
 
@@ -1085,15 +1142,15 @@ def lignes_edf(agregats_edf, nom_si):
     return sorted(out, key=lambda r: (r["date_fichier"], r["fichier"], r["echeance"], r["iban_creancier"]))
 
 
-def fichiers_dates(dossier, motif):
-    """Tous les fichiers d'un dossier correspondant au motif, avec la date portee par leur nom (2e segment) :
-    un etat EDF sans ligne du SI est un fichier recu quand meme, il doit etre memorise."""
+def fichiers_dates(dossier, motif, date_nom=lambda nom: date_compacte(nom.split(".")[1])):
+    """Tous les fichiers d'un dossier correspondant au motif, avec la date portee par leur nom (EDF : 2e segment,
+    rejets : date_nom_rejet) : un etat EDF sans ligne du SI est un fichier recu quand meme, il doit etre memorise."""
     out = []
     if not Path(dossier).is_dir():
         return out
     for f in sorted(Path(dossier).glob(motif)):
         try:
-            out.append({"fichier": f.name, "date_fichier": date_compacte(f.name.split(".")[1])})
+            out.append({"fichier": f.name, "date_fichier": date_nom(f.name)})
         except (IndexError, ValueError):
             continue
     return out
@@ -1113,7 +1170,7 @@ STATUT_GLOBAL_PAR_CODE = {0: "OK", 1: "ANOMALIES", 2: "ERREUR", 3: "DEGRADE"}
 def executer(reference=None, racine=None, sortie=None, jours=10, nom_si="ORACLE",
              dossier_oracle="ORACLE", dossier_edf="EDF", dossier_rejets=None, dossier_rapports=DOSSIER_RAPPORT,
              motifs_oracle=("*PCX*", "*PCL*"), motif_edf="IMPORT_AVP_DK.*.*.csv",
-             motif_rejets="REJETS_INTERNES_DK.*.csv"):
+             motif_rejets=MOTIF_REJETS):
     """Lance le rapprochement et ecrit RAPPORTS/<base>.xlsx, .csv, _justifications.csv, _resume.json.
 
     Dossiers relatifs a la racine (rapports : a la sortie), ou absolus. dossier_rejets=None : REJETS a cote d'EDF.
@@ -1176,7 +1233,8 @@ def executer(reference=None, racine=None, sortie=None, jours=10, nom_si="ORACLE"
         "dossier_edf": str((args.racine / dossier_edf).resolve()),
         "dossier_rejets": str(resoudre_dossier_rejets(args.racine, dossier_edf, args.dossier_rejets).resolve()),
         "fichiers_edf": fichiers_dates(args.racine / dossier_edf, motif_edf),
-        "fichiers_rejets": fichiers_dates(resoudre_dossier_rejets(args.racine, dossier_edf, args.dossier_rejets), motif_rejets),
+        "fichiers_rejets": fichiers_dates(resoudre_dossier_rejets(args.racine, dossier_edf, args.dossier_rejets), motif_rejets,
+                                          date_nom_rejet),
     }
     serialisable = dict(
         {k: v for k, v in res.items() if k not in ("edf", "rejets", "fichiers_edf", "fichiers_rejets")},

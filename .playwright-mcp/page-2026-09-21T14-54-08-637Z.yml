@@ -1,0 +1,357 @@
+- generic [ref=f1e2]:
+  - generic [ref=f1e11]:
+    - heading "🕓 ODAT Watch" [level=2] [ref=f1e16]
+    - paragraph [ref=f1e21]: Control-M · Oracle EBS · FIN-FINANCE
+    - generic [ref=f1e23]:
+      - paragraph [ref=f1e27]: Application
+      - group [ref=f1e29]:
+        - combobox "Application" [ref=f1e30]: FIN-FINANCE
+        - button "Open" [ref=f1e31] [cursor=pointer]
+    - generic [ref=f1e36]:
+      - paragraph [ref=f1e40]: Filtre (job, description, script)
+      - textbox "Filtre (job, description, script)" [ref=f1e43]:
+        - /placeholder: ""
+    - separator [ref=f1e48]
+    - group [ref=f1e51]:
+      - generic "keyboard_arrow_right 📂 Sources d'import" [ref=f1e52] [cursor=pointer]:
+        - generic [ref=f1e53]:
+          - generic [ref=f1e54]: keyboard_arrow_right
+          - paragraph [ref=f1e58]: 📂 Sources d'import
+    - button [ref=f1e61] [cursor=pointer]:
+      - paragraph [ref=f1e66]: 📥 Importer les nouveaux fichiers ODAT
+    - separator [ref=f1e71]
+    - paragraph [ref=f1e76]:
+      - strong [ref=f1e77]: Oracle Apps
+    - paragraph [ref=f1e82]: "5996 demandes en base, du 2026-08-15 au 2026-09-21 · dernier chargement : 21/09 09:27"
+    - generic [ref=f1e85] [cursor=pointer]:
+      - checkbox "Tout recharger (chargement initial)" [ref=f1e87]
+      - generic [ref=f1e89]:
+        - paragraph [ref=f1e93]: Tout recharger (chargement initial)
+        - button "Help for Tout recharger (chargement initial)" [ref=f1e97]
+    - generic [ref=f1e102]:
+      - button [ref=f1e110] [cursor=pointer]:
+        - paragraph [ref=f1e115]: 🔄 Demandes
+      - button [ref=f1e123] [cursor=pointer]:
+        - paragraph [ref=f1e128]: 📚 Programmes
+    - button [ref=f1e131] [cursor=pointer]:
+      - paragraph [ref=f1e136]: 🧾 Analyser les logs .req / .out
+  - generic [ref=f1e3]:
+    - banner [ref=f1e139]:
+      - generic [ref=f1e142]:
+        - button "Deploy" [ref=f1e152] [cursor=pointer]
+        - button "Main menu" [ref=f1e156] [cursor=pointer]
+    - generic [ref=f1e160]:
+      - generic [ref=f1e165]:
+        - generic [ref=f1e166]:
+          - heading "FIN-FINANCE" [level=1] [ref=f1e168]:
+            - text: FIN-FINANCE
+            - generic [ref=f1e169]:
+              - link "Link to heading":
+                - /url: "#fin-finance"
+          - generic [ref=f1e170]: Lundi 21/09/2026, 16:54 — qu'est-ce qui tourne ce soir, et demain ?
+        - generic [ref=f1e171]: Dernière photo Control-M 21/09 08:07 · odate 2026-09-20il y a 8 h 47 min · 709 photos · 206 jours d'historique
+      - generic [ref=f1e173]:
+        - tablist [ref=f1e174]:
+          - tab [selected] [ref=f1e175] [cursor=pointer]:
+            - paragraph [ref=f1e177]: 🧭 Préparer ma nuit
+          - tab [ref=f1e179] [cursor=pointer]:
+            - paragraph [ref=f1e181]: 📥 Clôtures
+          - tab [ref=f1e182] [cursor=pointer]:
+            - paragraph [ref=f1e184]: 🌙 Ce soir
+          - tab [ref=f1e185] [cursor=pointer]:
+            - paragraph [ref=f1e187]: 📅 Demain
+          - tab [ref=f1e188] [cursor=pointer]:
+            - paragraph [ref=f1e190]: 🔴 Maintenant
+          - tab [ref=f1e191] [cursor=pointer]:
+            - paragraph [ref=f1e193]: ☀️ Matin
+          - tab [ref=f1e194] [cursor=pointer]:
+            - paragraph [ref=f1e196]: 🏦 Banque
+          - tab [ref=f1e197] [cursor=pointer]:
+            - paragraph [ref=f1e199]: 🌹 Folio Rose
+          - tab [ref=f1e200] [cursor=pointer]:
+            - paragraph [ref=f1e202]: 🅾 Oracle
+          - tab [ref=f1e203] [cursor=pointer]:
+            - paragraph [ref=f1e205]: 🔎 Historique
+          - tab [ref=f1e206] [cursor=pointer]:
+            - paragraph [ref=f1e208]: 📈 Profils
+          - tab [ref=f1e209] [cursor=pointer]:
+            - paragraph [ref=f1e211]: 🗂 Jobs CtrlM
+          - tab [ref=f1e212] [cursor=pointer]:
+            - paragraph [ref=f1e214]: ⌨ SQL
+        - tabpanel "🧭 Préparer ma nuit" [ref=f1e215]:
+          - generic [ref=f1e216]:
+            - heading "Préparer ma nuit" [level=3] [ref=f1e221]:
+              - text: Préparer ma nuit
+              - generic [ref=f1e222]:
+                - link "Link to heading":
+                  - /url: "#preparer-ma-nuit"
+            - paragraph [ref=f1e227]: Prévision issue de l'historique Control-M ; le suivi utilise la dernière photo importée et n'est pas une supervision temps réel.
+            - generic [ref=f1e229]:
+              - generic [ref=f1e233]:
+                - paragraph [ref=f1e237]: Date de début
+                - generic [ref=f1e240]:
+                  - group "Date de début" [ref=f1e242]:
+                    - spinbutton "year, Date de début" [ref=f1e243]: "2026"
+                    - generic [aria-hidden] [ref=f1e244]: /
+                    - spinbutton "month, Date de début" [ref=f1e245]: "09"
+                    - generic [aria-hidden] [ref=f1e246]: /
+                    - spinbutton "day, Date de début" [ref=f1e247]: "21"
+                  - textbox [ref=f1e249]: 2026-09-21
+              - generic [ref=f1e253]:
+                - paragraph [ref=f1e257]: Début
+                - group "Début" [ref=f1e261]:
+                  - spinbutton "heure, Début" [ref=f1e262]: "19"
+                  - generic [aria-hidden] [ref=f1e263]: ":"
+                  - spinbutton "minute, Début" [ref=f1e264]: "00"
+              - generic [ref=f1e268]:
+                - paragraph [ref=f1e272]: Fin
+                - group "Fin" [ref=f1e276]:
+                  - spinbutton "heure, Fin" [ref=f1e277]: "07"
+                  - generic [aria-hidden] [ref=f1e278]: ":"
+                  - spinbutton "minute, Fin" [ref=f1e279]: "00"
+              - generic [ref=f1e283]:
+                - paragraph [ref=f1e287]: Mode
+                - radiogroup "Mode" [ref=f1e288]:
+                  - generic [ref=f1e290] [cursor=pointer]:
+                    - radio "Préparer" [ref=f1e292]
+                    - paragraph [ref=f1e297]: Préparer
+                  - generic [ref=f1e299] [cursor=pointer]:
+                    - radio "Suivre la nuit" [ref=f1e301]
+                    - paragraph [ref=f1e306]: Suivre la nuit
+                  - generic [ref=f1e308] [cursor=pointer]:
+                    - radio "Bilan" [checked] [active] [ref=f1e310]
+                    - paragraph [ref=f1e315]: Bilan
+            - generic [ref=f1e317]:
+              - generic [ref=f1e318]:
+                - paragraph [ref=f1e321]: Contexte
+                - button "Help for Contexte" [ref=f1e325] [cursor=pointer]
+              - radiogroup "Contexte" [ref=f1e329]:
+                - generic [ref=f1e331] [cursor=pointer]:
+                  - radio "Toutes" [checked] [ref=f1e333]
+                  - paragraph [ref=f1e338]: Toutes
+                - generic [ref=f1e340] [cursor=pointer]:
+                  - radio "Hors clôture" [ref=f1e342]
+                  - paragraph [ref=f1e347]: Hors clôture
+                - generic [ref=f1e349] [cursor=pointer]:
+                  - radio "Clôture" [ref=f1e351]
+                  - paragraph [ref=f1e356]: Clôture
+                - generic [ref=f1e358] [cursor=pointer]:
+                  - radio "Inconnu" [ref=f1e360]
+                  - paragraph [ref=f1e365]: Inconnu
+            - generic [ref=f1e656]:
+              - alert [ref=f1e661]:
+                - paragraph [ref=f1e665]:
+                  - text: La dernière photo Control-M porte sur la nuit du
+                  - strong [ref=f1e666]: 20/09/2026
+                  - text: ": elle ne couvre pas la plage choisie, les compteurs restent à zéro. Choisissez cette date, ou importez une photo plus récente pour suivre la nuit en cours."
+              - button [ref=f1e671] [cursor=pointer]:
+                - generic "→ Nuit du 20/09" [ref=f1e672]:
+                  - paragraph [ref=f1e676]: → Nuit du 20/09
+            - paragraph [ref=f1e681]: "21/09 19:00 → 22/09 07:00 · Clôture : J-7, J-6 · filtre : Toutes"
+            - group [ref=f1e683]:
+              - generic "keyboard_arrow_right 4 jalon(s) de clôture dans cette plage" [ref=f1e684] [cursor=pointer]:
+                - generic [ref=f1e685]:
+                  - generic [ref=f1e686]: keyboard_arrow_right
+                  - paragraph [ref=f1e690]: 4 jalon(s) de clôture dans cette plage
+            - generic [ref=f1e692]:
+              - generic [ref=f1e699]:
+                - generic [ref=f1e700]: "334"
+                - generic [ref=f1e701]: jobs attendus
+              - generic [ref=f1e708]:
+                - generic [ref=f1e709]: "108"
+                - generic [ref=f1e710]: chaînes
+              - generic [ref=f1e717]:
+                - generic [ref=f1e718]: "0"
+                - generic [ref=f1e719]: terminés OK
+              - generic [ref=f1e726]:
+                - generic [ref=f1e727]: "0"
+                - generic [ref=f1e728]: erreurs
+              - generic [ref=f1e735]:
+                - generic [ref=f1e736]: "0"
+                - generic [ref=f1e737]: à vérifier
+            - heading "Traitements attendus" [level=5] [ref=f1e742]:
+              - text: Traitements attendus
+              - generic [ref=f1e743]:
+                - link "Link to heading":
+                  - /url: "#traitements-attendus"
+            - generic [ref=f1e748]:
+              - button "Show/hide columns" [ref=f1e752] [cursor=pointer]
+              - button "Download as CSV" [ref=f1e758] [cursor=pointer]
+              - button "Search" [ref=f1e764] [cursor=pointer]
+              - button "Fullscreen" [ref=f1e770] [cursor=pointer]
+            - generic [ref=f1e783]:
+              - generic [ref=f1e785]:
+                - heading "Chaînes attendues" [level=5] [ref=f1e791]:
+                  - text: Chaînes attendues
+                  - generic [ref=f1e792]:
+                    - link "Link to heading":
+                      - /url: "#chaines-attendues"
+                - generic [ref=f1e797]:
+                  - button "Show/hide columns" [ref=f1e801] [cursor=pointer]
+                  - button "Download as CSV" [ref=f1e807] [cursor=pointer]
+                  - button "Search" [ref=f1e813] [cursor=pointer]
+                  - button "Fullscreen" [ref=f1e819] [cursor=pointer]
+              - generic [ref=f1e832]:
+                - heading "Assistant de nuit" [level=4] [ref=f1e838]:
+                  - text: Assistant de nuit
+                  - generic [ref=f1e839]:
+                    - link "Link to heading":
+                      - /url: "#assistant-de-nuit"
+                - paragraph [ref=f1e844]: "Questions guidées : les réponses s'appuient sur le plan affiché, sans IA externe."
+                - generic [ref=f1e846]:
+                  - button [ref=f1e851] [cursor=pointer]:
+                    - generic "Prévu" [ref=f1e852]:
+                      - paragraph [ref=f1e856]: Prévu
+                  - button [ref=f1e861] [cursor=pointer]:
+                    - generic "Les plus longs" [ref=f1e862]:
+                      - paragraph [ref=f1e866]: Les plus longs
+                  - button [ref=f1e871] [cursor=pointer]:
+                    - generic "À surveiller" [ref=f1e872]:
+                      - paragraph [ref=f1e876]: À surveiller
+                  - button [ref=f1e881] [cursor=pointer]:
+                    - generic "Pourquoi ?" [ref=f1e882]:
+                      - paragraph [ref=f1e886]: Pourquoi ?
+                - generic [ref=f1e888]:
+                  - paragraph [ref=f1e892]: Votre question
+                  - textbox "Votre question" [ref=f1e895]:
+                    - /placeholder: Ex. Quels traitements sont les plus longs ?
+            - heading "Chronologie des chaînes" [level=5] [ref=f1e901]:
+              - text: Chronologie des chaînes
+              - generic [ref=f1e902]:
+                - link "Link to heading":
+                  - /url: "#chronologie-des-chaines"
+            - generic [ref=f1e599]:
+              - img:
+                - generic:
+                  - generic:
+                    - generic:
+                      - generic: 20:00Sep 21, 2026
+                      - generic: 22:00
+                      - generic: 00:00Sep 22, 2026
+                      - generic: 02:00
+                      - generic: 04:00
+                      - generic: 06:00
+                    - generic:
+                      - generic: FINEXT_J12GEN_06_H
+                      - generic: FINEXT_J19GEN_06_Q
+                      - generic: FINEXT_J19INT_05_Q
+                      - generic: FINFIN_C1RTRT_04_M
+                      - generic: FINFIN_J12TEC_04_Q
+                      - generic: FINFIN_J12TRT_04_M
+                      - generic: FINFIN_J13TRT_04_M
+                      - generic: FINFIN_J14TRT_04_M
+                      - generic: FINFIN_J15TRT_04_M
+                      - generic: FINFIN_J16TRT_04_M
+                      - generic: FINFIN_J1BTRT_04_M
+                      - generic: FINFIN_J23TRT_06_Q
+                      - generic: FINFIN_J32TRT_05_Q
+                      - generic: FINHEC_J13GEN_06_Q
+                      - generic: FINFIN_E11STP_01_Q
+                      - generic: FINEXT_J11GEN_06_Q
+                      - generic: FINEXT_J11INT_05_Q
+                      - generic: FINEXT_J12GEN_06_Q
+                      - generic: FINEXT_J12INT_05_Q
+                      - generic: FINEXT_J13GEN_06_Q
+                      - generic: FINEXT_J20INT_05_Q
+                      - generic: FINFIN_E12STR_02_Q
+                      - generic: FINFIN_J11TEC_04_DEB01_Q
+                      - generic: FINFIN_J12TRT_04_Q
+                      - generic: FINFIN_J13TRT_04_Q
+                      - generic: FINFIN_J19TRT_04_Q
+                      - generic: FINFIN_J20TRT_04_Q
+                      - generic: FINFIN_J21TRT_04_Q
+                      - generic: FINXXX_J11GEN_06_Q
+                      - generic: FINXXX_J11INT_05_Q
+                      - generic: FINXXX_J12INT_05_Q
+                      - generic: FINXXX_J13INT_05_Q
+                      - generic: FINXXX_J14INT_05_Q
+                      - generic: FINEXT_J22INT_05_Q
+                      - generic: FINEXT_J15INT_05_Q
+                      - generic: FINHEC_J13GEN_06_M
+                      - generic: FINEXT_J17INT_05_Q
+                      - generic: FINEXT_J18INT_05_Q
+                      - generic: FINEXT_J16GEN_06_Q
+                      - generic: FINFIN_J1ATRT_04_M
+                      - generic: FINEXT_C11GEN_06_M
+                      - generic: FINFIN_C11TRT_04_M
+                      - generic: FINFIN_C13TRT_04_M
+                      - generic: FINFIN_C14TRT_04_M
+                      - generic: FINFIN_C15TRT_04_M
+                      - generic: FINFIN_C17TRT_04_M
+                      - generic: FINFIN_C19TRT_04_M
+                      - generic: FINFIN_C1ATRT_04_M
+                      - generic: FINFIN_C1CTRT_04_M
+                      - generic: FINFIN_C1MTRT_04_M
+                      - generic: FINFIN_C1NTRT_04_M
+                      - generic: FINFIN_C1QTRT_04_M
+                      - generic: FINFIN_J19TRT_04_M
+                      - generic: FINFIN_C1BTRT_04_M
+                      - generic: FINEXT_J20GEN_06_Q
+                      - generic: FINFIN_J11TEC_04_FJO01_Q
+                      - generic: FINEXT_J15GEN_06_M
+                      - generic: FINXXX_J11GEN_06_M
+                      - generic: FINFIN_J11TEC_04_FJA01_Q
+                      - generic: FINEXT_J16GEN_06_M
+                      - generic: FINEXT_J17GEN_06_M
+                      - generic: FINFIN_J11TEC_04_DEB02_Q
+                      - generic: FINHEC_J11GEN_06_Q
+                      - generic: FINFIN_C1DTRT_04_M
+                      - generic: FINFIN_C1ETRT_04_M
+                      - generic: FINFIN_C1FTRT_04_M
+                      - generic: FINFIN_C1HTRT_04_M
+                      - generic: FINFIN_J31TRT_04_M
+                      - generic: FINFIN_J1HTRT_04_M
+                      - generic: FINFIN_J11TEC_04_FJA02_Q
+                      - generic: FINEXT_J13GEN_06_M
+                      - generic: FINFIN_J11TEC_04_FJA03_Q
+                      - generic: FINEXT_J21GEN_06_Q
+                      - generic: FINFIN_J11TEC_04_FJA04_Q
+                      - generic: FINDTR_J12GEN_06_Q
+                      - generic: FINFIN_J26TRT_04_M
+                      - generic: FINFIN_J36TRT_04_H
+                      - generic: FINFIN_C1ITRT_04_M
+                      - generic: FINFIN_J27TRT_04_M
+                      - generic: FINFIN_J35TRT_04_H
+                      - generic: FINFIN_C1JTRT_04_M
+                      - generic: FINEXT_J11GEN_06_H
+                      - generic: FINFIN_C18TRT_04_M
+                      - generic: FINFIN_C1STRT_04_M
+                      - generic: FINEXT_J18GEN_06_M
+                      - generic: FINEXT_J11GEN_06_M
+                      - generic: FINFIN_J11TEC_04_FJA05_Q
+                      - generic: FINFIN_J11TEC_04_FPE01_Q
+                      - generic: FINFIN_J11TEC_04_FJA06_Q
+                      - generic: FINFIN_J23TRT_04_M
+                      - generic: FINFIN_J24TRT_04_M
+                      - generic: FINFIN_J11TEC_04_FCL01_Q
+                      - generic: FINFIN_J11TEC_04_FRE01_Q
+                      - generic: FINFIN_J1FTRT_04_M
+                      - generic: FINEXT_J18GEN_06_Q
+                      - generic: FINEXT_J14GEN_06_M
+                      - generic: FINEXT_J14INT_05_Q
+                      - generic: FINFIN_J15TRT_04_Q
+                      - generic: FINDTR_J11GEN_06_Q
+                      - generic: FINFIN_C1KTRT_04_M
+                      - generic: FINFIN_C1LTRT_04_M
+                      - generic: FINDTR_J11TEC_04_Q
+                      - generic: FINEXT_J14GEN_06_Q
+                      - generic: FINEXT_J17GEN_06_Q
+                      - generic: FINFIN_J14TRT_04_Q
+                      - generic: FINFIN_J17TRT_04_Q
+                      - generic: FINFIN_J1OTRT_04_M
+                      - generic: FINFIN_J1GTRT_04_M
+              - img:
+                - generic [ref=f1e617]:
+                  - generic [ref=f1e618]: à venir
+                  - generic [ref=f1e623] [cursor=pointer]
+              - toolbar [ref=f1e624]:
+                - button "Download plot as a PNG" [ref=f1e626] [cursor=pointer]
+                - generic [ref=f1e629]:
+                  - button "Zoom" [ref=f1e630] [cursor=pointer]
+                  - button "Pan" [ref=f1e633] [cursor=pointer]
+                - generic [ref=f1e636]:
+                  - button "Zoom in" [ref=f1e637] [cursor=pointer]
+                  - button "Zoom out" [ref=f1e640] [cursor=pointer]
+                  - button "Autoscale" [ref=f1e643] [cursor=pointer]
+                  - button "Reset axes" [ref=f1e646] [cursor=pointer]
+                - button "Fullscreen" [ref=f1e650] [cursor=pointer]

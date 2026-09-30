@@ -47,7 +47,7 @@ def exporter(con, sql_dir: Path, out_dir: Path) -> tuple[int, int]:
             cur = con.cursor()
             cur.execute(preparer(f.read_text(encoding="utf-8")))
             with open(tmp, "w", encoding="utf-8", newline="") as sortie:
-                w = csv.writer(sortie)
+                w = csv.writer(sortie, delimiter=";")
                 w.writerow([d[0] for d in cur.description])
                 for ligne in cur:
                     w.writerow([cellule(v) for v in ligne])

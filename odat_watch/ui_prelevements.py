@@ -42,7 +42,7 @@ def _table(df, hauteur: int = 320) -> None:
 def render(kpi):
     cfg = pv.config_prelevements()
     racine = cfg["racine"]
-    st.markdown("#### Prélèvements · Oracle (OUT_SEPA) → EDF CashCollection (état de réception, rejets internes)")
+    st.markdown("#### Prélèvements · Oracle (OUT_SEPA) → EDF CashCollection (état de réception, rejets bancaires Quartz)")
     if not racine.is_dir():
         st.caption(f"Dossier des données introuvable : `{racine}` — `config.ini [prelevements] racine` "
                    "(y déposer ORACLE\\<AAAAMMJJ>, EDF et REJETS ; les rapports s'écrivent dans RAPPORTS — "
@@ -230,7 +230,7 @@ def _tresorerie(cfg: dict, reference: date) -> None:
             df["montant"] = df["montant"].map(_eur)
             st.dataframe(df.rename(columns={"date_fichier": "reçu le", "nb": "prélèvements", "cles": "clés", "rejets": "rejets du jour"}),
                          hide_index=True, width="stretch", height=min(400, 38 * len(df) + 40))
-        with st.expander(f"Rejets internes — {len(t['rejets'])} sur 90 jours"
+        with st.expander(f"Rejets bancaires — {len(t['rejets'])} sur 90 jours"
                          + (f", {len(t['recidives'])} mandat(s) rejeté(s) plusieurs fois" if not t["recidives"].empty else ""),
                          expanded=not t["recidives"].empty):
             if not t["recidives"].empty:

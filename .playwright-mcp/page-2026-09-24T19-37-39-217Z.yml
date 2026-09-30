@@ -1,0 +1,280 @@
+- generic [ref=e2]:
+  - generic [ref=e11]:
+    - heading "🕓 ODAT Watch" [level=2] [ref=e16]
+    - paragraph [ref=e21]: Control-M · Oracle EBS · FIN-FINANCE
+    - generic [ref=e23]:
+      - paragraph [ref=e27]: Application
+      - group [ref=e29]:
+        - combobox "Application" [ref=e30]: FIN-FINANCE
+        - button "Open" [ref=e31] [cursor=pointer]
+    - generic [ref=e36]:
+      - paragraph [ref=e40]: Filtre (job, description, script)
+      - textbox "Filtre (job, description, script)" [ref=e43]:
+        - /placeholder: ""
+    - separator [ref=e48]
+    - group [ref=e51]:
+      - generic "keyboard_arrow_right 📂 Sources d'import" [ref=e52] [cursor=pointer]:
+        - generic [ref=e53]:
+          - generic [ref=e54]: keyboard_arrow_right
+          - paragraph [ref=e58]: 📂 Sources d'import
+    - button [ref=e61] [cursor=pointer]:
+      - paragraph [ref=e66]: 📥 Importer les nouveaux fichiers ODAT
+    - separator [ref=e71]
+    - paragraph [ref=e76]:
+      - strong [ref=e77]: Oracle Apps
+    - paragraph [ref=e82]: "6065 demandes en base, du 2026-08-15 au 2026-09-21 · dernier chargement : 21/09 16:09"
+    - generic [ref=e85] [cursor=pointer]:
+      - checkbox "Tout recharger (chargement initial)" [ref=e87]
+      - generic [ref=e89]:
+        - paragraph [ref=e93]: Tout recharger (chargement initial)
+        - button "Help for Tout recharger (chargement initial)" [ref=e97]
+    - generic [ref=e102]:
+      - button [ref=e110] [cursor=pointer]:
+        - paragraph [ref=e115]: 🔄 Demandes
+      - button [ref=e123] [cursor=pointer]:
+        - paragraph [ref=e128]: 📚 Programmes
+    - button [ref=e131] [cursor=pointer]:
+      - paragraph [ref=e136]: 🧾 Analyser les logs .req / .out
+  - generic [ref=e3]:
+    - banner [ref=e139]:
+      - generic [ref=e142]:
+        - generic [ref=e144]:
+          - img "Running..." [ref=e145]
+          - button "Stop" [ref=e151] [cursor=pointer]
+        - button "Deploy" [ref=e153] [cursor=pointer]
+        - button "Main menu" [ref=e157] [cursor=pointer]
+    - generic [ref=e161]:
+      - generic [ref=e166]:
+        - generic [ref=e167]:
+          - heading "FIN-FINANCE" [level=1] [ref=e169]:
+            - text: FIN-FINANCE
+            - generic [ref=e170]:
+              - link "Link to heading":
+                - /url: "#fin-finance"
+          - generic [ref=e171]: Jeudi 24/09/2026, 21:37 — qu'est-ce qui tourne ce soir, et demain ?
+        - generic [ref=e172]: Dernière photo Control-M 22/09 08:07 · odate 2026-09-21il y a 61 h 30 min · 714 photos · 207 jours d'historique
+      - generic [ref=e174]:
+        - tablist [ref=e175]:
+          - tab [ref=e176] [cursor=pointer]:
+            - paragraph [ref=e178]: 🧭 Préparer ma nuit
+          - tab [ref=e179] [cursor=pointer]:
+            - paragraph [ref=e181]: 📥 Clôtures
+          - tab [ref=e182] [cursor=pointer]:
+            - paragraph [ref=e184]: 🌙 Ce soir
+          - tab [ref=e185] [cursor=pointer]:
+            - paragraph [ref=e187]: 📅 Demain
+          - tab [ref=e188] [cursor=pointer]:
+            - paragraph [ref=e190]: 🔴 Maintenant
+          - tab [ref=e191] [cursor=pointer]:
+            - paragraph [ref=e193]: ☀️ Matin
+          - tab [ref=e194] [cursor=pointer]:
+            - paragraph [ref=e196]: 🏦 Banque
+          - tab [ref=e197] [cursor=pointer]:
+            - paragraph [ref=e199]: 🔀 Ctrl Flux
+          - tab [ref=e200] [cursor=pointer]:
+            - paragraph [ref=e202]: 🅾 Oracle
+          - tab [selected] [ref=e203] [cursor=pointer]:
+            - paragraph [ref=e205]: 🕓 Control-M
+          - tab [ref=e207] [cursor=pointer]:
+            - paragraph [ref=e209]: ⌨ SQL
+        - tabpanel "🕓 Control-M" [ref=e210]:
+          - generic [ref=e213]:
+            - tablist [ref=e214]:
+              - tab [ref=e215] [cursor=pointer]:
+                - paragraph [ref=e217]: 📋 Plan de production
+              - tab [ref=e219] [cursor=pointer]:
+                - paragraph [ref=e221]: 🔎 Historique
+              - tab [ref=e222] [cursor=pointer]:
+                - paragraph [ref=e224]: 📈 Profils
+              - tab [ref=e225] [cursor=pointer]:
+                - paragraph [ref=e227]: 🗂 Jobs CtrlM
+              - tab [active] [selected] [ref=e228] [cursor=pointer]:
+                - paragraph [ref=e230]: 📖 Mode d'emploi
+            - tabpanel "📖 Mode d'emploi" [ref=e520]:
+              - generic [ref=e521]:
+                - heading "📖 Mode d'emploi du Plan de production" [level=3] [ref=e527]:
+                  - text: 📖 Mode d'emploi du Plan de production
+                  - generic [ref=e528]:
+                    - link "Link to heading":
+                      - /url: "#mode-d-emploi-du-plan-de-production"
+                - paragraph [ref=e533]: J = dernier jour ouvré du mois ; on compte en jours ouvrés de J-7 à J+16 (J-n = L(n+1), J+n = Dn). Chaque cellule résume une chaîne pour un odate, à partir des photos ODAT fusionnées (dernier état connu de chaque exécution).
+                - heading "Les cellules de la grille" [level=4] [ref=e539]:
+                  - text: Les cellules de la grille
+                  - generic [ref=e540]:
+                    - link "Link to heading":
+                      - /url: "#les-cellules-de-la-grille"
+                - generic [ref=e545]:
+                  - button "Show/hide columns" [ref=e549] [cursor=pointer]
+                  - button "Download as CSV" [ref=e555] [cursor=pointer]
+                  - button "Search" [ref=e561] [cursor=pointer]
+                  - button "Fullscreen" [ref=e567] [cursor=pointer]
+                - paragraph [ref=e583]: "Quand les jobs d'une chaîne n'ont pas tous le même état, le pire l'emporte : ✖ > ▶ > ⏸ > ✔ > ⊘."
+                - heading "Une grille d'exemple, ligne par ligne" [level=4] [ref=e589]:
+                  - text: Une grille d'exemple, ligne par ligne
+                  - generic [ref=e590]:
+                    - link "Link to heading":
+                      - /url: "#une-grille-d-exemple-ligne-par-ligne"
+                - generic [ref=e595]:
+                  - button "Show/hide columns" [ref=e599] [cursor=pointer]
+                  - button "Download as CSV" [ref=e605] [cursor=pointer]
+                  - button "Search" [ref=e611] [cursor=pointer]
+                  - button "Fullscreen" [ref=e617] [cursor=pointer]
+                - list [ref=e633]:
+                  - listitem [ref=e634]:
+                    - strong [ref=e635]: FINEXT_J17GEN_06_M (TIERS EXPRESS)
+                    - text: ": ✖ à J-5 et J-2 = incidents (pas de virement à J-5) ; ○ à J = règle « jamais le jour de la clôture », d'où l'écart"
+                    - strong [ref=e636]: −J
+                    - text: qui revient chaque mois.
+                  - listitem [ref=e637]:
+                    - strong [ref=e638]: FINDTR_J11GEN_06_Q (Datapump DTR)
+                    - text: ": ⊘ = ordonnancée mais jamais partie (blocage à investiguer) ; ○ à J+1 et J+2 = suspension voulue pendant la clôture, tous les mois."
+                  - listitem [ref=e639]:
+                    - strong [ref=e640]: FINFIN_C13TRT_04_M (Clôture AP)
+                    - text: ": planifiée « J », a tourné à J : rien à dire, pas d'écart."
+                  - listitem [ref=e641]:
+                    - strong [ref=e642]: FINFIN_C1ITRT_04_M (Clôture FA)
+                    - text: ": planifiée J-4, a tourné à J-5 →"
+                    - strong [ref=e643]: ✔ 5+
+                    - text: en violet et écart
+                    - strong [ref=e644]: +J-5 −J-4
+                    - text: ": le jour a glissé, adopter la planification observée si c'est la nouvelle règle."
+                  - listitem [ref=e645]:
+                    - strong [ref=e646]: FINFIN_J11TEC_04_FJA01_Q
+                    - text: ": origine"
+                    - strong [ref=e647]: Nouvelle
+                    - text: → à ajouter au référentiel (bouton ou synchronisation).
+                  - listitem [ref=e648]:
+                    - strong [ref=e649]: FINFIN_C12TRT_04_M
+                    - text: ":"
+                    - strong [ref=e650]: Jamais vue
+                    - text: → la synchronisation la passera « supprimée ».
+                  - listitem [ref=e651]:
+                    - text: Colonne
+                    - strong [ref=e652]: sam 29/08
+                    - text: ": pas de label J (week-end), seules les chaînes du week-end y apparaissent."
+                  - listitem [ref=e653]:
+                    - text: Colonne
+                    - strong [ref=e654]: J+16 22/09
+                    - text: ": après la dernière photo,"
+                    - strong [ref=e655]: ·
+                    - text: = prévu, à venir.
+                - heading "Les écarts" [level=4] [ref=e661]:
+                  - text: Les écarts
+                  - generic [ref=e662]:
+                    - link "Link to heading":
+                      - /url: "#les-ecarts"
+                - generic [ref=e666]:
+                  - table [ref=e667]:
+                    - rowgroup [ref=e668]:
+                      - row [ref=e669]:
+                        - columnheader "Notation" [ref=e670]
+                        - columnheader "Signification" [ref=e671]
+                    - rowgroup [ref=e672]:
+                      - row [ref=e673]:
+                        - cell [ref=e674]:
+                          - strong [ref=e675]: +J+3
+                        - cell "a tourné à J+3 alors que ce n'était pas prévu" [ref=e676]
+                      - row [ref=e677]:
+                        - cell [ref=e678]:
+                          - strong [ref=e679]: −J-1
+                        - cell "prévu à J-1, n'a pas tourné (compté seulement s'il y a des photos ce jour-là)" [ref=e680]
+                      - row [ref=e681]:
+                        - cell [ref=e682]:
+                          - strong [ref=e683]: +dim 23/08
+                        - cell "même chose pour un jour sans label J (week-end, férié)" [ref=e684]
+                  - paragraph [ref=e685]:
+                    - text: Un écart
+                    - strong [ref=e686]: qui revient chaque mois
+                    - text: est une règle d'ordonnancement (à noter dans le commentaire du référentiel) ; un écart
+                    - strong [ref=e687]: isolé
+                    - text: est un incident à expliquer.
+                - generic [ref=e689]:
+                  - generic [ref=e691]:
+                    - heading "Origine d'une chaîne" [level=4] [ref=e697]:
+                      - text: Origine d'une chaîne
+                      - generic [ref=e698]:
+                        - link "Link to heading":
+                          - /url: "#origine-d-une-chaine"
+                    - generic [ref=e703]:
+                      - button "Show/hide columns" [ref=e707] [cursor=pointer]
+                      - button "Download as CSV" [ref=e713] [cursor=pointer]
+                      - button "Search" [ref=e719] [cursor=pointer]
+                      - button "Fullscreen" [ref=e725] [cursor=pointer]
+                  - generic [ref=e738]:
+                    - heading "Les 5 tuiles" [level=4] [ref=e744]:
+                      - text: Les 5 tuiles
+                      - generic [ref=e745]:
+                        - link "Link to heading":
+                          - /url: "#les-5-tuiles"
+                    - generic [ref=e750]:
+                      - button "Show/hide columns" [ref=e754] [cursor=pointer]
+                      - button "Download as CSV" [ref=e760] [cursor=pointer]
+                      - button "Search" [ref=e766] [cursor=pointer]
+                      - button "Fullscreen" [ref=e772] [cursor=pointer]
+                - heading "Écrire une planification" [level=4] [ref=e789]:
+                  - text: Écrire une planification
+                  - generic [ref=e790]:
+                    - link "Link to heading":
+                      - /url: "#ecrire-une-planification"
+                - generic [ref=e794]:
+                  - table [ref=e795]:
+                    - rowgroup [ref=e796]:
+                      - row [ref=e797]:
+                        - columnheader "Forme" [ref=e798]
+                        - columnheader "Exemple" [ref=e799]
+                        - columnheader "Pour" [ref=e800]
+                    - rowgroup [ref=e801]:
+                      - row [ref=e802]:
+                        - cell "jours de semaine" [ref=e803]
+                        - cell [ref=e804]:
+                          - code [ref=e805]: lun mar mer jeu ven
+                        - cell "quotidiennes, hebdomadaires" [ref=e806]
+                      - row [ref=e807]:
+                        - cell "labels J" [ref=e808]
+                        - cell [ref=e809]:
+                          - code [ref=e810]: J-2, J, J+4
+                        - cell "clôture, périodiques, campagnes" [ref=e811]
+                      - row [ref=e812]:
+                        - cell "labels Control-M" [ref=e813]
+                        - cell [ref=e814]:
+                          - code [ref=e815]: L3, L1, D4
+                        - cell "accepté en saisie, converti en J (L3 = J-2, D4 = J+4)" [ref=e816]
+                  - paragraph [ref=e817]:
+                    - text: Une planification
+                    - strong [ref=e818]: saisie à la main
+                    - text: "est protégée : la synchronisation n'y touche plus. La vider rend la main aux ODAT."
+                - heading "🔄 Synchroniser avec ODAT" [level=4] [ref=e824]:
+                  - text: 🔄 Synchroniser avec ODAT
+                  - generic [ref=e825]:
+                    - link "Link to heading":
+                      - /url: "#synchroniser-avec-odat"
+                - generic [ref=e829]:
+                  - table [ref=e830]:
+                    - rowgroup [ref=e831]:
+                      - row [ref=e832]:
+                        - columnheader "Changement" [ref=e833]
+                        - columnheader "Quand" [ref=e834]
+                    - rowgroup [ref=e835]:
+                      - row [ref=e836]:
+                        - cell [ref=e837]:
+                          - strong [ref=e838]: ajoutée
+                        - cell "vue dans les photos des 40 derniers jours, absente du référentiel" [ref=e839]
+                      - row [ref=e840]:
+                        - cell [ref=e841]:
+                          - strong [ref=e842]: supprimée
+                        - cell "absente des photos depuis plus de 40 jours, ou jamais vue" [ref=e843]
+                      - row [ref=e844]:
+                        - cell [ref=e845]:
+                          - strong [ref=e846]: réactivée
+                        - cell "supprimée, mais revue dans les 40 derniers jours" [ref=e847]
+                      - row [ref=e848]:
+                        - cell [ref=e849]:
+                          - strong [ref=e850]: planification
+                        - cell "l'observée diffère de la référence (sauf saisie manuelle, « variable » ou chaîne plus vue)" [ref=e851]
+                  - paragraph [ref=e852]: Importer d'abord les derniers fichiers ODAT (barre latérale), puis synchroniser. Relancée tout de suite, la synchronisation ne change plus rien.
+                - separator [ref=e857]
+                - group [ref=e860]:
+                  - generic "keyboard_arrow_right 📘 Guide complet (docs/PLAN_DE_PRODUCTION.md)" [ref=e861] [cursor=pointer]:
+                    - generic [ref=e862]:
+                      - generic [ref=e863]: keyboard_arrow_right
+                      - paragraph [ref=e867]: 📘 Guide complet (docs/PLAN_DE_PRODUCTION.md)

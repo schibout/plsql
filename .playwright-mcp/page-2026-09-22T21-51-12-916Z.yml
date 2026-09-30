@@ -1,0 +1,231 @@
+- generic [ref=e2]:
+  - generic [ref=e11]:
+    - heading "🕓 ODAT Watch" [level=2] [ref=e16]
+    - paragraph [ref=e21]: Control-M · Oracle EBS · FIN-FINANCE
+    - generic [ref=e23]:
+      - paragraph [ref=e27]: Application
+      - group [ref=e29]:
+        - combobox "Application" [ref=e30]: FIN-FINANCE
+        - button "Open" [ref=e31] [cursor=pointer]
+    - generic [ref=e36]:
+      - paragraph [ref=e40]: Filtre (job, description, script)
+      - textbox "Filtre (job, description, script)" [ref=e43]:
+        - /placeholder: ""
+    - separator [ref=e48]
+    - group [ref=e51]:
+      - generic "keyboard_arrow_right 📂 Sources d'import" [ref=e52] [cursor=pointer]:
+        - generic [ref=e53]:
+          - generic [ref=e54]: keyboard_arrow_right
+          - paragraph [ref=e58]: 📂 Sources d'import
+    - button [ref=e61] [cursor=pointer]:
+      - paragraph [ref=e66]: 📥 Importer les nouveaux fichiers ODAT
+    - separator [ref=e71]
+    - paragraph [ref=e76]:
+      - strong [ref=e77]: Oracle Apps
+    - paragraph [ref=e82]: "5996 demandes en base, du 2026-08-15 au 2026-09-21 · dernier chargement : 21/09 09:27"
+    - generic [ref=e85] [cursor=pointer]:
+      - checkbox "Tout recharger (chargement initial)" [ref=e87]
+      - generic [ref=e89]:
+        - paragraph [ref=e93]: Tout recharger (chargement initial)
+        - button "Help for Tout recharger (chargement initial)" [ref=e97]
+    - generic [ref=e102]:
+      - button [ref=e110] [cursor=pointer]:
+        - paragraph [ref=e115]: 🔄 Demandes
+      - button [ref=e123] [cursor=pointer]:
+        - paragraph [ref=e128]: 📚 Programmes
+    - button [ref=e131] [cursor=pointer]:
+      - paragraph [ref=e136]: 🧾 Analyser les logs .req / .out
+  - generic [ref=e3]:
+    - banner [ref=e139]:
+      - generic [ref=e142]:
+        - button "Deploy" [ref=e144] [cursor=pointer]
+        - button "Main menu" [ref=e148] [cursor=pointer]
+    - generic [ref=e152]:
+      - generic [ref=e157]:
+        - generic [ref=e158]:
+          - heading "FIN-FINANCE" [level=1] [ref=e160]:
+            - text: FIN-FINANCE
+            - generic [ref=e161]:
+              - link "Link to heading":
+                - /url: "#fin-finance"
+          - generic [ref=e162]: Mardi 22/09/2026, 23:50 — qu'est-ce qui tourne ce soir, et demain ?
+        - generic [ref=e163]: Dernière photo Control-M 21/09 08:07 · odate 2026-09-20il y a 39 h 43 min · 709 photos · 206 jours d'historique
+      - generic [ref=e165]:
+        - tablist [ref=e166]:
+          - tab [ref=e167] [cursor=pointer]:
+            - paragraph [ref=e169]: 🧭 Préparer ma nuit
+          - tab [ref=e170] [cursor=pointer]:
+            - paragraph [ref=e172]: 📥 Clôtures
+          - tab [ref=e173] [cursor=pointer]:
+            - paragraph [ref=e175]: 🌙 Ce soir
+          - tab [ref=e176] [cursor=pointer]:
+            - paragraph [ref=e178]: 📅 Demain
+          - tab [ref=e179] [cursor=pointer]:
+            - paragraph [ref=e181]: 🔴 Maintenant
+          - tab [ref=e182] [cursor=pointer]:
+            - paragraph [ref=e184]: ☀️ Matin
+          - tab [ref=e185] [cursor=pointer]:
+            - paragraph [ref=e187]: 🏦 Banque
+          - tab [active] [selected] [ref=e188] [cursor=pointer]:
+            - paragraph [ref=e190]: 🔀 Ctrl Flux
+          - tab [ref=e192] [cursor=pointer]:
+            - paragraph [ref=e194]: 🅾 Oracle
+          - tab [ref=e195] [cursor=pointer]:
+            - paragraph [ref=e197]: 🔎 Historique
+          - tab [ref=e198] [cursor=pointer]:
+            - paragraph [ref=e200]: 📈 Profils
+          - tab [ref=e201] [cursor=pointer]:
+            - paragraph [ref=e203]: 🗂 Jobs CtrlM
+          - tab [ref=e204] [cursor=pointer]:
+            - paragraph [ref=e206]: ⌨ SQL
+        - tabpanel "🔀 Ctrl Flux" [ref=e207]:
+          - generic [ref=e208]:
+            - group [ref=e211]:
+              - generic "keyboard_arrow_right 📥 Importer des exports Ctrl Flux" [ref=e212] [cursor=pointer]:
+                - generic [ref=e213]:
+                  - generic [ref=e214]: keyboard_arrow_right
+                  - paragraph [ref=e218]: 📥 Importer des exports Ctrl Flux
+            - paragraph [ref=e223]: "État courant des lignes (clé : folio + date + fichier) · dernier export : 20/09/2026 · période 01/06/2026 → 20/09/2026 · 25 import(s)"
+            - generic [ref=e226] [cursor=pointer]:
+              - checkbox "Afficher aussi les lignes disparues des derniers exports" [ref=e228]
+              - paragraph [ref=e234]: Afficher aussi les lignes disparues des derniers exports
+            - generic [ref=e236]:
+              - button [ref=e241] [cursor=pointer]:
+                - generic "🅾 Contrôler dans Oracle" [ref=e242]:
+                  - paragraph [ref=e246]: 🅾 Contrôler dans Oracle
+              - button [ref=e251] [cursor=pointer]:
+                - generic "📄 Générer le rapport HTML" [ref=e252]:
+                  - paragraph [ref=e256]: 📄 Générer le rapport HTML
+            - group [ref=e259]:
+              - generic "keyboard_arrow_right 🧾 Imports GDR (103)" [ref=e260] [cursor=pointer]:
+                - generic [ref=e261]:
+                  - generic [ref=e262]: keyboard_arrow_right
+                  - paragraph [ref=e266]: 🧾 Imports GDR (103)
+            - generic [ref=e268]:
+              - generic [ref=e275]:
+                - generic [ref=e276]: "35"
+                - generic [ref=e277]: lignes
+              - generic [ref=e284]:
+                - generic [ref=e285]: "15"
+                - generic [ref=e286]: folios
+              - generic [ref=e293]:
+                - generic [ref=e294]: "0"
+                - generic [ref=e295]: lignes rapprochées
+              - generic [ref=e302]:
+                - generic [ref=e303]: "1"
+                - generic [ref=e304]: OK Oracle
+              - generic [ref=e311]:
+                - generic [ref=e312]: "34"
+                - generic [ref=e313]: KO Oracle
+              - generic [ref=e320]:
+                - generic [ref=e321]: "0"
+                - generic [ref=e322]: lignes vues en GDR
+            - generic [ref=e324]:
+              - generic [ref=e328]:
+                - paragraph [ref=e332]: Type
+                - group [ref=e334]:
+                  - combobox "Type" [ref=e336]
+                  - button "Open" [ref=e337] [cursor=pointer]
+              - generic [ref=e344]:
+                - paragraph [ref=e348]: Statut
+                - group [ref=e350]:
+                  - combobox "Statut" [ref=e352]
+                  - button "Open" [ref=e353] [cursor=pointer]
+              - generic [ref=e360]:
+                - paragraph [ref=e364]: Folio
+                - group [ref=e366]:
+                  - combobox "Folio" [ref=e368]
+                  - button "Open" [ref=e369] [cursor=pointer]
+              - generic [ref=e377] [cursor=pointer]:
+                - checkbox "Masquer les rapprochées" [checked] [ref=e379]
+                - generic "Masquer les rapprochées" [ref=e384]:
+                  - paragraph [ref=e387]: Masquer les rapprochées
+            - paragraph [ref=e392]: "Couleurs : 🟪 violet : écart expliqué par des pièces rejetées dans la GDR · 🟧 orange : données en interface Oracle absentes des tables définitives ou montant différent · 🟦 vérification Oracle OK · 🟨 jaune : commentaire renseigné · 🟩 écart de montant nul · 🟥 rose : nombre de pièces égal mais montant différent"
+            - generic [ref=e394]:
+              - generic [ref=e395]:
+                - paragraph [ref=e398]: Colonnes affichées
+                - button "Help for Colonnes affichées" [ref=e402] [cursor=pointer]
+              - group [ref=e407]:
+                - generic [ref=e408]:
+                  - group "Selected values" [ref=e409]:
+                    - generic "Folio" [ref=e410]:
+                      - button "Remove Folio" [ref=e412] [cursor=pointer]
+                    - generic "Type" [ref=e415]:
+                      - button "Remove Type" [ref=e417] [cursor=pointer]
+                    - generic "Date" [ref=e420]:
+                      - button "Remove Date" [ref=e422] [cursor=pointer]
+                    - generic "Âge (j)" [ref=e425]:
+                      - button "Remove Âge (j)" [ref=e427] [cursor=pointer]
+                    - generic "Nom fichier transmis" [ref=e430]:
+                      - button "Remove Nom fichier transmis" [ref=e432] [cursor=pointer]
+                    - generic "App Amont Nb pièce" [ref=e435]:
+                      - button "Remove App Amont Nb pièce" [ref=e437] [cursor=pointer]
+                    - generic "App Amont Débit" [ref=e440]:
+                      - button "Remove App Amont Débit" [ref=e442] [cursor=pointer]
+                    - generic "App Amont Crédit" [ref=e445]:
+                      - button "Remove App Amont Crédit" [ref=e447] [cursor=pointer]
+                    - generic "SI Finance Nb pièce" [ref=e450]:
+                      - button "Remove SI Finance Nb pièce" [ref=e452] [cursor=pointer]
+                    - generic "SI Finance Débit" [ref=e455]:
+                      - button "Remove SI Finance Débit" [ref=e457] [cursor=pointer]
+                    - generic "SI Finance Crédit" [ref=e460]:
+                      - button "Remove SI Finance Crédit" [ref=e462] [cursor=pointer]
+                    - generic "Écarts Nb pièce" [ref=e465]:
+                      - button "Remove Écarts Nb pièce" [ref=e467] [cursor=pointer]
+                    - generic "Écarts Débit" [ref=e470]:
+                      - button "Remove Écarts Débit" [ref=e472] [cursor=pointer]
+                    - generic "Écarts Crédit" [ref=e475]:
+                      - button "Remove Écarts Crédit" [ref=e477] [cursor=pointer]
+                    - generic "GDR (rejets)" [ref=e480]:
+                      - button "Remove GDR (rejets)" [ref=e482] [cursor=pointer]
+                    - generic "Nb Pièces Interface OA" [ref=e485]:
+                      - button "Remove Nb Pièces Interface OA" [ref=e487] [cursor=pointer]
+                    - generic "Montant Interface OA" [ref=e490]:
+                      - button "Remove Montant Interface OA" [ref=e492] [cursor=pointer]
+                    - generic "Nb Pièces OA" [ref=e495]:
+                      - button "Remove Nb Pièces OA" [ref=e497] [cursor=pointer]
+                    - generic "Montant OA" [ref=e500]:
+                      - button "Remove Montant OA" [ref=e502] [cursor=pointer]
+                    - generic "Écart Nb Pièce Calculé" [ref=e505]:
+                      - button "Remove Écart Nb Pièce Calculé" [ref=e507] [cursor=pointer]
+                    - generic "Écart Mt Calculé" [ref=e510]:
+                      - button "Remove Écart Mt Calculé" [ref=e512] [cursor=pointer]
+                    - generic "Statut Vérification" [ref=e515]:
+                      - button "Remove Statut Vérification" [ref=e517] [cursor=pointer]
+                    - generic "Erreur Oracle" [ref=e520]:
+                      - button "Remove Erreur Oracle" [ref=e522] [cursor=pointer]
+                    - generic "Rapproché" [ref=e525]:
+                      - button "Remove Rapproché" [ref=e527] [cursor=pointer]
+                    - generic "Présente" [ref=e530]:
+                      - button "Remove Présente" [ref=e532] [cursor=pointer]
+                    - generic "Dernier export" [ref=e535]:
+                      - button "Remove Dernier export" [ref=e537] [cursor=pointer]
+                    - generic "Commentaire" [ref=e540]:
+                      - button "Remove Commentaire" [ref=e542] [cursor=pointer]
+                  - combobox "Colonnes affichées" [ref=e545]
+                - button "Clear all" [ref=e546] [cursor=pointer]
+                - button "Open" [ref=e550] [cursor=pointer]
+            - generic [ref=e558]:
+              - button "Show/hide columns" [ref=e562] [cursor=pointer]
+              - button "Download as CSV" [ref=e568] [cursor=pointer]
+              - button "Search" [ref=e574] [cursor=pointer]
+              - button "Fullscreen" [ref=e580] [cursor=pointer]
+            - paragraph [ref=e596]: "Cochez des lignes : les écarts débit, crédit et nombre de pièces se cumulent dans le panneau en bas de l'écran. Quand les trois sont à 0, les lignes peuvent être rapprochées."
+            - heading "Groupes compensés en attente (0)" [level=4] [ref=e602]:
+              - text: Groupes compensés en attente (0)
+              - generic [ref=e603]:
+                - link "Link to heading":
+                  - /url: "#groupes-compenses-en-attente-0"
+            - paragraph [ref=e608]: Aucun groupe folio + fichier dont la somme des écarts débit fait 0.
+            - heading "Folios compensés en attente (0)" [level=4] [ref=e614]:
+              - text: Folios compensés en attente (0)
+              - generic [ref=e615]:
+                - link "Link to heading":
+                  - /url: "#folios-compenses-en-attente-0"
+            - paragraph [ref=e620]: "Somme des écarts de toutes les lignes du folio, quel que soit le fichier : débit, crédit et nombre de pièces à 0."
+            - paragraph [ref=e625]: Aucun folio dont l'ensemble des lignes se compense.
+            - group [ref=e628]:
+              - generic "keyboard_arrow_right Historique des rapprochements (0 actifs)" [ref=e629] [cursor=pointer]:
+                - generic [ref=e630]:
+                  - generic [ref=e631]: keyboard_arrow_right
+                  - paragraph [ref=e635]: Historique des rapprochements (0 actifs)

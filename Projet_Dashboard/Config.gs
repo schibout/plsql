@@ -9,6 +9,14 @@ const DASHBOARD_CONFIG = Object.freeze({
   TITLE: 'Controle EBS - Dashboard',
 });
 
+/** Mail de synthese quotidien (installerMailQuotidien() une fois pour creer le declencheur). */
+const DASHBOARD_MAIL = Object.freeze({
+  // Destinataires ; liste vide = pas d'envoi.
+  TO: [],
+  // Heure d'envoi (fuseau de appsscript.json).
+  HOUR: 8,
+});
+
 /** Fichier de synthese : colonnes ORDRE, KPI, VALEUR, STATUT. */
 const DASHBOARD_KPI_FILE = '00_kpi.csv';
 

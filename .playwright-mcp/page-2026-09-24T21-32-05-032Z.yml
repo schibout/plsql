@@ -1,0 +1,269 @@
+- generic [active] [ref=f1e1]:
+  - banner [ref=f1e2]:
+    - heading "Controle EBS - Dashboard" [level=1] [ref=f1e3]
+    - generic [ref=f1e4]: Lu le 24/09 23:31
+    - button "Actualiser" [ref=f1e5] [cursor=pointer]
+  - region "Indicateurs" [ref=f1e6]:
+    - button "0 Flux DSP OK" [ref=f1e7] [cursor=pointer]:
+      - generic [ref=f1e8]: "0"
+      - generic [ref=f1e9]:
+        - text: Flux DSP
+        - generic [ref=f1e10]: OK
+    - button "3 Notes de frais W" [ref=f1e11] [cursor=pointer]:
+      - generic [ref=f1e12]: "3"
+      - generic [ref=f1e13]:
+        - text: Notes de frais
+        - generic [ref=f1e14]: W
+    - button "6 Factures Xerox KO" [ref=f1e15] [cursor=pointer]:
+      - generic [ref=f1e16]: "6"
+      - generic [ref=f1e17]:
+        - text: Factures Xerox
+        - generic [ref=f1e18]: KO
+    - button "9 Factures Tradeshift OK" [ref=f1e19] [cursor=pointer]:
+      - generic [ref=f1e20]: "9"
+      - generic [ref=f1e21]:
+        - text: Factures Tradeshift
+        - generic [ref=f1e22]: OK
+    - button "12 Factures DSP W" [ref=f1e23] [cursor=pointer]:
+      - generic [ref=f1e24]: "12"
+      - generic [ref=f1e25]:
+        - text: Factures DSP
+        - generic [ref=f1e26]: W
+    - button "15 GL interface KO" [ref=f1e27] [cursor=pointer]:
+      - generic [ref=f1e28]: "15"
+      - generic [ref=f1e29]:
+        - text: GL interface
+        - generic [ref=f1e30]: KO
+    - button "18 Lignes GL creees OK" [ref=f1e31] [cursor=pointer]:
+      - generic [ref=f1e32]: "18"
+      - generic [ref=f1e33]:
+        - text: Lignes GL creees
+        - generic [ref=f1e34]: OK
+    - button "21 Imports RB W" [ref=f1e35] [cursor=pointer]:
+      - generic [ref=f1e36]: "21"
+      - generic [ref=f1e37]:
+        - text: Imports RB
+        - generic [ref=f1e38]: W
+    - button "24 Traitements nuit KO" [ref=f1e39] [cursor=pointer]:
+      - generic [ref=f1e40]: "24"
+      - generic [ref=f1e41]:
+        - text: Traitements nuit
+        - generic [ref=f1e42]: KO
+    - button "27 Erreurs nuit OK" [ref=f1e43] [cursor=pointer]:
+      - generic [ref=f1e44]: "27"
+      - generic [ref=f1e45]:
+        - text: Erreurs nuit
+        - generic [ref=f1e46]: OK
+    - button "30 Avertissements nuit W" [ref=f1e47] [cursor=pointer]:
+      - generic [ref=f1e48]: "30"
+      - generic [ref=f1e49]:
+        - text: Avertissements nuit
+        - generic [ref=f1e50]: W
+    - button "33 Images Xerox manquantes KO" [ref=f1e51] [cursor=pointer]:
+      - generic [ref=f1e52]: "33"
+      - generic [ref=f1e53]:
+        - text: Images Xerox manquantes
+        - generic [ref=f1e54]: KO
+  - navigation "Filtrer par domaine" [ref=f1e55]:
+    - button "Tous" [pressed] [ref=f1e56] [cursor=pointer]
+    - button "DSP" [ref=f1e57] [cursor=pointer]
+    - button "Factures" [ref=f1e58] [cursor=pointer]
+    - button "GL" [ref=f1e59] [cursor=pointer]
+    - button "Nuit" [ref=f1e60] [cursor=pointer]
+    - button "RB" [ref=f1e61] [cursor=pointer]
+  - main [ref=f1e62]:
+    - group [ref=f1e63]:
+      - generic "DSP - Detail des flux 0 maj 24/09 23:31" [ref=f1e64] [cursor=pointer]:
+        - text: DSP - Detail des flux
+        - generic [ref=f1e65]: "0"
+        - text: maj 24/09 23:31
+    - group [ref=f1e66]:
+      - generic "DSP - Synthese par jour et type 1 maj 24/09 23:31" [ref=f1e67] [cursor=pointer]:
+        - text: DSP - Synthese par jour et type
+        - generic [ref=f1e68]: "1"
+        - text: maj 24/09 23:31
+      - table [ref=f1e70]:
+        - rowgroup [ref=f1e71]:
+          - row [ref=f1e72]:
+            - columnheader "COL_A" [ref=f1e73]
+            - columnheader "NB" [ref=f1e74]
+        - rowgroup [ref=f1e75]:
+          - row [ref=f1e76]:
+            - cell "ligne 1" [ref=f1e77]
+            - cell "1" [ref=f1e78]
+    - group [ref=f1e79]:
+      - generic "Notilus - Notes de frais 1 maj 24/09 23:31" [ref=f1e80] [cursor=pointer]:
+        - text: Notilus - Notes de frais
+        - generic [ref=f1e81]: "1"
+        - text: maj 24/09 23:31
+      - table [ref=f1e83]:
+        - rowgroup [ref=f1e84]:
+          - row [ref=f1e85]:
+            - columnheader "COL_A" [ref=f1e86]
+            - columnheader "NB" [ref=f1e87]
+        - rowgroup [ref=f1e88]:
+          - row [ref=f1e89]:
+            - cell "ligne 2" [ref=f1e90]
+            - cell "2" [ref=f1e91]
+    - group [ref=f1e92]:
+      - generic "Factures - Synthese par source 1 maj 24/09 23:31" [ref=f1e93] [cursor=pointer]:
+        - text: Factures - Synthese par source
+        - generic [ref=f1e94]: "1"
+        - text: maj 24/09 23:31
+      - table [ref=f1e96]:
+        - rowgroup [ref=f1e97]:
+          - row [ref=f1e98]:
+            - columnheader "COL_A" [ref=f1e99]
+            - columnheader "NB" [ref=f1e100]
+        - rowgroup [ref=f1e101]:
+          - row [ref=f1e102]:
+            - cell "ligne 3" [ref=f1e103]
+            - cell "3" [ref=f1e104]
+    - group [ref=f1e105]:
+      - generic "Xerox - Factures SANS image 0 maj 24/09 23:31" [ref=f1e106] [cursor=pointer]:
+        - text: Xerox - Factures SANS image
+        - generic [ref=f1e107]: "0"
+        - text: maj 24/09 23:31
+    - group [ref=f1e108]:
+      - generic "Xerox - Factures AVEC image 1 maj 24/09 23:31" [ref=f1e109] [cursor=pointer]:
+        - text: Xerox - Factures AVEC image
+        - generic [ref=f1e110]: "1"
+        - text: maj 24/09 23:31
+      - table [ref=f1e112]:
+        - rowgroup [ref=f1e113]:
+          - row [ref=f1e114]:
+            - columnheader "COL_A" [ref=f1e115]
+            - columnheader "NB" [ref=f1e116]
+        - rowgroup [ref=f1e117]:
+          - row [ref=f1e118]:
+            - cell "ligne 5" [ref=f1e119]
+            - cell "5" [ref=f1e120]
+    - group [ref=f1e121]:
+      - generic "Factures AR - Recues (24 h) 1 maj 24/09 23:31" [ref=f1e122] [cursor=pointer]:
+        - text: Factures AR - Recues (24 h)
+        - generic [ref=f1e123]: "1"
+        - text: maj 24/09 23:31
+      - table [ref=f1e125]:
+        - rowgroup [ref=f1e126]:
+          - row [ref=f1e127]:
+            - columnheader "COL_A" [ref=f1e128]
+            - columnheader "NB" [ref=f1e129]
+        - rowgroup [ref=f1e130]:
+          - row [ref=f1e131]:
+            - cell "ligne 6" [ref=f1e132]
+            - cell "6" [ref=f1e133]
+    - group [ref=f1e134]:
+      - generic "Factures AR - Rejets AutoInvoice 1 a traiter maj 24/09 23:31" [ref=f1e135] [cursor=pointer]:
+        - text: Factures AR - Rejets AutoInvoice
+        - generic [ref=f1e136]: "1"
+        - generic [ref=f1e137]: a traiter
+        - text: maj 24/09 23:31
+      - table [ref=f1e139]:
+        - rowgroup [ref=f1e140]:
+          - row [ref=f1e141]:
+            - columnheader "COL_A" [ref=f1e142]
+            - columnheader "NB" [ref=f1e143]
+        - rowgroup [ref=f1e144]:
+          - row [ref=f1e145]:
+            - cell "ligne 7" [ref=f1e146]
+            - cell "7" [ref=f1e147]
+    - group [ref=f1e148]:
+      - generic "GL - Interface (en attente) 0 maj 24/09 23:31" [ref=f1e149] [cursor=pointer]:
+        - text: GL - Interface (en attente)
+        - generic [ref=f1e150]: "0"
+        - text: maj 24/09 23:31
+    - group [ref=f1e151]:
+      - generic "GL - Lignes creees 1 maj 24/09 23:31" [ref=f1e152] [cursor=pointer]:
+        - text: GL - Lignes creees
+        - generic [ref=f1e153]: "1"
+        - text: maj 24/09 23:31
+      - table [ref=f1e155]:
+        - rowgroup [ref=f1e156]:
+          - row [ref=f1e157]:
+            - columnheader "COL_A" [ref=f1e158]
+            - columnheader "NB" [ref=f1e159]
+        - rowgroup [ref=f1e160]:
+          - row [ref=f1e161]:
+            - cell "ligne 9" [ref=f1e162]
+            - cell "9" [ref=f1e163]
+    - group [ref=f1e164]:
+      - generic "Nuit - Synthese par statut 1 maj 24/09 23:31" [ref=f1e165] [cursor=pointer]:
+        - text: Nuit - Synthese par statut
+        - generic [ref=f1e166]: "1"
+        - text: maj 24/09 23:31
+      - table [ref=f1e168]:
+        - rowgroup [ref=f1e169]:
+          - row [ref=f1e170]:
+            - columnheader "COL_A" [ref=f1e171]
+            - columnheader "NB" [ref=f1e172]
+        - rowgroup [ref=f1e173]:
+          - row [ref=f1e174]:
+            - cell "ligne 10" [ref=f1e175]
+            - cell "10" [ref=f1e176]
+    - group [ref=f1e177]:
+      - generic "Nuit - Erreurs par programme 1 a traiter maj 24/09 23:31" [ref=f1e178] [cursor=pointer]:
+        - text: Nuit - Erreurs par programme
+        - generic [ref=f1e179]: "1"
+        - generic [ref=f1e180]: a traiter
+        - text: maj 24/09 23:31
+      - table [ref=f1e182]:
+        - rowgroup [ref=f1e183]:
+          - row [ref=f1e184]:
+            - columnheader "COL_A" [ref=f1e185]
+            - columnheader "NB" [ref=f1e186]
+        - rowgroup [ref=f1e187]:
+          - row [ref=f1e188]:
+            - cell "ligne 11" [ref=f1e189]
+            - cell "11" [ref=f1e190]
+    - group [ref=f1e191]:
+      - generic "Nuit - Detail des erreurs 0 maj 24/09 23:31" [ref=f1e192] [cursor=pointer]:
+        - text: Nuit - Detail des erreurs
+        - generic [ref=f1e193]: "0"
+        - text: maj 24/09 23:31
+    - group [ref=f1e194]:
+      - generic "Nuit - Warnings 1 maj 24/09 23:31" [ref=f1e195] [cursor=pointer]:
+        - text: Nuit - Warnings
+        - generic [ref=f1e196]: "1"
+        - text: maj 24/09 23:31
+      - table [ref=f1e198]:
+        - rowgroup [ref=f1e199]:
+          - row [ref=f1e200]:
+            - columnheader "COL_A" [ref=f1e201]
+            - columnheader "NB" [ref=f1e202]
+        - rowgroup [ref=f1e203]:
+          - row [ref=f1e204]:
+            - cell "ligne 13" [ref=f1e205]
+            - cell "13" [ref=f1e206]
+    - group [ref=f1e207]:
+      - generic "Nuit - Traitements > 30 min 1 maj 24/09 23:31" [ref=f1e208] [cursor=pointer]:
+        - text: Nuit - Traitements > 30 min
+        - generic [ref=f1e209]: "1"
+        - text: maj 24/09 23:31
+      - table [ref=f1e211]:
+        - rowgroup [ref=f1e212]:
+          - row [ref=f1e213]:
+            - columnheader "COL_A" [ref=f1e214]
+            - columnheader "NB" [ref=f1e215]
+        - rowgroup [ref=f1e216]:
+          - row [ref=f1e217]:
+            - cell "ligne 14" [ref=f1e218]
+            - cell "14" [ref=f1e219]
+    - group [ref=f1e220]:
+      - generic "Nuit - Traitements en cours 1 maj 24/09 23:31" [ref=f1e221] [cursor=pointer]:
+        - text: Nuit - Traitements en cours
+        - generic [ref=f1e222]: "1"
+        - text: maj 24/09 23:31
+      - table [ref=f1e224]:
+        - rowgroup [ref=f1e225]:
+          - row [ref=f1e226]:
+            - columnheader "COL_A" [ref=f1e227]
+            - columnheader "NB" [ref=f1e228]
+        - rowgroup [ref=f1e229]:
+          - row [ref=f1e230]:
+            - cell "ligne 15" [ref=f1e231]
+            - cell "15" [ref=f1e232]
+    - group [ref=f1e233]:
+      - generic "Rapprochement bancaire - Imports 0 maj 24/09 23:31" [ref=f1e234] [cursor=pointer]:
+        - text: Rapprochement bancaire - Imports
+        - generic [ref=f1e235]: "0"
+        - text: maj 24/09 23:31

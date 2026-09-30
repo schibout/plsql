@@ -122,10 +122,10 @@ CREATE TABLE IF NOT EXISTS vir_envois (
 );
 CREATE INDEX IF NOT EXISTS ix_vir_envois_date ON vir_envois(date_ctrl, fichier_ack);
 
--- Prélèvements : trésorerie EDF persistante (états de réception, rejets internes) et historique des rapprochements.
+-- Prélèvements : trésorerie EDF persistante (états de réception, rejets bancaires Quartz) et historique des rapprochements.
 -- Alimentées à chaque lancement depuis l'onglet ; les fichiers ORACLE restent des fichiers.
 CREATE TABLE IF NOT EXISTS pv_fichiers (
-    nom           TEXT PRIMARY KEY,       -- IMPORT_AVP_DK.<date>.<heure>.csv / REJETS_INTERNES_DK.<date>.<heure>.csv
+    nom           TEXT PRIMARY KEY,       -- IMPORT_AVP_DK.<date>.<heure>.csv / JJMMAAAA_Liste des rejets bancaires du jour - Prélèvement.xls
     genre         TEXT NOT NULL,          -- EDF | REJET
     date_fichier  TEXT NOT NULL,          -- AAAA-MM-JJ
     nb_lignes     INTEGER,                -- lignes retenues (SI suivi / rejets dédoublonnés)

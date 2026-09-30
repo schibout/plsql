@@ -1,0 +1,60 @@
+[   14776ms] [WARNING] Unrecognized feature: 'ambient-light-sensor'. @ http://localhost:8765/static/js/react-dom.BzV73oHg.js:0
+[   14776ms] [WARNING] Unrecognized feature: 'battery'. @ http://localhost:8765/static/js/react-dom.BzV73oHg.js:0
+[   14776ms] [WARNING] Unrecognized feature: 'document-domain'. @ http://localhost:8765/static/js/react-dom.BzV73oHg.js:0
+[   14776ms] [WARNING] Unrecognized feature: 'layout-animations'. @ http://localhost:8765/static/js/react-dom.BzV73oHg.js:0
+[   14776ms] [WARNING] Unrecognized feature: 'legacy-image-formats'. @ http://localhost:8765/static/js/react-dom.BzV73oHg.js:0
+[   14776ms] [WARNING] Unrecognized feature: 'oversized-images'. @ http://localhost:8765/static/js/react-dom.BzV73oHg.js:0
+[   14777ms] [WARNING] Unrecognized feature: 'vr'. @ http://localhost:8765/static/js/react-dom.BzV73oHg.js:0
+[   14777ms] [WARNING] Unrecognized feature: 'wake-lock'. @ http://localhost:8765/static/js/react-dom.BzV73oHg.js:0
+[   14793ms] [WARNING] An iframe which has both allow-scripts and allow-same-origin for its sandbox attribute can escape its sandboxing. @ about:srcdoc:0
+[  157966ms] [WARNING] An iframe which has both allow-scripts and allow-same-origin for its sandbox attribute can escape its sandboxing. @ about:srcdoc:0
+[  179596ms] [WARNING] An iframe which has both allow-scripts and allow-same-origin for its sandbox attribute can escape its sandboxing. @ about:srcdoc:0
+[  209219ms] [WARNING] WebSocket onclose @ http://localhost:8765/static/js/index.CcFifQPt.js:28
+[  209616ms] [ERROR] Failed to load resource: the server responded with a status of 404 (File not found) @ http://localhost:8765/_stcore/host-config:0
+[  209616ms] [ERROR] Failed to load resource: the server responded with a status of 404 (File not found) @ http://localhost:8765/_stcore/health:0
+[  209729ms] [ERROR] Failed to load resource: the server responded with a status of 404 (File not found) @ http://localhost:8765/_stcore/health:0
+[  209730ms] [ERROR] Failed to load resource: the server responded with a status of 404 (File not found) @ http://localhost:8765/_stcore/host-config:0
+[  209927ms] [ERROR] Failed to load resource: the server responded with a status of 404 (File not found) @ http://localhost:8765/_stcore/health:0
+[  209928ms] [ERROR] Failed to load resource: the server responded with a status of 404 (File not found) @ http://localhost:8765/_stcore/host-config:0
+[  210293ms] [ERROR] Failed to load resource: the server responded with a status of 404 (File not found) @ http://localhost:8765/_stcore/health:0
+[  210294ms] [ERROR] Failed to load resource: the server responded with a status of 404 (File not found) @ http://localhost:8765/_stcore/host-config:0
+[  210981ms] [ERROR] Failed to load resource: the server responded with a status of 404 (File not found) @ http://localhost:8765/_stcore/health:0
+[  210981ms] [ERROR] Failed to load resource: the server responded with a status of 404 (File not found) @ http://localhost:8765/_stcore/host-config:0
+[  212267ms] [ERROR] Failed to load resource: the server responded with a status of 404 (File not found) @ http://localhost:8765/_stcore/health:0
+[  212268ms] [ERROR] Client Error: response received with status 404 when attempting to reach /_stcore/health @ http://localhost:8765/static/js/index.CcFifQPt.js:27
+[  212269ms] [ERROR] Connection failed with status 404. @ http://localhost:8765/static/js/index.CcFifQPt.js:32
+[  212271ms] [ERROR] Failed to load resource: the server responded with a status of 404 (File not found) @ http://localhost:8765/_stcore/host-config:0
+[  247388ms] [WARNING] Unrecognized feature: 'ambient-light-sensor'. @ http://localhost:8765/static/js/react-dom.BzV73oHg.js:0
+[  247388ms] [WARNING] Unrecognized feature: 'battery'. @ http://localhost:8765/static/js/react-dom.BzV73oHg.js:0
+[  247388ms] [WARNING] Unrecognized feature: 'document-domain'. @ http://localhost:8765/static/js/react-dom.BzV73oHg.js:0
+[  247388ms] [WARNING] Unrecognized feature: 'layout-animations'. @ http://localhost:8765/static/js/react-dom.BzV73oHg.js:0
+[  247388ms] [WARNING] Unrecognized feature: 'legacy-image-formats'. @ http://localhost:8765/static/js/react-dom.BzV73oHg.js:0
+[  247388ms] [WARNING] Unrecognized feature: 'oversized-images'. @ http://localhost:8765/static/js/react-dom.BzV73oHg.js:0
+[  247388ms] [WARNING] Unrecognized feature: 'vr'. @ http://localhost:8765/static/js/react-dom.BzV73oHg.js:0
+[  247388ms] [WARNING] Unrecognized feature: 'wake-lock'. @ http://localhost:8765/static/js/react-dom.BzV73oHg.js:0
+[  247764ms] [WARNING] An iframe which has both allow-scripts and allow-same-origin for its sandbox attribute can escape its sandboxing. @ about:srcdoc:0
+[  364045ms] [WARNING] An iframe which has both allow-scripts and allow-same-origin for its sandbox attribute can escape its sandboxing. @ about:srcdoc:0
+[  377391ms] [WARNING] WebSocket onclose @ http://localhost:8765/static/js/index.CcFifQPt.js:28
+[  378032ms] [ERROR] Failed to load resource: the server responded with a status of 404 (File not found) @ http://localhost:8765/_stcore/host-config:0
+[  378034ms] [ERROR] Failed to load resource: the server responded with a status of 404 (File not found) @ http://localhost:8765/_stcore/health:0
+[  378153ms] [ERROR] Failed to load resource: the server responded with a status of 404 (File not found) @ http://localhost:8765/_stcore/health:0
+[  378153ms] [ERROR] Failed to load resource: the server responded with a status of 404 (File not found) @ http://localhost:8765/_stcore/host-config:0
+[  378329ms] [ERROR] Failed to load resource: the server responded with a status of 404 (File not found) @ http://localhost:8765/_stcore/health:0
+[  378331ms] [ERROR] Failed to load resource: the server responded with a status of 404 (File not found) @ http://localhost:8765/_stcore/host-config:0
+[  378694ms] [ERROR] Failed to load resource: the server responded with a status of 404 (File not found) @ http://localhost:8765/_stcore/health:0
+[  378695ms] [ERROR] Failed to load resource: the server responded with a status of 404 (File not found) @ http://localhost:8765/_stcore/host-config:0
+[  379441ms] [ERROR] Failed to load resource: the server responded with a status of 404 (File not found) @ http://localhost:8765/_stcore/health:0
+[  379441ms] [ERROR] Failed to load resource: the server responded with a status of 404 (File not found) @ http://localhost:8765/_stcore/host-config:0
+[  380810ms] [ERROR] Failed to load resource: the server responded with a status of 404 (File not found) @ http://localhost:8765/_stcore/health:0
+[  380811ms] [ERROR] Client Error: response received with status 404 when attempting to reach /_stcore/health @ http://localhost:8765/static/js/index.CcFifQPt.js:27
+[  380811ms] [ERROR] Connection failed with status 404. @ http://localhost:8765/static/js/index.CcFifQPt.js:32
+[  380812ms] [ERROR] Failed to load resource: the server responded with a status of 404 (File not found) @ http://localhost:8765/_stcore/host-config:0
+[  415612ms] [WARNING] Unrecognized feature: 'ambient-light-sensor'. @ http://localhost:8765/static/js/react-dom.BzV73oHg.js:0
+[  415612ms] [WARNING] Unrecognized feature: 'battery'. @ http://localhost:8765/static/js/react-dom.BzV73oHg.js:0
+[  415612ms] [WARNING] Unrecognized feature: 'document-domain'. @ http://localhost:8765/static/js/react-dom.BzV73oHg.js:0
+[  415612ms] [WARNING] Unrecognized feature: 'layout-animations'. @ http://localhost:8765/static/js/react-dom.BzV73oHg.js:0
+[  415612ms] [WARNING] Unrecognized feature: 'legacy-image-formats'. @ http://localhost:8765/static/js/react-dom.BzV73oHg.js:0
+[  415612ms] [WARNING] Unrecognized feature: 'oversized-images'. @ http://localhost:8765/static/js/react-dom.BzV73oHg.js:0
+[  415612ms] [WARNING] Unrecognized feature: 'vr'. @ http://localhost:8765/static/js/react-dom.BzV73oHg.js:0
+[  415612ms] [WARNING] Unrecognized feature: 'wake-lock'. @ http://localhost:8765/static/js/react-dom.BzV73oHg.js:0
+[  415626ms] [WARNING] An iframe which has both allow-scripts and allow-same-origin for its sandbox attribute can escape its sandboxing. @ about:srcdoc:0
