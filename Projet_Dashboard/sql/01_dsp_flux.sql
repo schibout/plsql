@@ -1,6 +1,6 @@
 -- DSP - Detail des flux (fichiers)
 -- Extrait de ControleMatinGenerique/Controle_Quotidien_Complet.sql.
--- Variables fournies par export.sql : &nb_jours_histo, &heure_fermeture, &heure_ouverture.
+-- Variables fournies par export.sql : 10, 19, 7.
 
 SELECT 'DSP' AS SRC,
        TO_CHAR(date_creation, 'DD/MM/YY') AS DATE_CR,
@@ -24,24 +24,24 @@ FROM (
            TO_CHAR(dih.creation_date, 'DAY', 'NLS_DATE_LANGUAGE=FRENCH') AS jour_creation,
            dih.file_name
     FROM   dka_ipofrs_hist_entetes dih
-    WHERE  dih.creation_date > SYSDATE - &nb_jours_histo
+    WHERE  dih.creation_date > SYSDATE - 10
     UNION ALL
     SELECT DISTINCT TRUNC(dih.creation_date),
            TO_CHAR(dih.creation_date, 'DAY', 'NLS_DATE_LANGUAGE=FRENCH'),
            dih.file_name
     FROM   dka_ipocde_hist_headers dih
-    WHERE  dih.creation_date > SYSDATE - &nb_jours_histo
+    WHERE  dih.creation_date > SYSDATE - 10
     UNION ALL
     SELECT DISTINCT TRUNC(dih.creation_date),
            TO_CHAR(dih.creation_date, 'DAY', 'NLS_DATE_LANGUAGE=FRENCH'),
            dih.file_name
     FROM   dka_iporec_hist_interface dih
-    WHERE  dih.creation_date > SYSDATE - &nb_jours_histo
+    WHERE  dih.creation_date > SYSDATE - 10
     UNION ALL
     SELECT DISTINCT TRUNC(dih.creation_date),
            TO_CHAR(dih.creation_date, 'DAY', 'NLS_DATE_LANGUAGE=FRENCH'),
            dih.file_name
     FROM   dka_iapfac_debloc_hist_interf dih
-    WHERE  dih.creation_date > SYSDATE - &nb_jours_histo
+    WHERE  dih.creation_date > SYSDATE - 10
 )
 ORDER BY date_creation DESC, TYPE_FLUX, file_name;

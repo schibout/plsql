@@ -9,6 +9,6 @@ SELECT TO_CHAR(TRUNC(creation_date), 'DD/MM/YY')                          AS DAT
        SUM(CASE WHEN status NOT IN ('INSERE', 'INTEGREE', 'COMPLETED') THEN 2 ELSE 0 END) AS NB_AUTRE,
        COUNT(*)                                                             AS TOTAL
 FROM   dka_demat_hdr
-WHERE  creation_date > SYSDATE - &nb_jours_histo
+WHERE  creation_date > SYSDATE - 10
 GROUP BY TRUNC(creation_date), TO_CHAR(creation_date, 'DAY', 'NLS_DATE_LANGUAGE=FRENCH')
 ORDER BY TRUNC(creation_date) DESC;

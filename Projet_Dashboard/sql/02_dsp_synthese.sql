@@ -1,6 +1,6 @@
 -- DSP - Synthese par jour et type
 -- Extrait de ControleMatinGenerique/Controle_Quotidien_Complet.sql.
--- Variables fournies par export.sql : &nb_jours_histo, &heure_fermeture, &heure_ouverture.
+-- Variables fournies par export.sql : 10, 19, 7.
 
 -- Cette synthese comptait des libelles constants issus d'un DISTINCT, donc
 -- au plus 1 par table et par jour : elle indiquait "1 fournisseur" un jour ou
@@ -26,19 +26,19 @@ FROM (
                WHEN dih.file_name LIKE '%DEB%' OR dih.file_name LIKE '%DEBLOC%' THEN 'DEBLOCAGE'
                ELSE 'AUTRE'
            END AS TYPE_FLUX
-    FROM   dka_ipofrs_hist_entetes dih WHERE dih.creation_date > SYSDATE - &nb_jours_histo
+    FROM   dka_ipofrs_hist_entetes dih WHERE dih.creation_date > SYSDATE - 10
     UNION ALL
     SELECT TRUNC(dih.creation_date), TO_CHAR(dih.creation_date, 'DAY', 'NLS_DATE_LANGUAGE=FRENCH'), dih.file_name,
            CASE WHEN dih.file_name LIKE '%PO\_%' ESCAPE '\' OR dih.file_name LIKE '%CDE%' THEN 'COMMANDES' ELSE 'AUTRE' END
-    FROM   dka_ipocde_hist_headers dih WHERE dih.creation_date > SYSDATE - &nb_jours_histo
+    FROM   dka_ipocde_hist_headers dih WHERE dih.creation_date > SYSDATE - 10
     UNION ALL
     SELECT TRUNC(dih.creation_date), TO_CHAR(dih.creation_date, 'DAY', 'NLS_DATE_LANGUAGE=FRENCH'), dih.file_name,
            'RECEPTIONS'
-    FROM   dka_iporec_hist_interface dih WHERE dih.creation_date > SYSDATE - &nb_jours_histo
+    FROM   dka_iporec_hist_interface dih WHERE dih.creation_date > SYSDATE - 10
     UNION ALL
     SELECT TRUNC(dih.creation_date), TO_CHAR(dih.creation_date, 'DAY', 'NLS_DATE_LANGUAGE=FRENCH'), dih.file_name,
            'DEBLOCAGE'
-    FROM   dka_iapfac_debloc_hist_interf dih WHERE dih.creation_date > SYSDATE - &nb_jours_histo
+    FROM   dka_iapfac_debloc_hist_interf dih WHERE dih.creation_date > SYSDATE - 10
 )
 GROUP BY date_creation, jour_creation
 ORDER BY date_creation DESC;

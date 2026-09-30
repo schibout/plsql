@@ -37,8 +37,8 @@ WITH flux AS (
                              NOT IN ('REQUEST COMPLETED NORMAL', 'FIN NORMALE')
                         THEN 1 ELSE 0 END), 0) AS warn
     FROM   fnd_concurrent_requests
-    WHERE  actual_start_date >= TRUNC(SYSDATE - 1) + &heure_fermeture / 24
-    AND    actual_start_date <  TRUNC(SYSDATE)      + &heure_ouverture / 24
+    WHERE  actual_start_date >= TRUNC(SYSDATE - 1) + 19 / 24
+    AND    actual_start_date <  TRUNC(SYSDATE)      + 7 / 24
     AND    requested_by IN (SELECT user_id FROM fnd_user WHERE user_name LIKE 'EXP%')
 ), rb AS (
     -- Fenetre veille + jour : les imports RB sont dates tantot de l'un, tantot de l'autre.

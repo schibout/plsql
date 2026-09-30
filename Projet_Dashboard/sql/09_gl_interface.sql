@@ -1,6 +1,6 @@
 -- GL - Interface (en attente)
 -- Extrait de ControleMatinGenerique/Controle_Quotidien_Complet.sql.
--- Variables fournies par export.sql : &nb_jours_histo, &heure_fermeture, &heure_ouverture.
+-- Variables fournies par export.sql : 10, 19, 7.
 
 -- GL_INTERFACE est volontairement lue sans borne de date : c'est le stock en
 -- attente qui fait le controle. On ajoute l'anciennete de la plus vieille
