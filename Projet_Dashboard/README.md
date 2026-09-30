@@ -50,6 +50,10 @@ tant que les deux ne correspondent pas.
    Copier l'ID de déploiement dans un fichier `.deployment_id` : les
    `deploy.bat` suivants mettront à jour la même URL `/exec`.
 
+6. Mail de synthèse (optionnel) : remplir `DASHBOARD_MAIL.TO` (et `HOUR`) dans `Config.gs`,
+   `deploy.bat`, puis exécuter une fois `installerMailQuotidien` depuis l'éditeur (autoriser l'envoi
+   de mail). Tester l'envoi immédiat avec `envoyerMailSynthese`.
+
 `appsscript.json` limite l'accès à `MYSELF` ; passer à `DOMAIN` pour partager.
 
 ## Lecture

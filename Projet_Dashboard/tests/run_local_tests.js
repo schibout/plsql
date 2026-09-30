@@ -61,4 +61,21 @@ Object.keys(REQUIRED).forEach(file => {
   REQUIRED[file].forEach(c => assert.ok(header.includes(c), file + ' : colonne ' + c + ' absente (' + header.join(',') + ')'));
 });
 
-console.log('OK - ' + sqlFiles.length + ' requetes, parse CSV valide.');
+// Mail : objet = pire statut, sections a traiter / absentes / perimees listees, HTML echappe.
+ctx.mailData = {
+  generatedAt: '2026-10-01T08:00:00Z',
+  kpi: Object.assign(run('dashboardParseCsv_(' + JSON.stringify(fs.readFileSync(path.join(csvDir, '00_kpi.csv'), 'utf8')) + ')'), {updated: '2026-10-01T07:30:00Z'}),
+  sections: [
+    {title: 'Rejets <AR>', alertIfRows: true, rows: [['x']], updated: '2026-10-01T07:30:00Z'},
+    {title: 'Vide', alertIfRows: true, rows: [], updated: '2026-10-01T07:30:00Z'},
+    {title: 'Absent', missing: true, rows: []},
+    {title: 'Vieux', rows: [], updated: '2026-09-30T08:00:00Z'},
+  ],
+};
+assert.strictEqual(run('dashboardMailSubject_(mailData)'), '[KO] ' + run('DASHBOARD_CONFIG.TITLE'));
+const mail = run('dashboardMailHtml_(mailData, "https://x/exec")');
+['Rejets &lt;AR&gt; : 1 ligne(s)', 'Absent : fichier absent', 'Vieux : fichier perime', 'Images Xerox manquantes', 'https://x/exec']
+  .forEach(s => assert.ok(mail.includes(s), 'mail sans : ' + s));
+assert.ok(!mail.includes('Vide'));
+
+console.log('OK - ' + sqlFiles.length + ' requetes, parse CSV valide, mail.');
