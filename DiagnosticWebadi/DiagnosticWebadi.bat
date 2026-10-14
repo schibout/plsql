@@ -15,8 +15,7 @@ set "URL_EBS=https://finance.dalkia.net"
 set "HOST_EBS=finance.dalkia.net"
 
 REM --- Construction du nom de log ---
-for /f "tokens=2 delims==" %%I in ('"wmic os get localdatetime /value 2>nul"') do set "DT=%%I"
-set "STAMP=%DT:~0,8%_%DT:~8,6%"
+for /f %%I in ('powershell -NoProfile -Command "Get-Date -Format 'yyyyMMdd_HHmmss'"') do set "STAMP=%%I"
 set "LOG=%~dp0Diagnostic_%TNS_ALIAS%_%STAMP%.log"
 set "TMP_PS1=%TEMP%\DiagWEBADI_%STAMP%.ps1"
 
