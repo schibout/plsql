@@ -1,0 +1,15 @@
+Date de lancement : 08/09/2026 14:06:13
+Dossier source : /data/flf/share/EAIBW/EAI/filerepository/VHC03.FACTURESFOURNISSEURS/INSTANCES
+Dossier cible : .
+Nombre de fichiers à chercher : 8
+------------------------------------------------------
+[SUCCÈS] Trouvé et copié : /data/flf/share/EAIBW/EAI/filerepository/VHC03.FACTURESFOURNISSEURS/INSTANCES/bd270e19574c483d9a9f17b8470e30db/SOURCE/VHC03_SRC_FACTURESFOURNISSEURS_250826_153315.csv
+[SUCCÈS] Trouvé et copié : /data/flf/share/EAIBW/EAI/filerepository/VHC03.FACTURESFOURNISSEURS/INSTANCES/1e71dfd257f14eab877cec1f7717a377/SOURCE/VHC03_SRC_FACTURESFOURNISSEURS_070826_111103.csv
+[INTROUVABLE] Aucun fichier trouvé pour : VHC03_SRC_FACTURESFOURNISSEURS_120826_165301.csv*
+[INTROUVABLE] Aucun fichier trouvé pour : VHC03_SRC_FACTURESFOURNISSEURS_120826_165252.csv*
+[SUCCÈS] Trouvé et copié : /data/flf/share/EAIBW/EAI/filerepository/VHC03.FACTURESFOURNISSEURS/INSTANCES/6b22a5bde9dc4c1a9863e33baf4c64b9/SOURCE/VHC03_SRC_FACTURESFOURNISSEURS_070826_101430.csv
+[INTROUVABLE] Aucun fichier trouvé pour : VHC03_SRC_FACTURESFOURNISSEURS_120826_165238.csv*
+[SUCCÈS] Trouvé et copié : /data/flf/share/EAIBW/EAI/filerepository/VHC03.FACTURESFOURNISSEURS/INSTANCES/4897648d067047849db106aac6db5820/SOURCE/VHC03_SRC_FACTURESFOURNISSEURS_060826_155842.csv
+[INTROUVABLE] Aucun fichier trouvé pour : VHC03_SRC_FACTURESFOURNISSEURS_110826_151702.csv*
+------------------------------------------------------
+Recherche terminée en 2s.

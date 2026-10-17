@@ -1,0 +1,22 @@
+-- D1 - Quels folios (attribute9) et fichiers (attribute10) dans AP_INVOICES_ALL, 30 jours
+-- Objectif : confirmer la convention (attribute9 = folio, attribute10 = fichier), voir la liste des folios,
+-- la part de factures sans fichier, et si un meme fichier revient sur plusieurs jours.
+
+SELECT NVL(attribute9, '(vide)')                               AS FOLIO,
+       COUNT(*)                                                AS NB_FACTURES,
+       SUM(CASE WHEN attribute10 IS NULL THEN 1 ELSE 0 END)    AS NB_SANS_FICHIER,
+       COUNT(DISTINCT attribute10)                             AS NB_FICHIERS,
+       COUNT(DISTINCT TRUNC(creation_date))                    AS NB_JOURS,
+       COUNT(DISTINCT attribute10 || '#' || TO_CHAR(TRUNC(creation_date), 'YYYYMMDD')) AS NB_FICHIER_JOUR,
+       MIN(attribute10)                                        AS EXEMPLE_FICHIER,
+       MAX(attribute10)                                        AS EXEMPLE_FICHIER_2,
+       COUNT(DISTINCT source)                                  AS NB_SOURCES,
+       MIN(source)                                             AS EXEMPLE_SOURCE,
+       TO_CHAR(MIN(creation_date), 'DD/MM/YY')                 AS PREMIERE,
+       TO_CHAR(MAX(creation_date), 'DD/MM/YY')                 AS DERNIERE
+FROM   ap_invoices_all
+WHERE  creation_date > TRUNC(SYSDATE) - 30
+GROUP BY NVL(attribute9, '(vide)')
+ORDER BY NB_FACTURES DESC;
+-- Lecture : si NB_FICHIER_JOUR > NB_FICHIERS, un meme nom de fichier est recu sur plusieurs jours
+-- (il faudra alors compter les fichiers par jour, pas en global).
