@@ -18,7 +18,8 @@ Identifiants de connexion, par ordre de priorite :
                                  ORACLE_SERVICE deja presentes dans la session.
 
 Le format de sortie est deduit de l'extension : .csv (separateur ';',
-UTF-8 BOM, memes options que le worker) ou .xlsx.
+UTF-8 BOM, memes options que le worker) ou .xlsx. L'en-tete (noms de
+colonnes) est toujours en minuscules.
 
 Codes retour : 0 succes, 1 echec d'execution, 2 argument invalide.
 """
@@ -224,7 +225,7 @@ def executerRequete(connexion, requete, arraysize):
     curseur = connexion.cursor()
     curseur.arraysize = arraysize
     curseur.execute(requete)
-    colonnes = [c[0] for c in curseur.description]
+    colonnes = [c[0].lower() for c in curseur.description]  # en-tete en minuscules
     lignes = curseur.fetchall()
     curseur.close()
     return pd.DataFrame.from_records(lignes, columns=colonnes)

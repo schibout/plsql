@@ -86,7 +86,8 @@ py -m pip install oracledb pandas XlsxWriter
 
 ## Format de sortie
 
-Identique au worker `CapAppro_GENERIQUE_EXECUTION.py` :
+Identique au worker `CapAppro_GENERIQUE_EXECUTION.py`, sauf l'en-tête
+(noms de colonnes), toujours écrit en minuscules :
 
 - **CSV** : séparateur `;`, UTF-8 avec BOM, chaînes entre guillemets, dates
   `dd/mm/yyyy hh:mm:ss`, nombres décimaux sur 5 décimales.

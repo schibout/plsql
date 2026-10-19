@@ -19,8 +19,8 @@ Usage :
     py CapAppro_MULTI_SQL.py --csv extractionExecute.csv --arret-sur-erreur
 
 Identifiants, pilote Oracle et format de sortie : identiques a
-CapAppro_UN_SQL.py (voir README_UN_SQL.md). Une seule connexion est ouverte
-et reutilisee pour toutes les requetes.
+CapAppro_UN_SQL.py (voir README_UN_SQL.md), en-tete en minuscules compris.
+Une seule connexion est ouverte et reutilisee pour toutes les requetes.
 
 Par defaut, une extraction en echec n'arrete pas les suivantes.
 
