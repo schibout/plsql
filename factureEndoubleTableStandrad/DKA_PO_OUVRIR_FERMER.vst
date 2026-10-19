@@ -1,0 +1,193 @@
+# $Header$
+
+# 
+LANGUAGE = "US"
+LDRCONFIG = "DKA_XX_FLEX.lct"
+
+#Source Database DT1OAP
+
+# -- Begin Entity Definitions -- 
+
+DEFINE DF_SETUP
+  KEY   APPSNAME                        VARCHAR2(50)
+  KEY   FLEXFIELD_NAME                  VARCHAR2(40)
+  BASE  SEGMENT_SEPARATOR               VARCHAR2(1)
+  BASE  DEFAULT_VALUE                   VARCHAR2(30)
+  BASE  REFERENCE_FIELD                 VARCHAR2(200)
+  BASE  VALUE_REQUIRED                  VARCHAR2(1)
+  BASE  OVERRIDE_ALLOWED                VARCHAR2(1)
+  TRANS PROMPT                          VARCHAR2(45)
+END DF_SETUP
+
+# -- End Entity Definitions -- 
+
+
+BEGIN DF_SETUP "PO" "PO_HEADERS"
+  SEGMENT_SEPARATOR = "."
+  VALUE_REQUIRED = "N"
+  OVERRIDE_ALLOWED = "N"
+  PROMPT = "Contexte"
+END DF_SETUP
+
+# $Header$
+
+# 
+LANGUAGE = "US"
+LDRCONFIG = "DKA_XX_FLEX.lct"
+
+#Source Database DT1OAP
+
+# -- Begin Entity Definitions -- 
+
+DEFINE DF_SETUP_TL
+  KEY   APPSNAME                        VARCHAR2(50)
+  KEY   FLEXFIELD_NAME                  VARCHAR2(40)
+  KEY   LANGUAGE                        VARCHAR2(4)
+  TRANS PROMPT                          VARCHAR2(45)
+  TRANS TITLE                           VARCHAR2(60)
+END DF_SETUP_TL
+
+# -- End Entity Definitions -- 
+
+
+BEGIN DF_SETUP_TL "PO" "PO_HEADERS" "F"
+  PROMPT = "Contexte"
+  TITLE = "En-têtes de commandes"
+END DF_SETUP_TL
+
+BEGIN DF_SETUP_TL "PO" "PO_HEADERS" "US"
+  PROMPT = "Context"
+  TITLE = "PO Headers"
+END DF_SETUP_TL
+
+# $Header$
+
+# 
+LANGUAGE = "US"
+LDRCONFIG = "DKA_XX_FLEX.lct"
+
+#Source Database DT1OAP
+
+# -- Begin Entity Definitions -- 
+
+DEFINE DF_CONTEXT
+  KEY   APPSNAME                        VARCHAR2(50)
+  KEY   FLEXFIELD_NAME                  VARCHAR2(40)
+  KEY   CONTEXT_CODE                    VARCHAR2(45)
+  BASE  ENABLED                         VARCHAR2(1)
+  BASE  GLOBAL_FLAG                     VARCHAR2(1)
+  TRANS CONTEXT_NAME                    VARCHAR2(80)
+  TRANS DESCRIPTION                     VARCHAR2(240)
+END DF_CONTEXT
+
+# -- End Entity Definitions -- 
+
+
+# $Header$
+
+# 
+LANGUAGE = "US"
+LDRCONFIG = "DKA_XX_FLEX.lct"
+
+#Source Database DT1OAP
+
+# -- Begin Entity Definitions -- 
+
+DEFINE DF_CONTEXT_TL
+  KEY   APPSNAME                        VARCHAR2(50)
+  KEY   FLEXFIELD_NAME                  VARCHAR2(40)
+  KEY   CONTEXT_CODE                    VARCHAR2(45)
+  KEY   LANGUAGE                        VARCHAR2(4)
+  TRANS CONTEXT_NAME                    VARCHAR2(80)
+  TRANS DESCRIPTION                     VARCHAR2(240)
+END DF_CONTEXT_TL
+
+# -- End Entity Definitions -- 
+
+
+# $Header$
+
+# 
+LANGUAGE = "US"
+LDRCONFIG = "DKA_XX_FLEX.lct"
+
+#Source Database DT1OAP
+
+# -- Begin Entity Definitions -- 
+
+DEFINE DF_SEGMENT
+  KEY   APPSNAME                        VARCHAR2(50)
+  KEY   FLEXFIELD_NAME                  VARCHAR2(40)
+  KEY   CONTEXT_CODE                    VARCHAR2(45)
+  KEY   NAME                            VARCHAR2(30)
+  BASE  COLUMN                          VARCHAR2(30)
+  BASE  SEQUENCE_NUMBER                 VARCHAR2(50)
+  BASE  ENABLED                         VARCHAR2(1)
+  BASE  DISPLAYED                       VARCHAR2(1)
+  BASE  VALUE_SET                       VARCHAR2(60)
+  BASE  DEFAULT_TYPE                    VARCHAR2(80)
+  BASE  DEFAULT_VALUE                   VARCHAR2(2000)
+  BASE  REQUIRED                        VARCHAR2(1)
+  BASE  SECURITY_ENABLED                VARCHAR2(1)
+  BASE  DISPLAY_SIZE                    VARCHAR2(50)
+  BASE  DESCRIPTION_SIZE                VARCHAR2(50)
+  BASE  CONCAT_DESC_SIZE                VARCHAR2(50)
+  BASE  RANGE                           VARCHAR2(80)
+  TRANS LOV_PROMPT                      VARCHAR2(80)
+  TRANS WIN_PROMPT                      VARCHAR2(80)
+  TRANS DESCRIPTION                     VARCHAR2(240)
+END DF_SEGMENT
+
+# -- End Entity Definitions -- 
+
+
+BEGIN DF_SEGMENT "PO" "PO_HEADERS" "Global Data Elements"
+ "SOX_REOUVERTURE_COMMANDE"
+  COLUMN = "ATTRIBUTE9"
+  SEQUENCE_NUMBER = "6"
+  ENABLED = "Y"
+  DISPLAYED = "N"
+  VALUE_SET = "DKA_OUI_NON"
+  REQUIRED = "N"
+  SECURITY_ENABLED = "N"
+  DISPLAY_SIZE = "5"
+  DESCRIPTION_SIZE = "50"
+  CONCAT_DESC_SIZE = "25"
+  LOV_PROMPT = "SOX_REOUVERTURE_COMMANDE"
+  WIN_PROMPT = "Indicateur de ré ouverture de commande"
+END DF_SEGMENT
+
+# $Header$
+
+# 
+LANGUAGE = "US"
+LDRCONFIG = "DKA_XX_FLEX.lct"
+
+#Source Database DT1OAP
+
+# -- Begin Entity Definitions -- 
+
+DEFINE DF_SEGMENT_TL
+  KEY   APPSNAME                        VARCHAR2(50)
+  KEY   FLEXFIELD_NAME                  VARCHAR2(40)
+  KEY   CONTEXT_CODE                    VARCHAR2(45)
+  KEY   COLUMN                          VARCHAR2(30)
+  KEY   LANGUAGE                        VARCHAR2(4)
+  TRANS LOV_PROMPT                      VARCHAR2(80)
+  TRANS WIN_PROMPT                      VARCHAR2(80)
+  TRANS DESCRIPTION                     VARCHAR2(240)
+END DF_SEGMENT_TL
+
+# -- End Entity Definitions -- 
+
+
+BEGIN DF_SEGMENT_TL "PO" "PO_HEADERS" "Global Data Elements" "ATTRIBUTE9" "F"
+  LOV_PROMPT = "SOX_REOUVERTURE_COMMANDE"
+  WIN_PROMPT = "Indicateur de ré ouverture de commande"
+END DF_SEGMENT_TL
+
+BEGIN DF_SEGMENT_TL "PO" "PO_HEADERS" "Global Data Elements" "ATTRIBUTE9" "US"
+  LOV_PROMPT = "SOX_REOUVERTURE_COMMANDE"
+  WIN_PROMPT = "Indicateur de ré ouverture de commande"
+END DF_SEGMENT_TL
+

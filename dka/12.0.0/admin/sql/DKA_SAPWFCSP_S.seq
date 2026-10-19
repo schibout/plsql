@@ -1,0 +1,50 @@
+--------------------------------------------------
+-- $Id: DKA_SAPWFCSP_S.seq 471 2008-04-15 08:37:22Z NORDEST\viknab $
+--
+-- CREATION --------------------------------------
+-- 
+-- Auteur : Vincent Knab
+-- 
+-- Date: 16/01/2008
+-- Description du specifique : Création de la sequence DKA_SAPWFCSP_s
+-- 	Version: 1.0.0.0
+--	Entree :
+--              - Parametres   &1 : Username pour la creation de la sequence
+--                             &2 : Password pour la creation de la sequence
+--                             &3 : Username pour affectation des droits et creation des synonymes
+--                             &4 : Password pour creation des synonymes
+--		- Fichiers
+--		- Tables
+--      Sortie :
+--	 	- Parametres
+--		- Fichiers
+--		- Tables
+--------------------------------------------------
+--- HISTORIQUE DES MODIFICATIONS
+--- Date       Qui Description
+--- ---------- --- --------------------------------------------------------------------------------------------
+--- 2016/07/05 JJA Portage Helios R12
+--------------------------------------------------
+WHENEVER SQLERROR CONTINUE
+CONNECT &&1/&&2
+
+create sequence DKA_SAPWFCSP_S;
+
+PROMPT ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++             
+PROMPT CREATION DES GRANTS                                                                                
+PROMPT ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+GRANT ALL ON DKA_SAPWFCSP_S TO &&3;
+
+PROMPT ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++             
+PROMPT DROP DES SYNONYMES                                                                                
+PROMPT ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+CONNECT &&3/&&4                                                                                          
+
+PROMPT ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++             
+PROMPT CREATE DES SYNONYMES                                                                                
+PROMPT ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+CREATE SYNONYM DKA_SAPWFCSP_S FOR &&1..DKA_SAPWFCSP_S;
+
+EXIT;

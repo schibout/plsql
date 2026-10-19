@@ -1,0 +1,898 @@
+# $Header$
+
+# dbdrv: exec fnd bin FNDLOAD bin &phase=daa+52 checkfile:~PROD:~PATH:~FILE &ui_apps 0 Y UPLOAD @FND:patch/115/import/afmdmsg.lct @~PROD:~PATH/~FILE
+LANGUAGE = "F"
+LDRCONFIG = "afmdmsg.lct 120.2.12020000.1"
+
+#Source Database HELDEV
+
+#RELEASE_NAME 12.2.4
+
+# -- Begin Entity Definitions -- 
+
+DEFINE FND_NEW_MESSAGES
+  KEY   APPLICATION_SHORT_NAME          VARCHAR2(50)
+  KEY   MESSAGE_NAME                    VARCHAR2(30)
+  CTX   OWNER                           VARCHAR2(4000)
+  BASE  LAST_UPDATE_DATE                VARCHAR2(10)
+  CTX   MESSAGE_NUMBER                  VARCHAR2(50)
+  TRANS MESSAGE_TEXT                    VARCHAR2(2000)
+  CTX   DESCRIPTION                     VARCHAR2(240)
+  CTX   TYPE                            VARCHAR2(30)
+  CTX   MAX_LENGTH                      VARCHAR2(50)
+  CTX   CATEGORY                        VARCHAR2(10)
+  CTX   SEVERITY                        VARCHAR2(10)
+  CTX   FND_LOG_SEVERITY                VARCHAR2(50)
+END FND_NEW_MESSAGES
+
+# -- End Entity Definitions -- 
+
+
+BEGIN FND_NEW_MESSAGES "DKA" "DKA_IHREMP_GXP_0000"
+  OWNER = "JJARDEZ"
+  LAST_UPDATE_DATE = "2016/06/10"
+  MESSAGE_NUMBER = "*NULL*"
+  MESSAGE_TEXT =
+ "Nombre employés créés      : &CREATION\n\
+Nombre employés mis a jour : &MAJ"
+  DESCRIPTION = "*NULL*"
+  TYPE = "*NULL*"
+  MAX_LENGTH = "*NULL*"
+  CATEGORY = "*NULL*"
+  SEVERITY = "*NULL*"
+  FND_LOG_SEVERITY = "*NULL*"
+END FND_NEW_MESSAGES
+
+BEGIN FND_NEW_MESSAGES "DKA" "DKA_IHREMP_GXP_0001"
+  OWNER = "JJARDEZ"
+  LAST_UPDATE_DATE = "2016/06/10"
+  MESSAGE_NUMBER = "*NULL*"
+  MESSAGE_TEXT =
+ "Création de l'employé &EMPNUM impossible, le matricule existe déja"
+  DESCRIPTION = "*NULL*"
+  TYPE = "*NULL*"
+  MAX_LENGTH = "*NULL*"
+  CATEGORY = "*NULL*"
+  SEVERITY = "*NULL*"
+  FND_LOG_SEVERITY = "*NULL*"
+END FND_NEW_MESSAGES
+
+BEGIN FND_NEW_MESSAGES "DKA" "DKA_IHREMP_GXP_0002"
+  OWNER = "JJARDEZ"
+  LAST_UPDATE_DATE = "2016/06/10"
+  MESSAGE_NUMBER = "*NULL*"
+  MESSAGE_TEXT =
+ "Création de l'employé &EMPNUM impossible : erreur dans l'API : &MESSAGE"
+  DESCRIPTION = "*NULL*"
+  TYPE = "*NULL*"
+  MAX_LENGTH = "*NULL*"
+  CATEGORY = "*NULL*"
+  SEVERITY = "*NULL*"
+  FND_LOG_SEVERITY = "*NULL*"
+END FND_NEW_MESSAGES
+
+BEGIN FND_NEW_MESSAGES "DKA" "DKA_IHREMP_GXP_0003"
+  OWNER = "JJARDEZ"
+  LAST_UPDATE_DATE = "2016/06/10"
+  MESSAGE_NUMBER = "*NULL*"
+  MESSAGE_TEXT =
+ "Création de l'employé &EMPNUM impossible : erreur dans la création de l'adresse employé : &MESSAGE"
+  DESCRIPTION = "*NULL*"
+  TYPE = "*NULL*"
+  MAX_LENGTH = "*NULL*"
+  CATEGORY = "*NULL*"
+  SEVERITY = "*NULL*"
+  FND_LOG_SEVERITY = "*NULL*"
+END FND_NEW_MESSAGES
+
+BEGIN FND_NEW_MESSAGES "DKA" "DKA_IHREMP_GXP_0004"
+  OWNER = "JJARDEZ"
+  LAST_UPDATE_DATE = "2016/06/10"
+  MESSAGE_NUMBER = "*NULL*"
+  MESSAGE_TEXT =
+ "Création de l'employé &EMPNUM impossible : Pas d'info affectation"
+  DESCRIPTION = "*NULL*"
+  TYPE = "*NULL*"
+  MAX_LENGTH = "*NULL*"
+  CATEGORY = "*NULL*"
+  SEVERITY = "*NULL*"
+  FND_LOG_SEVERITY = "*NULL*"
+END FND_NEW_MESSAGES
+
+BEGIN FND_NEW_MESSAGES "DKA" "DKA_IHREMP_GXP_0005"
+  OWNER = "JJARDEZ"
+  LAST_UPDATE_DATE = "2016/06/10"
+  MESSAGE_NUMBER = "*NULL*"
+  MESSAGE_TEXT =
+ "Création de l'employé &EMPNUM impossible : Doublon dans les infos affectations"
+  DESCRIPTION = "*NULL*"
+  TYPE = "*NULL*"
+  MAX_LENGTH = "*NULL*"
+  CATEGORY = "*NULL*"
+  SEVERITY = "*NULL*"
+  FND_LOG_SEVERITY = "*NULL*"
+END FND_NEW_MESSAGES
+
+BEGIN FND_NEW_MESSAGES "DKA" "DKA_IHREMP_GXP_0006"
+  OWNER = "JJARDEZ"
+  LAST_UPDATE_DATE = "2016/06/10"
+  MESSAGE_NUMBER = "*NULL*"
+  MESSAGE_TEXT =
+ "Création de l'affectation employé &EMPNUM impossible : Erreur lors de la détermination des informations projet : Tache &TACHE : &MESSAGE"
+  DESCRIPTION = "*NULL*"
+  TYPE = "*NULL*"
+  MAX_LENGTH = "*NULL*"
+  CATEGORY = "*NULL*"
+  SEVERITY = "*NULL*"
+  FND_LOG_SEVERITY = "*NULL*"
+END FND_NEW_MESSAGES
+
+BEGIN FND_NEW_MESSAGES "DKA" "DKA_IHREMP_GXP_0007"
+  OWNER = "JJARDEZ"
+  LAST_UPDATE_DATE = "2016/06/10"
+  MESSAGE_NUMBER = "*NULL*"
+  MESSAGE_TEXT =
+ "Création de l'affectation employé &EMPNUM impossible, le superviseur &SUP n'existe pas ou est inactif"
+  DESCRIPTION = "*NULL*"
+  TYPE = "*NULL*"
+  MAX_LENGTH = "*NULL*"
+  CATEGORY = "*NULL*"
+  SEVERITY = "*NULL*"
+  FND_LOG_SEVERITY = "*NULL*"
+END FND_NEW_MESSAGES
+
+BEGIN FND_NEW_MESSAGES "DKA" "DKA_IHREMP_GXP_0008"
+  OWNER = "JJARDEZ"
+  LAST_UPDATE_DATE = "2016/06/10"
+  MESSAGE_NUMBER = "*NULL*"
+  MESSAGE_TEXT =
+ "Création de l'affectation employé &EMPNUM impossible, le superviseur hierarchique &SUP n'existe pas ou est inactif"
+  DESCRIPTION = "*NULL*"
+  TYPE = "*NULL*"
+  MAX_LENGTH = "*NULL*"
+  CATEGORY = "*NULL*"
+  SEVERITY = "*NULL*"
+  FND_LOG_SEVERITY = "*NULL*"
+END FND_NEW_MESSAGES
+
+BEGIN FND_NEW_MESSAGES "DKA" "DKA_IHREMP_GXP_0009"
+  OWNER = "JJARDEZ"
+  LAST_UPDATE_DATE = "2016/06/10"
+  MESSAGE_NUMBER = "*NULL*"
+  MESSAGE_TEXT =
+ "Création de l'affectation employé &EMPNUM impossible, entité comptable n'existe pas pour la société &SOCIETE"
+  DESCRIPTION = "*NULL*"
+  TYPE = "*NULL*"
+  MAX_LENGTH = "*NULL*"
+  CATEGORY = "*NULL*"
+  SEVERITY = "*NULL*"
+  FND_LOG_SEVERITY = "*NULL*"
+END FND_NEW_MESSAGES
+
+BEGIN FND_NEW_MESSAGES "DKA" "DKA_IHREMP_GXP_0010"
+  OWNER = "JJARDEZ"
+  LAST_UPDATE_DATE = "2016/06/10"
+  MESSAGE_NUMBER = "*NULL*"
+  MESSAGE_TEXT =
+ "Création de l'affectation employé &EMPNUM impossible, le poste &FCT n'existe pas"
+  DESCRIPTION = "*NULL*"
+  TYPE = "*NULL*"
+  MAX_LENGTH = "*NULL*"
+  CATEGORY = "*NULL*"
+  SEVERITY = "*NULL*"
+  FND_LOG_SEVERITY = "*NULL*"
+END FND_NEW_MESSAGES
+
+BEGIN FND_NEW_MESSAGES "DKA" "DKA_IHREMP_GXP_0011"
+  OWNER = "JJARDEZ"
+  LAST_UPDATE_DATE = "2016/06/10"
+  MESSAGE_NUMBER = "*NULL*"
+  MESSAGE_TEXT =
+ "Création de l'affectation employé &EMPNUM impossible, erreur dans l'API : Update Employee Assignment : &MESSAGE"
+  DESCRIPTION = "*NULL*"
+  TYPE = "*NULL*"
+  MAX_LENGTH = "*NULL*"
+  CATEGORY = "*NULL*"
+  SEVERITY = "*NULL*"
+  FND_LOG_SEVERITY = "*NULL*"
+END FND_NEW_MESSAGES
+
+BEGIN FND_NEW_MESSAGES "DKA" "DKA_IHREMP_GXP_0012"
+  OWNER = "JJARDEZ"
+  LAST_UPDATE_DATE = "2016/06/10"
+  MESSAGE_NUMBER = "*NULL*"
+  MESSAGE_TEXT =
+ "Création de l'affectation employé &EMPNUM impossible, erreur dans l'API : Update Employee Assgment Criteria : &MESSAGE"
+  DESCRIPTION = "*NULL*"
+  TYPE = "*NULL*"
+  MAX_LENGTH = "*NULL*"
+  CATEGORY = "*NULL*"
+  SEVERITY = "*NULL*"
+  FND_LOG_SEVERITY = "*NULL*"
+END FND_NEW_MESSAGES
+
+BEGIN FND_NEW_MESSAGES "DKA" "DKA_IHREMP_GXP_0013"
+  OWNER = "JJARDEZ"
+  LAST_UPDATE_DATE = "2016/06/10"
+  MESSAGE_NUMBER = "*NULL*"
+  MESSAGE_TEXT =
+ "Création du fournisseur employé &EMPNUM impossible : &MESSAGE"
+  DESCRIPTION = "*NULL*"
+  TYPE = "*NULL*"
+  MAX_LENGTH = "*NULL*"
+  CATEGORY = "*NULL*"
+  SEVERITY = "*NULL*"
+  FND_LOG_SEVERITY = "*NULL*"
+END FND_NEW_MESSAGES
+
+BEGIN FND_NEW_MESSAGES "DKA" "DKA_IHREMP_GXP_0014"
+  OWNER = "JJARDEZ"
+  LAST_UPDATE_DATE = "2016/06/10"
+  MESSAGE_NUMBER = "*NULL*"
+  MESSAGE_TEXT =
+ "Création du site fournisseur employé &EMPNUM impossible : recherche de la clé comptable fournisseur en erreur : &MESSAGE"
+  DESCRIPTION = "*NULL*"
+  TYPE = "*NULL*"
+  MAX_LENGTH = "*NULL*"
+  CATEGORY = "*NULL*"
+  SEVERITY = "*NULL*"
+  FND_LOG_SEVERITY = "*NULL*"
+END FND_NEW_MESSAGES
+
+BEGIN FND_NEW_MESSAGES "DKA" "DKA_IHREMP_GXP_0015"
+  OWNER = "JJARDEZ"
+  LAST_UPDATE_DATE = "2016/06/10"
+  MESSAGE_NUMBER = "*NULL*"
+  MESSAGE_TEXT =
+ "Création du site fournisseur employé &EMPNUM impossible : recherche de la clé comptable acompte fournisseur en erreur : &MESSAGE"
+  DESCRIPTION = "*NULL*"
+  TYPE = "*NULL*"
+  MAX_LENGTH = "*NULL*"
+  CATEGORY = "*NULL*"
+  SEVERITY = "*NULL*"
+  FND_LOG_SEVERITY = "*NULL*"
+END FND_NEW_MESSAGES
+
+BEGIN FND_NEW_MESSAGES "DKA" "DKA_IHREMP_GXP_0016"
+  OWNER = "JJARDEZ"
+  LAST_UPDATE_DATE = "2016/06/10"
+  MESSAGE_NUMBER = "*NULL*"
+  MESSAGE_TEXT =
+ "Création du site fournisseur employé &EMPNUM impossible : &MESSAGE"
+  DESCRIPTION = "*NULL*"
+  TYPE = "*NULL*"
+  MAX_LENGTH = "*NULL*"
+  CATEGORY = "*NULL*"
+  SEVERITY = "*NULL*"
+  FND_LOG_SEVERITY = "*NULL*"
+END FND_NEW_MESSAGES
+
+BEGIN FND_NEW_MESSAGES "DKA" "DKA_IHREMP_GXP_0017"
+  OWNER = "JJARDEZ"
+  LAST_UPDATE_DATE = "2016/06/10"
+  MESSAGE_NUMBER = "*NULL*"
+  MESSAGE_TEXT =
+ "Création de l'employé &EMPNUM impossible : Doublon dans les infos bancaires"
+  DESCRIPTION = "*NULL*"
+  TYPE = "*NULL*"
+  MAX_LENGTH = "*NULL*"
+  CATEGORY = "*NULL*"
+  SEVERITY = "*NULL*"
+  FND_LOG_SEVERITY = "*NULL*"
+END FND_NEW_MESSAGES
+
+BEGIN FND_NEW_MESSAGES "DKA" "DKA_IHREMP_GXP_0018"
+  OWNER = "JJARDEZ"
+  LAST_UPDATE_DATE = "2016/06/10"
+  MESSAGE_NUMBER = "*NULL*"
+  MESSAGE_TEXT =
+ "Création de l'employé &EMPNUM impossible : La banque &BANKNUM / &BRANCHNUM n'existe pas ou est inactive"
+  DESCRIPTION = "*NULL*"
+  TYPE = "*NULL*"
+  MAX_LENGTH = "*NULL*"
+  CATEGORY = "*NULL*"
+  SEVERITY = "*NULL*"
+  FND_LOG_SEVERITY = "*NULL*"
+END FND_NEW_MESSAGES
+
+BEGIN FND_NEW_MESSAGES "DKA" "DKA_IHREMP_GXP_0019"
+  OWNER = "JJARDEZ"
+  LAST_UPDATE_DATE = "2016/06/10"
+  MESSAGE_NUMBER = "*NULL*"
+  MESSAGE_TEXT =
+ "Création de l'employé &EMPNUM impossible : création du compte bancaire &IBAN impossible : &MESSAGE"
+  DESCRIPTION = "*NULL*"
+  TYPE = "*NULL*"
+  MAX_LENGTH = "*NULL*"
+  CATEGORY = "*NULL*"
+  SEVERITY = "*NULL*"
+  FND_LOG_SEVERITY = "*NULL*"
+END FND_NEW_MESSAGES
+
+BEGIN FND_NEW_MESSAGES "DKA" "DKA_IHREMP_GXP_0020"
+  OWNER = "JJARDEZ"
+  LAST_UPDATE_DATE = "2016/06/10"
+  MESSAGE_NUMBER = "*NULL*"
+  MESSAGE_TEXT =
+ "Création de l'employé &EMPNUM impossible : rattachement du compte bancaire &IBAN impossible : &MESSAGE"
+  DESCRIPTION = "*NULL*"
+  TYPE = "*NULL*"
+  MAX_LENGTH = "*NULL*"
+  CATEGORY = "*NULL*"
+  SEVERITY = "*NULL*"
+  FND_LOG_SEVERITY = "*NULL*"
+END FND_NEW_MESSAGES
+
+BEGIN FND_NEW_MESSAGES "DKA" "DKA_IHREMP_GXP_0021"
+  OWNER = "JJARDEZ"
+  LAST_UPDATE_DATE = "2016/06/10"
+  MESSAGE_NUMBER = "*NULL*"
+  MESSAGE_TEXT =
+ "Création de l'employé &EMPNUM impossible : rattachement du compte bancaire &IBAN au site employé impossible : &MESSAGE"
+  DESCRIPTION = "*NULL*"
+  TYPE = "*NULL*"
+  MAX_LENGTH = "*NULL*"
+  CATEGORY = "*NULL*"
+  SEVERITY = "*NULL*"
+  FND_LOG_SEVERITY = "*NULL*"
+END FND_NEW_MESSAGES
+
+BEGIN FND_NEW_MESSAGES "DKA" "DKA_IHREMP_GXP_0022"
+  OWNER = "JJARDEZ"
+  LAST_UPDATE_DATE = "2016/06/10"
+  MESSAGE_NUMBER = "*NULL*"
+  MESSAGE_TEXT =
+ "Création de l'employé &EMPNUM impossible : modification de la methode de paiement du site fournisseur impossible : &MESSAGE"
+  DESCRIPTION = "*NULL*"
+  TYPE = "*NULL*"
+  MAX_LENGTH = "*NULL*"
+  CATEGORY = "*NULL*"
+  SEVERITY = "*NULL*"
+  FND_LOG_SEVERITY = "*NULL*"
+END FND_NEW_MESSAGES
+
+BEGIN FND_NEW_MESSAGES "DKA" "DKA_IHREMP_GXP_0023"
+  OWNER = "JJARDEZ"
+  LAST_UPDATE_DATE = "2016/06/10"
+  MESSAGE_NUMBER = "*NULL*"
+  MESSAGE_TEXT =
+ "Création de l'employé &EMPNUM impossible : Erreur sur la devise de l'entité comptable &SOCIETE"
+  DESCRIPTION = "*NULL*"
+  TYPE = "*NULL*"
+  MAX_LENGTH = "*NULL*"
+  CATEGORY = "*NULL*"
+  SEVERITY = "*NULL*"
+  FND_LOG_SEVERITY = "*NULL*"
+END FND_NEW_MESSAGES
+
+BEGIN FND_NEW_MESSAGES "DKA" "DKA_IHREMP_GXP_0024"
+  OWNER = "JJARDEZ"
+  LAST_UPDATE_DATE = "2016/06/10"
+  MESSAGE_NUMBER = "*NULL*"
+  MESSAGE_TEXT =
+ "Création de l'employé &EMPNUM impossible : Erreur sur la devise de l'entité comptable &SOCIETE"
+  DESCRIPTION = "*NULL*"
+  TYPE = "*NULL*"
+  MAX_LENGTH = "*NULL*"
+  CATEGORY = "*NULL*"
+  SEVERITY = "*NULL*"
+  FND_LOG_SEVERITY = "*NULL*"
+END FND_NEW_MESSAGES
+
+BEGIN FND_NEW_MESSAGES "DKA" "DKA_IHREMP_GXP_0025"
+  OWNER = "JJARDEZ"
+  LAST_UPDATE_DATE = "2016/06/10"
+  MESSAGE_NUMBER = "*NULL*"
+  MESSAGE_TEXT =
+ "Mise a jour de l'employé &EMPNUM impossible : erreur dans l'API : &MESSAGE"
+  DESCRIPTION = "*NULL*"
+  TYPE = "*NULL*"
+  MAX_LENGTH = "*NULL*"
+  CATEGORY = "*NULL*"
+  SEVERITY = "*NULL*"
+  FND_LOG_SEVERITY = "*NULL*"
+END FND_NEW_MESSAGES
+
+BEGIN FND_NEW_MESSAGES "DKA" "DKA_IHREMP_GXP_0026"
+  OWNER = "JJARDEZ"
+  LAST_UPDATE_DATE = "2016/06/10"
+  MESSAGE_NUMBER = "*NULL*"
+  MESSAGE_TEXT =
+ "Mise a jour de l'adresse mail de l'utilisateur de l'employé &EMPNUM impossible : &MESSAGE"
+  DESCRIPTION = "*NULL*"
+  TYPE = "*NULL*"
+  MAX_LENGTH = "*NULL*"
+  CATEGORY = "*NULL*"
+  SEVERITY = "*NULL*"
+  FND_LOG_SEVERITY = "*NULL*"
+END FND_NEW_MESSAGES
+
+BEGIN FND_NEW_MESSAGES "DKA" "DKA_IHREMP_GXP_0027"
+  OWNER = "JJARDEZ"
+  LAST_UPDATE_DATE = "2016/06/10"
+  MESSAGE_NUMBER = "*NULL*"
+  MESSAGE_TEXT =
+ "Modification de l'employé &EMPNUM impossible : Pas d'info affectation"
+  DESCRIPTION = "*NULL*"
+  TYPE = "*NULL*"
+  MAX_LENGTH = "*NULL*"
+  CATEGORY = "*NULL*"
+  SEVERITY = "*NULL*"
+  FND_LOG_SEVERITY = "*NULL*"
+END FND_NEW_MESSAGES
+
+BEGIN FND_NEW_MESSAGES "DKA" "DKA_IHREMP_GXP_0028"
+  OWNER = "JJARDEZ"
+  LAST_UPDATE_DATE = "2016/06/10"
+  MESSAGE_NUMBER = "*NULL*"
+  MESSAGE_TEXT =
+ "Modification de l'employé &EMPNUM impossible : Doublon dans les infos affectations"
+  DESCRIPTION = "*NULL*"
+  TYPE = "*NULL*"
+  MAX_LENGTH = "*NULL*"
+  CATEGORY = "*NULL*"
+  SEVERITY = "*NULL*"
+  FND_LOG_SEVERITY = "*NULL*"
+END FND_NEW_MESSAGES
+
+BEGIN FND_NEW_MESSAGES "DKA" "DKA_IHREMP_GXP_0029"
+  OWNER = "JJARDEZ"
+  LAST_UPDATE_DATE = "2016/06/10"
+  MESSAGE_NUMBER = "*NULL*"
+  MESSAGE_TEXT =
+ "Mise a jour de l'employé &EMPNUM impossible : Recherche de la tache du projet en erreur"
+  DESCRIPTION = "*NULL*"
+  TYPE = "*NULL*"
+  MAX_LENGTH = "*NULL*"
+  CATEGORY = "*NULL*"
+  SEVERITY = "*NULL*"
+  FND_LOG_SEVERITY = "*NULL*"
+END FND_NEW_MESSAGES
+
+BEGIN FND_NEW_MESSAGES "DKA" "DKA_IHREMP_GXP_0030"
+  OWNER = "JJARDEZ"
+  LAST_UPDATE_DATE = "2016/06/10"
+  MESSAGE_NUMBER = "*NULL*"
+  MESSAGE_TEXT =
+ "Mise a jour de l'employé &EMPNUM impossible : Erreur lors de la détermination des informations projet actuel : Tache &TACHE"
+  DESCRIPTION = "*NULL*"
+  TYPE = "*NULL*"
+  MAX_LENGTH = "*NULL*"
+  CATEGORY = "*NULL*"
+  SEVERITY = "*NULL*"
+  FND_LOG_SEVERITY = "*NULL*"
+END FND_NEW_MESSAGES
+
+BEGIN FND_NEW_MESSAGES "DKA" "DKA_IHREMP_GXP_0031"
+  OWNER = "JJARDEZ"
+  LAST_UPDATE_DATE = "2016/06/10"
+  MESSAGE_NUMBER = "*NULL*"
+  MESSAGE_TEXT =
+ "Mise a jour de l'employé &EMPNUM impossible : Erreur lors de la détermination des informations projet reçu : Tache &TACHE"
+  DESCRIPTION = "*NULL*"
+  TYPE = "*NULL*"
+  MAX_LENGTH = "*NULL*"
+  CATEGORY = "*NULL*"
+  SEVERITY = "*NULL*"
+  FND_LOG_SEVERITY = "*NULL*"
+END FND_NEW_MESSAGES
+
+BEGIN FND_NEW_MESSAGES "DKA" "DKA_IHREMP_GXP_0032"
+  OWNER = "JJARDEZ"
+  LAST_UPDATE_DATE = "2016/06/10"
+  MESSAGE_NUMBER = "*NULL*"
+  MESSAGE_TEXT =
+ "Mise a jour employé &EMPNUM impossible, entité comptable n'existe pas pour la société &SOCIETE"
+  DESCRIPTION = "*NULL*"
+  TYPE = "*NULL*"
+  MAX_LENGTH = "*NULL*"
+  CATEGORY = "*NULL*"
+  SEVERITY = "*NULL*"
+  FND_LOG_SEVERITY = "*NULL*"
+END FND_NEW_MESSAGES
+
+BEGIN FND_NEW_MESSAGES "DKA" "DKA_IHREMP_GXP_0033"
+  OWNER = "JJARDEZ"
+  LAST_UPDATE_DATE = "2016/06/10"
+  MESSAGE_NUMBER = "*NULL*"
+  MESSAGE_TEXT =
+ "Mise a jour employé &EMPNUM impossible, derniere periode ouverte non trouvée pour la société &SOCIETE"
+  DESCRIPTION = "*NULL*"
+  TYPE = "*NULL*"
+  MAX_LENGTH = "*NULL*"
+  CATEGORY = "*NULL*"
+  SEVERITY = "*NULL*"
+  FND_LOG_SEVERITY = "*NULL*"
+END FND_NEW_MESSAGES
+
+BEGIN FND_NEW_MESSAGES "DKA" "DKA_IHREMP_GXP_0034"
+  OWNER = "JJARDEZ"
+  LAST_UPDATE_DATE = "2016/06/10"
+  MESSAGE_NUMBER = "*NULL*"
+  MESSAGE_TEXT =
+ "Mise a jour de l'affectation employé &EMPNUM impossible, le superviseur &SUP n'existe pas ou est inactif"
+  DESCRIPTION = "*NULL*"
+  TYPE = "*NULL*"
+  MAX_LENGTH = "*NULL*"
+  CATEGORY = "*NULL*"
+  SEVERITY = "*NULL*"
+  FND_LOG_SEVERITY = "*NULL*"
+END FND_NEW_MESSAGES
+
+BEGIN FND_NEW_MESSAGES "DKA" "DKA_IHREMP_GXP_0035"
+  OWNER = "JJARDEZ"
+  LAST_UPDATE_DATE = "2016/06/10"
+  MESSAGE_NUMBER = "*NULL*"
+  MESSAGE_TEXT =
+ "Mise a jour de l'affectation employé &EMPNUM impossible, le superviseur hierarchique &SUP n'existe pas ou est inactif"
+  DESCRIPTION = "*NULL*"
+  TYPE = "*NULL*"
+  MAX_LENGTH = "*NULL*"
+  CATEGORY = "*NULL*"
+  SEVERITY = "*NULL*"
+  FND_LOG_SEVERITY = "*NULL*"
+END FND_NEW_MESSAGES
+
+BEGIN FND_NEW_MESSAGES "DKA" "DKA_IHREMP_GXP_0036"
+  OWNER = "JJARDEZ"
+  LAST_UPDATE_DATE = "2016/06/10"
+  MESSAGE_NUMBER = "*NULL*"
+  MESSAGE_TEXT =
+ "Mise a jour de l'affectation employé &EMPNUM impossible, le poste &FCT n'existe pas"
+  DESCRIPTION = "*NULL*"
+  TYPE = "*NULL*"
+  MAX_LENGTH = "*NULL*"
+  CATEGORY = "*NULL*"
+  SEVERITY = "*NULL*"
+  FND_LOG_SEVERITY = "*NULL*"
+END FND_NEW_MESSAGES
+
+BEGIN FND_NEW_MESSAGES "DKA" "DKA_IHREMP_GXP_0037"
+  OWNER = "JJARDEZ"
+  LAST_UPDATE_DATE = "2016/06/10"
+  MESSAGE_NUMBER = "*NULL*"
+  MESSAGE_TEXT =
+ "Mise a jour de l'affectation employé &EMPNUM impossible, la date de début de l'affectation reçue est inférieur au dernier jour de la période comptable en cours"
+  DESCRIPTION = "*NULL*"
+  TYPE = "*NULL*"
+  MAX_LENGTH = "*NULL*"
+  CATEGORY = "*NULL*"
+  SEVERITY = "*NULL*"
+  FND_LOG_SEVERITY = "*NULL*"
+END FND_NEW_MESSAGES
+
+BEGIN FND_NEW_MESSAGES "DKA" "DKA_IHREMP_GXP_0038"
+  OWNER = "JJARDEZ"
+  LAST_UPDATE_DATE = "2016/06/10"
+  MESSAGE_NUMBER = "*NULL*"
+  MESSAGE_TEXT =
+ "Mise a jour de l'affectation employé &EMPNUM impossible, la date de début du centre financier est inférieur a la date de début de la derniere ligne d'affectation"
+  DESCRIPTION = "*NULL*"
+  TYPE = "*NULL*"
+  MAX_LENGTH = "*NULL*"
+  CATEGORY = "*NULL*"
+  SEVERITY = "*NULL*"
+  FND_LOG_SEVERITY = "*NULL*"
+END FND_NEW_MESSAGES
+
+BEGIN FND_NEW_MESSAGES "DKA" "DKA_IHREMP_GXP_0039"
+  OWNER = "JJARDEZ"
+  LAST_UPDATE_DATE = "2016/06/10"
+  MESSAGE_NUMBER = "*NULL*"
+  MESSAGE_TEXT =
+ "Mise a jour de l'affectation employé &EMPNUM impossible, erreur dans l'API : Update Employee Assignment : &MESSAGE"
+  DESCRIPTION = "*NULL*"
+  TYPE = "*NULL*"
+  MAX_LENGTH = "*NULL*"
+  CATEGORY = "*NULL*"
+  SEVERITY = "*NULL*"
+  FND_LOG_SEVERITY = "*NULL*"
+END FND_NEW_MESSAGES
+
+BEGIN FND_NEW_MESSAGES "DKA" "DKA_IHREMP_GXP_0040"
+  OWNER = "JJARDEZ"
+  LAST_UPDATE_DATE = "2016/06/10"
+  MESSAGE_NUMBER = "*NULL*"
+  MESSAGE_TEXT =
+ "Mise a jour de l'affectation employé &EMPNUM impossible, erreur dans l'API : Update Employee Assgment Criteria : &MESSAGE"
+  DESCRIPTION = "*NULL*"
+  TYPE = "*NULL*"
+  MAX_LENGTH = "*NULL*"
+  CATEGORY = "*NULL*"
+  SEVERITY = "*NULL*"
+  FND_LOG_SEVERITY = "*NULL*"
+END FND_NEW_MESSAGES
+
+BEGIN FND_NEW_MESSAGES "DKA" "DKA_IHREMP_GXP_0041"
+  OWNER = "JJARDEZ"
+  LAST_UPDATE_DATE = "2016/06/10"
+  MESSAGE_NUMBER = "*NULL*"
+  MESSAGE_TEXT =
+ "Mise a jour employé &EMPNUM impossible : Pas de mise a jour de du fournisseur , numéro d'identification national vide"
+  DESCRIPTION = "*NULL*"
+  TYPE = "*NULL*"
+  MAX_LENGTH = "*NULL*"
+  CATEGORY = "*NULL*"
+  SEVERITY = "*NULL*"
+  FND_LOG_SEVERITY = "*NULL*"
+END FND_NEW_MESSAGES
+
+BEGIN FND_NEW_MESSAGES "DKA" "DKA_IHREMP_GXP_0042"
+  OWNER = "JJARDEZ"
+  LAST_UPDATE_DATE = "2016/06/10"
+  MESSAGE_NUMBER = "*NULL*"
+  MESSAGE_TEXT =
+ "Mise a jour employé &EMPNUM impossible : mise a jour de du fournisseur impossible, le fournisseur n'existe pas"
+  DESCRIPTION = "*NULL*"
+  TYPE = "*NULL*"
+  MAX_LENGTH = "*NULL*"
+  CATEGORY = "*NULL*"
+  SEVERITY = "*NULL*"
+  FND_LOG_SEVERITY = "*NULL*"
+END FND_NEW_MESSAGES
+
+BEGIN FND_NEW_MESSAGES "DKA" "DKA_IHREMP_GXP_0043"
+  OWNER = "JJARDEZ"
+  LAST_UPDATE_DATE = "2016/06/10"
+  MESSAGE_NUMBER = "*NULL*"
+  MESSAGE_TEXT =
+ "Mise a jour du fournisseur employé &EMPNUM impossible : &MESSAGE"
+  DESCRIPTION = "*NULL*"
+  TYPE = "*NULL*"
+  MAX_LENGTH = "*NULL*"
+  CATEGORY = "*NULL*"
+  SEVERITY = "*NULL*"
+  FND_LOG_SEVERITY = "*NULL*"
+END FND_NEW_MESSAGES
+
+BEGIN FND_NEW_MESSAGES "DKA" "DKA_IHREMP_GXP_0044"
+  OWNER = "JJARDEZ"
+  LAST_UPDATE_DATE = "2016/06/10"
+  MESSAGE_NUMBER = "*NULL*"
+  MESSAGE_TEXT =
+ "Mise a jour de l'employé &EMPNUM impossible : Recherche de la tache du projet en erreur"
+  DESCRIPTION = "*NULL*"
+  TYPE = "*NULL*"
+  MAX_LENGTH = "*NULL*"
+  CATEGORY = "*NULL*"
+  SEVERITY = "*NULL*"
+  FND_LOG_SEVERITY = "*NULL*"
+END FND_NEW_MESSAGES
+
+BEGIN FND_NEW_MESSAGES "DKA" "DKA_IHREMP_GXP_0045"
+  OWNER = "JJARDEZ"
+  LAST_UPDATE_DATE = "2016/06/10"
+  MESSAGE_NUMBER = "*NULL*"
+  MESSAGE_TEXT =
+ "Mise a jour de l'employé &EMPNUM impossible : Erreur lors de la détermination des informations projet : Tache &TACHE"
+  DESCRIPTION = "*NULL*"
+  TYPE = "*NULL*"
+  MAX_LENGTH = "*NULL*"
+  CATEGORY = "*NULL*"
+  SEVERITY = "*NULL*"
+  FND_LOG_SEVERITY = "*NULL*"
+END FND_NEW_MESSAGES
+
+BEGIN FND_NEW_MESSAGES "DKA" "DKA_IHREMP_GXP_0046"
+  OWNER = "JJARDEZ"
+  LAST_UPDATE_DATE = "2016/06/10"
+  MESSAGE_NUMBER = "*NULL*"
+  MESSAGE_TEXT =
+ "Mise a jour employé &EMPNUM impossible, entité comptable n'existe pas pour la société &SOCIETE"
+  DESCRIPTION = "*NULL*"
+  TYPE = "*NULL*"
+  MAX_LENGTH = "*NULL*"
+  CATEGORY = "*NULL*"
+  SEVERITY = "*NULL*"
+  FND_LOG_SEVERITY = "*NULL*"
+END FND_NEW_MESSAGES
+
+BEGIN FND_NEW_MESSAGES "DKA" "DKA_IHREMP_GXP_0047"
+  OWNER = "JJARDEZ"
+  LAST_UPDATE_DATE = "2016/06/10"
+  MESSAGE_NUMBER = "*NULL*"
+  MESSAGE_TEXT =
+ "Mise a jour employé &EMPNUM impossible : Erreur sur la devise de l'entité comptable &SOCIETE"
+  DESCRIPTION = "*NULL*"
+  TYPE = "*NULL*"
+  MAX_LENGTH = "*NULL*"
+  CATEGORY = "*NULL*"
+  SEVERITY = "*NULL*"
+  FND_LOG_SEVERITY = "*NULL*"
+END FND_NEW_MESSAGES
+
+BEGIN FND_NEW_MESSAGES "DKA" "DKA_IHREMP_GXP_0048"
+  OWNER = "JJARDEZ"
+  LAST_UPDATE_DATE = "2016/06/10"
+  MESSAGE_NUMBER = "*NULL*"
+  MESSAGE_TEXT =
+ "Mise a jour de l'employé &EMPNUM impossible : Doublon dans les infos bancaires"
+  DESCRIPTION = "*NULL*"
+  TYPE = "*NULL*"
+  MAX_LENGTH = "*NULL*"
+  CATEGORY = "*NULL*"
+  SEVERITY = "*NULL*"
+  FND_LOG_SEVERITY = "*NULL*"
+END FND_NEW_MESSAGES
+
+BEGIN FND_NEW_MESSAGES "DKA" "DKA_IHREMP_GXP_0049"
+  OWNER = "JJARDEZ"
+  LAST_UPDATE_DATE = "2016/06/10"
+  MESSAGE_NUMBER = "*NULL*"
+  MESSAGE_TEXT =
+ "Mise a jour de l'employé &EMPNUM impossible : Recherche l'affectation employé en erreur"
+  DESCRIPTION = "*NULL*"
+  TYPE = "*NULL*"
+  MAX_LENGTH = "*NULL*"
+  CATEGORY = "*NULL*"
+  SEVERITY = "*NULL*"
+  FND_LOG_SEVERITY = "*NULL*"
+END FND_NEW_MESSAGES
+
+BEGIN FND_NEW_MESSAGES "DKA" "DKA_IHREMP_GXP_0050"
+  OWNER = "JJARDEZ"
+  LAST_UPDATE_DATE = "2016/06/10"
+  MESSAGE_NUMBER = "*NULL*"
+  MESSAGE_TEXT =
+ "Mise a jour de l'employé &EMPNUM impossible : Erreur lors de la détermination des informations projet Tache &TACHE : &MESSAGE"
+  DESCRIPTION = "*NULL*"
+  TYPE = "*NULL*"
+  MAX_LENGTH = "*NULL*"
+  CATEGORY = "*NULL*"
+  SEVERITY = "*NULL*"
+  FND_LOG_SEVERITY = "*NULL*"
+END FND_NEW_MESSAGES
+
+BEGIN FND_NEW_MESSAGES "DKA" "DKA_IHREMP_GXP_0051"
+  OWNER = "JJARDEZ"
+  LAST_UPDATE_DATE = "2016/06/10"
+  MESSAGE_NUMBER = "*NULL*"
+  MESSAGE_TEXT =
+ "Mise a jour de l'employé &EMPNUM impossible : Recherche du fournisseur / site fournisseur en erreur organisation : &ORG"
+  DESCRIPTION = "*NULL*"
+  TYPE = "*NULL*"
+  MAX_LENGTH = "*NULL*"
+  CATEGORY = "*NULL*"
+  SEVERITY = "*NULL*"
+  FND_LOG_SEVERITY = "*NULL*"
+END FND_NEW_MESSAGES
+
+BEGIN FND_NEW_MESSAGES "DKA" "DKA_IHREMP_GXP_0052"
+  OWNER = "JJARDEZ"
+  LAST_UPDATE_DATE = "2016/06/10"
+  MESSAGE_NUMBER = "*NULL*"
+  MESSAGE_TEXT =
+ "Mise a jour employé &EMPNUM impossible, entité comptable n'existe pas pour la société &SOCIETE"
+  DESCRIPTION = "*NULL*"
+  TYPE = "*NULL*"
+  MAX_LENGTH = "*NULL*"
+  CATEGORY = "*NULL*"
+  SEVERITY = "*NULL*"
+  FND_LOG_SEVERITY = "*NULL*"
+END FND_NEW_MESSAGES
+
+BEGIN FND_NEW_MESSAGES "DKA" "DKA_IHREMP_GXP_0053"
+  OWNER = "JJARDEZ"
+  LAST_UPDATE_DATE = "2016/06/10"
+  MESSAGE_NUMBER = "*NULL*"
+  MESSAGE_TEXT =
+ "Mise a jour employé &EMPNUM impossible : la banque &BANKNUM / &BRANCHNUM n'existe pas ou est inactive"
+  DESCRIPTION = "*NULL*"
+  TYPE = "*NULL*"
+  MAX_LENGTH = "*NULL*"
+  CATEGORY = "*NULL*"
+  SEVERITY = "*NULL*"
+  FND_LOG_SEVERITY = "*NULL*"
+END FND_NEW_MESSAGES
+
+BEGIN FND_NEW_MESSAGES "DKA" "DKA_IHREMP_GXP_0054"
+  OWNER = "JJARDEZ"
+  LAST_UPDATE_DATE = "2016/06/10"
+  MESSAGE_NUMBER = "*NULL*"
+  MESSAGE_TEXT =
+ "Mise a jour employé &EMPNUM impossible : mise a jour de la date de fin du compte bancaire &IBAN impossible : &MESSAGE"
+  DESCRIPTION = "*NULL*"
+  TYPE = "*NULL*"
+  MAX_LENGTH = "*NULL*"
+  CATEGORY = "*NULL*"
+  SEVERITY = "*NULL*"
+  FND_LOG_SEVERITY = "*NULL*"
+END FND_NEW_MESSAGES
+
+BEGIN FND_NEW_MESSAGES "DKA" "DKA_IHREMP_GXP_0055"
+  OWNER = "JJARDEZ"
+  LAST_UPDATE_DATE = "2016/06/10"
+  MESSAGE_NUMBER = "*NULL*"
+  MESSAGE_TEXT =
+ "Mise a jour de l'employé &EMPNUM impossible : création du compte bancaire &IBAN impossible : &MESSAGE"
+  DESCRIPTION = "*NULL*"
+  TYPE = "*NULL*"
+  MAX_LENGTH = "*NULL*"
+  CATEGORY = "*NULL*"
+  SEVERITY = "*NULL*"
+  FND_LOG_SEVERITY = "*NULL*"
+END FND_NEW_MESSAGES
+
+BEGIN FND_NEW_MESSAGES "DKA" "DKA_IHREMP_GXP_0056"
+  OWNER = "JJARDEZ"
+  LAST_UPDATE_DATE = "2016/06/10"
+  MESSAGE_NUMBER = "*NULL*"
+  MESSAGE_TEXT =
+ "Mise a jour de l'employé &EMPNUM impossible : rattachement du compte bancaire &IBAN impossible : &MESSAGE"
+  DESCRIPTION = "*NULL*"
+  TYPE = "*NULL*"
+  MAX_LENGTH = "*NULL*"
+  CATEGORY = "*NULL*"
+  SEVERITY = "*NULL*"
+  FND_LOG_SEVERITY = "*NULL*"
+END FND_NEW_MESSAGES
+
+BEGIN FND_NEW_MESSAGES "DKA" "DKA_IHREMP_GXP_0057"
+  OWNER = "JJARDEZ"
+  LAST_UPDATE_DATE = "2016/06/10"
+  MESSAGE_NUMBER = "*NULL*"
+  MESSAGE_TEXT =
+ "Mise a jour de l'employé &EMPNUM impossible : rattachement du compte bancaire &IBAN au site employé impossible : &MESSAGE"
+  DESCRIPTION = "*NULL*"
+  TYPE = "*NULL*"
+  MAX_LENGTH = "*NULL*"
+  CATEGORY = "*NULL*"
+  SEVERITY = "*NULL*"
+  FND_LOG_SEVERITY = "*NULL*"
+END FND_NEW_MESSAGES
+
+BEGIN FND_NEW_MESSAGES "DKA" "DKA_IHREMP_GXP_0058"
+  OWNER = "JJARDEZ"
+  LAST_UPDATE_DATE = "2016/06/10"
+  MESSAGE_NUMBER = "*NULL*"
+  MESSAGE_TEXT =
+ "Mise a jour de l'employé &EMPNUM impossible : modification de la methode de paiement du site fournisseur impossible : &MESSAGE"
+  DESCRIPTION = "*NULL*"
+  TYPE = "*NULL*"
+  MAX_LENGTH = "*NULL*"
+  CATEGORY = "*NULL*"
+  SEVERITY = "*NULL*"
+  FND_LOG_SEVERITY = "*NULL*"
+END FND_NEW_MESSAGES
+
+BEGIN FND_NEW_MESSAGES "DKA" "DKA_IHREMP_GXP_0059"
+  OWNER = "JJARDEZ"
+  LAST_UPDATE_DATE = "2016/06/10"
+  MESSAGE_NUMBER = "*NULL*"
+  MESSAGE_TEXT =
+ "Création du lieu fournisseur impossible : &MESSAGE"
+  DESCRIPTION = "*NULL*"
+  TYPE = "*NULL*"
+  MAX_LENGTH = "*NULL*"
+  CATEGORY = "*NULL*"
+  SEVERITY = "*NULL*"
+  FND_LOG_SEVERITY = "*NULL*"
+END FND_NEW_MESSAGES
+
+BEGIN FND_NEW_MESSAGES "DKA" "DKA_IHREMP_GXP_0060"
+  OWNER = "JJARDEZ"
+  LAST_UPDATE_DATE = "2016/06/10"
+  MESSAGE_NUMBER = "*NULL*"
+  MESSAGE_TEXT =
+ "Création du party site fournisseur impossible :&MESSAGE"
+  DESCRIPTION = "*NULL*"
+  TYPE = "*NULL*"
+  MAX_LENGTH = "*NULL*"
+  CATEGORY = "*NULL*"
+  SEVERITY = "*NULL*"
+  FND_LOG_SEVERITY = "*NULL*"
+END FND_NEW_MESSAGES
+
+BEGIN FND_NEW_MESSAGES "DKA" "DKA_IHREMP_GXP_0061"
+  OWNER = "JJARDEZ"
+  LAST_UPDATE_DATE = "2016/06/10"
+  MESSAGE_NUMBER = "*NULL*"
+  MESSAGE_TEXT =
+ "Mise a jour du site fournisseur avec PARTY_SITE_ID et LOCATION_ID impossible : &MESSAGE"
+  DESCRIPTION = "*NULL*"
+  TYPE = "*NULL*"
+  MAX_LENGTH = "*NULL*"
+  CATEGORY = "*NULL*"
+  SEVERITY = "*NULL*"
+  FND_LOG_SEVERITY = "*NULL*"
+END FND_NEW_MESSAGES

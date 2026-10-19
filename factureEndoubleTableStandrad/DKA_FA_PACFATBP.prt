@@ -1,0 +1,31 @@
+# $Header: I:/developpement/CVSROOT/ETA053\040-\040Etat\040déclaratif\040de\040la\040TVA\040dans\040GL/Automatisation\040ControlM/DKA_GL_DECLAR_TVA/load/DKA_GL_DECLAR_TVA.dpt,v 1.1.1.1 2004/06/29 13:35:42 flechene Exp $
+
+# 
+LANGUAGE = "US"
+LDRCONFIG = "DKA_XX_PARAM.lct"
+
+# -- Begin Entity Definitions -- 
+
+DEFINE DKA_PARAMETER
+  KEY   PROGRAM_CODE                    VARCHAR2(50)
+  KEY   PARAMETER_NAME                  VARCHAR2(50)
+  BASE  DESCRIPTION                     VARCHAR2(255)
+  BASE  TABLE_NAME                      VARCHAR2(100)
+  BASE  COLUMN_NAME                     VARCHAR2(100)
+  BASE  DATA_TYPE                       VARCHAR2(100)
+  BASE  VARCHAR2_VALUE                  VARCHAR2(50)
+  BASE  NUMBER_VALUE                    VARCHAR2(30)
+  BASE  DATE_VALUE                      VARCHAR2(19)
+  BASE  BOOLEAN_VALUE                   VARCHAR2(1)
+END DKA_PARAMETER
+
+# -- End Entity Definitions -- 
+
+BEGIN DKA_PARAMETER "DKA_GL_DECLAR_TVA" "GL_RESPONSIBILITY_KEY"
+  DESCRIPTION = "Responsabilité de lancement des traitements GL"
+  TABLE_NAME = ""
+  COLUMN_NAME = ""
+  DATA_TYPE = "VARCHAR2"
+#VARCHAR2_VALUE = "DKA_GENERAL_LEDGER_SUPER_USER" #GLXXXX SAISIE  PHENIX 2004
+ VARCHAR2_VALUE = "DKA_ETATS" #ywa migration
+END DKA_PARAMETER

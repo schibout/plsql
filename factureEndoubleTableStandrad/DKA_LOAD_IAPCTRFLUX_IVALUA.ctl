@@ -1,0 +1,85 @@
+--------------------------------------------------------------------------------------------
+-- FILENAME
+--   DKA_LOADER_REPFAIMOIMP_CALISTO.ctl   V1.0
+--
+-- AUTEUR
+--   Capgemini
+--
+-- DESCRIPTION
+--   Chargement de la table temporaire DKA_REP009_CALISTO_INTERFACE
+--
+-- USAGE
+--
+-- NOTES
+--
+---------------------------------------------------------------------------------------------
+-- HISTORIQUE DES MODIFICATIONS
+---------------------------------------------------------------------------------------------
+-- Version   Date         Qui Description
+---------- -------------- --- ---------------------------------------------------------------
+-- V1.0    13/04/2016     OBE Creation
+---------------------------------------------------------------------------------------------
+
+OPTIONS (SKIP=1)
+LOAD DATA
+REPLACE
+INTO TABLE DKA_REP009_CALISTO_INTERFACE
+FIELDS TERMINATED BY ';'
+TRAILING NULLCOLS
+(
+LIBELLE_IMMO                     CHAR NULLIF (LIBELLE_IMMO= BLANKS)
+,RUB_PRINCIPALE                  CHAR NULLIF (RUB_PRINCIPALE= BLANKS)
+,RUB_DETAIL                      CHAR NULLIF (RUB_DETAIL= BLANKS)
+,METHODE_AMT                     CHAR NULLIF (METHODE_AMT= BLANKS)
+,PLAFOND_AMT                     CHAR NULLIF (PLAFOND_AMT= BLANKS)
+--,UNITES                          CHAR NULLIF (UNITES= BLANKS)
+,UNITES                          FLOAT EXTERNAL NULLIF (UNITES=BLANKS) "REPLACE(REPLACE(:UNITES,',','.'), ' ', '')"
+--,COST                            CHAR NULLIF (COST= BLANKS)
+,COST                            FLOAT EXTERNAL NULLIF (COST=BLANKS) "REPLACE(REPLACE(:COST,',','.'), ' ', '')"
+,SOCIETE                         CHAR NULLIF (SOCIETE= BLANKS)
+,LIEU_PHYSIQUE                   CHAR NULLIF (LIEU_PHYSIQUE= BLANKS)
+,D_SOCIETE                       CHAR NULLIF (D_SOCIETE= BLANKS)
+,D_UO                            CHAR NULLIF (D_UO= BLANKS)
+,D_COMPTE_LOCAL                  CHAR NULLIF (D_COMPTE_LOCAL= BLANKS)
+,D_COMPTE_ANALYTIQUE             CHAR NULLIF (D_COMPTE_ANALYTIQUE= BLANKS)
+,D_INTERCO                       CHAR NULLIF (D_INTERCO= BLANKS)
+,D_CENTRE_FI                     CHAR NULLIF (D_CENTRE_FI= BLANKS)
+,D_AFFAIRE                       CHAR NULLIF (D_AFFAIRE= BLANKS)
+,D_PROJET_FI                     CHAR NULLIF (D_PROJET_FI= BLANKS)
+,D_FLUX                          CHAR NULLIF (D_FLUX= BLANKS)
+,D_RESERVE1                      CHAR NULLIF (D_RESERVE1=BLANKS)
+,D_RESERVE2                      CHAR NULLIF (D_RESERVE2=BLANKS)
+,D_RESERVE3                      CHAR NULLIF (D_RESERVE3=BLANKS)
+,L_SOCIETE                       CHAR NULLIF (L_SOCIETE= BLANKS)
+,L_UO                            CHAR NULLIF (L_UO= BLANKS)
+,L_COMPTE_LOCAL                  CHAR NULLIF (L_COMPTE_LOCAL= BLANKS)
+,L_COMPTE_ANALYTIQUE             CHAR NULLIF (L_COMPTE_ANALYTIQUE= BLANKS)
+,L_INTERCO                       CHAR NULLIF (L_INTERCO= BLANKS)
+,L_CENTRE_FI                     CHAR NULLIF (L_CENTRE_FI= BLANKS)
+,L_AFFAIRE                       CHAR NULLIF (L_AFFAIRE= BLANKS)
+,L_PROJET_FI                     CHAR NULLIF (L_PROJET_FI= BLANKS)
+,L_FLUX                          CHAR NULLIF (L_FLUX= BLANKS)
+,L_RESERVE1                      CHAR NULLIF (L_RESERVE1= BLANKS)
+,L_RESERVE2                      CHAR NULLIF (L_RESERVE2= BLANKS)
+,L_RESERVE3                      CHAR NULLIF (L_RESERVE3=BLANKS)
+--,DATE_DE_MISE_EN_SERVICE         CHAR NULLIF (DATE_DE_MISE_EN_SERVICE= BLANKS)
+,DATE_DE_MISE_EN_SERVICE         DATE  'YYYY/MM/DD'   NULLIF (DATE_DE_MISE_EN_SERVICE= BLANKS)
+,NUMERO_IMMOBILISATION           CHAR NULLIF (NUMERO_IMMOBILISATION= BLANKS)
+,UTILISE                         CHAR NULLIF (UTILISE= BLANKS)
+,PROPRIETE                       CHAR NULLIF (PROPRIETE= BLANKS)
+,ACHETE                          CHAR NULLIF (ACHETE= BLANKS)
+,TAXE_PROF						           CHAR NULLIF (TAXE_PROF= BLANKS)
+,IMPOT_FONCIER                   CHAR NULLIF (IMPOT_FONCIER= BLANKS)
+,AMORTIR                         CHAR NULLIF (AMORTIR= BLANKS)
+--,AMORTISSEMENT_CUMULE            CHAR NULLIF (AMORTISSEMENT_CUMULE= BLANKS)
+,AMORTISSEMENT_CUMULE            FLOAT EXTERNAL NULLIF (AMORTISSEMENT_CUMULE=BLANKS) "REPLACE(REPLACE(:AMORTISSEMENT_CUMULE,',','.'), ' ', '')"
+--,AMORTISSEMENT_EXERCICE          CHAR NULLIF (AMORTISSEMENT_EXERCICE= BLANKS)
+,AMORTISSEMENT_EXERCICE          FLOAT EXTERNAL NULLIF (AMORTISSEMENT_EXERCICE=BLANKS) "REPLACE(REPLACE(:AMORTISSEMENT_EXERCICE,',','.'), ' ', '')"
+--,DATE_DE_DEBUT_DE_AMORTISSEMENT  CHAR NULLIF (DATE_DE_DEBUT_DE_AMORTISSEMENT= BLANKS)
+,DATE_DE_DEBUT_DE_AMORTISSEMENT  DATE  'YYYY/MM/DD'   NULLIF (DATE_DE_DEBUT_DE_AMORTISSEMENT= BLANKS)
+,METHODE_D_AMORTISSEMENT         CHAR NULLIF (METHODE_D_AMORTISSEMENT= BLANKS)
+--,DUREE_DE_VIE_EN_MOIS  			     CHAR NULLIF (DUREE_DE_VIE_EN_MOIS= BLANKS)
+,DUREE_DE_VIE_EN_MOIS  			     FLOAT EXTERNAL NULLIF (DUREE_DE_VIE_EN_MOIS=BLANKS) "REPLACE(REPLACE(:DUREE_DE_VIE_EN_MOIS,',','.'), ' ', '')"
+)
+
+--Fin

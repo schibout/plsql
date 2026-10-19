@@ -1,0 +1,40 @@
+# $Header$
+
+# dbdrv: exec fnd bin FNDLOAD bin &phase=daa+52 checkfile:~PROD:~PATH:~FILE &ui_apps 0 Y UPLOAD @FND:patch/115/import/afcppstl.lct @~PROD:~PATH/~FILE
+LANGUAGE = "US"
+LDRCONFIG = "afcppstl.lct 120.1"
+
+#Source Database HELDEV
+
+#RELEASE_NAME 12.2.4
+
+# -- Begin Entity Definitions -- 
+
+DEFINE STYLE
+  KEY   PRINTER_STYLE_NAME              VARCHAR2(30)
+  CTX   OWNER                           VARCHAR2(7)
+  BASE  WIDTH                           VARCHAR2(50)
+  BASE  LENGTH                          VARCHAR2(50)
+  BASE  ORIENTATION                     VARCHAR2(255)
+  BASE  SRW_DRIVER                      VARCHAR2(255)
+  BASE  HEADER_FLAG                     VARCHAR2(1)
+  BASE  DESCRIPTION                     VARCHAR2(255)
+  BASE  SEQUENCE                        VARCHAR2(50)
+  TRANS USER_PRINTER_STYLE_NAME         VARCHAR2(80)
+  BASE  LAST_UPDATE_DATE                VARCHAR2(10)
+END STYLE
+
+# -- End Entity Definitions -- 
+
+
+BEGIN STYLE "DKALANDSCAPE"
+  OWNER = "CUSTOM"
+  WIDTH = "169"
+  LENGTH = "85"
+  SRW_DRIVER = "DKA_L"
+  HEADER_FLAG = "N"
+  SEQUENCE = "8"
+  USER_PRINTER_STYLE_NAME = "DKA Paysage"
+  LAST_UPDATE_DATE = "2016/09/07"
+END STYLE
+

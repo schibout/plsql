@@ -1,0 +1,68 @@
+# $Header$
+
+# 
+LANGUAGE = "US"
+LDRCONFIG = "DKA_XX_TRANSCO.lct"
+
+#Source Database CDBFINID
+
+#RELEASE_NAME 12.2.4
+
+# -- Begin Entity Definitions -- 
+
+DEFINE DKA_STRANSCO_HEADERS
+  KEY   SET_NAME                        VARCHAR2(50)
+  BASE  DESCRIPTION                     VARCHAR2(240)
+  BASE  PARAM1_NAME                     VARCHAR2(100)
+  BASE  PARAM1_LOV                      VARCHAR2(250)
+  BASE  PARAM1_FLAG                     VARCHAR2(1)
+  BASE  PARAM2_NAME                     VARCHAR2(100)
+  BASE  PARAM2_LOV                      VARCHAR2(250)
+  BASE  PARAM2_FLAG                     VARCHAR2(1)
+  BASE  PARAM3_NAME                     VARCHAR2(100)
+  BASE  PARAM3_LOV                      VARCHAR2(250)
+  BASE  PARAM3_FLAG                     VARCHAR2(1)
+  BASE  RETURN_VALUE_NAME               VARCHAR2(30)
+  BASE  RETURN_VALUE_LOV                VARCHAR2(250)
+  BASE  INACTIVE_DATE                   VARCHAR2(19)
+
+  DEFINE DKA_STRANSCO_LINES
+    KEY   SET_NAME                        VARCHAR2(50)
+    KEY   PARAMS_VALUE                    VARCHAR2(300)
+    BASE  PARAM1_VALUE                    VARCHAR2(100)
+    BASE  PARAM2_VALUE                    VARCHAR2(100)
+    BASE  PARAM3_VALUE                    VARCHAR2(100)
+    BASE  RETURN_VALUE                    VARCHAR2(100)
+    BASE  ENABLE                          VARCHAR2(1)
+    BASE  INACTIVE_DATE                   VARCHAR2(19)
+    BASE  START_DATE                      VARCHAR2(19)
+    BASE  END_DATE                        VARCHAR2(19)
+  END DKA_STRANSCO_LINES
+END DKA_STRANSCO_HEADERS
+
+# -- End Entity Definitions -- 
+
+
+BEGIN DKA_STRANSCO_HEADERS "DKA_TRANSCO_CPTFACAP_RB"
+  DESCRIPTION =
+ "Récupérer numéro de compte de facturation pour les fournisseurs des lignes RB"
+  PARAM1_NAME = "Fournisseur"
+  PARAM1_FLAG = "Y"
+  PARAM2_NAME = "Mot clef de recherche"
+  PARAM2_FLAG = "Y"
+  PARAM3_NAME = "Position CPT FAC"
+  PARAM3_FLAG = "Y"
+  RETURN_VALUE_NAME = "Taille NUM CPT FAC"
+
+  BEGIN DKA_STRANSCO_LINES "DKA_TRANSCO_CPTFACAP_RB"
+ "ELECTRICITE DE FRANCEREF EDF8"
+    PARAM1_VALUE = "ELECTRICITE DE FRANCE"
+    PARAM2_VALUE = "REF EDF"
+    PARAM3_VALUE = "8"
+    RETURN_VALUE = "10"
+    ENABLE = "Y"
+    START_DATE = "07/12/2022 00:00:00"
+  END DKA_STRANSCO_LINES
+  
+END DKA_STRANSCO_HEADERS
+

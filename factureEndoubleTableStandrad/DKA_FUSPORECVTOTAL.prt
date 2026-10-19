@@ -1,0 +1,61 @@
+# $Header$
+
+# 
+LANGUAGE = "US"
+LDRCONFIG = "DKA_XX_TRANSCO.lct"
+
+#Source Database HELINT
+
+#RELEASE_NAME 12.2.4
+
+# -- Begin Entity Definitions -- 
+
+DEFINE DKA_STRANSCO_HEADERS
+  KEY   SET_NAME                        VARCHAR2(50)
+  BASE  DESCRIPTION                     VARCHAR2(240)
+  BASE  PARAM1_NAME                     VARCHAR2(30)
+  BASE  PARAM1_LOV                      VARCHAR2(250)
+  BASE  PARAM1_FLAG                     VARCHAR2(1)
+  BASE  PARAM2_NAME                     VARCHAR2(30)
+  BASE  PARAM2_LOV                      VARCHAR2(250)
+  BASE  PARAM2_FLAG                     VARCHAR2(1)
+  BASE  PARAM3_NAME                     VARCHAR2(30)
+  BASE  PARAM3_LOV                      VARCHAR2(250)
+  BASE  PARAM3_FLAG                     VARCHAR2(1)
+  BASE  RETURN_VALUE_NAME               VARCHAR2(30)
+  BASE  RETURN_VALUE_LOV                VARCHAR2(250)
+  BASE  INACTIVE_DATE                   VARCHAR2(19)
+
+  DEFINE DKA_STRANSCO_LINES
+    KEY   SET_NAME                        VARCHAR2(50)
+    KEY   PARAMS_VALUE                    VARCHAR2(90)
+    BASE  PARAM1_VALUE                    VARCHAR2(30)
+    BASE  PARAM2_VALUE                    VARCHAR2(30)
+    BASE  PARAM3_VALUE                    VARCHAR2(30)
+    BASE  RETURN_VALUE                    VARCHAR2(30)
+    BASE  ENABLE                          VARCHAR2(1)
+    BASE  INACTIVE_DATE                   VARCHAR2(19)
+    BASE  START_DATE                      VARCHAR2(19)
+    BASE  END_DATE                        VARCHAR2(19)
+  END DKA_STRANSCO_LINES
+END DKA_STRANSCO_HEADERS
+
+# -- End Entity Definitions -- 
+
+
+BEGIN DKA_STRANSCO_HEADERS "FUSION_SOCIETE_VERS_SOCIETE"
+  DESCRIPTION =
+ "Transcodification des liens de chaque société absorbée vers chaque société absorbante"
+  PARAM1_NAME = "UO_ABSORBEE"
+  PARAM1_LOV =
+ "Select name, name description from hr_operating_units where trunc(sysdate) between trunc(date_from) and nvl(trunc(date_to), trunc(sysdate)) order by name"
+  PARAM1_FLAG = "Y"
+  PARAM2_FLAG = "N"
+  PARAM3_FLAG = "N"
+  RETURN_VALUE_NAME = "UO_ABSORBANTE"
+  RETURN_VALUE_LOV =
+ "Select name, name description from hr_operating_units where trunc(sysdate) between trunc(date_from) and nvl(trunc(date_to), trunc(sysdate)) order by name"
+
+  
+END DKA_STRANSCO_HEADERS
+

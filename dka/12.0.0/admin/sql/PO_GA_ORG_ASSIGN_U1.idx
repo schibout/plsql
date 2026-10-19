@@ -1,0 +1,51 @@
+  ----------------------------------------------------------------------------------------------
+  -- $$
+  -- CAP GEMINI
+  -- PROJET            : DALKIA Oracle Applications
+  -- NOM               : PO_GA_ORG_ASSIGN_U1.idx
+  -- DESCRIPTION       : Index unique sur PO.PO_GA_ORG_ASSIGNMENTS
+  ---
+  --- AUTEUR           : Nicolas BOUSSEKEYT (Capgemini)
+  --- DATE DE CREATION : 15/01/2018
+  --- DOC. ASSOCIEE    :
+  -- COMMENTAIRE       : A exécuter sous SQLPLUS avec le user APPS
+  ----------------------------------------------------------------------------------------------
+  --- HISTORIQUE DES MODIFICATIONS
+  --- Date       Qui Description
+  --- ---------- --- -------------------------------------------------------------------------
+  --- 15/01/2018 NBO Création de l'index unique
+  ---------------------------------------------------------------------------------------------
+
+drop  index PO.PO_GA_ORG_ASSIGN_U1;
+
+create unique index PO.PO_GA_ORG_ASSIGN_U1 on PO.PO_GA_ORG_ASSIGNMENTS (PO_HEADER_ID, ORGANIZATION_ID, VENDOR_SITE_ID)
+  tablespace APPS_TS_TX_IDX
+  pctfree 10
+  initrans 11
+  maxtrans 255
+  storage
+  (
+    initial 128K
+    next 128K
+    minextents 1
+    maxextents unlimited
+    pctincrease 0
+  );
+  
+drop  index PO.PO_GA_ORG_ASSIGN_ARC_U1;
+
+create unique index PO.PO_GA_ORG_ASSIGN_ARC_U1 on PO.PO_GA_ORG_ASSIGNMENTS_ARCHIVE (PO_HEADER_ID, ORGANIZATION_ID, VENDOR_SITE_ID, REVISION_NUM)
+  tablespace APPS_TS_TX_IDX
+  pctfree 10
+  initrans 11
+  maxtrans 255
+  storage
+  (
+    initial 128K
+    next 128K
+    minextents 1
+    maxextents unlimited
+    pctincrease 0
+  );
+  
+EXIT;

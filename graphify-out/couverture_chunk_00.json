@@ -1,0 +1,170 @@
+[
+  {
+    "file": "controlePaye/XXEAI_CLE_COMPTABLE_CUF_OBJ.sql",
+    "lines": 38,
+    "bytes": 1335,
+    "sha256": "cf96b950fc53f3c456b499d3e524a3d3137a566966ad6f2c4ab9092ed6e64966",
+    "method": "Full file read; static object extraction, targeted semantic review. No SQL execution."
+  },
+  {
+    "file": "controlePaye/XXEAI_INTERFACE_TOOLS_PKG.sql",
+    "lines": 2685,
+    "bytes": 141969,
+    "sha256": "54e3b11686c99bfa2e7c1dea7ee313da38a12003c899f40cb6b435837fef5ba1",
+    "method": "Full file read; static object extraction, targeted semantic review. No SQL execution."
+  },
+  {
+    "file": "DiagnosticWebadi/README.md",
+    "lines": 114,
+    "bytes": 3766,
+    "sha256": "bb0943e80fa8f1df9cd7a92d2e538af89ebb3ce3ab9753b5d3a799250a39e982",
+    "method": "Full file read; static object extraction, targeted semantic review. No SQL execution."
+  },
+  {
+    "file": "DKA  Intégration des factures XEROX/DKA_IAPFACXGS_PKG.sql",
+    "lines": 6763,
+    "bytes": 265644,
+    "sha256": "d9010893366033cbbe26804c1a09d4619b846a00ac356e227134e51080585ff5",
+    "method": "Full file read; static object extraction, targeted semantic review. No SQL execution."
+  },
+  {
+    "file": "DKA  Intégration des factures XEROX/DKA_IAPFACXGS_PKG_ETI1.sql",
+    "lines": 6899,
+    "bytes": 272079,
+    "sha256": "d4375999ab2e5e0b4da80dac72ca919fe56a4c2745a39af1e6230bd78a16cb85",
+    "method": "Full file read; static object extraction, targeted semantic review. No SQL execution."
+  },
+  {
+    "file": "DKA  Intégration des factures XEROX/DKA_IAPFACXGS_PKG_PROD.sql",
+    "lines": 6763,
+    "bytes": 265644,
+    "sha256": "d9010893366033cbbe26804c1a09d4619b846a00ac356e227134e51080585ff5",
+    "method": "Full file read; static object extraction, targeted semantic review. No SQL execution."
+  },
+  {
+    "file": "DKA  Intégration des factures XEROX/README.md",
+    "lines": 58,
+    "bytes": 4141,
+    "sha256": "32c2697b7e891086c46618ead6280ef8a2bc675808efb934ddcd45fc29de3b2e",
+    "method": "Full file read; static object extraction, targeted semantic review. No SQL execution."
+  },
+  {
+    "file": "exportImageVers Ivalua/README.md",
+    "lines": 331,
+    "bytes": 14290,
+    "sha256": "b9b9240afa1eb0876c11593c4fd5a98692a80b22071527804c8a82799ddcd2fb",
+    "method": "Full file read; static object extraction, targeted semantic review. No SQL execution."
+  },
+  {
+    "file": "exportImageVers Ivalua/Renvoi_Image_Facture_Ivalua.sql",
+    "lines": 374,
+    "bytes": 15828,
+    "sha256": "b223ac2fcc938b4f48590498fc292f4d0da20ac83d1b1dfb5e31f028e7a77392",
+    "method": "Full file read; static object extraction, targeted semantic review. No SQL execution."
+  },
+  {
+    "file": "INtegrationDesNoteDeFrais/Correction_Dates_Notilus.sql",
+    "lines": 401,
+    "bytes": 17671,
+    "sha256": "ebc8484ba5e76121f7b267546505bcdd4b654bc3fe5ea799e788ed61b5ab2d6a",
+    "method": "Full file read; static object extraction, targeted semantic review. No SQL execution."
+  },
+  {
+    "file": "INtegrationDesNoteDeFrais/MOA - modif période dans O.I. pour Notilus_V2.sql",
+    "lines": 185,
+    "bytes": 6059,
+    "sha256": "21b6f04523c6ae2cfbbb18e8eca42f0342c1d9a85af4512be3d693b934723af1",
+    "method": "Full file read; static object extraction, targeted semantic review. No SQL execution."
+  },
+  {
+    "file": "INtegrationDesNoteDeFrais/ReadMe.md",
+    "lines": 91,
+    "bytes": 3371,
+    "sha256": "5d0245dab071689082584669b9c34bc7a4c89426f90ae609be20f9bc8a4c8924",
+    "method": "Full file read; static object extraction, targeted semantic review. No SQL execution."
+  },
+  {
+    "file": "Ivalua/Vérification chargmt depuis iValua (1).sql",
+    "lines": 29,
+    "bytes": 771,
+    "sha256": "006dbf78ab18a5d071e1a225c9bfef65873ba2c71e717c83a908a3b490a92781",
+    "method": "Full file read; static object extraction, targeted semantic review. No SQL execution."
+  },
+  {
+    "file": "Ivalua/Vérification chargmt depuis iValua.sql",
+    "lines": 29,
+    "bytes": 771,
+    "sha256": "006dbf78ab18a5d071e1a225c9bfef65873ba2c71e717c83a908a3b490a92781",
+    "method": "Full file read; static object extraction, targeted semantic review. No SQL execution."
+  },
+  {
+    "file": "Projet_Dashboard/sql/03_ndf_notilus.sql",
+    "lines": 14,
+    "bytes": 857,
+    "sha256": "b23157fa27eecfe1e8cfe3863bfe62dea9a26705f9bd93ba9f7e499a80dcd1a9",
+    "method": "Full file read; static object extraction, targeted semantic review. No SQL execution."
+  },
+  {
+    "file": "Projet_Dashboard/sql/05_xerox_sans_image.sql",
+    "lines": 29,
+    "bytes": 1709,
+    "sha256": "0bb2a030df9af2e41b7219842274f27bd4d14169a8c7ccdd9e5a46a67526de14",
+    "method": "Full file read; static object extraction, targeted semantic review. No SQL execution."
+  },
+  {
+    "file": "Projet_Dashboard/sql/06_xerox_avec_image.sql",
+    "lines": 15,
+    "bytes": 848,
+    "sha256": "5562b2a0fd640a86a0862ad006482711b888c25b7411c58bc8664422816ab0a1",
+    "method": "Full file read; static object extraction, targeted semantic review. No SQL execution."
+  },
+  {
+    "file": "Recherche_Facture_11633263.sql",
+    "lines": 139,
+    "bytes": 5470,
+    "sha256": "ae0530b3cd42cdfd2fe97813a9a38d1add0a07c9926db9be3a13d53f3354d602",
+    "method": "Full file read; static object extraction, targeted semantic review. No SQL execution."
+  },
+  {
+    "file": "synchroDackShop/update.sql",
+    "lines": 137,
+    "bytes": 5509,
+    "sha256": "a1b4f45986a49e3b5f8427b73b78c40be79035975a8bc9003f6853e0caa063cc",
+    "method": "Full file read; static object extraction, targeted semantic review. No SQL execution."
+  },
+  {
+    "file": "synchroDackShop/updateAp_invoices_all/Update_AP_Invoices_Date_Jour.sql",
+    "lines": 126,
+    "bytes": 4967,
+    "sha256": "2219759964bdfc99c6c758d515f726e2163d4cdaa044b3c10949890c70f6b9be",
+    "method": "Full file read; static object extraction, targeted semantic review. No SQL execution."
+  },
+  {
+    "file": "UpdateApInvoice-DacShop/update_invoice_3850521294.sql",
+    "lines": 146,
+    "bytes": 6334,
+    "sha256": "f85b26e51f4229aa0606fa6f022fbb4c1017ac59e32a15a1636bb49bb07a4d7b",
+    "method": "Full file read; static object extraction, targeted semantic review. No SQL execution."
+  },
+  {
+    "file": "webadi/package.sql",
+    "lines": 196,
+    "bytes": 9242,
+    "sha256": "63944d9591dde0e186e1fee6245ce783c386a39beea194dc76e2dbe8fb5f2485",
+    "method": "Full file read; static object extraction, targeted semantic review. No SQL execution."
+  },
+  {
+    "file": "webadi/packagebody.sql",
+    "lines": 2308,
+    "bytes": 107480,
+    "sha256": "81378bb72195a8c2cde1abbb95e7990e3052ea227737048c2f4479f060566071",
+    "method": "Full file read; static object extraction, targeted semantic review. No SQL execution."
+  },
+  {
+    "file": "XXEAI_INTERFACE_TOOLS_PKG/XXEAI_INTERFACE_TOOLS_PKG.sql",
+    "lines": 3079,
+    "bytes": 164781,
+    "sha256": "dee8217606656dc1c1a94d998d862451a64abb318463a83a6c678e1b04a6041a",
+    "method": "Full file read; static object extraction, targeted semantic review. No SQL execution."
+  }
+]

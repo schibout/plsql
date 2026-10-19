@@ -1,0 +1,32 @@
+# $Header$
+
+# 
+LANGUAGE = "US"
+LDRCONFIG = "DKA_XX_PARAM.lct"
+
+#Source Database VU2OAP
+
+# -- Begin Entity Definitions -- 
+
+DEFINE DKA_PARAMETER
+  KEY   PROGRAM_CODE                    VARCHAR2(50)
+  KEY   PARAMETER_NAME                  VARCHAR2(50)
+  BASE  DESCRIPTION                     VARCHAR2(255)
+  BASE  TABLE_NAME                      VARCHAR2(100)
+  BASE  COLUMN_NAME                     VARCHAR2(100)
+  BASE  DATA_TYPE                       VARCHAR2(100)
+  BASE  VARCHAR2_VALUE                  VARCHAR2(50)
+  BASE  NUMBER_VALUE                    VARCHAR2(30)
+  BASE  DATE_VALUE                      VARCHAR2(19)
+  BASE  BOOLEAN_VALUE                   VARCHAR2(1)
+END DKA_PARAMETER
+
+# -- End Entity Definitions -- 
+
+BEGIN DKA_PARAMETER "IAPCTRFLUX_XEROX" "DATE_TRAITEMENT"
+  DESCRIPTION = "Date de traitement"
+END DKA_PARAMETER
+
+BEGIN DKA_PARAMETER "IAPCTRFLUX_ZCI" "DATE_TRAITEMENT"
+  DESCRIPTION = "Date traitement"
+END DKA_PARAMETER

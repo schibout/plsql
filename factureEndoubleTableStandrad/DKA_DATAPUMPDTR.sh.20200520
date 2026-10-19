@@ -1,0 +1,17 @@
+#
+# Dummy dkafile.drv
+#
+# Created  by  : AD Splicer
+# Creation Date: Mon Jun 06 2016 11:26:48
+#
+
+dka	log		directory
+dka	out		directory
+dka	mesg		directory
+dka	sql		DKANLINS.sql
+dka	admin/sql	DKANLADD.sql
+
+#
+# End of dummy dkafile.drv
+#
+

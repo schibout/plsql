@@ -1,0 +1,75 @@
+# $Header$
+
+# dbdrv: exec fnd bin FNDLOAD bin &phase=dat+1 checkfile:~PROD:~PATH:~FILE &ui_apps 0 Y UPLOAD @DKA:admin/import/dka_xlasrc.lct @~PROD:~PATH/~FILE
+LANGUAGE = "US"
+LDRCONFIG = "xlaemseed.lct 120.22"
+
+#Source Database HELMAS
+
+#RELEASE_NAME 12.2.4
+
+# -- Begin Entity Definitions -- 
+
+DEFINE XLA_SOURCES
+  KEY   APPLICATION_SHORT_NAME          VARCHAR2(50)
+  KEY   SOURCE_CODE                     VARCHAR2(30)
+  KEY   SOURCE_TYPE_CODE                VARCHAR2(1)
+  BASE  DATATYPE_CODE                   VARCHAR2(1)
+  BASE  PLSQL_FUNCTION_NAME             VARCHAR2(80)
+  BASE  FLEX_VALUE_SET_NAME             VARCHAR2(60)
+  BASE  SUM_FLAG                        VARCHAR2(1)
+  BASE  VISIBLE_FLAG                    VARCHAR2(1)
+  BASE  ENABLED_FLAG                    VARCHAR2(1)
+  BASE  TRANSLATED_FLAG                 VARCHAR2(1)
+  BASE  LOOKUP_TYPE                     VARCHAR2(30)
+  BASE  VIEW_APP_SHORT_NAME             VARCHAR2(50)
+  BASE  KEY_FLEXFIELD_FLAG              VARCHAR2(1)
+  BASE  FLEX_APPL_SHORT_NAME            VARCHAR2(50)
+  BASE  SEGMENT_CODE                    VARCHAR2(30)
+  BASE  ID_FLEX_CODE                    VARCHAR2(30)
+  BASE  OWNER                           VARCHAR2(4000)
+  BASE  LAST_UPDATE_DATE                VARCHAR2(10)
+  TRANS NAME                            VARCHAR2(80)
+  TRANS DESCRIPTION                     VARCHAR2(240)
+
+  DEFINE XLA_SOURCE_PARAMS
+    KEY   USER_SEQUENCE                   VARCHAR2(50)
+    BASE  PARAMETER_TYPE_CODE             VARCHAR2(1)
+    BASE  CONSTANT_VALUE                  VARCHAR2(240)
+    BASE  REF_SOURCE_APP_SHORT_NAME       VARCHAR2(50)
+    BASE  REF_SOURCE_TYPE_CODE            VARCHAR2(1)
+    BASE  REF_SOURCE_CODE                 VARCHAR2(30)
+    BASE  OWNER                           VARCHAR2(4000)
+    BASE  LAST_UPDATE_DATE                VARCHAR2(10)
+  END XLA_SOURCE_PARAMS
+END XLA_SOURCES
+
+# -- End Entity Definitions -- 
+
+
+BEGIN XLA_SOURCES "OFA" "DKA_FA_RETIRT_SUBIPR_DOT_GP" "D"
+  DATATYPE_CODE = "C"
+  PLSQL_FUNCTION_NAME = "DKA_XLA_FA_CUSTOM_SOURCES_PKG.DKA_FA_RETIRT_SUBIPR_DOT_GP"
+  SUM_FLAG = "N"
+  VISIBLE_FLAG = "Y"
+  ENABLED_FLAG = "Y"
+  TRANSLATED_FLAG = "N"
+  KEY_FLEXFIELD_FLAG = "Y"
+  FLEX_APPL_SHORT_NAME = "SQLGL"
+  SEGMENT_CODE = "OTHER"
+  ID_FLEX_CODE = "GL#"
+  OWNER = "LNAYROLL"
+  LAST_UPDATE_DATE = "2019/04/11"
+  NAME = "DKA - Immobilisations Cession-SUBI12PR remplt cpte dot groupe"
+
+  BEGIN XLA_SOURCE_PARAMS "1"
+    PARAMETER_TYPE_CODE = "S"
+	REF_SOURCE_APP_SHORT_NAME = "OFA"
+	REF_SOURCE_TYPE_CODE = "S"
+	REF_SOURCE_CODE = "CAT_ID"
+    OWNER = "SNIKMAOUI"
+    LAST_UPDATE_DATE = "2019/04/11"	
+  END XLA_SOURCE_PARAMS
+  
+END XLA_SOURCES
+

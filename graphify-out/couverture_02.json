@@ -1,0 +1,3547 @@
+[
+  {
+    "fichier": ".github/prompts/README.md",
+    "lignes": 236,
+    "sha256": "1fde3e6577ff2c2d874247bd60c4f4210612053104f2672d53125694095a08a8",
+    "classement": "Support technique / orchestration / autre domaine",
+    "objets": []
+  },
+  {
+    "fichier": ".pytest_cache/README.md",
+    "lignes": 8,
+    "sha256": "420e808d79a6c25d3cda0af33bc4782314a14949866682c68ce8149e89b66b70",
+    "classement": "Support technique / orchestration / autre domaine",
+    "objets": []
+  },
+  {
+    "fichier": "Ajout_de_responsabilite/pbAjoutRespon/Fix_WF_Synchro_H00036238E.sql",
+    "lignes": 63,
+    "sha256": "2f88400249568b45e4d708b264f639d4f303d658eeb6c4e1be7a84fcf3df9e57",
+    "classement": "RH / habilitations / workflow (connexe pour BAP)",
+    "objets": [
+      {
+        "objet": "APPLSYS.WF_LOCAL_ROLES",
+        "ligne": 31
+      }
+    ]
+  },
+  {
+    "fichier": "Ajout_de_responsabilite/Utilisateurs ayant une certaine responsabilité.sql",
+    "lignes": 26,
+    "sha256": "ad5c2d3be0bace4f6c0dc02375ea94df8bb934cff979a4bf9b306b861d385ed0",
+    "classement": "RH / habilitations / workflow (connexe pour BAP)",
+    "objets": [
+      {
+        "objet": "FND_USER_RESP_GROUPS_DIRECT",
+        "ligne": 8
+      },
+      {
+        "objet": "FND_RESPONSIBILITY_TL",
+        "ligne": 24
+      }
+    ]
+  },
+  {
+    "fichier": "AppsScript/cloture/README.md",
+    "lignes": 42,
+    "sha256": "5da2fa669e96c147aaadaf88894033b55e245d0dfacc0fdc172073c3b9469b51",
+    "classement": "Facturation / GL-PA / diagnostic à contextualiser",
+    "objets": []
+  },
+  {
+    "fichier": "AppsScript/controlePrelevement/README.md",
+    "lignes": 145,
+    "sha256": "c892b3fc930ddcdd0c4a7956c656eb5d798fdd1af77cacd7b3a329215e1c7f19",
+    "classement": "Paiements / banque / collecte de rapports",
+    "objets": []
+  },
+  {
+    "fichier": "AppsScript/odat/README.md",
+    "lignes": 124,
+    "sha256": "3704fdd49e9423266b6a77ad585e20fc1013780acc21b3b0e160f11a37322a1a",
+    "classement": "Support technique / orchestration / autre domaine",
+    "objets": []
+  },
+  {
+    "fichier": "ChaineControleM/Inventaire_Jobs_FINFIN.sql",
+    "lignes": 255,
+    "sha256": "065a94b8bae2d80cc411d41beb6ebfddc28c94e7a86c318a3aa44a89313fc5df",
+    "classement": "Support technique / orchestration / autre domaine",
+    "objets": [
+      {
+        "objet": "APPS.FND_CONCURRENT_REQUESTS",
+        "ligne": 68
+      }
+    ]
+  },
+  {
+    "fichier": "cloture2026/Controle_Cloture_Quotidien.sql",
+    "lignes": 475,
+    "sha256": "dc6d3c1591771b9f81240d2049fb70fb16dfa7169baa7ab20befe02298bf5e98",
+    "classement": "Clôture / provisions / cut-off",
+    "objets": [
+      {
+        "objet": "FND_CONCURRENT_REQUESTS",
+        "ligne": 92
+      },
+      {
+        "objet": "FND_CONCURRENT_PROGRAMS",
+        "ligne": 141
+      },
+      {
+        "objet": "FND_CONCURRENT_PROGRAMS_TL",
+        "ligne": 144
+      },
+      {
+        "objet": "FND_USER",
+        "ligne": 148
+      }
+    ]
+  },
+  {
+    "fichier": "cloture2026/Dalkia_Traitements.sql",
+    "lignes": 465,
+    "sha256": "aacad6e74ed2e4391b5dd85728801152e79a99cf49539a329998c4fd92797550",
+    "classement": "Clôture / provisions / cut-off",
+    "objets": [
+      {
+        "objet": "FND_CONCURRENT_REQUESTS",
+        "ligne": 1
+      },
+      {
+        "objet": "ALL_TAB_COLS",
+        "ligne": 5
+      },
+      {
+        "objet": "AS_STATUSES_B",
+        "ligne": 13
+      },
+      {
+        "objet": "FND_CONC_REQ_SUMMARY_V",
+        "ligne": 49
+      },
+      {
+        "objet": "IMPRIMANTE_CSP_REGISTRE",
+        "ligne": 388
+      },
+      {
+        "objet": "XXSPEC_PARAM_ORG",
+        "ligne": 391
+      },
+      {
+        "objet": "FND_CONCURRENT_PROGRAMS_TL",
+        "ligne": 407
+      }
+    ]
+  },
+  {
+    "fichier": "cloture2026/Fev2026/Controle_Cloture_Quotidien.sql",
+    "lignes": 475,
+    "sha256": "01fbacfe2d40433378d36dc124cd411832052d5a53bc870c10356e019d9fdc74",
+    "classement": "Clôture / provisions / cut-off",
+    "objets": [
+      {
+        "objet": "FND_CONCURRENT_REQUESTS",
+        "ligne": 92
+      },
+      {
+        "objet": "FND_CONCURRENT_PROGRAMS",
+        "ligne": 141
+      },
+      {
+        "objet": "FND_CONCURRENT_PROGRAMS_TL",
+        "ligne": 144
+      },
+      {
+        "objet": "FND_USER",
+        "ligne": 148
+      }
+    ]
+  },
+  {
+    "fichier": "cloture2026/Fev2026/Recherche_La_Crau_Energies_Vertes.sql",
+    "lignes": 410,
+    "sha256": "b521be3f773dfb069961584eb35057af67916371549600f1d03521c346114586",
+    "classement": "Clôture / provisions / cut-off",
+    "objets": [
+      {
+        "objet": "AP.AP_SUPPLIER_SITES_ALL",
+        "ligne": 141
+      },
+      {
+        "objet": "HR.HR_OPERATING_UNITS",
+        "ligne": 143
+      },
+      {
+        "objet": "AP.AP_TERMS",
+        "ligne": 145
+      },
+      {
+        "objet": "GL.GL_CODE_COMBINATIONS_KFV",
+        "ligne": 147
+      },
+      {
+        "objet": "AP.AP_SUPPLIER_CONTACTS",
+        "ligne": 179
+      },
+      {
+        "objet": "IBY.IBY_EXTERNAL_PAYEES_ALL",
+        "ligne": 216
+      },
+      {
+        "objet": "IBY.IBY_PMT_INSTR_USES_ALL",
+        "ligne": 220
+      },
+      {
+        "objet": "IBY.IBY_EXT_BANK_ACCOUNTS",
+        "ligne": 222
+      },
+      {
+        "objet": "CE.CE_BANK_BRANCHES_V",
+        "ligne": 224
+      },
+      {
+        "objet": "AP.AP_INVOICES_ALL",
+        "ligne": 260
+      },
+      {
+        "objet": "AIA.INVOICE_DATE",
+        "ligne": 279
+      },
+      {
+        "objet": "PO.PO_LINES_ALL",
+        "ligne": 325
+      },
+      {
+        "objet": "PO.PO_HEADERS_ALL",
+        "ligne": 329
+      },
+      {
+        "objet": "FND_RESPONSIBILITY_VL",
+        "ligne": 357
+      },
+      {
+        "objet": "FND_APPLICATION_VL",
+        "ligne": 358
+      },
+      {
+        "objet": "FND_USER_RESP_GROUPS_DIRECT",
+        "ligne": 393
+      },
+      {
+        "objet": "FND_USER",
+        "ligne": 396
+      }
+    ]
+  },
+  {
+    "fichier": "cloture2026/Fev2026/Responsabilites_ORG_ID_86.sql",
+    "lignes": 299,
+    "sha256": "c33a822c1667bc3adfdc3fd0533a26009e47360e4a14f4266a7c83a9419d6112",
+    "classement": "Clôture / provisions / cut-off",
+    "objets": [
+      {
+        "objet": "GL.GL_LEDGERS",
+        "ligne": 25
+      },
+      {
+        "objet": "APPS.FND_RESPONSIBILITY_VL",
+        "ligne": 49
+      },
+      {
+        "objet": "APPS.FND_APPLICATION_VL",
+        "ligne": 50
+      },
+      {
+        "objet": "APPS.FND_USER_RESP_GROUPS_DIRECT",
+        "ligne": 185
+      },
+      {
+        "objet": "APPS.FND_USER",
+        "ligne": 188
+      },
+      {
+        "objet": "AP.AP_SUPPLIER_SITES_ALL",
+        "ligne": 293
+      }
+    ]
+  },
+  {
+    "fichier": "cloture_Cap/CAP_COMMANDES_REJ.sql",
+    "lignes": 30,
+    "sha256": "8b37551d292c7fa77ad0ed1a813b4a1fc2e98ee59d661b402b88263109cbe99b",
+    "classement": "Clôture / provisions / cut-off",
+    "objets": [
+      {
+        "objet": "DKA_SPOCHARGE_ERRORS",
+        "ligne": 24
+      },
+      {
+        "objet": "PO_DISTRIBUTIONS_ALL",
+        "ligne": 25
+      },
+      {
+        "objet": "PO_LINES_ALL",
+        "ligne": 26
+      },
+      {
+        "objet": "PA.PA_TASKS",
+        "ligne": 27
+      },
+      {
+        "objet": "PO.PO_HEADERS_ALL",
+        "ligne": 28
+      },
+      {
+        "objet": "AP.AP_SUPPLIERS",
+        "ligne": 29
+      }
+    ]
+  },
+  {
+    "fichier": "cloture_Cap/CAP_DTR_PROVISIONS_GL_PO_HELIOS_V4.sql",
+    "lignes": 72,
+    "sha256": "d714c5e1355e11f1a221f6f37168cc67538869820e4b1d1a0208ae89a483e840",
+    "classement": "Clôture / provisions / cut-off",
+    "objets": [
+      {
+        "objet": "GL.GL_JE_LINES",
+        "ligne": 8
+      },
+      {
+        "objet": "GL.GL_LEDGERS",
+        "ligne": 9
+      },
+      {
+        "objet": "GL.GL_JE_HEADERS",
+        "ligne": 10
+      },
+      {
+        "objet": "GL.GL_JE_BATCHES",
+        "ligne": 11
+      },
+      {
+        "objet": "XLA.XLA_AE_LINES",
+        "ligne": 12
+      },
+      {
+        "objet": "XLA.XLA_AE_HEADERS",
+        "ligne": 16
+      },
+      {
+        "objet": "XLA.XLA_DISTRIBUTION_LINKS",
+        "ligne": 18
+      },
+      {
+        "objet": "RCV_RECEIVING_SUB_LEDGER",
+        "ligne": 21
+      },
+      {
+        "objet": "PO.PO_DISTRIBUTIONS_ALL",
+        "ligne": 24
+      },
+      {
+        "objet": "GL.GL_IMPORT_REFERENCES",
+        "ligne": 46
+      }
+    ]
+  },
+  {
+    "fichier": "cloture_Cap/CAP_OD_Cut_Off_SSTR_factures_V3.sql",
+    "lignes": 339,
+    "sha256": "62650d147ba409b2ff1bebd438c92e1ee701c2f728b7c54b6f6f17f45c788364",
+    "classement": "Clôture / provisions / cut-off",
+    "objets": [
+      {
+        "objet": "PO.PO_HEADERS_ALL",
+        "ligne": 22
+      },
+      {
+        "objet": "DKA.DKA_CONTRAT_SSTR_ARCHI",
+        "ligne": 27
+      },
+      {
+        "objet": "DKA_SPO_CONTRAT_SSTR_IVALUA",
+        "ligne": 64
+      },
+      {
+        "objet": "AP.AP_INVOICES_ALL",
+        "ligne": 86
+      },
+      {
+        "objet": "AP.AP_INVOICE_DISTRIBUTIONS_ALL",
+        "ligne": 87
+      },
+      {
+        "objet": "PO.PO_DISTRIBUTIONS_ALL",
+        "ligne": 89
+      },
+      {
+        "objet": "GL.GL_JE_LINES",
+        "ligne": 256
+      },
+      {
+        "objet": "GL.GL_LEDGERS",
+        "ligne": 257
+      },
+      {
+        "objet": "GL.GL_JE_HEADERS",
+        "ligne": 259
+      },
+      {
+        "objet": "GL.GL_IMPORT_REFERENCES",
+        "ligne": 261
+      },
+      {
+        "objet": "GL.GL_PERIODS",
+        "ligne": 264
+      },
+      {
+        "objet": "GL.GL_CODE_COMBINATIONS",
+        "ligne": 266
+      },
+      {
+        "objet": "PA.PA_TASKS",
+        "ligne": 270
+      },
+      {
+        "objet": "HR.HR_ALL_ORGANIZATION_UNITS",
+        "ligne": 272
+      },
+      {
+        "objet": "CONTRACT",
+        "ligne": 276
+      },
+      {
+        "objet": "DKA.DKA_CONTRAT_SSTR",
+        "ligne": 280
+      },
+      {
+        "objet": "PO.PO_LINE_LOCATIONS_ALL",
+        "ligne": 282
+      },
+      {
+        "objet": "INVOICE",
+        "ligne": 284
+      }
+    ]
+  },
+  {
+    "fichier": "cloture_Cap/SQL_Provision_OCT-25.sql",
+    "lignes": 478,
+    "sha256": "15d2fa1f1f3b37e1a815f746c0a9356dd6780caa9060548a9ea43391bada7aae",
+    "classement": "Clôture / provisions / cut-off",
+    "objets": [
+      {
+        "objet": "AP.AP_INVOICE_DISTRIBUTIONS_ALL",
+        "ligne": 13
+      },
+      {
+        "objet": "PO.PO_DISTRIBUTIONS_ALL",
+        "ligne": 14
+      },
+      {
+        "objet": "PO.PO_HEADERS_ALL",
+        "ligne": 16
+      },
+      {
+        "objet": "HR.PER_ALL_PEOPLE_F",
+        "ligne": 25
+      },
+      {
+        "objet": "GL.GL_JE_LINES",
+        "ligne": 148
+      },
+      {
+        "objet": "GL.GL_LEDGERS",
+        "ligne": 149
+      },
+      {
+        "objet": "GL.GL_JE_HEADERS",
+        "ligne": 150
+      },
+      {
+        "objet": "GL.GL_JE_BATCHES",
+        "ligne": 151
+      },
+      {
+        "objet": "GL.GL_CODE_COMBINATIONS",
+        "ligne": 152
+      },
+      {
+        "objet": "XLA.XLA_AE_LINES",
+        "ligne": 154
+      },
+      {
+        "objet": "XLA.XLA_AE_HEADERS",
+        "ligne": 158
+      },
+      {
+        "objet": "XLA.XLA_DISTRIBUTION_LINKS",
+        "ligne": 160
+      },
+      {
+        "objet": "RCV_RECEIVING_SUB_LEDGER",
+        "ligne": 163
+      },
+      {
+        "objet": "PO.PO_LINES_ALL",
+        "ligne": 168
+      },
+      {
+        "objet": "INVOICE",
+        "ligne": 171
+      },
+      {
+        "objet": "AP.AP_SUPPLIERS",
+        "ligne": 173
+      },
+      {
+        "objet": "AP.AP_SUPPLIER_SITES_ALL",
+        "ligne": 174
+      },
+      {
+        "objet": "PA.PA_PROJECTS_ALL",
+        "ligne": 176
+      },
+      {
+        "objet": "PA.PA_TASKS",
+        "ligne": 178
+      },
+      {
+        "objet": "PEOPLE",
+        "ligne": 179
+      },
+      {
+        "objet": "HR.HR_ALL_ORGANIZATION_UNITS",
+        "ligne": 180
+      },
+      {
+        "objet": "GL.GL_IMPORT_REFERENCES",
+        "ligne": 359
+      },
+      {
+        "objet": "PO.PO_LINE_LOCATIONS_ALL",
+        "ligne": 376
+      }
+    ]
+  },
+  {
+    "fichier": "cloturePeriode/sql_J-7.sql",
+    "lignes": 23,
+    "sha256": "6f912c163a785806c64e73b3480f78be0483f472ac74345f1610e7405d33adfc",
+    "classement": "Facturation / GL-PA / diagnostic à contextualiser",
+    "objets": [
+      {
+        "objet": "FND_CONCURRENT_REQUESTS",
+        "ligne": 10
+      },
+      {
+        "objet": "FND_CONCURRENT_PROGRAMS_VL",
+        "ligne": 11
+      },
+      {
+        "objet": "FND_LOOKUPS",
+        "ligne": 14
+      },
+      {
+        "objet": "FND_USER",
+        "ligne": 21
+      }
+    ]
+  },
+  {
+    "fichier": "ControleReleveBancaire/Analyse_Verification_Import_Releves_Bancaires.sql",
+    "lignes": 301,
+    "sha256": "85e56aa7ed85f3149364c85c24042f76fd95ac31f1f2fb24d3f304bb8994b5f4",
+    "classement": "Paiements / banque / collecte de rapports",
+    "objets": [
+      {
+        "objet": "XXRB.RB_LINES_ALL",
+        "ligne": 56
+      },
+      {
+        "objet": "XXRB.RB_BATCH_IMPORT",
+        "ligne": 175
+      },
+      {
+        "objet": "FND_CONCURRENT_PROGRAMS_VL",
+        "ligne": 254
+      },
+      {
+        "objet": "FND_USER",
+        "ligne": 257
+      },
+      {
+        "objet": "FND_RESPONSIBILITY_VL",
+        "ligne": 259
+      }
+    ]
+  },
+  {
+    "fichier": "ControleReleveBancaire/DKA_SRBCTRLRB_PKG.sql",
+    "lignes": 645,
+    "sha256": "0f0a45f8f8df2cf59c56ec5e9d090240ae3177a3feda82168208675c74407c01",
+    "classement": "Paiements / banque / collecte de rapports",
+    "objets": [
+      {
+        "objet": "RB_BANK_ACCOUNTS_ALL",
+        "ligne": 300
+      }
+    ]
+  },
+  {
+    "fichier": "ControleReleveBancaire/README.md",
+    "lignes": 190,
+    "sha256": "f5ae1bac4778a0a521d3e6ca528b5e2b6c9d65aa2237bc43f295615799afac60",
+    "classement": "Paiements / banque / collecte de rapports",
+    "objets": []
+  },
+  {
+    "fichier": "controleVirement/.pytest_cache/README.md",
+    "lignes": 8,
+    "sha256": "420e808d79a6c25d3cda0af33bc4782314a14949866682c68ce8149e89b66b70",
+    "classement": "Paiements / banque / collecte de rapports",
+    "objets": []
+  },
+  {
+    "fichier": "CTRL_QUASI_AUTOMATIQUE_DES_PRELEVEMENTS/.pytest_cache/README.md",
+    "lignes": 8,
+    "sha256": "420e808d79a6c25d3cda0af33bc4782314a14949866682c68ce8149e89b66b70",
+    "classement": "Paiements / banque / collecte de rapports",
+    "objets": []
+  },
+  {
+    "fichier": "CTRL_QUASI_AUTOMATIQUE_DES_PRELEVEMENTS/docs/README_ecart_589_20260914.md",
+    "lignes": 114,
+    "sha256": "36ba5ba791eb829e38e03b292110cd87990824467cd6536d4185dbd7af579ad0",
+    "classement": "Paiements / banque / collecte de rapports",
+    "objets": []
+  },
+  {
+    "fichier": "dateFinEmploye/body.sql",
+    "lignes": 8915,
+    "sha256": "0687b4fcd96137898a281389c601e649e5d3e8a3c37b9e09dfaa98eefdcbdf2c",
+    "classement": "RH / habilitations / workflow (connexe pour BAP)",
+    "objets": [
+      {
+        "objet": "AP_TERMS",
+        "ligne": 202
+      },
+      {
+        "objet": "PER_JOB_GROUPS",
+        "ligne": 209
+      },
+      {
+        "objet": "XXEAI_HR_PEOPLE_INT",
+        "ligne": 217
+      },
+      {
+        "objet": "PER_ALL_PEOPLE_F",
+        "ligne": 220
+      },
+      {
+        "objet": "XXEAI_HR_BANK_INT_ALL",
+        "ligne": 230
+      },
+      {
+        "objet": "XXEAI_HR_ASSIGNMENT_INT",
+        "ligne": 243
+      },
+      {
+        "objet": "FND_FLEX_VALUE_SETS",
+        "ligne": 345
+      },
+      {
+        "objet": "XXEAI_HR_INT_ERRORS_ALL",
+        "ligne": 417
+      },
+      {
+        "objet": "PER_ALL_ASSIGNMENTS_F",
+        "ligne": 854
+      },
+      {
+        "objet": "AP_SUPPLIERS",
+        "ligne": 964
+      },
+      {
+        "objet": "GL_LEDGERS",
+        "ligne": 1057
+      },
+      {
+        "objet": "PER_JOBS",
+        "ligne": 1100
+      },
+      {
+        "objet": "CE_BANK_BRANCHES_V",
+        "ligne": 1155
+      },
+      {
+        "objet": "IBY_EXT_BANK_ACCOUNTS",
+        "ligne": 1211
+      },
+      {
+        "objet": "IBY_PMT_INSTR_USES_ALL",
+        "ligne": 1265
+      },
+      {
+        "objet": "GL_PERIOD_STATUSES",
+        "ligne": 1394
+      },
+      {
+        "objet": "PER_PERSON_TYPES",
+        "ligne": 1438
+      },
+      {
+        "objet": "PER_PERIODS_OF_SERVICE",
+        "ligne": 1515
+      },
+      {
+        "objet": "APPS.FND_FLEX_VALUE_SETS",
+        "ligne": 2398
+      },
+      {
+        "objet": "EMPLOYEE",
+        "ligne": 2578
+      },
+      {
+        "objet": "AP.AP_SUPPLIERS",
+        "ligne": 2757
+      },
+      {
+        "objet": "IBY_EXTERNAL_PAYEES_ALL",
+        "ligne": 3367
+      },
+      {
+        "objet": "PER_ADDRESSES",
+        "ligne": 3586
+      },
+      {
+        "objet": "DU",
+        "ligne": 4794
+      },
+      {
+        "objet": "AP_PAYMENT_SCHEDULES_ALL",
+        "ligne": 6029
+      },
+      {
+        "objet": "AP_INVOICES_ALL",
+        "ligne": 6039
+      },
+      {
+        "objet": "EMPLOYE",
+        "ligne": 6060
+      },
+      {
+        "objet": "EMPLOY",
+        "ligne": 6063
+      },
+      {
+        "objet": "AP_SUPPLIER_SITES_ALL",
+        "ligne": 7366
+      }
+    ]
+  },
+  {
+    "fichier": "dateFinEmploye/export/xxeai_hr_assignment_int.sql",
+    "lignes": 297,
+    "sha256": "9f81303739f924d5731d385bea4ea11aaa2078af6701d06b2d46965c52c98747",
+    "classement": "RH / habilitations / workflow (connexe pour BAP)",
+    "objets": [
+      {
+        "objet": "XXEAI_HR_ASSIGNMENT_INT",
+        "ligne": 3
+      }
+    ]
+  },
+  {
+    "fichier": "dateFinEmploye/export/xxeai_hr_bank_int_all.sql",
+    "lignes": 297,
+    "sha256": "42079811f22be66a19ddc4ff740cc85bf6b4c38291c065516642717cbdfbd9e6",
+    "classement": "RH / habilitations / workflow (connexe pour BAP)",
+    "objets": [
+      {
+        "objet": "XXEAI_HR_BANK_INT_ALL",
+        "ligne": 3
+      }
+    ]
+  },
+  {
+    "fichier": "dateFinEmploye/export/XXEAI_HR_PEOPLE_INT.sql",
+    "lignes": 264,
+    "sha256": "c0fc118441bd9dccdd58a943eaffb8170d7d1f78ff9387fde855d04454d66d16",
+    "classement": "RH / habilitations / workflow (connexe pour BAP)",
+    "objets": [
+      {
+        "objet": "XXEAI_HR_PEOPLE_INT",
+        "ligne": 3
+      }
+    ]
+  },
+  {
+    "fichier": "dateFinEmploye/reverse_termination.sql",
+    "lignes": 62,
+    "sha256": "58097ca4355e31e72c415d9b4c73845f328c7b95870069944bacda7eab8f6137",
+    "classement": "RH / habilitations / workflow (connexe pour BAP)",
+    "objets": [
+      {
+        "objet": "PER_PERIODS_OF_SERVICE",
+        "ligne": 28
+      }
+    ]
+  },
+  {
+    "fichier": "dateFinUser/desactivation_users.sql",
+    "lignes": 382,
+    "sha256": "784ab4da444a49b6ef8b1eb38d3a534f3c5aed8c11052e300e7aca8e4af64fae",
+    "classement": "RH / habilitations / workflow (connexe pour BAP)",
+    "objets": [
+      {
+        "objet": "APPLSYS.FND_USER",
+        "ligne": 162
+      },
+      {
+        "objet": "APPLSYS.FND_RESPONSIBILITY",
+        "ligne": 176
+      },
+      {
+        "objet": "TESTES",
+        "ligne": 364
+      }
+    ]
+  },
+  {
+    "fichier": "diversAnalyses/get_ebs_info.sql",
+    "lignes": 3,
+    "sha256": "80bc58437e707492800da81f45cd70b9a05a470476c9e608fe9a99f772a3217a",
+    "classement": "Support technique / orchestration / autre domaine",
+    "objets": [
+      {
+        "objet": "FND_PRODUCT_GROUPS",
+        "ligne": 1
+      },
+      {
+        "objet": "V$VERSION",
+        "ligne": 2
+      },
+      {
+        "objet": "ALL_TABLES",
+        "ligne": 3
+      }
+    ]
+  },
+  {
+    "fichier": "diversAnalyses/get_main_programs.sql",
+    "lignes": 28,
+    "sha256": "63d51bec96719baaab4e7590a67334bbda7862f8d3a99e8540d283a91b441d6a",
+    "classement": "Support technique / orchestration / autre domaine",
+    "objets": [
+      {
+        "objet": "FND_CONCURRENT_REQUESTS",
+        "ligne": 8
+      },
+      {
+        "objet": "FND_CONCURRENT_PROGRAMS_VL",
+        "ligne": 9
+      }
+    ]
+  },
+  {
+    "fichier": "diversAnalyses/get_ou_info.sql",
+    "lignes": 13,
+    "sha256": "35c1b06d6f2eedf09fa902374d608ac0ae204ea656149fbfa54e3390386b4abb",
+    "classement": "Support technique / orchestration / autre domaine",
+    "objets": [
+      {
+        "objet": "AP_INVOICES_ALL",
+        "ligne": 6
+      },
+      {
+        "objet": "PO_HEADERS_ALL",
+        "ligne": 8
+      }
+    ]
+  },
+  {
+    "fichier": "diversAnalyses/Open AP Invoices.sql",
+    "lignes": 49,
+    "sha256": "f2fcc1279b1bfd9d71c5fb5c7beb04a2f18555c46e815bff524699965b81cfd2",
+    "classement": "Facturation / GL-PA / diagnostic à contextualiser",
+    "objets": [
+      {
+        "objet": "APPS.AP_INVOICES_ALL",
+        "ligne": 20
+      }
+    ]
+  },
+  {
+    "fichier": "diversAnalyses/oracleProd.sql",
+    "lignes": 33,
+    "sha256": "bd6e309ba905de3a7143eef268fcf349efeb6255437597bf8935a933a9da674b",
+    "classement": "Facturation / GL-PA / diagnostic à contextualiser",
+    "objets": [
+      {
+        "objet": "FND_CONCURRENT_REQUESTS",
+        "ligne": 8
+      },
+      {
+        "objet": "FND_CONCURRENT_PROGRAMS_VL",
+        "ligne": 9
+      },
+      {
+        "objet": "FND_USER",
+        "ligne": 11
+      },
+      {
+        "objet": "GL_INTERFACE",
+        "ligne": 17
+      },
+      {
+        "objet": "GL_JE_LINES",
+        "ligne": 20
+      }
+    ]
+  },
+  {
+    "fichier": "diversAnalyses/Recherche_Fournisseur_Groupe_Services_France.sql",
+    "lignes": 325,
+    "sha256": "e43ce8a89167951313e47e27a63f48e338c5b576ce7d5ea5c4a44d97be4337bb",
+    "classement": "Référentiel fournisseur / commandes",
+    "objets": [
+      {
+        "objet": "AP.AP_SUPPLIER_SITES_ALL",
+        "ligne": 140
+      },
+      {
+        "objet": "HR.HR_OPERATING_UNITS",
+        "ligne": 142
+      },
+      {
+        "objet": "AP.AP_TERMS",
+        "ligne": 144
+      },
+      {
+        "objet": "AP.AP_SUPPLIER_CONTACTS",
+        "ligne": 177
+      },
+      {
+        "objet": "IBY.IBY_EXTERNAL_PAYEES_ALL",
+        "ligne": 214
+      },
+      {
+        "objet": "IBY.IBY_PMT_INSTR_USES_ALL",
+        "ligne": 218
+      },
+      {
+        "objet": "IBY.IBY_EXT_BANK_ACCOUNTS",
+        "ligne": 220
+      },
+      {
+        "objet": "AP.AP_BANK_BRANCHES",
+        "ligne": 222
+      },
+      {
+        "objet": "IBY.IBY_EXT_BANK_BRANCHES",
+        "ligne": 224
+      },
+      {
+        "objet": "AP.AP_INVOICES_ALL",
+        "ligne": 250
+      },
+      {
+        "objet": "AP.AP_INVOICE_PAYMENTS_ALL",
+        "ligne": 316
+      },
+      {
+        "objet": "AP.AP_CHECKS_ALL",
+        "ligne": 318
+      }
+    ]
+  },
+  {
+    "fichier": "diversAnalyses/Requête statut des factures AP.sql",
+    "lignes": 154,
+    "sha256": "6442a189cb971737ada9f8035c6122f7c37630dbaf3ce351ab78c7298460bf89",
+    "classement": "Facturation / GL-PA / diagnostic à contextualiser",
+    "objets": [
+      {
+        "objet": "AP_INVOICE_DISTRIBUTIONS_ALL",
+        "ligne": 92
+      },
+      {
+        "objet": "PO_VENDORS",
+        "ligne": 93
+      }
+    ]
+  },
+  {
+    "fichier": "diversAnalyses/run_direct.sql",
+    "lignes": 9,
+    "sha256": "4b95c808399fb5e7fd0fb331f97ee9b89b800c5183d4c80274d0c31c341f9028",
+    "classement": "Facturation / GL-PA / diagnostic à contextualiser",
+    "objets": []
+  },
+  {
+    "fichier": "diversAnalyses/temp_oracleProd_20260605_141040.sql",
+    "lignes": 50,
+    "sha256": "6732ce46a369c8c8521d60d602457886393f29e1894ee226f2fbb19cb7838768",
+    "classement": "Facturation / GL-PA / diagnostic à contextualiser",
+    "objets": [
+      {
+        "objet": "FND_CONCURRENT_REQUESTS",
+        "ligne": 22
+      },
+      {
+        "objet": "FND_CONCURRENT_PROGRAMS_VL",
+        "ligne": 23
+      },
+      {
+        "objet": "FND_USER",
+        "ligne": 25
+      },
+      {
+        "objet": "GL_INTERFACE",
+        "ligne": 31
+      },
+      {
+        "objet": "GL_JE_LINES",
+        "ligne": 34
+      }
+    ]
+  },
+  {
+    "fichier": "diversAnalyses/temp_test.sql",
+    "lignes": 614,
+    "sha256": "4b065f5a3ff0e1f456fa0bd1dbb43f1dd1ee1b725a5a9cec461e2043abff83bb",
+    "classement": "Facturation / GL-PA / diagnostic à contextualiser",
+    "objets": [
+      {
+        "objet": "APPS.AP_PAYMENT_SCHEDULES_ALL",
+        "ligne": 16
+      },
+      {
+        "objet": "APPS.PA_TASKS",
+        "ligne": 21
+      },
+      {
+        "objet": "FND_FLEX_VALUE_SETS",
+        "ligne": 25
+      },
+      {
+        "objet": "FND_FLEX_VALUES_VL",
+        "ligne": 26
+      },
+      {
+        "objet": "APPS.AP_INVOICES_ALL",
+        "ligne": 273
+      },
+      {
+        "objet": "APPS.HR_ORGANIZATION_UNITS",
+        "ligne": 274
+      },
+      {
+        "objet": "APPS.AP_INVOICE_LINES_ALL",
+        "ligne": 275
+      },
+      {
+        "objet": "APPS.AP_INVOICE_DISTRIBUTIONS_ALL",
+        "ligne": 277
+      },
+      {
+        "objet": "APPS.GL_CODE_COMBINATIONS",
+        "ligne": 280
+      },
+      {
+        "objet": "IBY_PAYMENT_METHODS_TL",
+        "ligne": 282
+      },
+      {
+        "objet": "AP_TERMS_TL",
+        "ligne": 284
+      },
+      {
+        "objet": "APSA_MIN",
+        "ligne": 286
+      },
+      {
+        "objet": "TASK_NUMBERS",
+        "ligne": 288
+      },
+      {
+        "objet": "FLEX_LOCAL",
+        "ligne": 292
+      },
+      {
+        "objet": "FLEX_ANALYTIQUE",
+        "ligne": 294
+      },
+      {
+        "objet": "DKA_SAP_STATUT_FACTURE",
+        "ligne": 296
+      },
+      {
+        "objet": "PARAMS",
+        "ligne": 298
+      }
+    ]
+  },
+  {
+    "fichier": "diversAnalyses/Traitement_longue_duree_27nov.sql",
+    "lignes": 67,
+    "sha256": "30e4de25aef9cd89121f3a9abe8a30f8fe4bf3130259c4d9a58fa75f616b4c21",
+    "classement": "Facturation / GL-PA / diagnostic à contextualiser",
+    "objets": [
+      {
+        "objet": "FND_CONCURRENT_REQUESTS",
+        "ligne": 30
+      },
+      {
+        "objet": "FND_CONCURRENT_PROGRAMS_VL",
+        "ligne": 31
+      }
+    ]
+  },
+  {
+    "fichier": "diversAnalyses/Utilisateurs ayant une certaine responsabilité.sql",
+    "lignes": 26,
+    "sha256": "ad5c2d3be0bace4f6c0dc02375ea94df8bb934cff979a4bf9b306b861d385ed0",
+    "classement": "Facturation / GL-PA / diagnostic à contextualiser",
+    "objets": [
+      {
+        "objet": "FND_USER_RESP_GROUPS_DIRECT",
+        "ligne": 8
+      },
+      {
+        "objet": "FND_RESPONSIBILITY_TL",
+        "ligne": 24
+      }
+    ]
+  },
+  {
+    "fichier": "DTR-BO/Analyse_requete_provisions_NOV25.sql",
+    "lignes": 313,
+    "sha256": "dc1ca7e4834c951d165a99eeef35ee9fd8bec39a760041fcb7ed8ee84745518e",
+    "classement": "Clôture / provisions / cut-off",
+    "objets": [
+      {
+        "objet": "GL.GL_JE_BATCHES",
+        "ligne": 27
+      },
+      {
+        "objet": "GL.GL_JE_HEADERS",
+        "ligne": 28
+      },
+      {
+        "objet": "GL.GL_LEDGERS",
+        "ligne": 29
+      },
+      {
+        "objet": "GL.GL_JE_LINES",
+        "ligne": 47
+      },
+      {
+        "objet": "XLA.XLA_AE_LINES",
+        "ligne": 51
+      },
+      {
+        "objet": "XLA.XLA_AE_HEADERS",
+        "ligne": 55
+      },
+      {
+        "objet": "XLA.XLA_DISTRIBUTION_LINKS",
+        "ligne": 86
+      },
+      {
+        "objet": "PO.PO_DISTRIBUTIONS_ALL",
+        "ligne": 89
+      },
+      {
+        "objet": "PO.PO_HEADERS_ALL",
+        "ligne": 91
+      },
+      {
+        "objet": "GL.GL_IMPORT_REFERENCES",
+        "ligne": 179
+      }
+    ]
+  },
+  {
+    "fichier": "DTR-BO/ancienneReq.sql",
+    "lignes": 80,
+    "sha256": "c0660939ee3ec99f9758f0a8d26f4ca75eab3c7cd37cf9e10cec27c10860092d",
+    "classement": "Clôture / provisions / cut-off",
+    "objets": [
+      {
+        "objet": "GL.GL_JE_LINES",
+        "ligne": 13
+      },
+      {
+        "objet": "GL.GL_LEDGERS",
+        "ligne": 14
+      },
+      {
+        "objet": "GL.GL_JE_HEADERS",
+        "ligne": 15
+      },
+      {
+        "objet": "GL.GL_JE_BATCHES",
+        "ligne": 16
+      },
+      {
+        "objet": "XLA.XLA_AE_LINES",
+        "ligne": 17
+      },
+      {
+        "objet": "XLA.XLA_AE_HEADERS",
+        "ligne": 21
+      },
+      {
+        "objet": "XLA.XLA_DISTRIBUTION_LINKS",
+        "ligne": 23
+      },
+      {
+        "objet": "PO.PO_DISTRIBUTIONS_ALL",
+        "ligne": 26
+      },
+      {
+        "objet": "GL.GL_IMPORT_REFERENCES",
+        "ligne": 54
+      }
+    ]
+  },
+  {
+    "fichier": "DTR-BO/README_Changement_APPLIED_TO_NOV25.md",
+    "lignes": 90,
+    "sha256": "e46d9df54ecd3a00917c987fa182f846c250931e0e75f04dc734dba69b5c84cf",
+    "classement": "Clôture / provisions / cut-off",
+    "objets": [
+      {
+        "objet": "PO.PO_DISTRIBUTIONS_ALL",
+        "ligne": 31
+      },
+      {
+        "objet": "PO.RCV_TRANSACTIONS",
+        "ligne": 39
+      }
+    ]
+  },
+  {
+    "fichier": "DTR-BO/requete.sql",
+    "lignes": 82,
+    "sha256": "9a8101f50970e9e45c35b3218ac681696399fc9108f9904f5a340d1e396e09c6",
+    "classement": "Clôture / provisions / cut-off",
+    "objets": [
+      {
+        "objet": "GL.GL_JE_LINES",
+        "ligne": 10
+      },
+      {
+        "objet": "GL.GL_LEDGERS",
+        "ligne": 11
+      },
+      {
+        "objet": "GL.GL_JE_HEADERS",
+        "ligne": 12
+      },
+      {
+        "objet": "GL.GL_JE_BATCHES",
+        "ligne": 13
+      },
+      {
+        "objet": "XLA.XLA_AE_LINES",
+        "ligne": 14
+      },
+      {
+        "objet": "XLA.XLA_AE_HEADERS",
+        "ligne": 18
+      },
+      {
+        "objet": "XLA.XLA_DISTRIBUTION_LINKS",
+        "ligne": 20
+      },
+      {
+        "objet": "PO.RCV_TRANSACTIONS",
+        "ligne": 23
+      },
+      {
+        "objet": "PO.PO_DISTRIBUTIONS_ALL",
+        "ligne": 26
+      },
+      {
+        "objet": "PO.PO_HEADERS_ALL",
+        "ligne": 28
+      },
+      {
+        "objet": "GL.GL_IMPORT_REFERENCES",
+        "ligne": 53
+      }
+    ]
+  },
+  {
+    "fichier": "DTR-BO/Requete_provisions_CORRIGEE_compatible_OCT_NOV.sql",
+    "lignes": 197,
+    "sha256": "5c713905ff38d613cb2790e397ecd3b70998f7fd03ad0bd4a0e75ad132c938b0",
+    "classement": "Clôture / provisions / cut-off",
+    "objets": [
+      {
+        "objet": "GL.GL_JE_LINES",
+        "ligne": 44
+      },
+      {
+        "objet": "GL.GL_LEDGERS",
+        "ligne": 45
+      },
+      {
+        "objet": "GL.GL_JE_HEADERS",
+        "ligne": 46
+      },
+      {
+        "objet": "GL.GL_JE_BATCHES",
+        "ligne": 47
+      },
+      {
+        "objet": "XLA.XLA_AE_LINES",
+        "ligne": 48
+      },
+      {
+        "objet": "XLA.XLA_AE_HEADERS",
+        "ligne": 52
+      },
+      {
+        "objet": "XLA.XLA_DISTRIBUTION_LINKS",
+        "ligne": 54
+      },
+      {
+        "objet": "PO.RCV_TRANSACTIONS",
+        "ligne": 58
+      },
+      {
+        "objet": "PO.PO_DISTRIBUTIONS_ALL",
+        "ligne": 62
+      },
+      {
+        "objet": "PO.PO_HEADERS_ALL",
+        "ligne": 67
+      },
+      {
+        "objet": "GL.GL_IMPORT_REFERENCES",
+        "ligne": 111
+      }
+    ]
+  },
+  {
+    "fichier": "DTR-BO/Requete_provisions_NOV25_CORRIGEE.sql",
+    "lignes": 214,
+    "sha256": "a74e5536569b7543b46669f3e9f202b8db408a3ba6d95b161642904a2c2831a9",
+    "classement": "Clôture / provisions / cut-off",
+    "objets": [
+      {
+        "objet": "GL.GL_JE_LINES",
+        "ligne": 41
+      },
+      {
+        "objet": "GL.GL_LEDGERS",
+        "ligne": 42
+      },
+      {
+        "objet": "GL.GL_JE_HEADERS",
+        "ligne": 44
+      },
+      {
+        "objet": "GL.GL_JE_BATCHES",
+        "ligne": 46
+      },
+      {
+        "objet": "XLA.XLA_AE_LINES",
+        "ligne": 48
+      },
+      {
+        "objet": "XLA.XLA_AE_HEADERS",
+        "ligne": 52
+      },
+      {
+        "objet": "XLA.XLA_DISTRIBUTION_LINKS",
+        "ligne": 54
+      },
+      {
+        "objet": "PO.RCV_TRANSACTIONS",
+        "ligne": 58
+      },
+      {
+        "objet": "PO.PO_DISTRIBUTIONS_ALL",
+        "ligne": 62
+      },
+      {
+        "objet": "PO.PO_HEADERS_ALL",
+        "ligne": 64
+      },
+      {
+        "objet": "PO.PO_LINES_ALL",
+        "ligne": 66
+      },
+      {
+        "objet": "GL.GL_IMPORT_REFERENCES",
+        "ligne": 151
+      }
+    ]
+  },
+  {
+    "fichier": "DTR-BO/requeteDiag.sql",
+    "lignes": 38,
+    "sha256": "96dd662797241807d78acd35eed66c46b4c9e2956454313b06351a6eb9cfcd5b",
+    "classement": "Clôture / provisions / cut-off",
+    "objets": [
+      {
+        "objet": "DBA_OBJECTS",
+        "ligne": 3
+      },
+      {
+        "objet": "AD_APPLIED_PATCHES",
+        "ligne": 11
+      },
+      {
+        "objet": "XLA_AE_HEADERS",
+        "ligne": 21
+      },
+      {
+        "objet": "XLA_DISTRIBUTION_LINKS",
+        "ligne": 22
+      },
+      {
+        "objet": "RCV_RECEIVING_SUB_LEDGER",
+        "ligne": 35
+      }
+    ]
+  },
+  {
+    "fichier": "DTR-BO/requeteNVetAn.sql",
+    "lignes": 187,
+    "sha256": "8b31b194671e9c2b7b9eea57dd0e093bed5aa3dba874a443dbe81be35b0c8820",
+    "classement": "Clôture / provisions / cut-off",
+    "objets": [
+      {
+        "objet": "GL.GL_JE_LINES",
+        "ligne": 12
+      },
+      {
+        "objet": "GL.GL_LEDGERS",
+        "ligne": 13
+      },
+      {
+        "objet": "GL.GL_JE_HEADERS",
+        "ligne": 14
+      },
+      {
+        "objet": "GL.GL_JE_BATCHES",
+        "ligne": 15
+      },
+      {
+        "objet": "XLA.XLA_AE_LINES",
+        "ligne": 16
+      },
+      {
+        "objet": "XLA.XLA_AE_HEADERS",
+        "ligne": 20
+      },
+      {
+        "objet": "XLA.XLA_DISTRIBUTION_LINKS",
+        "ligne": 22
+      },
+      {
+        "objet": "PO.RCV_TRANSACTIONS",
+        "ligne": 25
+      },
+      {
+        "objet": "PO.PO_DISTRIBUTIONS_ALL",
+        "ligne": 29
+      },
+      {
+        "objet": "PO.PO_HEADERS_ALL",
+        "ligne": 34
+      },
+      {
+        "objet": "GL.GL_IMPORT_REFERENCES",
+        "ligne": 61
+      }
+    ]
+  },
+  {
+    "fichier": "factureEndoubleTableStandrad/Extraction_Depenses_GS0211082R_Soc348.sql",
+    "lignes": 180,
+    "sha256": "87602b7758128836d9e3afe58ca8bbd1e4117fae81013eb0116d951a2cbe8d44",
+    "classement": "Facturation / GL-PA / diagnostic à contextualiser",
+    "objets": [
+      {
+        "objet": "AP.AP_INVOICE_LINES_ALL",
+        "ligne": 51
+      },
+      {
+        "objet": "AP.AP_INVOICE_DISTRIBUTIONS_ALL",
+        "ligne": 52
+      },
+      {
+        "objet": "GL.GL_CODE_COMBINATIONS_KFV",
+        "ligne": 54
+      },
+      {
+        "objet": "AP.AP_SUPPLIERS",
+        "ligne": 55
+      },
+      {
+        "objet": "AP.AP_SUPPLIER_SITES_ALL",
+        "ligne": 56
+      },
+      {
+        "objet": "PO.PO_HEADERS_ALL",
+        "ligne": 58
+      },
+      {
+        "objet": "AP.AP_INVOICE_PAYMENTS_ALL",
+        "ligne": 59
+      },
+      {
+        "objet": "AP.AP_CHECKS_ALL",
+        "ligne": 60
+      },
+      {
+        "objet": "AP.AP_PAYMENT_SCHEDULES_ALL",
+        "ligne": 61
+      },
+      {
+        "objet": "HR_OPERATING_UNITS",
+        "ligne": 62
+      },
+      {
+        "objet": "GL.GL_LEDGERS",
+        "ligne": 63
+      },
+      {
+        "objet": "APPS.FND_USER",
+        "ligne": 64
+      },
+      {
+        "objet": "GL.GL_JE_HEADERS",
+        "ligne": 116
+      }
+    ]
+  },
+  {
+    "fichier": "factureEndoubleTableStandrad/Rapport_Doublons_OpenInterface_AR.sql",
+    "lignes": 240,
+    "sha256": "14ecd62c69196b29cfdd4acffa0e2e48b3e648c0e8b11f8842ac360de59f75e8",
+    "classement": "Facturation / GL-PA / diagnostic à contextualiser",
+    "objets": [
+      {
+        "objet": "AR.RA_INTERFACE_LINES_ALL",
+        "ligne": 63
+      },
+      {
+        "objet": "AR.RA_INTERFACE_ERRORS_ALL",
+        "ligne": 64
+      },
+      {
+        "objet": "AR.RA_INTERFACE_SALESCREDITS_ALL",
+        "ligne": 83
+      },
+      {
+        "objet": "CIBLES",
+        "ligne": 84
+      },
+      {
+        "objet": "AR.RA_INTERFACE_DISTRIBUTIONS_ALL",
+        "ligne": 87
+      },
+      {
+        "objet": "AR.RA_CUSTOMER_TRX_ALL",
+        "ligne": 145
+      }
+    ]
+  },
+  {
+    "fichier": "factureEndoubleTableStandrad/Suppression_Doublons_Execution.sql",
+    "lignes": 192,
+    "sha256": "3cff87d6d771eb7840498310bfdf15d9f6948e3d143a1025f4eca8f10027ca43",
+    "classement": "Facturation / GL-PA / diagnostic à contextualiser",
+    "objets": [
+      {
+        "objet": "AR.RA_INTERFACE_LINES_ALL",
+        "ligne": 73
+      },
+      {
+        "objet": "AR.RA_INTERFACE_ERRORS_ALL",
+        "ligne": 74
+      },
+      {
+        "objet": "AR.RA_INTERFACE_SALESCREDITS_ALL",
+        "ligne": 113
+      },
+      {
+        "objet": "AR.RA_INTERFACE_DISTRIBUTIONS_ALL",
+        "ligne": 118
+      }
+    ]
+  },
+  {
+    "fichier": "factureEndoubleTableStandrad/Suppression_Doublons_OpenInterface_AR.sql",
+    "lignes": 319,
+    "sha256": "3bdd2634b00b19b6f07f3f7c55ab7ebf62b204bb8b4cd7b6a9d19fa0c26a68cb",
+    "classement": "Facturation / GL-PA / diagnostic à contextualiser",
+    "objets": [
+      {
+        "objet": "AR.RA_INTERFACE_LINES_ALL",
+        "ligne": 87
+      },
+      {
+        "objet": "AR.RA_INTERFACE_ERRORS_ALL",
+        "ligne": 88
+      },
+      {
+        "objet": "AR.RA_INTERFACE_SALESCREDITS_ALL",
+        "ligne": 142
+      },
+      {
+        "objet": "CIBLES",
+        "ligne": 143
+      },
+      {
+        "objet": "AR.RA_INTERFACE_DISTRIBUTIONS_ALL",
+        "ligne": 146
+      }
+    ]
+  },
+  {
+    "fichier": "FactureLitige/DKA_GENERATE_URL_IMAGE_BDC_OPTIMISEE.sql",
+    "lignes": 261,
+    "sha256": "445c24ebba22d5f08f0c4cbb54c2871edbf49c26c6f9edba6b469fbc8dc9c909",
+    "classement": "Litiges / référentiel / pièces",
+    "objets": [
+      {
+        "objet": "APPS.FND_ATTACHED_DOCUMENTS",
+        "ligne": 56
+      },
+      {
+        "objet": "APPS.PO_HEADERS_ALL",
+        "ligne": 57
+      },
+      {
+        "objet": "APPS.FND_DOCUMENTS",
+        "ligne": 59
+      },
+      {
+        "objet": "FND_LOB_ACCESS",
+        "ligne": 89
+      },
+      {
+        "objet": "DKA_PARAMETERS",
+        "ligne": 114
+      },
+      {
+        "objet": "DKA_JMETER_ST.EXTRACTION_BDC",
+        "ligne": 130
+      }
+    ]
+  },
+  {
+    "fichier": "FactureLitige/DKA_GENERATE_URL_IMAGE_FACTURE_SOURCE.sql",
+    "lignes": 178,
+    "sha256": "d4add3a41d07c52351ca1a4f5ae91c60cccbf52c71ef78b8299496c32963ecc8",
+    "classement": "Litiges / référentiel / pièces",
+    "objets": [
+      {
+        "objet": "DKA_JMETER_ST.EXTRACTION_FACTURE",
+        "ligne": 25
+      },
+      {
+        "objet": "DKA_PARAMETERS",
+        "ligne": 34
+      },
+      {
+        "objet": "APPS.FND_ATTACHED_DOCUMENTS",
+        "ligne": 60
+      },
+      {
+        "objet": "APPS.AP_INVOICES_ALL",
+        "ligne": 61
+      },
+      {
+        "objet": "APPS.FND_DOCUMENTS",
+        "ligne": 63
+      },
+      {
+        "objet": "FND_DOCUMENT_CATEGORIES_TL",
+        "ligne": 65
+      },
+      {
+        "objet": "APPS.FND_LOB_ACCESS",
+        "ligne": 69
+      },
+      {
+        "objet": "APPS.FND_DOCUMENTS_TL",
+        "ligne": 71
+      },
+      {
+        "objet": "FND_DOCUMENT_DATATYPES",
+        "ligne": 75
+      },
+      {
+        "objet": "FND_LOB_ACCESS",
+        "ligne": 91
+      }
+    ]
+  },
+  {
+    "fichier": "FactureLitige/optimized_query.sql",
+    "lignes": 147,
+    "sha256": "7c2326fb32ee2415c3ad6d39acc5f7c61a602baa2fb7e1563fd4bcfe3cb61e96",
+    "classement": "Litiges / référentiel / pièces",
+    "objets": [
+      {
+        "objet": "APPS.AP_HOLDS_ALL",
+        "ligne": 23
+      },
+      {
+        "objet": "DKA_IAPFAC_DEBLOC_REPOR_INTERF",
+        "ligne": 36
+      },
+      {
+        "objet": "FACTURES_EN_LITIGE",
+        "ligne": 85
+      },
+      {
+        "objet": "AP_INV_APRVL_HIST_ALL",
+        "ligne": 88
+      },
+      {
+        "objet": "COMMENTAIRES_IVALUA_PARSED",
+        "ligne": 98
+      },
+      {
+        "objet": "APPS.FND_USER",
+        "ligne": 102
+      },
+      {
+        "objet": "APPS.PER_PEOPLE_F",
+        "ligne": 108
+      }
+    ]
+  },
+  {
+    "fichier": "FactureLitige/original_query.sql",
+    "lignes": 73,
+    "sha256": "5717e57bf149a229a71f61c180d93f09aa7659703380dc92482e2a6a790e8465",
+    "classement": "Litiges / référentiel / pièces",
+    "objets": [
+      {
+        "objet": "APPS.FND_USER",
+        "ligne": 9
+      },
+      {
+        "objet": "APPS.PER_PEOPLE_F",
+        "ligne": 20
+      },
+      {
+        "objet": "PER_PEOPLE_F",
+        "ligne": 31
+      },
+      {
+        "objet": "APPS.AP_HOLDS_ALL",
+        "ligne": 66
+      },
+      {
+        "objet": "AP_INV_APRVL_HIST_ALL",
+        "ligne": 67
+      },
+      {
+        "objet": "DKA_IAPFAC_DEBLOC_REPOR_INTERF",
+        "ligne": 70
+      },
+      {
+        "objet": "AP_HOLDS_ALL",
+        "ligne": 72
+      }
+    ]
+  },
+  {
+    "fichier": "FactureLitige/README_Optimisation_SQL_Export_Gestion_Litiges.md",
+    "lignes": 227,
+    "sha256": "f5c40e05fa84fe67739347429aaed4b3d386ce728c0d2a3d85ce51184c34f9de",
+    "classement": "Litiges / référentiel / pièces",
+    "objets": [
+      {
+        "objet": "AP_HOLDS_ALL",
+        "ligne": 32
+      },
+      {
+        "objet": "DIRECT",
+        "ligne": 44
+      },
+      {
+        "objet": "HOLDS_COUNT",
+        "ligne": 55
+      },
+      {
+        "objet": "APPS.PER_ALL_PEOPLE_F",
+        "ligne": 68
+      },
+      {
+        "objet": "EMPLOYE_ACTIF",
+        "ligne": 78
+      },
+      {
+        "objet": "SUR",
+        "ligne": 85
+      },
+      {
+        "objet": "AP_INV_APRVL_HIST_ALL",
+        "ligne": 89
+      },
+      {
+        "objet": "IBY.IBY_EXTERNAL_PAYEES_ALL",
+        "ligne": 126
+      },
+      {
+        "objet": "AP_INVOICE_DISTRIBUTIONS_ALL",
+        "ligne": 144
+      },
+      {
+        "objet": "AP_PAYMENT_SCHEDULES_ALL",
+        "ligne": 166
+      },
+      {
+        "objet": "AP_INVOICES_ALL",
+        "ligne": 168
+      },
+      {
+        "objet": "VENDOR_BALANCE",
+        "ligne": 180
+      },
+      {
+        "objet": "PRINCIPAL",
+        "ligne": 219
+      }
+    ]
+  },
+  {
+    "fichier": "FactureLitige/Referentiel_Fournisseur.sql",
+    "lignes": 169,
+    "sha256": "3d6ccdb21e47ccf3f5fcdc963fbbc8706c73362ab94ed76d13367e30b5c732f1",
+    "classement": "Litiges / référentiel / pièces",
+    "objets": [
+      {
+        "objet": "APPLSYS.FND_FLEX_VALUE_SETS",
+        "ligne": 7
+      },
+      {
+        "objet": "APPLSYS.FND_FLEX_VALUES",
+        "ligne": 8
+      },
+      {
+        "objet": "APPLSYS.FND_FLEX_VALUES_TL",
+        "ligne": 10
+      },
+      {
+        "objet": "APPS.AP_SUPPLIER_SITES_ALL",
+        "ligne": 109
+      },
+      {
+        "objet": "AR.HZ_PARTY_SITES",
+        "ligne": 110
+      },
+      {
+        "objet": "AP.AP_SUPPLIERS",
+        "ligne": 111
+      },
+      {
+        "objet": "AR.HZ_PARTIES",
+        "ligne": 112
+      },
+      {
+        "objet": "IBY.IBY_EXTERNAL_PAYEES_ALL",
+        "ligne": 113
+      },
+      {
+        "objet": "APPLSYS.FND_LOOKUP_VALUES",
+        "ligne": 119
+      },
+      {
+        "objet": "AP.AP_TERMS_TL",
+        "ligne": 122
+      },
+      {
+        "objet": "ACCORD",
+        "ligne": 124
+      },
+      {
+        "objet": "HR.HR_LOCATIONS_ALL",
+        "ligne": 130
+      },
+      {
+        "objet": "HR.HR_ALL_ORGANIZATION_UNITS",
+        "ligne": 132
+      },
+      {
+        "objet": "APPS.GL_CODE_COMBINATIONS_KFV",
+        "ligne": 133
+      },
+      {
+        "objet": "APPLSYS.FND_USER",
+        "ligne": 142
+      }
+    ]
+  },
+  {
+    "fichier": "FactureLitige/Referentiel_Fournisseur_OPTIMISEE.sql",
+    "lignes": 199,
+    "sha256": "7c448b2df0b7626df2157edc50072d6c10fc861196dc5e7f4bf1bfe7b5409ce7",
+    "classement": "Litiges / référentiel / pièces",
+    "objets": [
+      {
+        "objet": "APPLSYS.FND_FLEX_VALUES",
+        "ligne": 35
+      },
+      {
+        "objet": "APPLSYS.FND_FLEX_VALUES_TL",
+        "ligne": 36
+      },
+      {
+        "objet": "AR.HZ_PARTY_SITES",
+        "ligne": 154
+      },
+      {
+        "objet": "AP.AP_SUPPLIERS",
+        "ligne": 155
+      },
+      {
+        "objet": "AR.HZ_PARTIES",
+        "ligne": 156
+      },
+      {
+        "objet": "HR.HR_ALL_ORGANIZATION_UNITS",
+        "ligne": 157
+      },
+      {
+        "objet": "APPS.GL_CODE_COMBINATIONS_KFV",
+        "ligne": 158
+      },
+      {
+        "objet": "AP.AP_TERMS_TL",
+        "ligne": 161
+      },
+      {
+        "objet": "APPLSYS.FND_USER",
+        "ligne": 163
+      },
+      {
+        "objet": "IBY.IBY_EXTERNAL_PAYEES_ALL",
+        "ligne": 170
+      },
+      {
+        "objet": "IEPA_LATEST",
+        "ligne": 176
+      },
+      {
+        "objet": "APPLSYS.FND_LOOKUP_VALUES",
+        "ligne": 178
+      },
+      {
+        "objet": "ACCORD",
+        "ligne": 183
+      },
+      {
+        "objet": "HR.HR_LOCATIONS_ALL",
+        "ligne": 184
+      }
+    ]
+  },
+  {
+    "fichier": "FactureLitige/Script_Generation_BDC_2026_Mensuel.sql",
+    "lignes": 258,
+    "sha256": "c7f81bd9189adbac93f9b080c68652c87172cd90bff482e74f11e35ea8a2287a",
+    "classement": "Litiges / référentiel / pièces",
+    "objets": [
+      {
+        "objet": "DKA_JMETER_ST.EXTRACTION_BDC",
+        "ligne": 83
+      },
+      {
+        "objet": "DKA_JMETER_ST.EXTRACTION_BDC_2026_FULL",
+        "ligne": 89
+      }
+    ]
+  },
+  {
+    "fichier": "FactureLitige/SQL_Export_Gestion_Litiges.sql",
+    "lignes": 158,
+    "sha256": "a8dbfbd9c424976a53274a4090e0756d5cf217ad213f7aa7cdb5593cfe22951d",
+    "classement": "Litiges / référentiel / pièces",
+    "objets": [
+      {
+        "objet": "AP_SUPPLIERS",
+        "ligne": 139
+      },
+      {
+        "objet": "AP_SUPPLIER_SITES_ALL",
+        "ligne": 140
+      },
+      {
+        "objet": "HR_ORGANIZATION_UNITS",
+        "ligne": 141
+      },
+      {
+        "objet": "GL_LEDGERS",
+        "ligne": 142
+      },
+      {
+        "objet": "GL_CODE_COMBINATIONS",
+        "ligne": 143
+      },
+      {
+        "objet": "IBY.IBY_EXTERNAL_PAYEES_ALL",
+        "ligne": 144
+      },
+      {
+        "objet": "AP_PAYMENT_SCHEDULES_ALL",
+        "ligne": 145
+      },
+      {
+        "objet": "APPS.FND_USER",
+        "ligne": 146
+      },
+      {
+        "objet": "IBY_EXT_BANK_ACCOUNTS",
+        "ligne": 147
+      },
+      {
+        "objet": "APPS.PER_ALL_PEOPLE_F",
+        "ligne": 148
+      },
+      {
+        "objet": "AP_HOLDS_ALL",
+        "ligne": 149
+      },
+      {
+        "objet": "FND_USER",
+        "ligne": 152
+      },
+      {
+        "objet": "AP_INV_APRVL_HIST_ALL",
+        "ligne": 153
+      }
+    ]
+  },
+  {
+    "fichier": "FactureLitige/SQL_Export_Gestion_Litiges_OPTIMISEE.sql",
+    "lignes": 272,
+    "sha256": "02f880664ee1669ee5fa5a2730de6e7e76a7a6a0657a6694b3800e4c792592f7",
+    "classement": "Litiges / référentiel / pièces",
+    "objets": [
+      {
+        "objet": "AP_PAYMENT_SCHEDULES_ALL",
+        "ligne": 160
+      },
+      {
+        "objet": "AP_SUPPLIERS",
+        "ligne": 253
+      },
+      {
+        "objet": "AP_SUPPLIER_SITES_ALL",
+        "ligne": 254
+      },
+      {
+        "objet": "HR_ORGANIZATION_UNITS",
+        "ligne": 255
+      },
+      {
+        "objet": "GL_LEDGERS",
+        "ligne": 256
+      },
+      {
+        "objet": "GL_CODE_COMBINATIONS",
+        "ligne": 257
+      },
+      {
+        "objet": "IBY.IBY_EXTERNAL_PAYEES_ALL",
+        "ligne": 258
+      },
+      {
+        "objet": "HOLD_LITIGE",
+        "ligne": 260
+      },
+      {
+        "objet": "APPS.FND_USER",
+        "ligne": 262
+      },
+      {
+        "objet": "IBY_EXT_BANK_ACCOUNTS",
+        "ligne": 263
+      },
+      {
+        "objet": "EMPLOYE_ACTIF",
+        "ligne": 264
+      },
+      {
+        "objet": "HOLDS_COUNT",
+        "ligne": 265
+      },
+      {
+        "objet": "ATTACHMENTS_EXIST",
+        "ligne": 266
+      },
+      {
+        "objet": "DISTRIBUTIONS_AGG",
+        "ligne": 267
+      },
+      {
+        "objet": "VENDOR_BALANCE",
+        "ligne": 268
+      }
+    ]
+  },
+  {
+    "fichier": "fermetureCommandesPO/archive/fermeture_commandes_04122025.sql",
+    "lignes": 223,
+    "sha256": "3269a14667048ea7e9cfc60f3edbca0e8a789a77dc57937ea8ba1b54e60c064b",
+    "classement": "Référentiel fournisseur / commandes",
+    "objets": [
+      {
+        "objet": "PO.PO_HEADERS_ALL",
+        "ligne": 69
+      },
+      {
+        "objet": "PO.PO_LINES_ALL",
+        "ligne": 88
+      },
+      {
+        "objet": "PO.PO_LINE_LOCATIONS_ALL",
+        "ligne": 97
+      },
+      {
+        "objet": "PO.PO_DISTRIBUTIONS_ALL",
+        "ligne": 106
+      }
+    ]
+  },
+  {
+    "fichier": "fermetureCommandesPO/archive/fermeture_commandes_23122025.sql",
+    "lignes": 201,
+    "sha256": "dbb05ebc2caa5d3271e7b0a226ff578e76fe709276416f2ae210f1975965d070",
+    "classement": "Référentiel fournisseur / commandes",
+    "objets": [
+      {
+        "objet": "PO.PO_HEADERS_ALL",
+        "ligne": 66
+      },
+      {
+        "objet": "PO.PO_LINES_ALL",
+        "ligne": 88
+      },
+      {
+        "objet": "PO.PO_LINE_LOCATIONS_ALL",
+        "ligne": 97
+      }
+    ]
+  },
+  {
+    "fichier": "fermetureCommandesPO/archive/fermeture_commandes_24122025.sql",
+    "lignes": 204,
+    "sha256": "7f8c3ab10d93b947e8e1cbfe237c9fa299c7080dd09cddcd08ef40667d95212c",
+    "classement": "Référentiel fournisseur / commandes",
+    "objets": [
+      {
+        "objet": "PO.PO_HEADERS_ALL",
+        "ligne": 66
+      },
+      {
+        "objet": "PO.PO_LINES_ALL",
+        "ligne": 88
+      },
+      {
+        "objet": "PO.PO_LINE_LOCATIONS_ALL",
+        "ligne": 97
+      }
+    ]
+  },
+  {
+    "fichier": "fermetureCommandesPO/archive/fermeture_commandes_26012026.sql",
+    "lignes": 186,
+    "sha256": "7ead7921da876af34f5aec658f7b5cff491a0d15db444337cdd7ca38ff303992",
+    "classement": "Référentiel fournisseur / commandes",
+    "objets": [
+      {
+        "objet": "PO.PO_HEADERS_ALL",
+        "ligne": 61
+      },
+      {
+        "objet": "PO.PO_LINES_ALL",
+        "ligne": 83
+      },
+      {
+        "objet": "PO.PO_LINE_LOCATIONS_ALL",
+        "ligne": 92
+      }
+    ]
+  },
+  {
+    "fichier": "fermetureCommandesPO/archive/fermeture_commandes_30012026.sql",
+    "lignes": 207,
+    "sha256": "418d5df91b8fd21437e81c667c4b0a80a9c823d5e1d78c3ffa91f6e05e98c145",
+    "classement": "Référentiel fournisseur / commandes",
+    "objets": [
+      {
+        "objet": "PO.PO_HEADERS_ALL",
+        "ligne": 80
+      },
+      {
+        "objet": "PO.PO_LINES_ALL",
+        "ligne": 102
+      },
+      {
+        "objet": "PO.PO_LINE_LOCATIONS_ALL",
+        "ligne": 111
+      },
+      {
+        "objet": "APPLSYS.FND_USER",
+        "ligne": 182
+      }
+    ]
+  },
+  {
+    "fichier": "fermetureCommandesPO/archive/hindFermeture.sql",
+    "lignes": 162,
+    "sha256": "8efc6c874d12fa46f8a680fe446b87365f53f7da0c0ea9e106cf682131fd733d",
+    "classement": "Référentiel fournisseur / commandes",
+    "objets": [
+      {
+        "objet": "APPS.PO_HEADERS_ALL",
+        "ligne": 18
+      },
+      {
+        "objet": "APPS.PO_VENDOR_SITES_ALL",
+        "ligne": 19
+      },
+      {
+        "objet": "APPS.HR_ALL_ORGANIZATION_UNITS",
+        "ligne": 22
+      },
+      {
+        "objet": "APPS.PO_LINE_LOCATIONS_ALL",
+        "ligne": 92
+      },
+      {
+        "objet": "APPS.PO_LINES_ALL",
+        "ligne": 105
+      }
+    ]
+  },
+  {
+    "fichier": "fermetureCommandesPO/archive/hindFermetureEhanced.sql",
+    "lignes": 296,
+    "sha256": "2564fd0d6418bed2c65b82dddcbe215a30469b64ad91f84955feafa4967d18ac",
+    "classement": "Référentiel fournisseur / commandes",
+    "objets": [
+      {
+        "objet": "PO.PO_LINES_ALL",
+        "ligne": 36
+      },
+      {
+        "objet": "PO.PO_LINE_LOCATIONS_ALL",
+        "ligne": 39
+      },
+      {
+        "objet": "PO.PO_DISTRIBUTIONS_ALL",
+        "ligne": 42
+      },
+      {
+        "objet": "PO.PO_HEADERS_ALL",
+        "ligne": 50
+      },
+      {
+        "objet": "HR.HR_ALL_ORGANIZATION_UNITS",
+        "ligne": 51
+      }
+    ]
+  },
+  {
+    "fichier": "FichierPaie22012026/extract_package.sql",
+    "lignes": 51,
+    "sha256": "91dfb78af630a6dc1e8fa226996adfbccff745289bff4cdbed6ebcf46ffe2884",
+    "classement": "Facturation / GL-PA / diagnostic à contextualiser",
+    "objets": [
+      {
+        "objet": "ALL_SOURCE",
+        "ligne": 24
+      }
+    ]
+  },
+  {
+    "fichier": "FichierPaie22012026/README_Package_Extraction.md",
+    "lignes": 35,
+    "sha256": "fbe84bdb79f67ceb55008078e003c2c83fc68f95f367fcb40eb0b4b681829b55",
+    "classement": "Facturation / GL-PA / diagnostic à contextualiser",
+    "objets": [
+      {
+        "objet": "ALL_SOURCE",
+        "ligne": 26
+      }
+    ]
+  },
+  {
+    "fichier": "JiraKDFI3809/CAP_OD_Cut_Off_SSTR_factures_V3.sql",
+    "lignes": 339,
+    "sha256": "18ecd104da2fb8daf23f2e5737c9bdae63675f8b5a0bf86cf6b95935e5ecdc56",
+    "classement": "Clôture / provisions / cut-off",
+    "objets": [
+      {
+        "objet": "PO.PO_HEADERS_ALL",
+        "ligne": 22
+      },
+      {
+        "objet": "DKA.DKA_CONTRAT_SSTR_ARCHI",
+        "ligne": 27
+      },
+      {
+        "objet": "DKA_SPO_CONTRAT_SSTR_IVALUA",
+        "ligne": 64
+      },
+      {
+        "objet": "AP.AP_INVOICES_ALL",
+        "ligne": 86
+      },
+      {
+        "objet": "AP.AP_INVOICE_DISTRIBUTIONS_ALL",
+        "ligne": 87
+      },
+      {
+        "objet": "PO.PO_DISTRIBUTIONS_ALL",
+        "ligne": 89
+      },
+      {
+        "objet": "GL.GL_JE_LINES",
+        "ligne": 256
+      },
+      {
+        "objet": "GL.GL_LEDGERS",
+        "ligne": 257
+      },
+      {
+        "objet": "GL.GL_JE_HEADERS",
+        "ligne": 259
+      },
+      {
+        "objet": "GL.GL_IMPORT_REFERENCES",
+        "ligne": 261
+      },
+      {
+        "objet": "GL.GL_PERIODS",
+        "ligne": 264
+      },
+      {
+        "objet": "GL.GL_CODE_COMBINATIONS",
+        "ligne": 266
+      },
+      {
+        "objet": "PA.PA_TASKS",
+        "ligne": 270
+      },
+      {
+        "objet": "HR.HR_ALL_ORGANIZATION_UNITS",
+        "ligne": 272
+      },
+      {
+        "objet": "CONTRACT",
+        "ligne": 276
+      },
+      {
+        "objet": "DKA.DKA_CONTRAT_SSTR",
+        "ligne": 280
+      },
+      {
+        "objet": "PO.PO_LINE_LOCATIONS_ALL",
+        "ligne": 282
+      },
+      {
+        "objet": "INVOICE",
+        "ligne": 284
+      }
+    ]
+  },
+  {
+    "fichier": "JiraKDFI3809/SSTR_Od_Cut_Off_détail_factures_V4.sql",
+    "lignes": 127,
+    "sha256": "7d2dae56531bc7d35a96cbcfc8198113672512a0802f4f809f33c8eb8f4a5a1d",
+    "classement": "Clôture / provisions / cut-off",
+    "objets": [
+      {
+        "objet": "AP.AP_INVOICE_DISTRIBUTIONS_ALL",
+        "ligne": 11
+      },
+      {
+        "objet": "AP.AP_INVOICES_ALL",
+        "ligne": 12
+      },
+      {
+        "objet": "PO.PO_HEADERS_ALL",
+        "ligne": 37
+      },
+      {
+        "objet": "DKA.DKA_CONTRAT_SSTR_ARCHI",
+        "ligne": 42
+      },
+      {
+        "objet": "GL.GL_JE_LINES",
+        "ligne": 102
+      },
+      {
+        "objet": "GL.GL_LEDGERS",
+        "ligne": 103
+      },
+      {
+        "objet": "GL.GL_JE_HEADERS",
+        "ligne": 104
+      },
+      {
+        "objet": "GL.GL_IMPORT_REFERENCES",
+        "ligne": 105
+      },
+      {
+        "objet": "GL.GL_PERIODS",
+        "ligne": 107
+      },
+      {
+        "objet": "GL.GL_CODE_COMBINATIONS",
+        "ligne": 108
+      },
+      {
+        "objet": "PO.PO_DISTRIBUTIONS_ALL",
+        "ligne": 109
+      },
+      {
+        "objet": "PA.PA_TASKS",
+        "ligne": 110
+      },
+      {
+        "objet": "HR.HR_ALL_ORGANIZATION_UNITS",
+        "ligne": 111
+      },
+      {
+        "objet": "AP.AP_SUPPLIERS",
+        "ligne": 113
+      },
+      {
+        "objet": "AP.AP_SUPPLIER_SITES_ALL",
+        "ligne": 114
+      },
+      {
+        "objet": "CONTRACT",
+        "ligne": 115
+      },
+      {
+        "objet": "DKA.DKA_CONTRAT_SSTR",
+        "ligne": 118
+      },
+      {
+        "objet": "PO.PO_LINE_LOCATIONS_ALL",
+        "ligne": 119
+      },
+      {
+        "objet": "INVOICE_DETAILS",
+        "ligne": 120
+      }
+    ]
+  },
+  {
+    "fichier": "KDFI-3422/maj_last_update_date_categories.sql",
+    "lignes": 157,
+    "sha256": "6dd334a75dbb04b324f4ad6b001758b35b1a2d628f5e911e15ab97fc07ba5bcc",
+    "classement": "Support technique / orchestration / autre domaine",
+    "objets": [
+      {
+        "objet": "FND_USER",
+        "ligne": 74
+      },
+      {
+        "objet": "FA.FA_CATEGORIES_B",
+        "ligne": 88
+      }
+    ]
+  },
+  {
+    "fichier": "KDFI-3426AnnulerBonDecommande/annulation_PO_4736744ST2501.sql",
+    "lignes": 336,
+    "sha256": "4fb00fd65232aabfac1d51446524487c464cd4eaeb3cb48c6c3ee2fcacd054d5",
+    "classement": "Référentiel fournisseur / commandes",
+    "objets": [
+      {
+        "objet": "FND_USER",
+        "ligne": 45
+      },
+      {
+        "objet": "FND_RESPONSIBILITY_VL",
+        "ligne": 51
+      },
+      {
+        "objet": "AP.AP_SUPPLIERS",
+        "ligne": 91
+      },
+      {
+        "objet": "PO.PO_LINES_ALL",
+        "ligne": 110
+      },
+      {
+        "objet": "PO.RCV_TRANSACTIONS",
+        "ligne": 136
+      },
+      {
+        "objet": "PO.RCV_SHIPMENT_LINES",
+        "ligne": 138
+      },
+      {
+        "objet": "AP.AP_INVOICE_DISTRIBUTIONS_ALL",
+        "ligne": 163
+      },
+      {
+        "objet": "PO.PO_DISTRIBUTIONS_ALL",
+        "ligne": 164
+      },
+      {
+        "objet": "PO.PO_HEADERS_ALL",
+        "ligne": 165
+      }
+    ]
+  },
+  {
+    "fichier": "KDFI-3825-CUT OFF SSTR/SSTR_Od_Cut_Off_détail_factures_V4.sql",
+    "lignes": 127,
+    "sha256": "7d2dae56531bc7d35a96cbcfc8198113672512a0802f4f809f33c8eb8f4a5a1d",
+    "classement": "Clôture / provisions / cut-off",
+    "objets": [
+      {
+        "objet": "AP.AP_INVOICE_DISTRIBUTIONS_ALL",
+        "ligne": 11
+      },
+      {
+        "objet": "AP.AP_INVOICES_ALL",
+        "ligne": 12
+      },
+      {
+        "objet": "PO.PO_HEADERS_ALL",
+        "ligne": 37
+      },
+      {
+        "objet": "DKA.DKA_CONTRAT_SSTR_ARCHI",
+        "ligne": 42
+      },
+      {
+        "objet": "GL.GL_JE_LINES",
+        "ligne": 102
+      },
+      {
+        "objet": "GL.GL_LEDGERS",
+        "ligne": 103
+      },
+      {
+        "objet": "GL.GL_JE_HEADERS",
+        "ligne": 104
+      },
+      {
+        "objet": "GL.GL_IMPORT_REFERENCES",
+        "ligne": 105
+      },
+      {
+        "objet": "GL.GL_PERIODS",
+        "ligne": 107
+      },
+      {
+        "objet": "GL.GL_CODE_COMBINATIONS",
+        "ligne": 108
+      },
+      {
+        "objet": "PO.PO_DISTRIBUTIONS_ALL",
+        "ligne": 109
+      },
+      {
+        "objet": "PA.PA_TASKS",
+        "ligne": 110
+      },
+      {
+        "objet": "HR.HR_ALL_ORGANIZATION_UNITS",
+        "ligne": 111
+      },
+      {
+        "objet": "AP.AP_SUPPLIERS",
+        "ligne": 113
+      },
+      {
+        "objet": "AP.AP_SUPPLIER_SITES_ALL",
+        "ligne": 114
+      },
+      {
+        "objet": "CONTRACT",
+        "ligne": 115
+      },
+      {
+        "objet": "DKA.DKA_CONTRAT_SSTR",
+        "ligne": 118
+      },
+      {
+        "objet": "PO.PO_LINE_LOCATIONS_ALL",
+        "ligne": 119
+      },
+      {
+        "objet": "INVOICE_DETAILS",
+        "ligne": 120
+      }
+    ]
+  },
+  {
+    "fichier": "lanceurCentrale/Analyse_Erreur_Control_Fournisseur/Control_Fournisseur_CORRIGEE.sql",
+    "lignes": 586,
+    "sha256": "1eb1d23752f0fd50d683e715c098ac603f96920944c182f24c9078e683e96887",
+    "classement": "Référentiel fournisseur / commandes",
+    "objets": [
+      {
+        "objet": "APPS.PO_VENDORS",
+        "ligne": 23
+      },
+      {
+        "objet": "AP.AP_INVOICES_ALL",
+        "ligne": 32
+      },
+      {
+        "objet": "AP.AP_PAYMENT_SCHEDULES_ALL",
+        "ligne": 33
+      },
+      {
+        "objet": "AR.HZ_PARTIES",
+        "ligne": 61
+      },
+      {
+        "objet": "APPLSYS.FND_USER",
+        "ligne": 62
+      },
+      {
+        "objet": "APPS.AP_SUPPLIER_SITES_ALL",
+        "ligne": 72
+      },
+      {
+        "objet": "AP.AP_TERMS_TL",
+        "ligne": 169
+      },
+      {
+        "objet": "DBL",
+        "ligne": 253
+      },
+      {
+        "objet": "SOLDE",
+        "ligne": 254
+      },
+      {
+        "objet": "APPLSYS.FND_TERRITORIES",
+        "ligne": 376
+      },
+      {
+        "objet": "HR.HR_ALL_ORGANIZATION_UNITS",
+        "ligne": 379
+      }
+    ]
+  },
+  {
+    "fichier": "lionelDtr/XXEAI.sql",
+    "lignes": 3102,
+    "sha256": "b93556a70b2cbfb709d084d90ac15797c28dd6b9af99fe431d68939f404cfbc1",
+    "classement": "Facturation / GL-PA / diagnostic à contextualiser",
+    "objets": [
+      {
+        "objet": "APPS.FND_FLEX_VALUE_SETS",
+        "ligne": 484
+      },
+      {
+        "objet": "APPS.FND_FLEX_VALUES_VL",
+        "ligne": 485
+      },
+      {
+        "objet": "APPS.FND_FLEX_VALUES_DFV",
+        "ligne": 486
+      },
+      {
+        "objet": "APPS.PA_PROJECTS_ALL",
+        "ligne": 536
+      },
+      {
+        "objet": "APPS.PA_TASKS",
+        "ligne": 558
+      },
+      {
+        "objet": "PA.PA_PROJECT_CLASSES",
+        "ligne": 580
+      },
+      {
+        "objet": "GL.GL_PERIOD_STATUSES",
+        "ligne": 593
+      },
+      {
+        "objet": "HR_ALL_ORGANIZATION_UNITS",
+        "ligne": 637
+      },
+      {
+        "objet": "APPS.GL_LEDGERS",
+        "ligne": 656
+      },
+      {
+        "objet": "APPS.FND_ID_FLEX_SEGMENTS",
+        "ligne": 657
+      },
+      {
+        "objet": "APPS.FND_FLEX_VALUES",
+        "ligne": 665
+      },
+      {
+        "objet": "APPS.FND_CURRENCIES",
+        "ligne": 769
+      },
+      {
+        "objet": "GL.GL_AUTOREV_CRITERIA_SETS",
+        "ligne": 786
+      },
+      {
+        "objet": "APPS.ZX_RATES_B",
+        "ligne": 805
+      },
+      {
+        "objet": "APPS.CE_BANK_BRANCHES_V",
+        "ligne": 864
+      },
+      {
+        "objet": "IBY_EXT_BANK_ACCOUNTS",
+        "ligne": 884
+      },
+      {
+        "objet": "APPS.CE_BANK_ACCOUNTS",
+        "ligne": 919
+      },
+      {
+        "objet": "APPS.GL_JE_CATEGORIES",
+        "ligne": 1000
+      },
+      {
+        "objet": "APPS.GL_JE_SOURCES",
+        "ligne": 1001
+      },
+      {
+        "objet": "APPS.DKA_STRANSCO_HEADERS",
+        "ligne": 1112
+      },
+      {
+        "objet": "APPS.DKA_STRANSCO_LINES",
+        "ligne": 1113
+      },
+      {
+        "objet": "APPS.FND_ID_FLEX_STRUCTURES_VL",
+        "ligne": 1233
+      },
+      {
+        "objet": "APPS.FA_CATEGORIES_VL",
+        "ligne": 1287
+      },
+      {
+        "objet": "PA.PA_EXPENDITURE_TYPES",
+        "ligne": 1387
+      },
+      {
+        "objet": "PA.PA_EVENT_TYPES",
+        "ligne": 1395
+      },
+      {
+        "objet": "FND_FLEX_VALUES_VL",
+        "ligne": 1852
+      },
+      {
+        "objet": "PA_PROJECTS_ALL",
+        "ligne": 1927
+      },
+      {
+        "objet": "APPS.AP_SUPPLIERS",
+        "ligne": 2328
+      },
+      {
+        "objet": "APPS.PO_VENDORS_DFV",
+        "ligne": 2329
+      },
+      {
+        "objet": "APPS.AP_SUPPLIER_SITES_ALL",
+        "ligne": 2348
+      },
+      {
+        "objet": "APPS.HR_ALL_ORGANIZATION_UNITS",
+        "ligne": 2447
+      }
+    ]
+  },
+  {
+    "fichier": "MiseaJourFournisseurs/Definition_programme_maj_sites_fournisseurs.sql",
+    "lignes": 133,
+    "sha256": "33599759e5b587f1fa3e0fed7dc91e955def6b6ca8f7550136f97a30a06ff67b",
+    "classement": "Référentiel fournisseur / commandes",
+    "objets": [
+      {
+        "objet": "FND_CONCURRENT_PROGRAMS_VL",
+        "ligne": 16
+      },
+      {
+        "objet": "FND_EXECUTABLES",
+        "ligne": 40
+      },
+      {
+        "objet": "FND_DESCR_FLEX_COL_USAGE_VL",
+        "ligne": 56
+      },
+      {
+        "objet": "FND_FLEX_VALUE_SETS",
+        "ligne": 59
+      },
+      {
+        "objet": "FND_CONCURRENT_REQUESTS",
+        "ligne": 74
+      }
+    ]
+  },
+  {
+    "fichier": "MiseaJourFournisseurs/Detail_algorithme_maj_sites_fournisseurs.sql",
+    "lignes": 653,
+    "sha256": "238d8b0d4f988f5b0a2b4cabdda6fee6f84fd8ab14cc5b77e8872fa605472bb6",
+    "classement": "Référentiel fournisseur / commandes",
+    "objets": [
+      {
+        "objet": "AP_SUPPLIER_SITES_ALL",
+        "ligne": 74
+      },
+      {
+        "objet": "DKA_SAPFRSDUPLI_ERROR_TMP",
+        "ligne": 198
+      },
+      {
+        "objet": "DKA_PARAMETERS",
+        "ligne": 243
+      },
+      {
+        "objet": "FND_CONCURRENT_REQUESTS",
+        "ligne": 246
+      }
+    ]
+  },
+  {
+    "fichier": "miseAjourGL/Update_GL_JE_LINES_ATTRIBUTE13_MO_HORS_THO.sql",
+    "lignes": 190,
+    "sha256": "874f3d080b8fbfe07d743031c694214f5e1681c8d65c3e70233c370d6f73b0c3",
+    "classement": "Facturation / GL-PA / diagnostic à contextualiser",
+    "objets": [
+      {
+        "objet": "GL.GL_JE_LINES",
+        "ligne": 113
+      }
+    ]
+  },
+  {
+    "fichier": "odat_watch/.pytest_cache/README.md",
+    "lignes": 8,
+    "sha256": "420e808d79a6c25d3cda0af33bc4782314a14949866682c68ce8149e89b66b70",
+    "classement": "Support technique / orchestration / autre domaine",
+    "objets": []
+  },
+  {
+    "fichier": "odat_watch/README.md",
+    "lignes": 305,
+    "sha256": "631fafd5f8ffd5ae0886d7d663c051e0cd625e5ea96506586e23707f9cc2bd15",
+    "classement": "Support technique / orchestration / autre domaine",
+    "objets": []
+  },
+  {
+    "fichier": "OptimisationRequete/FACTURES_EN_COURS_V3_Q1.sql",
+    "lignes": 258,
+    "sha256": "f50736e132c35b87840ac5ec323b212d54db3447fce3761a4eb1d7f39089bcd4",
+    "classement": "Facturation / GL-PA / diagnostic à contextualiser",
+    "objets": [
+      {
+        "objet": "APPS.AP_INVOICES_ALL",
+        "ligne": 7
+      },
+      {
+        "objet": "PARAMS",
+        "ligne": 8
+      },
+      {
+        "objet": "APPS.AP_INVOICE_LINES_ALL",
+        "ligne": 14
+      },
+      {
+        "objet": "APPS.AP_INVOICE_DISTRIBUTIONS_ALL",
+        "ligne": 21
+      },
+      {
+        "objet": "UPDATED_AIA",
+        "ligne": 27
+      },
+      {
+        "objet": "UPDATED_AILA",
+        "ligne": 29
+      },
+      {
+        "objet": "UPDATED_AIDA",
+        "ligne": 31
+      },
+      {
+        "objet": "APPS.AP_PAYMENT_SCHEDULES_ALL",
+        "ligne": 35
+      },
+      {
+        "objet": "CANDIDATE_INVOICES",
+        "ligne": 36
+      },
+      {
+        "objet": "APPS.PA_TASKS",
+        "ligne": 41
+      },
+      {
+        "objet": "FND_FLEX_VALUE_SETS",
+        "ligne": 45
+      },
+      {
+        "objet": "FND_FLEX_VALUES_VL",
+        "ligne": 46
+      },
+      {
+        "objet": "APPS.HR_ORGANIZATION_UNITS",
+        "ligne": 220
+      },
+      {
+        "objet": "APPS.GL_CODE_COMBINATIONS",
+        "ligne": 226
+      },
+      {
+        "objet": "IBY_PAYMENT_METHODS_TL",
+        "ligne": 228
+      },
+      {
+        "objet": "AP_TERMS_TL",
+        "ligne": 230
+      },
+      {
+        "objet": "APSA_MIN",
+        "ligne": 232
+      },
+      {
+        "objet": "TASK_NUMBERS",
+        "ligne": 234
+      },
+      {
+        "objet": "FLEX_LOCAL",
+        "ligne": 238
+      },
+      {
+        "objet": "FLEX_ANALYTIQUE",
+        "ligne": 240
+      },
+      {
+        "objet": "DKA_SAP_STATUT_FACTURE",
+        "ligne": 242
+      }
+    ]
+  },
+  {
+    "fichier": "Projet_CTM/README.md",
+    "lignes": 91,
+    "sha256": "fcb8e33b0b467ef3c8451127c8d8540e74dc89b0d5b8791548ff39a160faeb8a",
+    "classement": "Support technique / orchestration / autre domaine",
+    "objets": []
+  },
+  {
+    "fichier": "Projet_Virements/README.md",
+    "lignes": 219,
+    "sha256": "bfd1721c2698dd8aeb695bb945496e446378be4de0e2fe4957fa27bb2cd87eb2",
+    "classement": "Paiements / banque / collecte de rapports",
+    "objets": []
+  },
+  {
+    "fichier": "README.md",
+    "lignes": 100,
+    "sha256": "224d3e2cde8def66def37c0dd576e985838e371cbf14adde54314b5f6d43ba50",
+    "classement": "Facturation / GL-PA / diagnostic à contextualiser",
+    "objets": []
+  },
+  {
+    "fichier": "repousseGL/repouusse.sql",
+    "lignes": 184,
+    "sha256": "b6678dc036b818efa38a55b2c3c01c9e412e4ff5fdd1590fe65b395a39d5133e",
+    "classement": "Facturation / GL-PA / diagnostic à contextualiser",
+    "objets": [
+      {
+        "objet": "AP_INVOICES_INTERFACE",
+        "ligne": 52
+      },
+      {
+        "objet": "AP_INVOICE_LINES_INTERFACE",
+        "ligne": 58
+      }
+    ]
+  },
+  {
+    "fichier": "responable_hierachique/DKA_SAPWFCSP_PKG.sql",
+    "lignes": 14200,
+    "sha256": "881315948118881acf6e6e1edddfeb4ac52a180afe4a4cd85ad87f0b18887f81",
+    "classement": "RH / habilitations / workflow (connexe pour BAP)",
+    "objets": [
+      {
+        "objet": "FND_PROFILE_OPTIONS",
+        "ligne": 1380
+      },
+      {
+        "objet": "DKA_WF_DEBUG",
+        "ligne": 1391
+      },
+      {
+        "objet": "PER_ALL_PEOPLE_F",
+        "ligne": 1581
+      },
+      {
+        "objet": "AP_INV_APRVL_HIST_ALL",
+        "ligne": 1627
+      },
+      {
+        "objet": "DKA_AP_INV_APRVL_HIST_ALL",
+        "ligne": 1669
+      },
+      {
+        "objet": "AP_LOOKUP_CODES",
+        "ligne": 2327
+      },
+      {
+        "objet": "AP_INTERFACE_REJECTIONS",
+        "ligne": 2458
+      },
+      {
+        "objet": "DKA_STRANSCO_HEADERS",
+        "ligne": 2504
+      },
+      {
+        "objet": "AP_INVOICES_INTERFACE",
+        "ligne": 2510
+      },
+      {
+        "objet": "FND_FLEX_VALUE_SETS",
+        "ligne": 3432
+      },
+      {
+        "objet": "WF_NOTIFICATIONS",
+        "ligne": 4387
+      },
+      {
+        "objet": "AP_HOLDS_ALL",
+        "ligne": 6300
+      },
+      {
+        "objet": "XLA_EVENTS",
+        "ligne": 6415
+      },
+      {
+        "objet": "AP_INVOICE_DISTRIBUTIONS_ALL",
+        "ligne": 6420
+      },
+      {
+        "objet": "PO_HEADERS_ALL",
+        "ligne": 6737
+      },
+      {
+        "objet": "AP_INVOICES_ALL",
+        "ligne": 6741
+      },
+      {
+        "objet": "AP_INVOICE_LINES_ALL",
+        "ligne": 6750
+      },
+      {
+        "objet": "PO_DISTRIBUTIONS_ALL",
+        "ligne": 6778
+      },
+      {
+        "objet": "FND_USER",
+        "ligne": 6808
+      },
+      {
+        "objet": "WF_ITEM_ACTIVITY_STATUSES",
+        "ligne": 7126
+      },
+      {
+        "objet": "FND_PROFILE_OPTIONS_VL",
+        "ligne": 7316
+      },
+      {
+        "objet": "DKA_PARAMETERS",
+        "ligne": 7480
+      },
+      {
+        "objet": "HR_ALL_ORGANIZATION_UNITS",
+        "ligne": 8081
+      },
+      {
+        "objet": "AP_INVOICE_LINES_INTERFACE",
+        "ligne": 8090
+      },
+      {
+        "objet": "AP_SUPPLIERS",
+        "ligne": 8115
+      },
+      {
+        "objet": "WF_LOOKUPS",
+        "ligne": 9947
+      },
+      {
+        "objet": "FND_ATTACHED_DOCUMENTS",
+        "ligne": 10701
+      }
+    ]
+  },
+  {
+    "fichier": "responable_hierachique/Requetes_Diagnostic_Routage_BAP_0380.sql",
+    "lignes": 206,
+    "sha256": "d1215c7d18e7642ff76899c1a3f2d6d3b99dbab65de7303e4aa65edef54b93bb",
+    "classement": "RH / habilitations / workflow (connexe pour BAP)",
+    "objets": [
+      {
+        "objet": "HR_ALL_ORGANIZATION_UNITS",
+        "ligne": 17
+      },
+      {
+        "objet": "HR_ORGANIZATION_INFORMATION",
+        "ligne": 18
+      },
+      {
+        "objet": "WF_LOCAL_USER_ROLES",
+        "ligne": 33
+      },
+      {
+        "objet": "FND_USER",
+        "ligne": 34
+      },
+      {
+        "objet": "HR.PER_ALL_PEOPLE_F",
+        "ligne": 35
+      },
+      {
+        "objet": "HR.PER_ALL_ASSIGNMENTS_F",
+        "ligne": 54
+      },
+      {
+        "objet": "FND_USER_RESP_GROUPS_ALL",
+        "ligne": 69
+      },
+      {
+        "objet": "FND_RESPONSIBILITY",
+        "ligne": 70
+      },
+      {
+        "objet": "PER_ALL_PEOPLE_F",
+        "ligne": 84
+      },
+      {
+        "objet": "PER_ALL_ASSIGNMENTS_F",
+        "ligne": 85
+      },
+      {
+        "objet": "PER_JOBS",
+        "ligne": 106
+      },
+      {
+        "objet": "WF_ITEM_ACTIVITY_STATUSES",
+        "ligne": 122
+      },
+      {
+        "objet": "WF_PROCESS_ACTIVITIES",
+        "ligne": 123
+      },
+      {
+        "objet": "WF_ITEM_ATTRIBUTE_VALUES",
+        "ligne": 136
+      }
+    ]
+  },
+  {
+    "fichier": "robot/CA_global_concat_CORRIGE.sql",
+    "lignes": 196,
+    "sha256": "8bd7bcdfc55fed035736e3d9da7cf4b4847c3cc91aa3417007a4dc462f6e17a2",
+    "classement": "Facturation / GL-PA / diagnostic à contextualiser",
+    "objets": [
+      {
+        "objet": "RA_CUST_TRX_LINE_GL_DIST_ALL",
+        "ligne": 37
+      },
+      {
+        "objet": "HZ_CUST_ACCOUNTS",
+        "ligne": 155
+      },
+      {
+        "objet": "FINAL",
+        "ligne": 195
+      }
+    ]
+  },
+  {
+    "fichier": "sql/appinit.sql",
+    "lignes": 3,
+    "sha256": "5f5977f4b10f06832c5cb12e4cbf902b27c0035b39d96fedc6f5028c8630a986",
+    "classement": "Support technique / orchestration / autre domaine",
+    "objets": [
+      {
+        "objet": "ALL_TAB_COLUMNS",
+        "ligne": 1
+      },
+      {
+        "objet": "FND_USER",
+        "ligne": 3
+      }
+    ]
+  },
+  {
+    "fichier": "sql/CSP_Onglet_Litige.sql",
+    "lignes": 192,
+    "sha256": "9588636b73ec945deeb261962bccbabe44ced00c01f800978979f5abc29cb1d7",
+    "classement": "Litiges / référentiel / pièces",
+    "objets": [
+      {
+        "objet": "AP_HOLDS_ALL",
+        "ligne": 7
+      },
+      {
+        "objet": "AP_INVOICE_DISTRIBUTIONS_ALL",
+        "ligne": 16
+      },
+      {
+        "objet": "FND_ATTACHED_DOCUMENTS",
+        "ligne": 36
+      },
+      {
+        "objet": "AP_PAYMENT_SCHEDULES_ALL",
+        "ligne": 45
+      },
+      {
+        "objet": "AP_INVOICES_ALL",
+        "ligne": 46
+      },
+      {
+        "objet": "APPS.PER_ALL_PEOPLE_F",
+        "ligne": 59
+      },
+      {
+        "objet": "AP_INV_APRVL_HIST_ALL",
+        "ligne": 73
+      },
+      {
+        "objet": "IBY.IBY_EXTERNAL_PAYEES_ALL",
+        "ligne": 112
+      },
+      {
+        "objet": "AP_SUPPLIERS",
+        "ligne": 172
+      },
+      {
+        "objet": "AP_SUPPLIER_SITES_ALL",
+        "ligne": 173
+      },
+      {
+        "objet": "HR_ORGANIZATION_UNITS",
+        "ligne": 174
+      },
+      {
+        "objet": "GL_LEDGERS",
+        "ligne": 175
+      },
+      {
+        "objet": "GL_CODE_COMBINATIONS",
+        "ligne": 176
+      },
+      {
+        "objet": "AHA_DEDUP",
+        "ligne": 177
+      },
+      {
+        "objet": "IEPA_DEDUP",
+        "ligne": 178
+      },
+      {
+        "objet": "APPS.FND_USER",
+        "ligne": 182
+      },
+      {
+        "objet": "IBY_EXT_BANK_ACCOUNTS",
+        "ligne": 183
+      },
+      {
+        "objet": "PEOPLE_CTE",
+        "ligne": 184
+      },
+      {
+        "objet": "AIPHA_DEDUP",
+        "ligne": 186
+      },
+      {
+        "objet": "HOLDS_COUNT",
+        "ligne": 187
+      },
+      {
+        "objet": "TOTAL_LIGNES",
+        "ligne": 188
+      },
+      {
+        "objet": "HAS_IMAGE",
+        "ligne": 189
+      },
+      {
+        "objet": "COMPTA_STATUS",
+        "ligne": 190
+      },
+      {
+        "objet": "SOLDE_FOURNISSEUR",
+        "ligne": 191
+      }
+    ]
+  },
+  {
+    "fichier": "sql/oracleProd4.sql",
+    "lignes": 3,
+    "sha256": "156eb8c790224a4d99de2574e6587414b8dbdd074679bb003efc73460933042d",
+    "classement": "Facturation / GL-PA / diagnostic à contextualiser",
+    "objets": [
+      {
+        "objet": "DKA_SCTLFLUX_EAI",
+        "ligne": 1
+      }
+    ]
+  },
+  {
+    "fichier": "sql/oracleProd~2.sql",
+    "lignes": 73,
+    "sha256": "98208efeed3e6e9012375bbb60505834fa8a161c2488f009ea7dd1871e65d53e",
+    "classement": "Facturation / GL-PA / diagnostic à contextualiser",
+    "objets": [
+      {
+        "objet": "GL.GL_JE_LINES",
+        "ligne": 10
+      },
+      {
+        "objet": "GL.GL_LEDGERS",
+        "ligne": 11
+      },
+      {
+        "objet": "GL.GL_JE_HEADERS",
+        "ligne": 12
+      },
+      {
+        "objet": "GL.GL_JE_BATCHES",
+        "ligne": 13
+      },
+      {
+        "objet": "XLA.XLA_AE_LINES",
+        "ligne": 14
+      },
+      {
+        "objet": "XLA.XLA_AE_HEADERS",
+        "ligne": 18
+      },
+      {
+        "objet": "XLA.XLA_DISTRIBUTION_LINKS",
+        "ligne": 20
+      },
+      {
+        "objet": "PO.PO_DISTRIBUTIONS_ALL",
+        "ligne": 23
+      },
+      {
+        "objet": "GL.GL_IMPORT_REFERENCES",
+        "ligne": 47
+      }
+    ]
+  },
+  {
+    "fichier": "sql/oracleProd~3.sql",
+    "lignes": 27,
+    "sha256": "e654c4830cc3db9342960b7559aefd1c9afff847de513112ef7d00022a1110c7",
+    "classement": "Facturation / GL-PA / diagnostic à contextualiser",
+    "objets": [
+      {
+        "objet": "APPS.FND_USER_RESP_GROUPS",
+        "ligne": 14
+      },
+      {
+        "objet": "FND_RESPONSIBILITY_VL",
+        "ligne": 25
+      }
+    ]
+  },
+  {
+    "fichier": "SSTR/README_Optimisation_SQL_Provision.md",
+    "lignes": 104,
+    "sha256": "8ab096fbaf4368a98e35967e87b57085ac44ef291a23e39fbb24aa43148696dc",
+    "classement": "Clôture / provisions / cut-off",
+    "objets": [
+      {
+        "objet": "HR.PER_ALL_PEOPLE_F",
+        "ligne": 17
+      }
+    ]
+  },
+  {
+    "fichier": "SSTR/SQL_Provision_OCT-25.sql",
+    "lignes": 466,
+    "sha256": "bbec0a89d04e1194012342ab7f90e41216c2f9941502fa7a72a5f93eb1791936",
+    "classement": "Clôture / provisions / cut-off",
+    "objets": [
+      {
+        "objet": "AP.AP_INVOICE_DISTRIBUTIONS_ALL",
+        "ligne": 14
+      },
+      {
+        "objet": "PO.PO_DISTRIBUTIONS_ALL",
+        "ligne": 15
+      },
+      {
+        "objet": "PO.PO_HEADERS_ALL",
+        "ligne": 17
+      },
+      {
+        "objet": "HR.PER_ALL_PEOPLE_F",
+        "ligne": 31
+      },
+      {
+        "objet": "GL.GL_JE_LINES",
+        "ligne": 150
+      },
+      {
+        "objet": "GL.GL_LEDGERS",
+        "ligne": 151
+      },
+      {
+        "objet": "GL.GL_JE_HEADERS",
+        "ligne": 152
+      },
+      {
+        "objet": "GL.GL_JE_BATCHES",
+        "ligne": 153
+      },
+      {
+        "objet": "GL.GL_CODE_COMBINATIONS",
+        "ligne": 154
+      },
+      {
+        "objet": "XLA.XLA_AE_LINES",
+        "ligne": 156
+      },
+      {
+        "objet": "XLA.XLA_AE_HEADERS",
+        "ligne": 160
+      },
+      {
+        "objet": "XLA.XLA_DISTRIBUTION_LINKS",
+        "ligne": 162
+      },
+      {
+        "objet": "RCV_RECEIVING_SUB_LEDGER",
+        "ligne": 165
+      },
+      {
+        "objet": "PO.PO_LINES_ALL",
+        "ligne": 170
+      },
+      {
+        "objet": "INVOICE",
+        "ligne": 173
+      },
+      {
+        "objet": "AP.AP_SUPPLIERS",
+        "ligne": 175
+      },
+      {
+        "objet": "AP.AP_SUPPLIER_SITES_ALL",
+        "ligne": 176
+      },
+      {
+        "objet": "PA.PA_PROJECTS_ALL",
+        "ligne": 178
+      },
+      {
+        "objet": "PA.PA_TASKS",
+        "ligne": 180
+      },
+      {
+        "objet": "PEOPLE",
+        "ligne": 181
+      },
+      {
+        "objet": "HR.HR_ALL_ORGANIZATION_UNITS",
+        "ligne": 182
+      },
+      {
+        "objet": "GL.GL_IMPORT_REFERENCES",
+        "ligne": 354
+      },
+      {
+        "objet": "PO.PO_LINE_LOCATIONS_ALL",
+        "ligne": 371
+      }
+    ]
+  },
+  {
+    "fichier": "TACHE_FRONTAL_FINANCE/REFRESH_MV_20h00.sql",
+    "lignes": 79,
+    "sha256": "fcb97d1fe42418a0e8d6f2ee039b35342473baa91305b84301b3f65c9ba7066c",
+    "classement": "Support technique / orchestration / autre domaine",
+    "objets": [
+      {
+        "objet": "USER_SCHEDULER_JOBS",
+        "ligne": 45
+      },
+      {
+        "objet": "USER_SCHEDULER_JOB_RUN_DETAILS",
+        "ligne": 77
+      }
+    ]
+  },
+  {
+    "fichier": "TP12011976/requete_index_contrainte.sql",
+    "lignes": 54,
+    "sha256": "846996d715006d148b956121868ac1e6544b967437e2a8a719bf094eb6bae70b",
+    "classement": "Support technique / orchestration / autre domaine",
+    "objets": [
+      {
+        "objet": "ALL_IND_COLUMNS",
+        "ligne": 13
+      },
+      {
+        "objet": "DKA.DKA_IARPAFAC_INTERFACE",
+        "ligne": 42
+      }
+    ]
+  },
+  {
+    "fichier": "verification_user/verification_user.sql",
+    "lignes": 65,
+    "sha256": "11d9939fd9ce49282ff8b3b40766f2dc82b142f9de2d50b10b8a3c2b0bc41a63",
+    "classement": "RH / habilitations / workflow (connexe pour BAP)",
+    "objets": [
+      {
+        "objet": "APPLSYS.FND_USER",
+        "ligne": 35
+      },
+      {
+        "objet": "APPLSYS.FND_USER_RESP_GROUPS_DIRECT",
+        "ligne": 56
+      },
+      {
+        "objet": "APPLSYS.FND_RESPONSIBILITY_VL",
+        "ligne": 58
+      },
+      {
+        "objet": "APPLSYS.FND_APPLICATION",
+        "ligne": 61
+      }
+    ]
+  }
+]

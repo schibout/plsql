@@ -1,0 +1,167 @@
+# $Header$
+
+# dbdrv: exec fnd bin FNDLOAD bin &phase=daa+52 checkfile:~PROD:~PATH:~FILE &ui_apps 0 Y UPLOAD @FND:patch/115/import/afmdmsg.lct @~PROD:~PATH/~FILE
+LANGUAGE = "US"
+LDRCONFIG = "afmdmsg.lct 120.2.12020000.1"
+
+#Source Database HELDEV
+
+#RELEASE_NAME 12.2.4
+
+# -- Begin Entity Definitions -- 
+
+DEFINE FND_NEW_MESSAGES
+  KEY   APPLICATION_SHORT_NAME          VARCHAR2(50)
+  KEY   MESSAGE_NAME                    VARCHAR2(30)
+  CTX   OWNER                           VARCHAR2(4000)
+  BASE  LAST_UPDATE_DATE                VARCHAR2(10)
+  CTX   MESSAGE_NUMBER                  VARCHAR2(50)
+  TRANS MESSAGE_TEXT                    VARCHAR2(2000)
+  CTX   DESCRIPTION                     VARCHAR2(240)
+  CTX   TYPE                            VARCHAR2(30)
+  CTX   MAX_LENGTH                      VARCHAR2(50)
+  CTX   CATEGORY                        VARCHAR2(10)
+  CTX   SEVERITY                        VARCHAR2(10)
+  CTX   FND_LOG_SEVERITY                VARCHAR2(50)
+END FND_NEW_MESSAGES
+
+# -- End Entity Definitions -- 
+
+
+BEGIN FND_NEW_MESSAGES "DKA" "DKA_SICXRECHCAT_CODEART"
+  OWNER = "AAMENKOUR"
+  LAST_UPDATE_DATE = "2019/03/14"
+  MESSAGE_NUMBER = "*NULL*"
+  MESSAGE_TEXT =
+ "<html>\n\
+<body>\n\
+<p><font color=\"#1560BD\">Code eCI@ss + code complémentaire XXXXX.YYYYYY</font></p>\n\
+<p><font color=\"#1560BD\">Code article correspondant au besoin fonctionnel</font></p>\n\
+</body>\n\
+</html>"
+  DESCRIPTION = "*NULL*"
+  TYPE = "30_PCT_EXPANSION_PROMPT"
+  MAX_LENGTH = "*NULL*"
+  CATEGORY = "*NULL*"
+  SEVERITY = "*NULL*"
+  FND_LOG_SEVERITY = "*NULL*"
+END FND_NEW_MESSAGES
+
+BEGIN FND_NEW_MESSAGES "DKA" "DKA_SICXRECHCAT_CRITERE"
+  OWNER = "AAMENKOUR"
+  LAST_UPDATE_DATE = "2019/03/16"
+  MESSAGE_NUMBER = "*NULL*"
+  MESSAGE_TEXT =
+ "Vous devez renseigner au moins un critère de recherche en plus du domaine."
+  DESCRIPTION = "*NULL*"
+  TYPE = "30_PCT_EXPANSION_PROMPT"
+  MAX_LENGTH = "*NULL*"
+  CATEGORY = "*NULL*"
+  SEVERITY = "*NULL*"
+  FND_LOG_SEVERITY = "*NULL*"
+END FND_NEW_MESSAGES
+
+BEGIN FND_NEW_MESSAGES "DKA" "DKA_SICXRECHCAT_DOMAINE"
+  OWNER = "AAMENKOUR"
+  LAST_UPDATE_DATE = "2019/01/22"
+  MESSAGE_NUMBER = "*NULL*"
+  MESSAGE_TEXT =
+ "<html>\n\
+<body>\n\
+<p><font color=\"#1560BD\">Champ obligatoire : Sélectionnez un domaine dans la liste</font></p>\n\
+</body>\n\
+</html>"
+  DESCRIPTION = "*NULL*"
+  TYPE = "30_PCT_EXPANSION_PROMPT"
+  MAX_LENGTH = "*NULL*"
+  CATEGORY = "*NULL*"
+  SEVERITY = "*NULL*"
+  FND_LOG_SEVERITY = "*NULL*"
+END FND_NEW_MESSAGES
+
+BEGIN FND_NEW_MESSAGES "DKA" "DKA_SICXRECHCAT_INFO"
+  OWNER = "AAMENKOUR"
+  LAST_UPDATE_DATE = "2019/06/11"
+  MESSAGE_NUMBER = "*NULL*"
+  MESSAGE_TEXT =
+ "<html>\n\
+<body>\n\
+<p align=\"center\"><font size=\"2\" color=\"#FF0000\">&&nbsp;&&nbsp;&&nbsp;LA PAGE DE RECHERCHE A ÉTÉ MODIFIÉE POUR AMÉLIORER SON UTILISATION&&nbsp;&&nbsp;&&nbsp;<font></p>\n\
+<p align=\"center\"><font size=\"2\" color=\"#000000\">&&nbsp;&&nbsp;Profitez grâce à la recherche par référence de la codification, et trouvez pour une référence l'ensemble des articles correspondants à votre besoin.&&nbsp;&&nbsp;</font></p>\n\
+<p align=\"center\"><font size=\"2\" color=\"#000000\"><B><u>Les familles codifiées à ce jour sont:</u></B><font></p>\n\
+<p align=\"center\"><font size=\"2\" color=\"#1560BD\"><B>&&nbsp;&&nbsp;Chaudières&&nbsp;&&nbsp;</B></font></p>\n\
+<p align=\"center\"><font size=\"2\" color=\"#1560BD\"><B>&&nbsp;&&nbsp;Tubes pré-isolé&&nbsp;&&nbsp;</B></font></p>\n\
+<p align=\"center\"><font size=\"2\" color=\"#1560BD\"><B>&&nbsp;&&nbsp;Robinetterie tertiaire&&nbsp;&&nbsp;</B></font></p>\n\
+<p align=\"center\"><font size=\"2\" color=\"#1560BD\"><B>&&nbsp;&&nbsp;Tuyauterie&&nbsp;&&nbsp;</B></font></p>\n\
+<p align=\"center\"><font size=\"2\" color=\"#1560BD\"><B>&&nbsp;&&nbsp;Câbles et conduits&&nbsp;&&nbsp;</B></font></p>\n\
+<p align=\"center\"><font size=\"2\" color=\"#000000\"><B>&&nbsp;Rendez-vous sur le lien ci-contre pour retrouver le calendrier de la codification&&nbsp;</B><font></p>\n\
+<p align=\"center\"><font size=\"2\" style=\"color:blue;\"><u><a href=\"https://docs.google.com/spreadsheets/d/1l-iT9vUNIelro7sMw6MtAvEHizkBQSSDG2NeEcJiAXg/edit#gid=0\" style=\"color:blue;\" target=\"_blank\">https://docs.google.com/spreadsheets/d/1l-iT9vUNIelro7sMw6MtAvEHizkBQSSDG2NeEcJiAXg/edit#gid=0</a></u></font></p>\n\
+</body>\n\
+</html>"
+  DESCRIPTION = "*NULL*"
+  TYPE = "30_PCT_EXPANSION_PROMPT"
+  MAX_LENGTH = "*NULL*"
+  CATEGORY = "*NULL*"
+  SEVERITY = "*NULL*"
+  FND_LOG_SEVERITY = "*NULL*"
+END FND_NEW_MESSAGES
+
+BEGIN FND_NEW_MESSAGES "DKA" "DKA_SICXRECHCAT_SELECT"
+  OWNER = "AAMENKOUR"
+  LAST_UPDATE_DATE = "2019/03/16"
+  MESSAGE_NUMBER = "*NULL*"
+  MESSAGE_TEXT =
+ "Vous devez sélectionner un code article interne avant de lancer la recherche."
+  DESCRIPTION = "*NULL*"
+  TYPE = "30_PCT_EXPANSION_PROMPT"
+  MAX_LENGTH = "*NULL*"
+  CATEGORY = "*NULL*"
+  SEVERITY = "*NULL*"
+  FND_LOG_SEVERITY = "*NULL*"
+END FND_NEW_MESSAGES
+
+BEGIN FND_NEW_MESSAGES "DKA" "DKA_SICXRECHCAT_MOTCLE"
+  OWNER = "AAMENKOUR"
+  LAST_UPDATE_DATE = "2019/06/10"
+  MESSAGE_NUMBER = "*NULL*"
+  MESSAGE_TEXT =
+ "Modifiez votre recherche afin que vos mots-clés soient intégrés dans le champ « complément d'informations » de la recherche économique par référence(s)"
+  DESCRIPTION = "*NULL*"
+  TYPE = "30_PCT_EXPANSION_PROMPT"
+  MAX_LENGTH = "*NULL*"
+  CATEGORY = "*NULL*"
+  SEVERITY = "*NULL*"
+  FND_LOG_SEVERITY = "*NULL*"
+END FND_NEW_MESSAGES
+
+BEGIN FND_NEW_MESSAGES "DKA" "DKA_SICXRECHCAT_MOTCLE2"
+  OWNER = "AAMENKOUR"
+  LAST_UPDATE_DATE = "2019/06/13"
+  MESSAGE_NUMBER = "*NULL*"
+  MESSAGE_TEXT =
+ "Merci d'effectuer soit une \"recherche économique par référence(s)\", soit une \"recherche basique\""
+  DESCRIPTION = "*NULL*"
+  TYPE = "30_PCT_EXPANSION_PROMPT"
+  MAX_LENGTH = "*NULL*"
+  CATEGORY = "*NULL*"
+  SEVERITY = "*NULL*"
+  FND_LOG_SEVERITY = "*NULL*"
+END FND_NEW_MESSAGES
+
+BEGIN FND_NEW_MESSAGES "DKA" "DKA_SICXRECHCAT_RECH_BASIC"
+  OWNER = "AAMENKOUR"
+  LAST_UPDATE_DATE = "2019/06/13"
+  MESSAGE_NUMBER = "*NULL*"
+  MESSAGE_TEXT =
+ "<html>\n\
+<body>\n\
+<p><font color=\"#1560BD\">Ne remplissez aucun autre champ pour effectuer une recherche basique</font></p>\n\
+</body>\n\
+</html>"
+  DESCRIPTION = "*NULL*"
+  TYPE = "30_PCT_EXPANSION_PROMPT"
+  MAX_LENGTH = "*NULL*"
+  CATEGORY = "*NULL*"
+  SEVERITY = "*NULL*"
+  FND_LOG_SEVERITY = "*NULL*"
+END FND_NEW_MESSAGES

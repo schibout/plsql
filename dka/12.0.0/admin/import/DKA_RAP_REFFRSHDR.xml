@@ -1,0 +1,72 @@
+<?xml version = '1.0' encoding = 'UTF-8'?>
+<!--
+  ================================================================================
+  $Header:$
+  Projet         : HELIOS
+  Nom du fichier : DKA_RAP_REFFRSHDR.xml
+  Version        : 1.0
+  Cree le        : 23/12/2021
+  Auteur         : Anas RAOUF
+  Description    : DKA_RAP_REFFRSHDR
+									
+
+  ================================================================================
+  Historique
+  Date        Auteur           Description
+  ==========  ===============  ===================================================
+
+
+  ================================================================================
+-->
+
+<dataTemplate name="DKA_RAP_REFFRSHDR" version="1.0">
+
+  <parameters>
+    <parameter name="P_USER"                          dataType="VARCHAR2" /> 
+    <parameter name="P_NUM_FRS"                       dataType="VARCHAR2"   />
+	<parameter name="P_BEGIN_DATE"                    dataType="DATE"     /> 
+    <parameter name="P_END_DATE"                      dataType="DATE"     />
+  </parameters>
+	
+  <dataQuery>
+	<sqlStatement name="Q_REPORT">
+	<![CDATA[
+SELECT APS.VENDOR_NAME VENDOR_NAME,
+     APS.SEGMENT1 NUM_VENDOR,
+	APS.PAY_GROUP_LOOKUP_CODE TYPE_TIERS,
+	DSH.ACTION_TYPE ACTION,
+	TO_CHAR(DSH.LAST_UPDATE_DATE, 'DD/MM/YYYY HH24:MI') DATE_EDIT,
+	DSH.ITEM ITEMS,
+	DSH.OLD_ITEM_VALUE OLD_ITEMS,
+	DSH.NEW_ITEM_VALUE NEW_ITEMS,
+	fu.USER_NAME || ', ' || fu.DESCRIPTION MATRICULE_USER
+	
+	FROM AP_SUPPLIERS APS,
+	DKA_SAPFRS_MAJ_HEADERS DSH,
+	fnd_user fu
+	
+	WHERE APS.VENDOR_ID = DSH.VENDOR_ID 
+	AND fu.user_id = DSH.LAST_UPDATED_BY 
+	AND APS.VENDOR_ID = NVL(:P_NUM_FRS,DSH.VENDOR_ID)
+	AND fu.user_id = NVL(:P_USER,DSH.LAST_UPDATED_BY)
+	AND trunc(DSH.LAST_UPDATE_DATE) BETWEEN trunc(:P_BEGIN_DATE) AND trunc(:P_END_DATE)
+	order by DSH.LAST_UPDATE_DATE
+
+  ]]> 
+  </sqlStatement>
+  </dataQuery>
+ <dataStructure>
+   <group   name="G_REPORT"               source="Q_REPORT">
+        <element name="R_VENDOR_NAME"                                           dataType="VARCHAR2"  value="VENDOR_NAME" /> 
+        <element name="R_NUM_VENDOR"                                         	dataType="VARCHAR2"  value="NUM_VENDOR" /> 
+		<element name="R_TYPE_TIERS"                                            dataType="VARCHAR2"  value="TYPE_TIERS" />
+		<element name="R_ACTION"                                            	dataType="VARCHAR2"  value="ACTION" />
+        <element name="R_DATE_EDIT"                                      	    dataType="VARCHAR2"  value="DATE_EDIT" /> 
+        <element name="R_ITEMS"                                      			dataType="VARCHAR2"  value="ITEMS" />
+        <element name="R_OLD_ITEMS"                                      	    dataType="VARCHAR2"  value="OLD_ITEMS" />		
+		<element name="R_NEW_ITEMS"                                 			dataType="VARCHAR2"  value="NEW_ITEMS" /> 
+        <element name="R_MATRICULE_USER"                                    	dataType="VARCHAR2"  value="MATRICULE_USER" /> 
+
+  </group>
+  </dataStructure>
+ </dataTemplate>

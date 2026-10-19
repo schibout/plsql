@@ -1,0 +1,419 @@
+# DKA_FUSION_PA_PKG.pkb
+
+Source : [dka/12.0.0/admin/sql/DKA_FUSION_PA_PKG.pkb](../../dka/12.0.0/admin/sql/DKA_FUSION_PA_PKG.pkb).
+
+Famille proposée par convention de nommage : **PA / projets**. Cette étiquette nécessite la lecture fonctionnelle du traitement.
+
+**Nature de la fiche : extraction statique automatique, pas une spécification métier validée.** Les références sont des occurrences dans le texte hors commentaires SQL ; les chaînes et SQL dynamique peuvent créer des faux positifs ou des dépendances manquantes. Aucune exécution du composant.
+
+Lignes : 2956 ; encodage : cp1252 (repli). SHA-256 : `c67a698863f520fc03baa20a741edbf760bd1c5f114c42b4d0b817f3ade71d07`.
+
+## Sous-programmes déclarés (sur les PKB : inclut privés et doublons déclaration/définition)
+
+| Élément | Ligne source |
+|---|---:|
+| `SAUV_TABLE_SAUVEGARDE_ET01` | 118 |
+| `SAUV_TABLE_SAUVEGARDE_ET01` | 212 |
+| `SAUV_TABLE_INTERF_ET01` | 223 |
+| `SAUV_TABLE_INTERF_ET01` | 316 |
+| `BILAN_ET01` | 328 |
+| `BILAN_ET01` | 422 |
+| `MAIN_SAUV_PURGE` | 438 |
+| `MAIN_SAUV_PURGE` | 464 |
+| `FUSION_PA_SUFFIX_Z_TRANS` | 479 |
+| `FUSION_PA_SUFFIX_Z_TRANS` | 641 |
+| `MAIN_SUFFIX_PROJET` | 655 |
+| `main_suffix_projet` | 670 |
+| `RATTACHEMENT_PROJET_FINANCE` | 690 |
+| `RATTACHEMENT_PROJET_FINANCE` | 1038 |
+| `MAIN_REC_HIST` | 1053 |
+| `MAIN_REC_HIST` | 1082 |
+| `SAUV_TABLE_SAUVEGARDE_ET07` | 1104 |
+| `SAUV_TABLE_SAUVEGARDE_ET07` | 1161 |
+| `SAUV_TABLE_INTERF_ET07` | 1171 |
+| `SAUV_TABLE_INTERF_ET07` | 1385 |
+| `BILAN_ET07` | 1396 |
+| `bilan` | 1460 |
+| `MAIN_REST_TAB_INT` | 1474 |
+| `MAIN_REST_TAB_INT` | 1502 |
+| `FERMETURE_PROJET_TACHE` | 1521 |
+| `BILAN_ET08` | 1648 |
+| `BILAN_ET08` | 1658 |
+| `MAIN_FERM_PROJET` | 1673 |
+| `MAIN_FERM_PROJET` | 1698 |
+| `CORRECTION_ORG_PROJET` | 1718 |
+| `CORRECTION_ORG_PROJET` | 1902 |
+| `MAIN_CORREC_PROJET` | 1907 |
+| `CORRECTION_ORG_PROJET` | 1930 |
+| `REPRISE_INDICATEUR` | 1949 |
+| `MAIN_REPRISE_INDIC` | 2151 |
+| `MAIN_REPRISE_INDIC` | 2174 |
+| `MAJ_PR_TEC_PCA` | 2193 |
+| `MAIN_MAJ_PR_TEC_PCA` | 2535 |
+| `MAIN_MAJ_PR_TEC_PCA` | 2561 |
+| `MAJ_PR_CCA` | 2579 |
+| `MAIN_MAJ_PR_CCA` | 2921 |
+| `MAIN_MAJ_PR_CCA` | 2947 |
+
+## Triggers déclarés
+
+Aucune occurrence détectée ; ne prouve pas une absence fonctionnelle.
+
+## Objets SQL candidats (CTE et alias possibles)
+
+| Élément | Ligne source |
+|---|---:|
+| `PA.PA_COST_DIST_OVERRIDES` | 81 |
+| `HR_ORGANIZATION_UNITS` | 93 |
+| `DUAL` | 128 |
+| `DKA_EAI_ORG_SAUV_FUSION` | 135 |
+| `DKA_EAI_PROJET_SAUV_FUSION` | 142 |
+| `DKA_EAI_TACHE_SAUV_FUSION` | 149 |
+| `DKA_EAI_ORG_SAUV_FUSION` | 159 |
+| `DKA_EAI_PROJET_SAUV_FUSION` | 172 |
+| `DKA_EAI_TACHE_SAUV_FUSION` | 186 |
+| `DKA_EAI_ORG_SAUV_FUSION` | 196 |
+| `DKA_EAI_PROJET_SAUV_FUSION` | 201 |
+| `DKA_EAI_TACHE_SAUV_FUSION` | 206 |
+| `DKA_EAI_ORGANISATION` | 230 |
+| `DKA_EAI_PROJET` | 236 |
+| `DKA_EAI_TACHE` | 242 |
+| `DKA_EAI_ORG_SAUV_FUSION` | 246 |
+| `DKA_EAI_ORGANISATION` | 249 |
+| `DKA_EAI_PROJET_SAUV_FUSION` | 262 |
+| `DKA_EAI_PROJET` | 265 |
+| `DKA_EAI_TACHE_SAUV_FUSION` | 278 |
+| `DKA_EAI_TACHE` | 281 |
+| `DKA_EAI_ORG_SAUV_FUSION` | 299 |
+| `DKA_EAI_PROJET_SAUV_FUSION` | 305 |
+| `DKA_EAI_TACHE_SAUV_FUSION` | 311 |
+| `DKA_EAI_ORGANISATION` | 389 |
+| `DKA_EAI_PROJET` | 400 |
+| `DKA_EAI_TACHE` | 411 |
+| `HR_ORGANIZATION_UNITS` | 495 |
+| `PA_PROJECTS_ALL` | 514 |
+| `OF` | 523 |
+| `PA_TASKS` | 530 |
+| `OF` | 534 |
+| `PA_TASKS` | 589 |
+| `PA_PROJECTS_ALL` | 605 |
+| `PA_PROJECTS_ALL` | 708 |
+| `HR_ORGANIZATION_UNITS` | 718 |
+| `PA_PROJECTS_ALL` | 747 |
+| `HR_ORGANIZATION_UNITS` | 758 |
+| `PA_PROJECTS_ALL` | 780 |
+| `HR_ORGANIZATION_UNITS` | 790 |
+| `PA_PROJECTS_ALL` | 822 |
+| `HR_ORGANIZATION_UNITS` | 832 |
+| `PA_PROJECTS_ALL` | 877 |
+| `PA.PA_COST_DIST_OVERRIDES` | 887 |
+| `HR_ORGANIZATION_UNITS` | 906 |
+| `PA_PROJECTS_ALL` | 913 |
+| `PA_TASKS` | 930 |
+| `HR_ORGANIZATION_UNITS` | 951 |
+| `PA.PA_COST_DIST_OVERRIDES` | 963 |
+| `PA.PA_COST_DIST_OVERRIDES` | 1002 |
+| `DUAL` | 1116 |
+| `DKA_EAI_ORG_SAUV_FUSION` | 1122 |
+| `DKA.DKA_EAI_PROJET_SAUV_FUSION` | 1129 |
+| `DKA.DKA_EAI_TACHE_SAUV_FUSION` | 1136 |
+| `DKA_EAI_ORG_SAUV_FUSION` | 1143 |
+| `DKA_EAI_PROJET_SAUV_FUSION` | 1148 |
+| `DKA_EAI_TACHE_SAUV_FUSION` | 1153 |
+| `DKA_EAI_ORG_SAUV_FUSION` | 1181 |
+| `DKA_EAI_PROJET_SAUV_FUSION` | 1187 |
+| `DKA_EAI_TACHE_SAUV_FUSION` | 1193 |
+| `DKA_EAI_ORGANISATION` | 1199 |
+| `DKA_EAI_ORG_SAUV_FUSION` | 1202 |
+| `DKA_EAI_PROJET` | 1216 |
+| `DKA_EAI_PROJET_SAUV_FUSION` | 1219 |
+| `HR_OPERATING_UNITS` | 1224 |
+| `DKA_EAI_PROJET_SAUV_FUSION` | 1259 |
+| `HR_OPERATING_UNITS` | 1264 |
+| `DKA_EAI_TACHE` | 1293 |
+| `dka_eai_tache_sauv_fusion` | 1295 |
+| `hr_operating_units` | 1298 |
+| `dka_eai_tache_sauv_fusion` | 1333 |
+| `hr_operating_units` | 1336 |
+| `PA_PROJECTS_ALL` | 1534 |
+| `HR_ORGANIZATION_UNITS` | 1542 |
+| `DUAL` | 1566 |
+| `DUAL` | 1579 |
+| `PA_TASKS` | 1589 |
+| `PA_PROJECTS_ALL` | 1602 |
+| `PA_PROJECTS_ALL` | 1607 |
+| `PA_PROJECTS_ALL` | 1618 |
+| `HR_ORGANIZATION_UNITS` | 1739 |
+| `DKA_EAI_PROJET` | 1757 |
+| `HR_ORGANIZATION_UNITS` | 1763 |
+| `OF` | 1770 |
+| `PA_PROJECTS_ALL` | 1778 |
+| `PA_COST_DIST_OVERRIDES` | 1787 |
+| `DKA_EAI_PROJET` | 1810 |
+| `DKA_EAI_PROJET` | 1816 |
+| `DKA_EAI_PROJET` | 1870 |
+| `HR_ORGANIZATION_UNITS` | 1962 |
+| `PA_PROJECTS_ALL` | 1993 |
+| `HR_ORGANIZATION_UNITS` | 2003 |
+| `PA_PROJECTS_ALL` | 2023 |
+| `PA_PROJECTS_ALL` | 2033 |
+| `HR_ORGANIZATION_UNITS` | 2044 |
+| `PA_PROJECTS_ALL` | 2060 |
+| `HR_ORGANIZATION_UNITS` | 2068 |
+| `PA_PROJECTS_ALL` | 2078 |
+| `PA.PA_TASKS` | 2096 |
+| `HR_ORGANIZATION_UNITS` | 2208 |
+| `pa_projects_all` | 2232 |
+| `dka_spatravcours_tmp` | 2236 |
+| `hr_organization_units` | 2244 |
+| `PA_PROJECTS_ALL` | 2257 |
+| `dka_spatravcours_tmp` | 2262 |
+| `PA_PROJECTS_ALL` | 2267 |
+| `HR_ORGANIZATION_UNITS` | 2278 |
+| `PA_PROJECTS_ALL` | 2294 |
+| `dka_spatravcours_tmp` | 2300 |
+| `HR_ORGANIZATION_UNITS` | 2304 |
+| `PA_PROJECTS_ALL` | 2312 |
+| `dka_spatravcours_tmp` | 2318 |
+| `PA_PROJECTS_ALL` | 2333 |
+| `HR_ORGANIZATION_UNITS` | 2341 |
+| `PA_PROJECTS_ALL` | 2349 |
+| `dka_spatravcours_tmp` | 2357 |
+| `PA_PROJECTS_ALL` | 2365 |
+| `HR_ORGANIZATION_UNITS` | 2375 |
+| `PA_PROJECTS_ALL` | 2387 |
+| `HR_ORGANIZATION_UNITS` | 2401 |
+| `DUAL` | 2411 |
+| `dka_spatravcours_tmp` | 2420 |
+| `DKA_SPATRAVCOURS_TMP` | 2461 |
+| `HR_ORGANIZATION_UNITS` | 2593 |
+| `PA_PROJECTS_ALL` | 2616 |
+| `dka_spasinistre_tmp` | 2622 |
+| `HR_ORGANIZATION_UNITS` | 2632 |
+| `PA_PROJECTS_ALL` | 2647 |
+| `dka_spasinistre_tmp` | 2652 |
+| `PA_PROJECTS_ALL` | 2657 |
+| `HR_ORGANIZATION_UNITS` | 2667 |
+| `PA_PROJECTS_ALL` | 2683 |
+| `dka_spasinistre_tmp` | 2688 |
+| `HR_ORGANIZATION_UNITS` | 2692 |
+| `PA_PROJECTS_ALL` | 2700 |
+| `dka_spatravcours_tmp` | 2707 |
+| `PA_PROJECTS_ALL` | 2721 |
+| `HR_ORGANIZATION_UNITS` | 2729 |
+| `PA_PROJECTS_ALL` | 2737 |
+| `dka_spasinistre_tmp` | 2745 |
+| `PA_PROJECTS_ALL` | 2753 |
+| `HR_ORGANIZATION_UNITS` | 2763 |
+| `PA_PROJECTS_ALL` | 2775 |
+| `HR_ORGANIZATION_UNITS` | 2789 |
+| `DUAL` | 2799 |
+| `dka_spasinistre_tmp` | 2808 |
+| `DKA_SPASINISTRE_TMP` | 2846 |
+
+## Références de forme appel package.membre
+
+| Élément | Ligne source |
+|---|---:|
+| `FND_FILE.PUT_LINE` | 212 |
+| `FND_FILE.PUT_LINE` | 255 |
+| `FND_FILE.PUT_LINE` | 271 |
+| `FND_FILE.PUT_LINE` | 287 |
+| `FND_FILE.PUT_LINE` | 316 |
+| `FND_FILE.PUT_LINE` | 333 |
+| `FND_FILE.PUT_LINE` | 334 |
+| `FND_FILE.PUT_LINE` | 335 |
+| `FND_FILE.PUT_LINE` | 338 |
+| `FND_FILE.PUT_LINE` | 342 |
+| `FND_FILE.PUT_LINE` | 346 |
+| `FND_FILE.PUT_LINE` | 350 |
+| `FND_FILE.PUT_LINE` | 354 |
+| `FND_FILE.PUT_LINE` | 358 |
+| `FND_FILE.PUT_LINE` | 359 |
+| `FND_FILE.PUT_LINE` | 362 |
+| `FND_FILE.PUT_LINE` | 366 |
+| `FND_FILE.PUT_LINE` | 370 |
+| `FND_FILE.PUT_LINE` | 372 |
+| `FND_FILE.PUT_LINE` | 377 |
+| `FND_FILE.PUT_LINE` | 382 |
+| `FND_FILE.PUT_LINE` | 386 |
+| `FND_FILE.PUT_LINE` | 392 |
+| `FND_FILE.PUT_LINE` | 393 |
+| `FND_FILE.PUT_LINE` | 398 |
+| `FND_FILE.PUT_LINE` | 403 |
+| `FND_FILE.PUT_LINE` | 404 |
+| `FND_FILE.PUT_LINE` | 407 |
+| `FND_FILE.PUT_LINE` | 413 |
+| `FND_FILE.PUT_LINE` | 415 |
+| `FND_FILE.PUT_LINE` | 422 |
+| `FND_FILE.PUT_LINE` | 443 |
+| `FND_FILE.PUT_LINE` | 447 |
+| `FND_FILE.PUT_LINE` | 452 |
+| `FND_FILE.PUT_LINE` | 457 |
+| `FND_FILE.PUT_LINE` | 539 |
+| `FND_FILE.PUT_LINE` | 540 |
+| `FND_FILE.PUT_LINE` | 543 |
+| `FND_FILE.PUT_LINE` | 544 |
+| `FND_FILE.PUT_LINE` | 548 |
+| `FND_FILE.PUT_LINE` | 552 |
+| `FND_FILE.PUT_LINE` | 564 |
+| `FND_FILE.PUT_LINE` | 570 |
+| `FND_FILE.PUT_LINE` | 573 |
+| `FND_FILE.PUT_LINE` | 574 |
+| `FND_FILE.PUT_LINE` | 580 |
+| `FND_FILE.PUT_LINE` | 588 |
+| `FND_FILE.PUT_LINE` | 629 |
+| `FND_FILE.PUT_LINE` | 635 |
+| `FND_FILE.PUT_LINE` | 636 |
+| `FND_FILE.PUT_LINE` | 637 |
+| `FND_FILE.PUT_LINE` | 641 |
+| `FND_FILE.PUT_LINE` | 663 |
+| `FND_FILE.PUT_LINE` | 851 |
+| `FND_FILE.PUT_LINE` | 853 |
+| `FND_FILE.PUT_LINE` | 854 |
+| `FND_FILE.PUT_LINE` | 856 |
+| `FND_FILE.PUT_LINE` | 859 |
+| `FND_FILE.PUT_LINE` | 860 |
+| `FND_FILE.PUT_LINE` | 861 |
+| `FND_FILE.PUT_LINE` | 863 |
+| `FND_FILE.PUT_LINE` | 869 |
+| `FND_FILE.PUT_LINE` | 870 |
+| `FND_FILE.PUT_LINE` | 924 |
+| `FND_FILE.PUT_LINE` | 941 |
+| `FND_FILE.PUT_LINE` | 956 |
+| `FND_FILE.PUT_LINE` | 961 |
+| `FND_FILE.PUT_LINE` | 994 |
+| `FND_FILE.PUT_LINE` | 1038 |
+| `FND_FILE.PUT_LINE` | 1061 |
+| `FND_FILE.PUT_LINE` | 1065 |
+| `FND_FILE.PUT_LINE` | 1071 |
+| `FND_FILE.PUT_LINE` | 1073 |
+| `FND_FILE.PUT_LINE` | 1075 |
+| `FND_FILE.PUT_LINE` | 1076 |
+| `FND_FILE.PUT_LINE` | 1161 |
+| `FND_FILE.PUT_LINE` | 1209 |
+| `FND_FILE.PUT_LINE` | 1248 |
+| `FND_FILE.PUT_LINE` | 1322 |
+| `FND_FILE.PUT_LINE` | 1385 |
+| `FND_FILE.PUT_LINE` | 1403 |
+| `FND_FILE.PUT_LINE` | 1406 |
+| `FND_FILE.PUT_LINE` | 1409 |
+| `FND_FILE.PUT_LINE` | 1413 |
+| `FND_FILE.PUT_LINE` | 1417 |
+| `FND_FILE.PUT_LINE` | 1418 |
+| `FND_FILE.PUT_LINE` | 1419 |
+| `FND_FILE.PUT_LINE` | 1421 |
+| `FND_FILE.PUT_LINE` | 1423 |
+| `FND_FILE.PUT_LINE` | 1426 |
+| `FND_FILE.PUT_LINE` | 1429 |
+| `FND_FILE.PUT_LINE` | 1432 |
+| `FND_FILE.PUT_LINE` | 1436 |
+| `FND_FILE.PUT_LINE` | 1439 |
+| `FND_FILE.PUT_LINE` | 1443 |
+| `FND_FILE.PUT_LINE` | 1444 |
+| `FND_FILE.PUT_LINE` | 1447 |
+| `FND_FILE.PUT_LINE` | 1451 |
+| `FND_FILE.PUT_LINE` | 1460 |
+| `FND_FILE.PUT_LINE` | 1481 |
+| `FND_FILE.PUT_LINE` | 1485 |
+| `FND_FILE.PUT_LINE` | 1490 |
+| `FND_FILE.PUT_LINE` | 1495 |
+| `FND_FILE.PUT_LINE` | 1571 |
+| `FND_FILE.PUT_LINE` | 1584 |
+| `FND_FILE.PUT_LINE` | 1631 |
+| `FND_FILE.PUT_LINE` | 1650 |
+| `FND_FILE.PUT_LINE` | 1651 |
+| `FND_FILE.PUT_LINE` | 1652 |
+| `FND_FILE.PUT_LINE` | 1654 |
+| `FND_FILE.PUT_LINE` | 1658 |
+| `FND_FILE.PUT_LINE` | 1682 |
+| `FND_FILE.PUT_LINE` | 1686 |
+| `FND_FILE.PUT_LINE` | 1691 |
+| `FND_FILE.PUT_LINE` | 1797 |
+| `FND_FILE.PUT_LINE` | 1798 |
+| `FND_FILE.PUT_LINE` | 1800 |
+| `FND_FILE.PUT_LINE` | 1801 |
+| `FND_FILE.PUT_LINE` | 1802 |
+| `FND_FILE.PUT_LINE` | 1832 |
+| `FND_FILE.PUT_LINE` | 1891 |
+| `FND_FILE.PUT_LINE` | 1894 |
+| `FND_FILE.PUT_LINE` | 1897 |
+| `FND_FILE.PUT_LINE` | 1902 |
+| `FND_FILE.PUT_LINE` | 1915 |
+| `FND_FILE.PUT_LINE` | 1919 |
+| `FND_FILE.PUT_LINE` | 1924 |
+| `FND_FILE.PUT_LINE` | 2092 |
+| `FND_FILE.PUT_LINE` | 2117 |
+| `FND_FILE.PUT_LINE` | 2121 |
+| `FND_FILE.PUT_LINE` | 2124 |
+| `FND_FILE.PUT_LINE` | 2159 |
+| `FND_FILE.PUT_LINE` | 2163 |
+| `FND_FILE.PUT_LINE` | 2168 |
+| `FND_FILE.PUT_LINE` | 2422 |
+| `FND_FILE.PUT_LINE` | 2426 |
+| `FND_FILE.PUT_LINE` | 2431 |
+| `FND_FILE.PUT_LINE` | 2438 |
+| `FND_FILE.PUT_LINE` | 2443 |
+| `FND_FILE.PUT_LINE` | 2454 |
+| `FND_FILE.PUT_LINE` | 2489 |
+| `FND_FILE.PUT_LINE` | 2506 |
+| `FND_FILE.PUT_LINE` | 2509 |
+| `FND_FILE.PUT_LINE` | 2514 |
+| `FND_FILE.PUT_LINE` | 2517 |
+| `FND_FILE.PUT_LINE` | 2543 |
+| `FND_FILE.PUT_LINE` | 2547 |
+| `FND_FILE.PUT_LINE` | 2552 |
+| `FND_FILE.PUT_LINE` | 2555 |
+| `FND_FILE.PUT_LINE` | 2556 |
+| `FND_FILE.PUT_LINE` | 2557 |
+| `FND_FILE.PUT_LINE` | 2810 |
+| `FND_FILE.PUT_LINE` | 2814 |
+| `FND_FILE.PUT_LINE` | 2819 |
+| `FND_FILE.PUT_LINE` | 2825 |
+| `FND_FILE.PUT_LINE` | 2830 |
+| `FND_FILE.PUT_LINE` | 2840 |
+| `FND_FILE.PUT_LINE` | 2873 |
+| `FND_FILE.PUT_LINE` | 2890 |
+| `FND_FILE.PUT_LINE` | 2894 |
+| `FND_FILE.PUT_LINE` | 2899 |
+| `FND_FILE.PUT_LINE` | 2903 |
+| `FND_FILE.PUT_LINE` | 2929 |
+| `FND_FILE.PUT_LINE` | 2933 |
+| `FND_FILE.PUT_LINE` | 2938 |
+| `FND_FILE.PUT_LINE` | 2941 |
+| `FND_FILE.PUT_LINE` | 2942 |
+| `FND_FILE.PUT_LINE` | 2943 |
+
+## Programmes soumis, littéraux détectés
+
+Aucune occurrence détectée ; ne prouve pas une absence fonctionnelle.
+
+## Fichiers référencés
+
+Aucune occurrence détectée ; ne prouve pas une absence fonctionnelle.
+
+## Transactions, erreurs et orchestration
+
+| Marqueur | Lignes |
+|---|---|
+| commit | 193, 208, 293, 634, 921, 938, 991, 1012, 1140, 1147, 1152, 1158, 1328, 1639, 2105, 2475, 2859 |
+| when_others | 211, 253, 269, 285, 315, 421, 463, 640, 669, 923, 940, 993, 1016, 1037, 1081, 1160, 1207, 1246, 1286, 1320, 1358, 1384, 1459, 1501, 1570, 1583, 1630, 1657, 1697, 1901, 1929, 2173, 2560, 2946 |
+| suppression | 196, 201, 206, 389, 400, 411, 1143, 1148, 1153 |
+
+## Programmes concurrents reliés par définition FND
+
+| Programme | Point d’entrée | Définition |
+|---|---|---|
+| DKA_FUSPA_CORR_ORGPROJ / DKA | `DKA_FUSION_PA_PKG.MAIN_CORREC_PROJET` | dka/12.0.0/admin/import/DKA_FUSPA_CORR_ORGPROJ_PRG.ldt:559 |
+| DKA_FUSPA_FERMPRTC / DKA | `DKA_FUSION_PA_PKG.main_ferm_projet` | dka/12.0.0/admin/import/DKA_FUSPA_FERMPRTC_PRG.ldt:595 |
+| DKA_FUSPA_MAJ_CCA / DKA | `DKA_FUSION_PA_PKG.MAIN_MAJ_PR_CCA` | dka/12.0.0/admin/import/DKA_FUSPA_MAJ_CCA_PRG.ldt:551 |
+| DKA_FUSPA_MAJ_TEC_PCA / DKA | `DKA_FUSION_PA_PKG.MAIN_MAJ_PR_TEC_PCA` | dka/12.0.0/admin/import/DKA_FUSPA_MAJ_TEC_PCA_PRG.ldt:551 |
+| DKA_FUSPA_REC_ATTPR / DKA | `DKA_FUSION_PA_PKG.MAIN_REC_HIST` | dka/12.0.0/admin/import/DKA_FUSPA_REC_ATTPR_PRG.ldt:551 |
+| DKA_FUSPA_REP_INDEC / DKA | `DKA_FUSION_PA_PKG.MAIN_REPRISE_INDIC` | dka/12.0.0/admin/import/DKA_FUSPA_REP_INDEC_PRG.ldt:551 |
+| DKA_FUSPA_SAUVPURGTINT / DKA | `DKA_FUSION_PA_PKG.MAIN_SAUV_PURGE` | dka/12.0.0/admin/import/DKA_FUSPA_SAUVPURGTINT_PRG.ldt:417 |
+| DKA_FUSPA_SUFIXAGEPRTX / DKA | `DKA_FUSION_PA_PKG.main_suffix_projet` | dka/12.0.0/admin/import/DKA_FUSPA_SUFIXAGEPRTX_PRG.ldt:559 |
+| DKA_FUSPA_SUFIXRESTABINTEFR / DKA | `DKA_FUSION_PA_PKG.main_rest_TAB_INT` | dka/12.0.0/admin/import/DKA_FUSPA_SUFIXRESTABINTEFR_PRG.ldt:542 |
+
+## À établir par recette / analyse métier
+
+Entrée réelle et propriétaire de données ; paramètres de lancement ; unité de reprise et clés d’idempotence ; effets des commits ; transitions de statut ; résultat métier attendu ; version effectivement déployée. Le silence de l’extracteur ne vaut pas preuve d’absence.

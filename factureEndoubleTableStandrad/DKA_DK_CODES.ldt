@@ -1,0 +1,183 @@
+<?xml version = '1.0' encoding = 'UTF-8'?>
+<!--
+  ================================================================================
+  $Header:$
+  Projet         : HELIOS
+  Nom du fichier : DKA_RAP_MAJSITEFRS.xml
+  Version        : 1.0
+  Cree le        : 23/12/2021
+  Auteur         : Saloua HAHIOUI
+  Description    : DKA_RAP_MAJSITEFRS
+									
+
+  ================================================================================
+  Historique
+  Date        Auteur           Description
+  ==========  ===============  ===================================================
+
+
+  ================================================================================
+-->
+
+<dataTemplate name="DKA_RAP_MAJSITEFRS" version="1.0">
+-<parameters>
+
+<parameter name="P_USER"           dataType="VARCHAR2"/>
+<parameter name="P_NUM_FRS"        dataType="VARCHAR2"/>
+<parameter name="P_SITE_FRS"       dataType="VARCHAR2"/>
+<parameter name="P_BEGIN_DATE"     dataType="DATE"/>
+<parameter name="P_END_DATE"       dataType="DATE"/>
+
+</parameters>
+  <dataQuery>
+	<sqlStatement name="Q_REPORT">
+	<![CDATA[
+         SELECT  
+      sup.SEGMENT1 NUM_VENDOR ,
+        sup.VENDOR_NAME VENDOR_NAME,
+        (select  hps.PARTY_SITE_NAME ADRESSE from hz_party_sites hps
+        where hps.party_site_id = ss.party_site_id) ADRESSE,
+    ss.VENDOR_SITE_CODE SITE,
+        hou.name UO ,
+    sup.PAY_GROUP_LOOKUP_CODE TYPE_TIERS,
+    dsms.ACTION_TYPE ACTION,
+      TO_CHAR(dsms.LAST_UPDATE_DATE, 'DD/MM/YYYY HH24:MI:SS') DATE_EDIT,
+      dsms.ITEM ITEMS,
+      dsms.OLD_ITEM_VALUE OLD_ITEMS,
+      dsms.NEW_ITEM_VALUE NEW_ITEMS,
+        ( select BANK_ACCOUNT_NUM from iby_ext_bank_accounts where ext_bank_account_id = dsms.ext_bank_account_id
+        and dsms.NEW_ITEM_VALUE in ('Priorité d''affectation du compte bancaire','Date de fin d''affectation du compte bancaire')
+    union
+	select eba.BANK_ACCOUNT_NUM 
+    from iby_external_payees_all epa,
+        iby_pmt_instr_uses_all  piu,
+        iby_ext_bank_accounts   eba,
+        hz_party_sites site_supp,
+        hz_parties hzp
+       
+        where   hzp.party_id = sup.party_id
+        AND     hzp.party_id = site_supp.party_id
+        and ss.vendor_site_id = epa.supplier_site_id
+        and epa.payee_party_id = hzp.party_id
+         and site_supp.party_site_id = ss.party_site_id
+        AND epa.ext_payee_id = piu.ext_pmt_party_id
+        AND piu.instrument_id = eba.ext_bank_account_id 
+        AND piu.instrument_type = 'BANKACCOUNT'
+        AND piu.PAYMENT_FUNCTION = 'PAYABLES_DISB'
+        AND piu.PAYMENT_FLOW = 'DISBURSEMENTS'
+        AND eba.ext_bank_account_id= NVL(dsms.ext_bank_account_id,eba.ext_bank_account_id)
+		--and dsms.NEW_ITEM_VALUE not in ('Priorité d''affectation du compte bancaire','Date de fin d''affectation du compte bancaire')
+        and rownum<2
+           
+        ) BANK_ACCOUNT_NUM,
+        (select as1.vendor_name  ||' , '|| asa1.vendor_site_code
+               FROM iby_ext_payee_relationships iep,
+                    ap_supplier_sites_all        asa1,
+                    ap_suppliers        as1
+               WHERE  asa1.vendor_site_id = iep.REMIT_SUPPLIER_SITE_ID
+                 and as1.vendor_id = asa1.vendor_id
+                 and  iep.supplier_site_id = ss.vendor_site_id
+         and iep.relationship_id = (select max (relationship_id) from iby_ext_payee_relationships where supplier_site_id = ss.vendor_site_id)
+         -- AND ROWNUM<2
+                 ) factor ,
+        fu.USER_NAME || ', ' || fu.DESCRIPTION MATRICULE_USER ,
+        dsms.last_update_date
+   FROM ap_suppliers            sup,
+        ap_supplier_sites_all   ss,
+    hr_operating_units hou ,
+    DKA_SAPFRS_MAJ_SITES dsms,
+        fnd_user fu
+         
+   WHERE sup.vendor_id = ss.vendor_id
+        AND ss.org_id = hou.organization_id
+      AND ss.VENDOR_site_ID = dsms.VENDOR_SITE_ID
+        AND fu.user_id = dsms.LAST_UPDATED_BY 
+	--	AND sup.VENDOR_ID = dsms.VENDOR_ID 
+	--   		AND trunc(dsms.LAST_UPDATE_DATE) > sysdate -1
+		AND dsms.VENDOR_ID = NVL(:P_NUM_FRS,dsms.VENDOR_ID)
+	    AND dsms.VENDOR_SITE_ID =NVL(:P_SITE_FRS,dsms.VENDOR_SITE_ID)
+		AND dsms.LAST_UPDATED_BY  = NVL(:P_USER,dsms.LAST_UPDATED_BY)
+		AND trunc(dsms.LAST_UPDATE_DATE) BETWEEN trunc(:P_BEGIN_DATE) AND trunc(:P_END_DATE)	
+	  and not exists (select 1 from DKA_SAPFRS_MAJ_SITES aa
+      where  aa.item IN  ( 'N° de compte bancaire (RIB)','Date de fin du compte bancaire','IBAN')
+       and aa.action_type= 'CREATION'  and aa.SEQ_ID = dsms.SEQ_ID
+   )
+		 UNION 
+    
+    SELECT  
+      sup.SEGMENT1 NUM_VENDOR ,
+        sup.VENDOR_NAME VENDOR_NAME,
+        (select  hps.PARTY_SITE_NAME ADRESSE from hz_party_sites hps
+        where hps.party_site_id = ss.party_site_id) ADRESSE,
+    ss.VENDOR_SITE_CODE SITE,
+        hou.name UO ,
+    sup.PAY_GROUP_LOOKUP_CODE TYPE_TIERS,
+    dsms.ACTION_TYPE ACTION,
+      TO_CHAR(dsms.LAST_UPDATE_DATE, 'DD/MM/YYYY HH24:MI:SS') DATE_EDIT,
+      dsms.ITEM ITEMS,
+      dsms.OLD_ITEM_VALUE OLD_ITEMS,
+      dsms.NEW_ITEM_VALUE NEW_ITEMS,
+        ( select eba.BANK_ACCOUNT_NUM 
+    from 
+        iby_ext_bank_accounts   eba
+        where  
+        eba.ext_bank_account_id= NVL(dsms.ext_bank_account_id,eba.ext_bank_account_id)
+        and rownum<2
+           
+        ) BANK_ACCOUNT_NUM,
+        (select as1.vendor_name  ||' , '|| asa1.vendor_site_code
+               FROM iby_ext_payee_relationships iep,
+                    ap_supplier_sites_all        asa1,
+                    ap_suppliers        as1
+               WHERE  asa1.vendor_site_id = iep.REMIT_SUPPLIER_SITE_ID
+                 and as1.vendor_id = asa1.vendor_id
+                 and  iep.supplier_site_id = ss.vendor_site_id
+         and iep.relationship_id = (select max (relationship_id) from iby_ext_payee_relationships where supplier_site_id = ss.vendor_site_id)
+         -- AND ROWNUM<2
+                 ) factor ,
+        fu.USER_NAME || ', ' || fu.DESCRIPTION MATRICULE_USER ,
+        dsms.last_update_date
+   FROM ap_suppliers            sup,
+        ap_supplier_sites_all   ss,
+    hr_operating_units hou ,
+    DKA_SAPFRS_MAJ_SITES dsms,
+        fnd_user fu
+         
+   WHERE sup.vendor_id = ss.vendor_id
+        AND ss.org_id = hou.organization_id
+      AND ss.VENDOR_site_ID = (select distinct cc.vendor_site_id from DKA_SAPFRS_MAJ_SITES cc
+                           where cc.item = 'Date de fin d''affectation du compte bancaire'
+                           and dsms.ext_bank_account_id = cc.ext_bank_account_id
+                           AND cc.VENDOR_ID = NVL(:P_NUM_FRS,cc.VENDOR_ID)
+	                         AND cc.VENDOR_SITE_ID =NVL(:P_SITE_FRS,cc.VENDOR_SITE_ID)
+                            and cc.action_type= 'CREATION')
+        AND fu.user_id = dsms.LAST_UPDATED_BY 
+        and dsms.item IN  ( 'N° de compte bancaire (RIB)','Date de fin du compte bancaire','IBAN')
+         and dsms.action_type= 'CREATION' 
+		AND dsms.LAST_UPDATED_BY  = NVL(:P_USER,dsms.LAST_UPDATED_BY)
+		AND trunc(dsms.LAST_UPDATE_DATE) BETWEEN trunc(:P_BEGIN_DATE) AND trunc(:P_END_DATE)
+ order by LAST_UPDATE_DATE desc
+		
+  ]]> 
+  </sqlStatement>
+  </dataQuery>
+ <dataStructure>
+   <group   name="G_REPORT"               source="Q_REPORT">
+        <element name="R_VENDOR_NAME"                                           dataType="VARCHAR2"  value="VENDOR_NAME" /> 
+        <element name="R_NUM_VENDOR"                                         	dataType="VARCHAR2"  value="NUM_VENDOR" /> 
+		<element name="R_ADRESSE"                                         	    dataType="VARCHAR2"  value="ADRESSE" /> 
+		<element name="R_SITE"                                         	        dataType="VARCHAR2"  value="SITE" />
+		<element name="R_UO"                                         	        dataType="VARCHAR2"  value="UO" />
+		<element name="R_TYPE_TIERS"                                            dataType="VARCHAR2"  value="TYPE_TIERS" />
+		<element name="R_ACTION"                                            	dataType="VARCHAR2"  value="ACTION" />
+        <element name="R_DATE_EDIT"                                      	    dataType="VARCHAR2"  value="DATE_EDIT" /> 
+        <element name="R_ITEMS"                                      			dataType="VARCHAR2"  value="ITEMS" />
+        <element name="R_OLD_ITEMS"                                      	    dataType="VARCHAR2"  value="OLD_ITEMS" />		
+		<element name="R_NEW_ITEMS"                                 			dataType="VARCHAR2"  value="NEW_ITEMS" /> 
+		<element name="R_BANC"                                 	                dataType="VARCHAR2"  value="BANK_ACCOUNT_NUM" />
+        <element name="R_FACTOR"                                 	            dataType="VARCHAR2"  value="FACTOR" /> 		
+        <element name="R_MATRICULE_USER"                                    	dataType="VARCHAR2"  value="MATRICULE_USER" /> 
+
+  </group>
+  </dataStructure>
+ </dataTemplate>

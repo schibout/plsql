@@ -1,0 +1,272 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- $Header: DATA_TEMPLATE_DKA_KPI_CODARTINT_TEMPLATE.xml -->
+<!--                                                       -->
+ <!-- CAP GEMINI
+ 
+ PROJET           : DALKIA Oracle Applications
+ NOM              : DKA_KPI_CODARTINT_TEMPLATE.xml
+ DESCRIPTION      : Data template pour le lancement de l'état DKA : KPI Contribution de la codification articles internes
+
+ AUTEUR           : F.siham
+ DATE DE CREATION : 25/03/2019
+ DOC. ASSOCIEE    :
+ NOTES            : 
+
+ HISTORIQUE DES MODIFICATIONS
+ Date          Qui Description  
+ 28/03/2019    SFA Traitement des retours 
+ -->
+
+<dataTemplate name="DKA_KPI_CODARTINT_TEMPLATE" description="DKA_KPI_CODARTINT_TEMPLATE"   version="1.0">
+<parameters>
+<parameter name="P_REDACTEUR_DA" datatype="characters"/>
+<parameter name="P_PERIMETRE" datatype="characters"/>
+<parameter name="P_CENTRE_FINANCE" datatype="characters"/>
+<parameter name="P_MARCHE" datatype="characters"/>
+<parameter name="P_CODE_ARTICLE_INT" datatype="characters"/>
+<parameter name="P_NUM_COMMANDE" datatype="characters"/>
+<parameter name="P_COM_CREE_DEPUIS" datatype="characters"/>
+<parameter name="P_COM_CREE_JUSQAU" datatype="characters"/>
+</parameters>
+<dataQuery>
+<sqlStatement name="Q1">
+<![CDATA[
+ SELECT
+     P_REDACTEUR_DA,
+     P_PERIMETRE,
+     P_CENTRE_FINANCE,
+     P_MARCHE,
+     P_CODE_ARTICLE,
+     P_NUM_COMMANDE,
+     P_COM_CREE_DEPUIS,
+     P_COM_CREE_JUSQUA,
+     UO,
+     REGION,
+     CENTRE_FINANCE2,
+     NUM_COMMANDE2,
+     CODE_CATEGORY,
+     REDACTEUR_DA,
+     CODE_ARTICLE2,
+     DATE_COMMANDE,
+     QUANTITE,
+     PRIX_COMMANDE,
+     PRIX_ARTICLE_RECH,
+     DECODE(PRIX_ARTICLE_RECH,0,0,PRIX_MOINS_CHER)PRIX_MOINS_CHER,
+     DECODE (PRIX_ARTICLE_RECH,0,0,((PRIX_ARTICLE_RECH - PRIX_COMMANDE ) * QUANTITE )) GAIN_PERTE,
+     (( (DECODE(PRIX_ARTICLE_RECH,0,0,PRIX_MOINS_CHER)) - LEAST(PRIX_ARTICLE_RECH,PRIX_COMMANDE)) * QUANTITE ) MANQUE_GANIER
+ FROM
+     (SELECT
+     (
+         SELECT 
+		      DISTINCT full_name 
+		 FROM HR_EMPLOYEES 
+		 WHERE employee_id 
+		        IN (SELECT 
+				employee_id from FND_USER WHERE  user_id =:P_REDACTEUR_DA)
+     ) P_REDACTEUR_DA,
+     (
+         SELECT
+             NVL(:P_PERIMETRE,(SELECT name FROM HR_OPERATING_UNITS WHERE ORGANIZATION_ID =FND_PROFILE.VALUE('ORG_ID')))
+         FROM
+            DUAL
+     ) P_PERIMETRE,
+     (
+         SELECT
+             NVL(:P_CENTRE_FINANCE,'')
+         FROM
+             DUAL
+     ) P_CENTRE_FINANCE,
+     (
+         SELECT DISTINCT
+             NVL(CONCATENATED_SEGMENTS,'')
+         FROM
+             MTL_CATEGORIES_KFV
+         WHERE
+             CATEGORY_ID =:P_MARCHE
+     ) P_MARCHE,
+     (
+         SELECT DISTINCT 
+             NVL( (SEGMENT1
+                     || '.'
+                     || SEGMENT2),'')
+         FROM
+             MTL_SYSTEM_ITEMS_B
+         WHERE
+             INVENTORY_ITEM_ID =:P_CODE_ARTICLE_INT
+     ) P_CODE_ARTICLE,
+     (
+         SELECT
+             NVL(SEGMENT1,'')
+         FROM
+             PO_HEADERS_ALL
+         WHERE
+             PO_HEADER_ID =:P_NUM_COMMANDE
+     ) P_NUM_COMMANDE,
+     (
+         SELECT
+             nvl(:P_COM_CREE_DEPUIS,'')
+         FROM
+             DUAL
+     ) P_COM_CREE_DEPUIS,
+     (
+         SELECT
+             nvl(:P_COM_CREE_JUSQAU,'')
+         FROM
+             DUAL
+     ) P_COM_CREE_JUSQUA,
+     HROU.NAME                   UO,
+     SUBSTR(HROU.NAME,1,3) REGION,
+     POD.CODE_COMBINATION_ID,
+     GLCC.SEGMENT6               CENTRE_FINANCE2,
+     POH.SEGMENT1                NUM_COMMANDE2,
+     POL.CATEGORY_ID,
+     MCK.CONCATENATED_SEGMENTS   CODE_CATEGORY,
+     HRE.FULL_NAME               REDACTEUR_DA,
+     ( MSI.SEGMENT1
+       || '.'
+       || MSI.SEGMENT2 ) CODE_ARTICLE2,
+     TO_CHAR(POH.CREATION_DATE,'DD/MM/RRRR') DATE_COMMANDE,
+     POL.QUANTITY                QUANTITE,
+     POL.UNIT_PRICE              PRIX_COMMANDE,
+     (
+         SELECT
+             NVL(AVG(DSH.RESULT_PRIX_UNITAIRE),0)
+         FROM
+             DKA.DKA_SICXRECHCAT_HIST DSH,
+             (
+                 SELECT
+                     MAX(PRLA1.CREATION_DATE) DATE_DERNIERE_DA
+                 FROM
+                     PO_REQUISITION_LINES_ALL PRLA1
+                 WHERE
+                     PRLA1.ITEM_ID = POL.ITEM_ID
+                     AND PRLA1.ORG_ID = POL.ORG_ID
+                     AND PRLA1.CREATED_BY = PRLA.CREATED_BY
+                     AND PRLA1.CREATION_DATE < PRLA.CREATION_DATE
+             ) DA_AUTRE
+         WHERE
+             DSH.UO = POH.ORG_ID
+             AND DSH.RECH_CODE_ARTICLE_INTERNE IS NULL
+             AND DSH.RESULT_CODE_ARTICLE_INTERNE = ( MSI.SEGMENT1
+                                                     || '.'
+                                                     || MSI.SEGMENT2 )
+             AND DSH.USER_ID = PRLA.CREATED_BY
+             AND DSH.CREATION_DATE < PRLA.CREATION_DATE
+             AND DSH.STATUT = 'COMPLETE'
+             AND DSH.CREATION_DATE >= DECODE(DA_AUTRE.DATE_DERNIERE_DA,NULL,ADD_MONTHS(PRLA.CREATION_DATE,-12),DA_AUTRE.DATE_DERNIERE_DA
+             )
+     ) PRIX_ARTICLE_RECH,
+     (
+         SELECT
+             NVL(AVG(DSH.RESULT_PRIX_MINIMUM),0)
+         FROM
+             DKA.DKA_SICXRECHCAT_HIST DSH,
+             (
+                 SELECT
+                     MAX(POH1.CREATION_DATE) DATE_DERNIERE_CMD
+                 FROM
+                     PO_LINES_ALL POL1,
+                     PO_HEADERS_ALL POH1
+                 WHERE
+                     POH1.PO_HEADER_ID = POL1.PO_HEADER_ID
+                     AND POH1.PO_HEADER_ID = POH.PO_HEADER_ID
+                     AND POL1.ITEM_ID = POL.ITEM_ID
+                     AND POL1.ORG_ID = POL.ORG_ID
+                     AND POH1.CREATED_BY = POH.CREATED_BY
+                     AND POH1.CREATION_DATE < POH.CREATION_DATE
+             ) CMD_AUTRE
+         WHERE
+             DSH.UO = POH.ORG_ID
+             AND DSH.RECH_CODE_ARTICLE_INTERNE IS NULL
+             AND DSH.RESULT_CODE_ARTICLE_INTERNE = ( MSI.SEGMENT1
+                                                     || '.'
+                                                     || MSI.SEGMENT2 )
+             AND DSH.USER_ID = PRLA.CREATED_BY
+             AND DSH.CREATION_DATE < PRLA.CREATION_DATE
+             AND DSH.STATUT = 'COMPLETE'
+             AND DSH.CREATION_DATE >= DECODE(CMD_AUTRE.DATE_DERNIERE_CMD,NULL,ADD_MONTHS(POH.CREATION_DATE,-12),CMD_AUTRE.DATE_DERNIERE_CMD
+             )
+     ) PRIX_MOINS_CHER
+ FROM
+     PO_HEADERS_ALL POH,
+     PO_LINES_ALL POL,
+     HR_ALL_ORGANIZATION_UNITS HROU,
+     PO_DISTRIBUTIONS_ALL POD,
+     MTL_ITEM_CATEGORIES MIC,
+     GL_CODE_COMBINATIONS GLCC,
+     HR_EMPLOYEES HRE,
+     MTL_SYSTEM_ITEMS_B MSI,
+     MTL_CATEGORIES_KFV MCK,
+     PO_REQUISITION_HEADERS_ALL PRHA,
+     PO_REQUISITION_LINES_ALL PRLA,
+     PO_REQ_DISTRIBUTIONS_ALL PRDA,
+     PO_LINE_LOCATIONS_ALL PLLA
+ WHERE
+     POH.PO_HEADER_ID = POL.PO_HEADER_ID
+     AND POH.ORG_ID = HROU.ORGANIZATION_ID
+     AND POH.ORG_ID = MSI.ORGANIZATION_ID
+     AND POD.ORG_ID = POH.ORG_ID
+     AND MIC.ORGANIZATION_ID = MSI.ORGANIZATION_ID
+     AND POD.PO_LINE_ID = POL.PO_LINE_ID
+     AND POL.ITEM_ID = MSI.INVENTORY_ITEM_ID
+     AND MSI.ORGANIZATION_ID = POL.ORG_ID
+     AND POL.ITEM_ID = MIC.INVENTORY_ITEM_ID
+     AND MSI.INVENTORY_ITEM_ID = MIC.INVENTORY_ITEM_ID
+     AND MIC.CATEGORY_ID = MCK.CATEGORY_ID
+     AND POL.CATEGORY_ID = MCK.CATEGORY_ID
+     AND MIC.CATEGORY_ID = MCK.CATEGORY_ID
+     AND POD.CODE_COMBINATION_ID = GLCC.CODE_COMBINATION_ID
+     AND MIC.ORGANIZATION_ID = POH.ORG_ID
+     AND HRE.EMPLOYEE_ID = POH.AGENT_ID
+     AND PRHA.REQUISITION_HEADER_ID = PRLA.REQUISITION_HEADER_ID
+     AND PRLA.REQUISITION_LINE_ID = PRDA.REQUISITION_LINE_ID
+     AND PRDA.DISTRIBUTION_ID = POD.REQ_DISTRIBUTION_ID
+     AND PLLA.LINE_LOCATION_ID = POD.LINE_LOCATION_ID
+     AND PRLA.CREATED_BY = NVL(:P_REDACTEUR_DA,PRLA.CREATED_BY)
+     AND (POH.ORG_ID in (SELECT ORGANIZATION_ID FROM HR_OPERATING_UNITS
+                                  WHERE name like DECODE(:P_PERIMETRE,'TOUT',name,:P_PERIMETRE||'%')) 
+             OR POH.ORG_ID = decode (:P_PERIMETRE,NULL,FND_PROFILE.VALUE('ORG_ID'))) 
+     AND GLCC.SEGMENT6 = NVL(:P_CENTRE_FINANCE,GLCC.SEGMENT6)
+     AND POL.CATEGORY_ID = NVL(:P_MARCHE,POL.CATEGORY_ID)
+     AND POL.ITEM_ID = NVL(:P_CODE_ARTICLE_INT,POL.ITEM_ID)
+     AND POH.PO_HEADER_ID = NVL(:P_NUM_COMMANDE,POH.PO_HEADER_ID)
+     AND TRUNC(POH.CREATION_DATE) BETWEEN NVL(TO_DATE(:P_COM_CREE_DEPUIS,'DD/MM/RRRR'),TO_DATE(POH.CREATION_DATE,'DD/MM/RRRR')) AND
+     NVL(TO_DATE(:P_COM_CREE_JUSQUA,'DD/MM/RRRR'),TO_DATE(POH.CREATION_DATE,'DD/MM/RRRR'))
+ ORDER BY
+     HROU.NAME,
+     SUBSTR(HROU.NAME,1,3),
+     GLCC.SEGMENT6,
+     MCK.CONCATENATED_SEGMENTS,
+     POH.CREATED_BY,
+     POH.SEGMENT1)
+  ]]>
+  </sqlStatement>
+</dataQuery>
+<dataStructure>
+<group name="G_Q1" source="Q1">
+<element name="XDOFIELD1" value="P_REDACTEUR_DA"/>
+<element name="XDOFIELD2" value="P_PERIMETRE"/>
+<element name="XDOFIELD3" value="P_CENTRE_FINANCE"/>
+<element name="XDOFIELD4" value="P_MARCHE"/>
+<element name="XDOFIELD5" value="P_CODE_ARTICLE"/>
+<element name="XDOFIELD6" value="P_NUM_COMMANDE"/>
+<element name="XDOFIELD7" value="P_COM_CREE_DEPUIS"/>
+<element name="XDOFIELD8" value="P_COM_CREE_JUSQUA"/>
+<element name="XDOFIELD_L1" value="UO"/>
+<element name="XDOFIELD_L2" value="REGION"/>
+<element name="XDOFIELD_L3" value="CENTRE_FINANCE2"/>
+<element name="XDOFIELD_L4" value="CODE_CATEGORY"/>
+<element name="XDOFIELD_L5" value="REDACTEUR_DA"/>
+<element name="XDOFIELD_L6" value="NUM_COMMANDE2"/>
+<element name="XDOFIELD_L7" value="DATE_COMMANDE"/>
+<element name="XDOFIELD_L8" value="CODE_ARTICLE2"/>
+<element name="XDOFIELD_L9" value="QUANTITE"/>
+<element name="XDOFIELD_L10" value="PRIX_COMMANDE"/>
+<element name="XDOFIELD_L11" value="PRIX_ARTICLE_RECH"/>
+<element name="XDOFIELD_L12" value="PRIX_MOINS_CHER"/>
+<element name="XDOFIELD_L13" value="GAIN_PERTE"/>
+<element name="XDOFIELD_L14" value="MANQUE_GANIER"/>
+
+</group>
+</dataStructure>
+</dataTemplate>

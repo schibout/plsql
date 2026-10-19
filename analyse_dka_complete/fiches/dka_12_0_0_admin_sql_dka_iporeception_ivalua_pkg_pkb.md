@@ -1,0 +1,557 @@
+# DKA_IPORECEPTION_IVALUA_PKG.PKB
+
+Source : [dka/12.0.0/admin/sql/DKA_IPORECEPTION_IVALUA_PKG.PKB](../../dka/12.0.0/admin/sql/DKA_IPORECEPTION_IVALUA_PKG.PKB).
+
+Famille proposée par convention de nommage : **PO / achats**. Cette étiquette nécessite la lecture fonctionnelle du traitement.
+
+**Nature de la fiche : extraction statique automatique, pas une spécification métier validée.** Les références sont des occurrences dans le texte hors commentaires SQL ; les chaînes et SQL dynamique peuvent créer des faux positifs ou des dépendances manquantes. Aucune exécution du composant.
+
+Lignes : 5123 ; encodage : utf-8. SHA-256 : `56d9c94fd8f99d7c25557f94e40a946bdbe8332c7496a3d2fcf886de136a0fcf`.
+
+## Sous-programmes déclarés (sur les PKB : inclut privés et doublons déclaration/définition)
+
+| Élément | Ligne source |
+|---|---:|
+| `output_header` | 103 |
+| `Request_parameters` | 157 |
+| `output_end` | 245 |
+| `Add_Message` | 273 |
+| `Add_Message2` | 343 |
+| `get_organization_id` | 370 |
+| `GET_VENDOR_SITE_ID` | 401 |
+| `init` | 502 |
+| `validate_data_group` | 605 |
+| `validate_data` | 2638 |
+| `import_data` | 2932 |
+| `Launch_OI` | 3661 |
+| `UPDATE_REC` | 3914 |
+| `Launch_Loader` | 4058 |
+| `Report_Bilan` | 4232 |
+| `purge_data` | 4726 |
+| `main` | 4845 |
+
+## Triggers déclarés
+
+Aucune occurrence détectée ; ne prouve pas une absence fonctionnelle.
+
+## Objets SQL candidats (CTE et alias possibles)
+
+| Élément | Ligne source |
+|---|---:|
+| `fnd_concurrent_programs` | 118 |
+| `fnd_concurrent_requests` | 163 |
+| `fnd_concurrent_requests` | 192 |
+| `fnd_concurrent_requests` | 209 |
+| `hr_operating_units` | 383 |
+| `AP_SUPPLIERS` | 412 |
+| `fnd_concurrent_requests` | 569 |
+| `dka.DKA_IPOREC_INTERFACE` | 661 |
+| `OF` | 667 |
+| `dka.DKA_IPOREC_INTERFACE` | 687 |
+| `DKA_IPOREC_INTERFACE` | 726 |
+| `DKA_IPOREC_INTERFACE` | 752 |
+| `DKA_IPOREC_INTERFACE` | 774 |
+| `per_security_organizations_v` | 782 |
+| `DKA_IPOREC_INTERFACE` | 788 |
+| `DKA_IPOREC_INTERFACE` | 809 |
+| `DKA_IPOREC_INTERFACE` | 832 |
+| `po_vendors` | 841 |
+| `DKA_IPOREC_INTERFACE` | 860 |
+| `po_vendors` | 871 |
+| `DKA_IPOREC_INTERFACE` | 875 |
+| `DKA_IPOREC_INTERFACE` | 895 |
+| `DKA_IPOREC_INTERFACE` | 917 |
+| `DKA_IPOREC_INTERFACE` | 938 |
+| `PO_VENDOR_SITES_ALL` | 953 |
+| `PO_VENDOR_SITES_ALL` | 964 |
+| `DKA_IPOREC_INTERFACE` | 985 |
+| `PO_VENDOR_SITES_ALL` | 1004 |
+| `DKA_IPOREC_INTERFACE` | 1011 |
+| `DKA_IPOREC_INTERFACE` | 1033 |
+| `DKA_IPOREC_INTERFACE` | 1057 |
+| `DKA_IPOREC_INTERFACE` | 1077 |
+| `hr_operating_units` | 1086 |
+| `hr_operating_units` | 1097 |
+| `hr_operating_units` | 1112 |
+| `hr_operating_units` | 1122 |
+| `DKA_IPOREC_INTERFACE` | 1146 |
+| `DKA_IPOREC_INTERFACE` | 1154 |
+| `DKA_IPOREC_INTERFACE` | 1178 |
+| `PO_HEADERS_ALL` | 1187 |
+| `DKA_IPOREC_INTERFACE` | 1207 |
+| `PO_HEADERS_ALL` | 1220 |
+| `DKA_IPOREC_INTERFACE` | 1240 |
+| `PO_HEADERS_ALL` | 1252 |
+| `DKA_IPOREC_INTERFACE` | 1275 |
+| `PO_HEADERS_ALL` | 1285 |
+| `DKA_IPOREC_INTERFACE` | 1312 |
+| `PO_HEADERS_ALL` | 1326 |
+| `DKA_IPOREC_INTERFACE` | 1338 |
+| `PO_HEADERS_ALL` | 1368 |
+| `DKA_IPOREC_INTERFACE` | 1381 |
+| `DKA.DKA_IPOREC_REJECT` | 1386 |
+| `DKA_IPOREC_INTERFACE` | 1403 |
+| `DKA_IPOREC_INTERFACE` | 1424 |
+| `PO_HEADERS_ALL` | 1439 |
+| `PO_HEADERS_ALL` | 1455 |
+| `DKA_IPOREC_INTERFACE` | 1469 |
+| `PO_HEADERS_ALL` | 1500 |
+| `DKA_IPOREC_INTERFACE` | 1515 |
+| `DKA.DKA_IPOREC_REJECT` | 1522 |
+| `DKA_IPOREC_INTERFACE` | 1539 |
+| `DKA_IPOREC_INTERFACE` | 1560 |
+| `DKA_IPOREC_INTERFACE` | 1587 |
+| `PO_LINES_ALL` | 1595 |
+| `DKA_IPOREC_INTERFACE` | 1614 |
+| `DKA_IPOREC_INTERFACE` | 1634 |
+| `PO_HEADERS_ALL` | 1644 |
+| `DKA_IPOREC_INTERFACE` | 1672 |
+| `PO_LINES_ALL` | 1685 |
+| `DKA_IPOREC_INTERFACE` | 1696 |
+| `PO_LINES_ALL` | 1728 |
+| `DKA_IPOREC_INTERFACE` | 1739 |
+| `DKA.DKA_IPOREC_REJECT` | 1749 |
+| `DKA_IPOREC_INTERFACE` | 1768 |
+| `DKA_IPOREC_INTERFACE` | 1790 |
+| `PO_LINES_ALL` | 1806 |
+| `PO_LINES_ALL` | 1822 |
+| `DKA_IPOREC_INTERFACE` | 1832 |
+| `PO_LINES_ALL` | 1866 |
+| `DKA_IPOREC_INTERFACE` | 1876 |
+| `DKA.DKA_IPOREC_REJECT` | 1885 |
+| `DKA_IPOREC_INTERFACE` | 1904 |
+| `DKA_IPOREC_INTERFACE` | 1928 |
+| `DKA_IPOREC_INTERFACE` | 2003 |
+| `DKA_IPOREC_INTERFACE` | 2022 |
+| `DKA_IPOREC_INTERFACE` | 2041 |
+| `DKA_IPOREC_INTERFACE` | 2060 |
+| `DKA_IPOREC_INTERFACE` | 2082 |
+| `DKA_IPOREC_INTERFACE` | 2103 |
+| `DKA_IPOREC_INTERFACE` | 2127 |
+| `DKA_IPOREC_INTERFACE` | 2136 |
+| `DKA_IPOREC_INTERFACE` | 2161 |
+| `RCV_TRANSACTIONS` | 2169 |
+| `DKA_IPOREC_INTERFACE` | 2191 |
+| `DKA_IPOREC_INTERFACE` | 2217 |
+| `RCV_TRANSACTIONS` | 2227 |
+| `DKA_IPOREC_INTERFACE` | 2246 |
+| `rcv_shipment_headers` | 2259 |
+| `DKA_IPOREC_INTERFACE` | 2288 |
+| `rcv_shipment_headers` | 2302 |
+| `DKA_IPOREC_INTERFACE` | 2344 |
+| `rcv_shipment_headers` | 2363 |
+| `DKA_IPOREC_INTERFACE` | 2387 |
+| `DKA_IPOREC_INTERFACE` | 2411 |
+| `DKA_IPOREC_INTERFACE` | 2435 |
+| `DKA_IPOREC_INTERFACE` | 2459 |
+| `DKA_IPOREC_INTERFACE` | 2468 |
+| `rcv_shipment_headers` | 2483 |
+| `DKA_IPOREC_INTERFACE` | 2520 |
+| `DKA_IPOREC_INTERFACE` | 2526 |
+| `DKA_IPOREC_INTERFACE` | 2554 |
+| `DKA_IPOREC_INTERFACE` | 2576 |
+| `DKA_IPOREC_INTERFACE` | 2585 |
+| `DKA_IPOREC_INTERFACE` | 2598 |
+| `dka.DKA_IPOREC_INTERFACE` | 2687 |
+| `RCV_SHIPMENT_HEADERS` | 2693 |
+| `dka.DKA_IPOREC_INTERFACE` | 2713 |
+| `RCV_SHIPMENT_HEADERS` | 2719 |
+| `dka.DKA_IPOREC_INTERFACE` | 2729 |
+| `OF` | 2735 |
+| `dka.DKA_IPOREC_INTERFACE` | 2740 |
+| `OF` | 2746 |
+| `DKA_IPOREC_INTERFACE` | 2829 |
+| `DKA_IPOREC_INTERFACE` | 2848 |
+| `DKA_IPOREC_INTERFACE` | 2861 |
+| `DKA_IPOREC_INTERFACE` | 2888 |
+| `DKA_IPOREC_INTERFACE` | 2952 |
+| `OF` | 2956 |
+| `DKA_IPOREC_INTERFACE` | 2961 |
+| `OF` | 2969 |
+| `DKA_IPOREC_INTERFACE` | 2975 |
+| `OF` | 2983 |
+| `DKA_IPOREC_INTERFACE` | 2990 |
+| `OF` | 2998 |
+| `DKA_IPOREC_INTERFACE` | 3003 |
+| `OF` | 3012 |
+| `DKA_IPOREC_INTERFACE` | 3017 |
+| `OF` | 3025 |
+| `po_line_locations_all` | 3036 |
+| `po_lines_all` | 3051 |
+| `dka.DKA_IPOREC_REJECT` | 3061 |
+| `po_headers_all` | 3068 |
+| `dka.DKA_IPOREC_REJECT` | 3077 |
+| `dual` | 3106 |
+| `DUAL` | 3112 |
+| `fnd_user` | 3115 |
+| `rcv_headers_interface` | 3120 |
+| `DUAL` | 3173 |
+| `rcv_transactions_interface` | 3176 |
+| `DKA_IPOREC_INTERFACE` | 3242 |
+| `dual` | 3275 |
+| `DUAL` | 3279 |
+| `rcv_transactions_interface` | 3282 |
+| `DKA_IPOREC_INTERFACE` | 3354 |
+| `DUAL` | 3370 |
+| `rcv_transactions_interface` | 3372 |
+| `DKA_IPOREC_INTERFACE` | 3446 |
+| `DKA_IPOREC_INTERFACE` | 3460 |
+| `dual` | 3477 |
+| `DUAL` | 3483 |
+| `fnd_user` | 3487 |
+| `rcv_headers_interface` | 3493 |
+| `DUAL` | 3532 |
+| `rcv_transactions_interface` | 3535 |
+| `DKA_IPOREC_INTERFACE` | 3600 |
+| `rcv_headers_interface` | 3696 |
+| `rcv_transactions_interface` | 3743 |
+| `rcv_headers_interface` | 3789 |
+| `DKA_IPOREC_INTERFACE` | 3867 |
+| `rcv_shipment_headers` | 3870 |
+| `DKA_IPOREC_INTERFACE` | 3881 |
+| `rcv_transactions_interface` | 3884 |
+| `dka.DKA_IPOREC_REJECT` | 3936 |
+| `OF` | 3938 |
+| `po_line_locations_all` | 3948 |
+| `po_lines_all` | 3962 |
+| `dka.DKA_IPOREC_REJECT` | 3971 |
+| `po_headers_all` | 3978 |
+| `dka.DKA_IPOREC_REJECT` | 3986 |
+| `PO_LINE_LOCATIONS_ALL` | 4010 |
+| `PO_LINES_ALL` | 4015 |
+| `DKA_IPOREC_HIST_INTERFACE` | 4130 |
+| `DKA_IPOREC_INTERFACE` | 4131 |
+| `fnd_new_messages` | 4141 |
+| `DKA_IPOREC_REPORTING_INTERFACE` | 4155 |
+| `DKA_IPOREC_INTERFACE` | 4156 |
+| `fnd_new_messages` | 4166 |
+| `dka_program_messages` | 4237 |
+| `dka_program_messages` | 4250 |
+| `PO_INTERFACE_ERRORS` | 4264 |
+| `PO_INTERFACE_ERRORS` | 4275 |
+| `fnd_concurrent_requests` | 4283 |
+| `DKA_IPOREC_REPORTING_INTERFACE` | 4304 |
+| `DKA_IPOREC_INTERFACE` | 4306 |
+| `DKA_IPOREC_INTERFACE` | 4310 |
+| `DKA_IPOREC_REPORTING_INTERFACE` | 4313 |
+| `DKA_IPOREC_INTERFACE` | 4316 |
+| `DKA_IPOREC_INTERFACE` | 4328 |
+| `dka_program_messages` | 4344 |
+| `DKA_IPOREC_INTERFACE` | 4363 |
+| `DKA_IPOREC_INTERFACE` | 4369 |
+| `DKA_IPOREC_INTERFACE` | 4377 |
+| `DKA_IPOREC_INTERFACE` | 4381 |
+| `dka.DKA_IPOREC_REJECT` | 4389 |
+| `dka.DKA_IPOREC_REJECT` | 4396 |
+| `DKA_IPOREC_INTERFACE` | 4405 |
+| `dka.DKA_IPOREC_REJECT` | 4414 |
+| `dual` | 4428 |
+| `dka.DKA_IPOREC_REJECT` | 4473 |
+| `dka.DKA_IPOREC_REJECT` | 4484 |
+| `dka.DKA_IPOREC_REJECT` | 4497 |
+| `RCV_HEADERS_INTERFACE` | 4739 |
+| `DKA_IPOREC_INTERFACE` | 4742 |
+| `PO_INTERFACE_ERRORS` | 4752 |
+| `rcv_headers_interface` | 4755 |
+| `RCV_HEADERS_INTERFACE` | 4767 |
+| `DKA_IPOREC_INTERFACE` | 4770 |
+| `RCV_TRANSACTIONS_INTERFACE` | 4781 |
+| `DKA_IPOREC_INTERFACE` | 4783 |
+| `dka_program_messages` | 4792 |
+| `DKA_IPOREC_INTERFACE` | 4795 |
+| `DKA_IPOREC_INTERFACE` | 4801 |
+| `DKA_IPOREC_INTERFACE` | 4805 |
+| `DKA_IPOREC_REJECT` | 4813 |
+| `DKA_IPOREC_INTERFACE` | 4816 |
+
+## Références de forme appel package.membre
+
+| Élément | Ligne source |
+|---|---:|
+| `Fnd_File.put_line` | 133 |
+| `Fnd_File.put_line` | 134 |
+| `Fnd_File.put_line` | 135 |
+| `Fnd_File.put_line` | 136 |
+| `Fnd_File.put_line` | 137 |
+| `Fnd_File.put_line` | 179 |
+| `Fnd_File.put_line` | 180 |
+| `Fnd_File.put_line` | 198 |
+| `Fnd_File.put_line` | 215 |
+| `Fnd_File.put_line` | 222 |
+| `Fnd_File.put_line` | 252 |
+| `Fnd_File.put_line` | 253 |
+| `Fnd_File.put_line` | 254 |
+| `Fnd_File.put_line` | 288 |
+| `Fnd_File.put_line` | 290 |
+| `Fnd_File.put_line` | 296 |
+| `Fnd_File.put_line` | 356 |
+| `Fnd_File.put_line` | 358 |
+| `Fnd_File.put_line` | 364 |
+| `Fnd_File.put_line` | 517 |
+| `Fnd_File.put_line` | 562 |
+| `Fnd_File.put_line` | 574 |
+| `fnd_file.put_line` | 581 |
+| `Fnd_File.put_line` | 672 |
+| `Fnd_File.put_line` | 673 |
+| `dka_tools_pkg.get_message` | 710 |
+| `DKA_TOOLS_PKG.INS_PROG_MESSAGE` | 712 |
+| `dka_tools_pkg.get_message` | 738 |
+| `DKA_TOOLS_PKG.INS_PROG_MESSAGE` | 740 |
+| `dka_tools_pkg.get_message` | 760 |
+| `DKA_TOOLS_PKG.INS_PROG_MESSAGE` | 762 |
+| `fnd_profile.VALUE` | 784 |
+| `dka_tools_pkg.get_message` | 795 |
+| `DKA_TOOLS_PKG.INS_PROG_MESSAGE` | 797 |
+| `dka_tools_pkg.get_message` | 818 |
+| `DKA_TOOLS_PKG.INS_PROG_MESSAGE` | 820 |
+| `dka_tools_pkg.get_message` | 846 |
+| `DKA_TOOLS_PKG.INS_PROG_MESSAGE` | 848 |
+| `dka_tools_pkg.get_message` | 881 |
+| `DKA_TOOLS_PKG.INS_PROG_MESSAGE` | 883 |
+| `dka_tools_pkg.get_message` | 903 |
+| `DKA_TOOLS_PKG.INS_PROG_MESSAGE` | 905 |
+| `dka_tools_pkg.get_message` | 924 |
+| `DKA_TOOLS_PKG.INS_PROG_MESSAGE` | 926 |
+| `dka_tools_pkg.get_message` | 971 |
+| `DKA_TOOLS_PKG.INS_PROG_MESSAGE` | 973 |
+| `dka_tools_pkg.get_message` | 1019 |
+| `DKA_TOOLS_PKG.INS_PROG_MESSAGE` | 1021 |
+| `dka_tools_pkg.get_message` | 1043 |
+| `DKA_TOOLS_PKG.INS_PROG_MESSAGE` | 1045 |
+| `dka_tools_pkg.get_message` | 1063 |
+| `DKA_TOOLS_PKG.INS_PROG_MESSAGE` | 1065 |
+| `DKA_TOOLS_PKG.INS_PROG_MESSAGE` | 1135 |
+| `dka_tools_pkg.get_message` | 1164 |
+| `DKA_TOOLS_PKG.INS_PROG_MESSAGE` | 1166 |
+| `dka_tools_pkg.get_message` | 1193 |
+| `DKA_TOOLS_PKG.INS_PROG_MESSAGE` | 1195 |
+| `dka_tools_pkg.get_message` | 1226 |
+| `DKA_TOOLS_PKG.INS_PROG_MESSAGE` | 1228 |
+| `dka_tools_pkg.get_message` | 1261 |
+| `DKA_TOOLS_PKG.INS_PROG_MESSAGE` | 1263 |
+| `dka_tools_pkg.get_message` | 1298 |
+| `DKA_TOOLS_PKG.INS_PROG_MESSAGE` | 1300 |
+| `dka_tools_pkg.get_message` | 1410 |
+| `DKA_TOOLS_PKG.INS_PROG_MESSAGE` | 1412 |
+| `dka_tools_pkg.get_message` | 1546 |
+| `DKA_TOOLS_PKG.INS_PROG_MESSAGE` | 1548 |
+| `dka_tools_pkg.get_message` | 1573 |
+| `DKA_TOOLS_PKG.INS_PROG_MESSAGE` | 1575 |
+| `dka_tools_pkg.get_message` | 1600 |
+| `DKA_TOOLS_PKG.INS_PROG_MESSAGE` | 1602 |
+| `dka_tools_pkg.get_message` | 1620 |
+| `DKA_TOOLS_PKG.INS_PROG_MESSAGE` | 1622 |
+| `dka_tools_pkg.get_message` | 1658 |
+| `DKA_TOOLS_PKG.INS_PROG_MESSAGE` | 1660 |
+| `dka_tools_pkg.get_message` | 1776 |
+| `DKA_TOOLS_PKG.INS_PROG_MESSAGE` | 1778 |
+| `dka_tools_pkg.get_message` | 1914 |
+| `DKA_TOOLS_PKG.INS_PROG_MESSAGE` | 1916 |
+| `dka_tools_pkg.get_message` | 1989 |
+| `DKA_TOOLS_PKG.INS_PROG_MESSAGE` | 1991 |
+| `DKA_TOOLS_PKG.INS_PROG_MESSAGE` | 2010 |
+| `dka_tools_pkg.get_message` | 2027 |
+| `DKA_TOOLS_PKG.INS_PROG_MESSAGE` | 2029 |
+| `dka_tools_pkg.get_message` | 2046 |
+| `DKA_TOOLS_PKG.INS_PROG_MESSAGE` | 2048 |
+| `dka_tools_pkg.get_message` | 2068 |
+| `DKA_TOOLS_PKG.INS_PROG_MESSAGE` | 2070 |
+| `dka_tools_pkg.get_message` | 2089 |
+| `DKA_TOOLS_PKG.INS_PROG_MESSAGE` | 2091 |
+| `dka_tools_pkg.get_message` | 2113 |
+| `DKA_TOOLS_PKG.INS_PROG_MESSAGE` | 2115 |
+| `dka_tools_pkg.get_message` | 2147 |
+| `DKA_TOOLS_PKG.INS_PROG_MESSAGE` | 2149 |
+| `dka_tools_pkg.get_message` | 2176 |
+| `DKA_TOOLS_PKG.INS_PROG_MESSAGE` | 2178 |
+| `dka_tools_pkg.get_message` | 2203 |
+| `DKA_TOOLS_PKG.INS_PROG_MESSAGE` | 2205 |
+| `dka_tools_pkg.get_message` | 2231 |
+| `DKA_TOOLS_PKG.INS_PROG_MESSAGE` | 2233 |
+| `dka_tools_pkg.get_message` | 2273 |
+| `DKA_TOOLS_PKG.INS_PROG_MESSAGE` | 2275 |
+| `dka_tools_pkg.get_message` | 2329 |
+| `DKA_TOOLS_PKG.INS_PROG_MESSAGE` | 2331 |
+| `dka_tools_pkg.get_message` | 2372 |
+| `DKA_TOOLS_PKG.INS_PROG_MESSAGE` | 2374 |
+| `dka_tools_pkg.get_message` | 2396 |
+| `DKA_TOOLS_PKG.INS_PROG_MESSAGE` | 2398 |
+| `dka_tools_pkg.get_message` | 2420 |
+| `DKA_TOOLS_PKG.INS_PROG_MESSAGE` | 2422 |
+| `dka_tools_pkg.get_message` | 2444 |
+| `DKA_TOOLS_PKG.INS_PROG_MESSAGE` | 2446 |
+| `dka_tools_pkg.get_message` | 2505 |
+| `DKA_TOOLS_PKG.INS_PROG_MESSAGE` | 2507 |
+| `dka_tools_pkg.get_message` | 2539 |
+| `DKA_TOOLS_PKG.INS_PROG_MESSAGE` | 2541 |
+| `dka_tools_pkg.get_message` | 2561 |
+| `DKA_TOOLS_PKG.INS_PROG_MESSAGE` | 2563 |
+| `fnd_file.put_line` | 2592 |
+| `Fnd_File.put_line` | 2606 |
+| `Fnd_File.put_line` | 2614 |
+| `Fnd_File.put_line` | 2615 |
+| `Fnd_File.put_line` | 2750 |
+| `Fnd_File.put_line` | 2751 |
+| `dka_tools_pkg.get_message` | 2815 |
+| `DKA_TOOLS_PKG.INS_PROG_MESSAGE` | 2817 |
+| `dka_tools_pkg.get_message` | 2834 |
+| `DKA_TOOLS_PKG.INS_PROG_MESSAGE` | 2836 |
+| `dka_tools_pkg.get_message` | 2874 |
+| `DKA_TOOLS_PKG.INS_PROG_MESSAGE` | 2876 |
+| `Fnd_File.put_line` | 2900 |
+| `Fnd_File.put_line` | 2908 |
+| `Fnd_File.put_line` | 2909 |
+| `fnd_file.put_line` | 3085 |
+| `fnd_file.put_line` | 3251 |
+| `fnd_file.put_line` | 3261 |
+| `fnd_file.put_line` | 3360 |
+| `fnd_file.put_line` | 3453 |
+| `fnd_file.put_line` | 3609 |
+| `fnd_file.put_line` | 3621 |
+| `Fnd_File.put_line` | 3628 |
+| `Fnd_File.put_line` | 3635 |
+| `Fnd_File.put_line` | 3636 |
+| `Fnd_File.put_line` | 3682 |
+| `Fnd_File.put_line` | 3683 |
+| `fnd_stats.gather_table_stats` | 3688 |
+| `fnd_stats.gather_table_stats` | 3689 |
+| `fnd_request.set_print_options` | 3708 |
+| `fnd_request.submit_request` | 3712 |
+| `fnd_file.put_line` | 3724 |
+| `Fnd_File.put_line` | 3726 |
+| `fnd_request.set_print_options` | 3755 |
+| `fnd_request.submit_request` | 3759 |
+| `fnd_file.put_line` | 3771 |
+| `Fnd_File.put_line` | 3773 |
+| `Fnd_File.put_line` | 3778 |
+| `fnd_request.set_print_options` | 3802 |
+| `fnd_request.submit_request` | 3805 |
+| `fnd_file.put_line` | 3816 |
+| `Fnd_File.put_line` | 3818 |
+| `Fnd_File.put_line` | 3823 |
+| `Fnd_Concurrent.wait_for_request` | 3835 |
+| `Fnd_file.put_line` | 3838 |
+| `Fnd_File.put_line` | 3844 |
+| `Fnd_File.put_line` | 3849 |
+| `fnd_file.put_line` | 3857 |
+| `Fnd_File.put_line` | 3860 |
+| `Fnd_File.put_line` | 3864 |
+| `Fnd_File.put_line` | 3892 |
+| `Fnd_File.put_line` | 3893 |
+| `fnd_file.put_line` | 3994 |
+| `Fnd_File.put_line` | 4005 |
+| `Fnd_File.put_line` | 4006 |
+| `Fnd_File.put_line` | 4028 |
+| `Fnd_File.put_line` | 4035 |
+| `Fnd_File.put_line` | 4036 |
+| `Fnd_File.put_line` | 4072 |
+| `Fnd_File.put_line` | 4073 |
+| `fnd_request.set_print_options` | 4080 |
+| `FND_REQUEST.SET_OPTIONS` | 4085 |
+| `Fnd_Request.submit_request` | 4088 |
+| `fnd_file.put_line` | 4099 |
+| `Fnd_File.put_line` | 4105 |
+| `Fnd_Concurrent.wait_for_request` | 4109 |
+| `Fnd_file.put_line` | 4112 |
+| `Fnd_File.put_line` | 4118 |
+| `Fnd_File.put_line` | 4149 |
+| `Fnd_File.put_line` | 4150 |
+| `Fnd_File.put_line` | 4174 |
+| `Fnd_File.put_line` | 4175 |
+| `Fnd_File.put_line` | 4186 |
+| `fnd_file.put_line` | 4194 |
+| `Fnd_File.put_line` | 4197 |
+| `fnd_stats.gather_table_stats` | 4203 |
+| `Fnd_File.put_line` | 4206 |
+| `Fnd_File.put_line` | 4213 |
+| `Fnd_File.put_line` | 4214 |
+| `Fnd_File.put_line` | 4297 |
+| `Fnd_File.put_line` | 4433 |
+| `Fnd_File.put_line` | 4436 |
+| `Fnd_File.put_line` | 4439 |
+| `Fnd_File.put_line` | 4440 |
+| `fnd_file.put_line` | 4452 |
+| `fnd_file.put_line` | 4453 |
+| `fnd_file.put_line` | 4455 |
+| `fnd_file.put_line` | 4456 |
+| `fnd_file.put_line` | 4457 |
+| `fnd_file.put_line` | 4458 |
+| `fnd_file.put_line` | 4461 |
+| `fnd_file.put_line` | 4462 |
+| `fnd_file.put_line` | 4463 |
+| `fnd_file.put_line` | 4464 |
+| `Fnd_File.put_line` | 4470 |
+| `Fnd_File.put_line` | 4471 |
+| `Fnd_File.put_line` | 4481 |
+| `Fnd_File.put_line` | 4482 |
+| `Fnd_File.put_line` | 4494 |
+| `Fnd_File.put_line` | 4495 |
+| `Fnd_File.put_line` | 4514 |
+| `Fnd_File.put_line` | 4515 |
+| `Fnd_File.put_line` | 4521 |
+| `Fnd_File.put_line` | 4522 |
+| `Fnd_File.put_line` | 4532 |
+| `Fnd_File.put_line` | 4533 |
+| `DKA_TOOLS_PKG.INS_PROG_MESSAGE` | 4537 |
+| `fnd_file.put_line` | 4549 |
+| `Fnd_File.put_line` | 4550 |
+| `Fnd_File.Put_Line` | 4738 |
+| `Fnd_File.Put_Line` | 4751 |
+| `Fnd_File.Put_Line` | 4764 |
+| `Fnd_File.Put_Line` | 4766 |
+| `Fnd_File.Put_Line` | 4777 |
+| `Fnd_File.Put_Line` | 4780 |
+| `Fnd_File.Put_Line` | 4789 |
+| `Fnd_File.Put_Line` | 4800 |
+| `Fnd_File.Put_Line` | 4809 |
+| `Fnd_File.Put_Line` | 4814 |
+| `Fnd_File.put_line` | 4825 |
+| `Fnd_File.put_line` | 4826 |
+| `Fnd_File.put_line` | 4866 |
+| `Fnd_File.put_line` | 4873 |
+| `Fnd_File.put_line` | 4890 |
+| `Fnd_File.put_line` | 4908 |
+| `Fnd_File.put_line` | 4960 |
+| `Fnd_File.put_line` | 5004 |
+| `Fnd_File.put_line` | 5096 |
+| `Fnd_File.put_line` | 5097 |
+| `Fnd_File.put_line` | 5099 |
+| `Fnd_File.put_line` | 5106 |
+| `Fnd_File.put_line` | 5107 |
+| `Fnd_File.put_line` | 5108 |
+| `Fnd_File.put_line` | 5109 |
+| `Fnd_File.put_line` | 5114 |
+| `Fnd_File.put_line` | 5115 |
+
+## Programmes soumis, littéraux détectés
+
+| Élément | Ligne source |
+|---|---:|
+| `RVCTP` | 3712 |
+| `RVCTP` | 3759 |
+| `RVCTP` | 3805 |
+| `DKA_IPORECEPTION_IVALUA_LOADER` | 4088 |
+
+## Fichiers référencés
+
+Aucune occurrence détectée ; ne prouve pas une absence fonctionnelle.
+
+## Transactions, erreurs et orchestration
+
+| Marqueur | Lignes |
+|---|---|
+| commit | 2608, 2902, 3629, 3730, 3777, 3822, 3887, 4104, 5091 |
+| rollback | 2595, 3639 |
+| when_others | 126, 422, 583, 733, 794, 845, 880, 959, 970, 1017, 1108, 1343, 1408, 1446, 1475, 1544, 1653, 1704, 1775, 1810, 1840, 1912, 2143, 2172, 2230, 2269, 2325, 2367, 2591, 2611, 2869, 2905, 3084, 3250, 3260, 3359, 3452, 3608, 3620, 3632, 3889, 3993, 4031, 4135, 4145, 4160, 4170, 4209, 4321, 4430, 4821, 5110 |
+| suppression | 4739, 4752, 4767, 4781, 4792, 4801, 4805, 4813 |
+| soumission | 3712, 3759, 3805, 4088 |
+
+## Programmes concurrents reliés par définition FND
+
+| Programme | Point d’entrée | Définition |
+|---|---|---|
+| DKA_IPORECEPTION_IVALUA / DKA | `DKA_IPORECEPTION_IVALUA_PKG.MAIN` | dka/12.0.0/admin/import/DKA_IPORECEPTION_IVALUA.prt:482 |
+
+## À établir par recette / analyse métier
+
+Entrée réelle et propriétaire de données ; paramètres de lancement ; unité de reprise et clés d’idempotence ; effets des commits ; transitions de statut ; résultat métier attendu ; version effectivement déployée. Le silence de l’extracteur ne vaut pas preuve d’absence.

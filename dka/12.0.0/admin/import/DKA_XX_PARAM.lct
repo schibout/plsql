@@ -1,0 +1,65 @@
+## **************************************************************************
+# FILE NAME :  DKA_XX_PARAM.lct
+# PURPOSE   :  Config file for dka parameters
+#
+# ARGUMENTS :
+#
+# NOTES     :
+#
+# HISTORY :
+# ver        date        author           description
+# ---------  ----------  ---------------  ------------------------------------
+# 1.0        28/01/2001  K.Helali         Created
+# 1.1        16/12/2016  O.Benhayoun      Modification - VARCHAR2_VALUE : VARCHAR2(50) =>  VARCHAR2(100)
+##*****************************************************************************/
+# Format des Dates = DD/MM/YYYY HH24:MI:SS
+
+DEFINE DKA_PARAMETER
+        KEY   PROGRAM_CODE      VARCHAR2(50)
+        KEY   PARAMETER_NAME    VARCHAR2(50)
+        BASE  DESCRIPTION       VARCHAR2(255)
+        BASE  TABLE_NAME        VARCHAR2(100)
+        BASE  COLUMN_NAME       VARCHAR2(100)
+        BASE  DATA_TYPE         VARCHAR2(100)
+        BASE  VARCHAR2_VALUE    VARCHAR2(100)
+        BASE  NUMBER_VALUE      VARCHAR2(30)
+        BASE  DATE_VALUE        VARCHAR2(19)
+        BASE  BOOLEAN_VALUE     VARCHAR2(1)
+END DKA_PARAMETER
+
+###############################################################################
+DOWNLOAD DKA_PARAMETER
+"
+    SELECT    dp.program_code
+             ,dp.parameter_name
+             ,dp.description
+             ,dp.table_name
+             ,dp.column_name
+             ,dp.data_type
+             ,dp.varchar2_value
+             ,dp.number_value
+             ,TO_CHAR(dp.date_value,'DD/MM/YYYY HH24:MI:SS') date_value
+             ,dp.boolean_value
+    FROM    dka_parameters dp
+    WHERE   dp.program_code = upper(:PROGRAM_CODE)
+    ORDER BY 1,2
+"
+
+
+UPLOAD DKA_PARAMETER
+"
+     begin
+       DKA_XX_LOADER_UTILS_PKG.dka_parameter(
+            p_program_code   => :PROGRAM_CODE
+           ,p_parameter_name => :PARAMETER_NAME
+           ,p_description    => :DESCRIPTION
+           ,p_table_name     => :TABLE_NAME
+           ,p_column_name    => :COLUMN_NAME
+           ,p_data_type      => :DATA_TYPE
+           ,p_varchar2_value => :VARCHAR2_VALUE
+           ,p_number_value   => :NUMBER_VALUE
+           ,p_date_value     => :DATE_VALUE
+           ,p_boolean_value  => :BOOLEAN_VALUE
+           );
+     end;
+"

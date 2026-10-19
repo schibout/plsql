@@ -1,0 +1,88 @@
+# $Header$
+
+# dbdrv: exec fnd bin FNDLOAD bin &phase=daa+52 checkfile:~PROD:~PATH:~FILE &ui_apps 0 Y UPLOAD @FND:patch/115/import/afmdmsg.lct @~PROD:~PATH/~FILE
+LANGUAGE = "F"
+LDRCONFIG = "afmdmsg.lct 120.2.12020000.1"
+
+#Source Database HELMAS
+
+#RELEASE_NAME 12.2.4
+
+# -- Begin Entity Definitions -- 
+
+DEFINE FND_NEW_MESSAGES
+  KEY   APPLICATION_SHORT_NAME          VARCHAR2(50)
+  KEY   MESSAGE_NAME                    VARCHAR2(30)
+  CTX   OWNER                           VARCHAR2(4000)
+  BASE  LAST_UPDATE_DATE                VARCHAR2(10)
+  CTX   MESSAGE_NUMBER                  VARCHAR2(50)
+  TRANS MESSAGE_TEXT                    VARCHAR2(2000)
+  CTX   DESCRIPTION                     VARCHAR2(240)
+  CTX   TYPE                            VARCHAR2(30)
+  CTX   MAX_LENGTH                      VARCHAR2(50)
+  CTX   CATEGORY                        VARCHAR2(10)
+  CTX   SEVERITY                        VARCHAR2(10)
+  CTX   FND_LOG_SEVERITY                VARCHAR2(50)
+END FND_NEW_MESSAGES
+
+# -- End Entity Definitions -- 
+
+
+BEGIN FND_NEW_MESSAGES "DKA" "DKA_SCTRLMODULE_CORPS"
+  OWNER = "CAPTECH"
+  LAST_UPDATE_DATE = "2017/11/02"
+  MESSAGE_NUMBER = "*NULL*"
+  MESSAGE_TEXT =
+ " Bonjour,<br /><br />\n\
+Voici les contrôles &ENTITE sur le module &MODULE d'Oracle Application du jour.<br /><br />\n\
+Cordialement,"
+  DESCRIPTION = "*NULL*"
+  TYPE = "30_PCT_EXPANSION_PROMPT"
+  MAX_LENGTH = "*NULL*"
+  CATEGORY = "*NULL*"
+  SEVERITY = "*NULL*"
+  FND_LOG_SEVERITY = "*NULL*"
+END FND_NEW_MESSAGES
+
+BEGIN FND_NEW_MESSAGES "DKA" "DKA_SCTRLMODULE_NOCORPS"
+  OWNER = "CAPTECH"
+  LAST_UPDATE_DATE = "2017/11/02"
+  MESSAGE_NUMBER = "*NULL*"
+  MESSAGE_TEXT =
+ " Bonjour,<br /><br />\n\
+Aucun rejet constaté sur les contrôles &ENTITE sur le module &MODULE d'Oracle Application du jour.<br /><br />\n\
+Cordialement,"
+  DESCRIPTION = "*NULL*"
+  TYPE = "30_PCT_EXPANSION_PROMPT"
+  MAX_LENGTH = "*NULL*"
+  CATEGORY = "*NULL*"
+  SEVERITY = "*NULL*"
+  FND_LOG_SEVERITY = "*NULL*"
+END FND_NEW_MESSAGES
+
+BEGIN FND_NEW_MESSAGES "DKA" "DKA_SCTRLMODULE_NOOBJET"
+  OWNER = "CAPTECH"
+  LAST_UPDATE_DATE = "2017/11/02"
+  MESSAGE_NUMBER = "*NULL*"
+  MESSAGE_TEXT = "&ENTITE : Contrôles &MODULE au &DATE_CONTROLE [RAS]"
+  DESCRIPTION = "*NULL*"
+  TYPE = "30_PCT_EXPANSION_PROMPT"
+  MAX_LENGTH = "*NULL*"
+  CATEGORY = "*NULL*"
+  SEVERITY = "*NULL*"
+  FND_LOG_SEVERITY = "*NULL*"
+END FND_NEW_MESSAGES
+
+BEGIN FND_NEW_MESSAGES "DKA" "DKA_SCTRLMODULE_OBJET"
+  OWNER = "CAPTECH"
+  LAST_UPDATE_DATE = "2017/11/02"
+  MESSAGE_NUMBER = "*NULL*"
+  MESSAGE_TEXT = "&ENTITE : Contrôles &MODULE au &DATE_CONTROLE"
+  DESCRIPTION = "*NULL*"
+  TYPE = "30_PCT_EXPANSION_PROMPT"
+  MAX_LENGTH = "*NULL*"
+  CATEGORY = "*NULL*"
+  SEVERITY = "*NULL*"
+  FND_LOG_SEVERITY = "*NULL*"
+END FND_NEW_MESSAGES
+

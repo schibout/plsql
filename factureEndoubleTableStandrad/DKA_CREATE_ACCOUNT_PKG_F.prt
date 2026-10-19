@@ -1,0 +1,39 @@
+# $Header$
+
+# dbdrv: exec fnd bin FNDLOAD bin &phase=daa+52 checkfile:~PROD:~PATH:~FILE &ui_apps 0 Y UPLOAD @FND:patch/115/import/afmdmsg.lct @~PROD:~PATH/~FILE
+LANGUAGE = "F"
+LDRCONFIG = "afmdmsg.lct 115.10"
+
+#Source Database DT1OAP
+
+# -- Begin Entity Definitions -- 
+
+DEFINE FND_NEW_MESSAGES
+  KEY   APPLICATION_SHORT_NAME          VARCHAR2(50)
+  KEY   MESSAGE_NAME                    VARCHAR2(30)
+  CTX   OWNER                           VARCHAR2(4000)
+  BASE  LAST_UPDATE_DATE                VARCHAR2(10)
+  CTX   MESSAGE_NUMBER                  VARCHAR2(50)
+  TRANS MESSAGE_TEXT                    VARCHAR2(2000)
+  CTX   DESCRIPTION                     VARCHAR2(240)
+  CTX   TYPE                            VARCHAR2(30)
+  CTX   MAX_LENGTH                      NUMBER(22)
+END FND_NEW_MESSAGES
+
+# -- End Entity Definitions -- 
+
+
+BEGIN FND_NEW_MESSAGES "DKA" "DKA_IPORECC_E001"
+  OWNER = "NBOUSSEK"
+  LAST_UPDATE_DATE = "2007/09/11"
+  MESSAGE_TEXT = "La commande a déjà été réceptionné !"
+  TYPE = "ERROR"
+END FND_NEW_MESSAGES
+
+BEGIN FND_NEW_MESSAGES "DKA" "DKA_IPORECC_E002"
+  OWNER = "NBOUSSEK"
+  LAST_UPDATE_DATE = "2007/09/11"
+  MESSAGE_TEXT = "La commande n'a pas été approuvé !"
+  TYPE = "ERROR"
+END FND_NEW_MESSAGES
+

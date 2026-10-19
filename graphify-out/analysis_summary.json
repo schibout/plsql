@@ -1,0 +1,95 @@
+{
+  "nodes": 1235,
+  "edges": 1174,
+  "communities": 173,
+  "god_nodes": [
+    {
+      "id": "dka__integration_des_factures_xerox_dka_iapfacxgs_pkg_eti1_child_import",
+      "label": "child_import",
+      "degree": 8
+    },
+    {
+      "id": "dka__integration_des_factures_xerox_dka_iapfacxgs_pkg_ap_invoices_all",
+      "label": "AP_INVOICES_ALL",
+      "degree": 7
+    },
+    {
+      "id": "dka__integration_des_factures_xerox_dka_iapfacxgs_pkg_child_import",
+      "label": "child_import",
+      "degree": 6
+    },
+    {
+      "id": "dka__integration_des_factures_xerox_dka_iapfacxgs_pkg_prod_child_import",
+      "label": "child_import",
+      "degree": 6
+    },
+    {
+      "id": "dka__integration_des_factures_xerox_dka_iapfacxgs_pkg_dka_iapfacxgs_reporting_all",
+      "label": "DKA_IAPFACXGS_REPORTING_ALL",
+      "degree": 5
+    },
+    {
+      "id": "dka__integration_des_factures_xerox_dka_iapfacxgs_pkg_ap_invoices_interface",
+      "label": "AP_INVOICES_INTERFACE",
+      "degree": 5
+    },
+    {
+      "id": "dka__integration_des_factures_xerox_dka_iapfacxgs_pkg_ap_invoice_lines_interface",
+      "label": "AP_INVOICE_LINES_INTERFACE",
+      "degree": 5
+    },
+    {
+      "id": "dka__integration_des_factures_xerox_dka_iapfacxgs_pkg_dka_parameters",
+      "label": "DKA_PARAMETERS",
+      "degree": 4
+    },
+    {
+      "id": "dka__integration_des_factures_xerox_dka_iapfacxgs_pkg_ap_suppliers",
+      "label": "AP_SUPPLIERS",
+      "degree": 4
+    },
+    {
+      "id": "recherche_facture_11633263_ap_ap_suppliers",
+      "label": "AP.AP_SUPPLIERS",
+      "degree": 4
+    }
+  ],
+  "surprises": [],
+  "questions": [
+    {
+      "type": "bridge_node",
+      "question": "Why does `AP_INVOICES_ALL` connect `DKA_IAPFACXGS_PKG.sql / DKA_IAPFACXGS_PKG_ETI1.sql` to `Renvoi_Image_Facture_Ivalua.sql / APPS.AP_INVOICES_ALL`?",
+      "why": "High betweenness centrality (0.001) - this node is a cross-community bridge."
+    },
+    {
+      "type": "isolated_nodes",
+      "question": "What connects `APPS.AP_INVOICES_ALL`, `APPS.FND_ATTACHED_DOCUMENTS`, `APPS.FND_DOCUMENTS` to the rest of the system?",
+      "why": "970 weakly-connected nodes found - possible documentation gaps or missing edges."
+    },
+    {
+      "type": "low_cohesion",
+      "question": "Should `ControleMatinGenerique/Controle_Quotidien_Complet.sql / controleNuit/Controle_Quotidien_Complet.sql` be split into smaller, more focused modules?",
+      "why": "Cohesion score 0.04343971631205674 - nodes in this community are weakly interconnected."
+    },
+    {
+      "type": "bridge_node",
+      "question": "Why does `DKA_PARAMETERS` connect `DKA_IAPFACXGS_PKG.sql / DKA_IAPFACXGS_PKG_ETI1.sql` to `Renvoi_Image_Facture_Ivalua.sql / APPS.AP_INVOICES_ALL`?",
+      "why": "High betweenness centrality (0.000) - this node is a cross-community bridge."
+    },
+    {
+      "type": "low_cohesion",
+      "question": "Should `DKA_IAPFACXGS_PKG.sql / DKA_IAPFACXGS_PKG_ETI1.sql` be split into smaller, more focused modules?",
+      "why": "Cohesion score 0.12659698025551683 - nodes in this community are weakly interconnected."
+    },
+    {
+      "type": "low_cohesion",
+      "question": "Should `controlePaye/XXEAI_INTERFACE_TOOLS_PKG.sql / XXEAI_INTERFACE_TOOLS_PKG/XXEAI_INTERFACE_TOOLS_PKG.sql` be split into smaller, more focused modules?",
+      "why": "Cohesion score 0.11764705882352941 - nodes in this community are weakly interconnected."
+    },
+    {
+      "type": "low_cohesion",
+      "question": "Should `lionelDtr/XXEAI.sql / APPS.AP_SUPPLIER_SITES_ALL` be split into smaller, more focused modules?",
+      "why": "Cohesion score 0.0625 - nodes in this community are weakly interconnected."
+    }
+  ]
+}

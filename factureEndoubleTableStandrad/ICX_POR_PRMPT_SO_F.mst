@@ -1,0 +1,423 @@
+# $Header$
+
+# dbdrv: exec fnd bin FNDLOAD bin &phase=daa+52 checkfile:~PROD:~PATH:~FILE &ui_apps 0 Y UPLOAD @FND:patch/115/import/afmdmsg.lct @~PROD:~PATH/~FILE
+LANGUAGE = "F"
+LDRCONFIG = "afmdmsg.lct 120.2.12020000.1"
+
+#Source Database HELDEV
+
+#RELEASE_NAME 12.2.4
+
+# -- Begin Entity Definitions -- 
+
+DEFINE FND_NEW_MESSAGES
+  KEY   APPLICATION_SHORT_NAME          VARCHAR2(50)
+  KEY   MESSAGE_NAME                    VARCHAR2(30)
+  CTX   OWNER                           VARCHAR2(4000)
+  BASE  LAST_UPDATE_DATE                VARCHAR2(10)
+  CTX   MESSAGE_NUMBER                  VARCHAR2(50)
+  TRANS MESSAGE_TEXT                    VARCHAR2(2000)
+  CTX   DESCRIPTION                     VARCHAR2(240)
+  CTX   TYPE                            VARCHAR2(30)
+  CTX   MAX_LENGTH                      VARCHAR2(50)
+  CTX   CATEGORY                        VARCHAR2(10)
+  CTX   SEVERITY                        VARCHAR2(10)
+  CTX   FND_LOG_SEVERITY                VARCHAR2(50)
+END FND_NEW_MESSAGES
+
+# -- End Entity Definitions -- 
+
+
+BEGIN FND_NEW_MESSAGES "DKA" "DKA_IARPAFAC_E001"
+  OWNER = "USER"
+  LAST_UPDATE_DATE = "2005/07/06"
+  MESSAGE_TEXT =
+ "Erreur programme : &ERROR\n\
+\n\
+Une erreur est survenue lors de l'initialisation de l'interface modifiée IARPAFAC\n\
+\n\
+Veuillez contacter le support technique"
+  TYPE = "OTHER"
+END FND_NEW_MESSAGES
+
+BEGIN FND_NEW_MESSAGES "DKA" "DKA_IARPAFAC_E002"
+  OWNER = "USER"
+  LAST_UPDATE_DATE = "2005/07/06"
+  MESSAGE_TEXT =
+ "Erreur programme : &ERROR\n\
+\n\
+Une erreur est survenue lors de la mise à jour de la colonne REQUEST_ID de la table DKA_IARPAFAC_INTERFACE par la valeur &REQUEST_ID\n\
+\n\
+Veuillez contacter le support technique"
+  TYPE = "OTHER"
+END FND_NEW_MESSAGES
+
+BEGIN FND_NEW_MESSAGES "DKA" "DKA_IARPAFAC_E003"
+  OWNER = "USER"
+  LAST_UPDATE_DATE = "2005/07/06"
+  MESSAGE_TEXT =
+ "Erreur programme : &ERROR\n\
+\n\
+Une erreur est survenue lors de la mise à jour de la colonne GROUP_ID de la table DKA_IARPAFAC_INTERFACE par la valeur &GROUP_ID\n\
+\n\
+Veuillez contacter le support technique"
+  TYPE = "OTHER"
+END FND_NEW_MESSAGES
+
+BEGIN FND_NEW_MESSAGES "DKA" "DKA_IARPAFAC_E004"
+  OWNER = "USER"
+  LAST_UPDATE_DATE = "2005/07/06"
+  MESSAGE_TEXT =
+ "ERREUR sur N° &INV_NUM\n\
+origine : &ORIGINE\n\
+société : &COMPANY\n\
+Une erreur est survenue lors du contrôle de transcodification du type de ligne.\n\
+Veuilez contacter le support technique."
+  TYPE = "OTHER"
+END FND_NEW_MESSAGES
+
+BEGIN FND_NEW_MESSAGES "DKA" "DKA_IARPAFAC_E005"
+  OWNER = "USER"
+  LAST_UPDATE_DATE = "2005/07/06"
+  MESSAGE_TEXT =
+ "Erreur programme : &ERROR\n\
+Une erreur est survenue lors des contrôles d'une entête de facture.\n\
+Veuillez contacter le support technique"
+  TYPE = "OTHER"
+END FND_NEW_MESSAGES
+
+BEGIN FND_NEW_MESSAGES "DKA" "DKA_IARPAFAC_E006"
+  OWNER = "USER"
+  LAST_UPDATE_DATE = "2005/07/06"
+  MESSAGE_TEXT =
+ "Erreur programme : &ERROR\n\
+Une erreur est survenue lors des contrôles d'une ligne de facture.\n\
+Veuillez contacter le support technique"
+  TYPE = "OTHER"
+END FND_NEW_MESSAGES
+
+BEGIN FND_NEW_MESSAGES "DKA" "DKA_IARPAFAC_E007"
+  OWNER = "USER"
+  LAST_UPDATE_DATE = "2005/07/06"
+  MESSAGE_TEXT =
+ "ERREUR sur N° &INV_NUM\n\
+origine : &ORIGINE\n\
+société : &COMPANY\n\
+Le centre de gestion n'a pas pu être déterminé"
+  TYPE = "OTHER"
+END FND_NEW_MESSAGES
+
+BEGIN FND_NEW_MESSAGES "DKA" "DKA_IARPAFAC_E008"
+  OWNER = "USER"
+  LAST_UPDATE_DATE = "2005/07/06"
+  MESSAGE_TEXT =
+ "ERREUR sur N° &INV_NUM\n\
+origine : &ORIGINE\n\
+société : &COMPANY\n\
+Impossible d'extraire les informations concernant le centre de gestion.\n\
+Le contexte de transcodification peut être mal défini."
+  TYPE = "OTHER"
+END FND_NEW_MESSAGES
+
+BEGIN FND_NEW_MESSAGES "DKA" "DKA_IARPAFAC_E009"
+  OWNER = "USER"
+  LAST_UPDATE_DATE = "2005/07/06"
+  MESSAGE_TEXT =
+ "Erreur programme : &ERROR\n\
+\n\
+Une erreur est survenue lors de la mise à jour des informations concernant le centre de gestion.\n\
+\n\
+Veuillez contacter le support technique"
+  TYPE = "OTHER"
+END FND_NEW_MESSAGES
+
+BEGIN FND_NEW_MESSAGES "DKA" "DKA_IARPAFAC_E010"
+  OWNER = "USER"
+  LAST_UPDATE_DATE = "2005/07/06"
+  MESSAGE_TEXT =
+ "ERREUR sur N° &INV_NUM\n\
+origine : &ORIGINE\n\
+société : &COMPANY\n\
+La date de saisie de la facture (&INV_DATE) est hors période AR ouverte\n\
+"
+  TYPE = "OTHER"
+END FND_NEW_MESSAGES
+
+BEGIN FND_NEW_MESSAGES "DKA" "DKA_IARPAFAC_E011"
+  OWNER = "USER"
+  LAST_UPDATE_DATE = "2005/07/06"
+  MESSAGE_TEXT =
+ "Erreur programme : &ERROR\n\
+\n\
+Plusieurs périodes AR semblent être ouvertes en même temps"
+  TYPE = "OTHER"
+END FND_NEW_MESSAGES
+
+BEGIN FND_NEW_MESSAGES "DKA" "DKA_IARPAFAC_E012"
+  OWNER = "USER"
+  LAST_UPDATE_DATE = "2005/07/06"
+  MESSAGE_TEXT = "Erreur programme : &ERROR\n\
+\n\
+Aucune périodes AR ouverte"
+  TYPE = "OTHER"
+END FND_NEW_MESSAGES
+
+BEGIN FND_NEW_MESSAGES "DKA" "DKA_IARPAFAC_E013"
+  OWNER = "USER"
+  LAST_UPDATE_DATE = "2005/07/06"
+  MESSAGE_TEXT =
+ "Erreur programme : &ERROR\n\
+\n\
+Une erreur ess survenue lors de la mise à jour de la date comptable\n\
+\n\
+Veuillez contacter le support technique"
+  TYPE = "OTHER"
+END FND_NEW_MESSAGES
+
+BEGIN FND_NEW_MESSAGES "DKA" "DKA_IARPAFAC_E014"
+  OWNER = "USER"
+  LAST_UPDATE_DATE = "2005/07/06"
+  MESSAGE_TEXT =
+ "ERREUR sur N° &INV_NUM\n\
+origine : &ORIGINE\n\
+société : &COMPANY\n\
+Aucun code de tva n'a pu être déterminé pour le compte : &LOCAL_ACCOUNT"
+  TYPE = "OTHER"
+END FND_NEW_MESSAGES
+
+BEGIN FND_NEW_MESSAGES "DKA" "DKA_IARPAFAC_E015"
+  OWNER = "USER"
+  LAST_UPDATE_DATE = "2005/07/06"
+  MESSAGE_TEXT =
+ "Erreur programme : &ERROR\n\
+\n\
+Une erreur est survenue lors de la mise à jour de la TVA\n\
+\n\
+Veuillez contacter le support technique"
+  TYPE = "OTHER"
+END FND_NEW_MESSAGES
+
+BEGIN FND_NEW_MESSAGES "DKA" "DKA_IARPAFAC_E016"
+  OWNER = "USER"
+  LAST_UPDATE_DATE = "2005/07/06"
+  MESSAGE_TEXT =
+ "ERREUR sur N° &INV_NUM\n\
+origine : &ORIGINE\n\
+société : &COMPANY\n\
+Le type d'événement du compte &LOCAL_ACCOUNT n'est pas déterminé"
+  TYPE = "OTHER"
+END FND_NEW_MESSAGES
+
+BEGIN FND_NEW_MESSAGES "DKA" "DKA_IARPAFAC_E017"
+  OWNER = "USER"
+  LAST_UPDATE_DATE = "2005/07/06"
+  MESSAGE_TEXT =
+ "Erreur programme : &ERROR\n\
+\n\
+Une erreur est survenue lors de la détermination du type d'événement\n\
+\n\
+Veuillez contacter le support technique"
+  TYPE = "OTHER"
+END FND_NEW_MESSAGES
+
+BEGIN FND_NEW_MESSAGES "DKA" "DKA_IARPAFAC_E018"
+  OWNER = "USER"
+  LAST_UPDATE_DATE = "2005/07/06"
+  MESSAGE_TEXT =
+ "ERREUR sur N° &INV_NUM\n\
+origine : &ORIGINE\n\
+société : &COMPANY\n\
+La clé comptable ne peut être déterminé, segment &SEGMENT non renseigné"
+  TYPE = "OTHER"
+END FND_NEW_MESSAGES
+
+BEGIN FND_NEW_MESSAGES "DKA" "DKA_IARPAFAC_E019"
+  OWNER = "USER"
+  LAST_UPDATE_DATE = "2005/07/06"
+  MESSAGE_TEXT =
+ "Erreur programme : &ERROR\n\
+\n\
+Une erreur est survenue lors de la mise à jour de la clé comptable\n\
+\n\
+Veuillez contacter le support technique"
+  TYPE = "OTHER"
+END FND_NEW_MESSAGES
+
+BEGIN FND_NEW_MESSAGES "DKA" "DKA_IARPAFAC_E020"
+  OWNER = "USER"
+  LAST_UPDATE_DATE = "2005/07/06"
+  MESSAGE_TEXT =
+ "ERREUR sur N° &INV_NUM\n\
+origine : &ORIGINE\n\
+société : &COMPANY\n\
+La référence ANAEL &SUB_ACCOUNT est inconnue dans Oracle"
+  TYPE = "OTHER"
+END FND_NEW_MESSAGES
+
+BEGIN FND_NEW_MESSAGES "DKA" "DKA_IARPAFAC_E021"
+  OWNER = "USER"
+  LAST_UPDATE_DATE = "2005/07/06"
+  MESSAGE_TEXT =
+ "ERREUR sur N° &INV_NUM\n\
+origine : &ORIGINE\n\
+société : &COMPANY\n\
+L'adresse du client (ref ANAEL : &SUB_ACCOUNT) n'a pas été dupliquée sur &ACCT_AREA &COMPANY"
+  TYPE = "OTHER"
+END FND_NEW_MESSAGES
+
+BEGIN FND_NEW_MESSAGES "DKA" "DKA_IARPAFAC_E022"
+  OWNER = "USER"
+  LAST_UPDATE_DATE = "2005/07/06"
+  MESSAGE_TEXT =
+ "ERREUR sur N° &INV_NUM\n\
+origine : &ORIGINE\n\
+société : &COMPANY\n\
+Le site du client (ref ANAEL &SUB_ACCOUNT) est dupliqué plusieurs fois sur &ACCT_AREA&COMPANY"
+  TYPE = "OTHER"
+END FND_NEW_MESSAGES
+
+BEGIN FND_NEW_MESSAGES "DKA" "DKA_IARPAFAC_E023"
+  OWNER = "USER"
+  LAST_UPDATE_DATE = "2005/07/06"
+  MESSAGE_TEXT =
+ "Erreur programme : &ERROR\n\
+\n\
+Une erreur est survenue lors de la mise à jour des informations concernant le client\n\
+\n\
+Veuillez contacter le support technique"
+  TYPE = "OTHER"
+END FND_NEW_MESSAGES
+
+BEGIN FND_NEW_MESSAGES "DKA" "DKA_IARPAFAC_E024"
+  OWNER = "USER"
+  LAST_UPDATE_DATE = "2005/07/06"
+  MESSAGE_TEXT =
+ "ERREUR sur N° &INV_NUM\n\
+origine : &ORIGINE\n\
+société : &COMPANY\n\
+Le code Z_REFAC n'a pu être déterminé\n\
+"
+  TYPE = "OTHER"
+END FND_NEW_MESSAGES
+
+BEGIN FND_NEW_MESSAGES "DKA" "DKA_IARPAFAC_E025"
+  OWNER = "USER"
+  LAST_UPDATE_DATE = "2005/07/06"
+  MESSAGE_TEXT =
+ "ERREUR sur N° &INV_NUM\n\
+origine : &ORIGINE\n\
+société : &COMPANY\n\
+La tache du projet &PROJECT_CODE n'a pas pue être déterminée"
+  TYPE = "OTHER"
+END FND_NEW_MESSAGES
+
+BEGIN FND_NEW_MESSAGES "DKA" "DKA_IARPAFAC_E026"
+  OWNER = "USER"
+  LAST_UPDATE_DATE = "2005/07/06"
+  MESSAGE_TEXT =
+ "ERREUR sur N° &INV_NUM\n\
+origine : &ORIGINE\n\
+société : &COMPANY\n\
+Le code projet &PROJECT_CODE n'est pas valide"
+  TYPE = "OTHER"
+END FND_NEW_MESSAGES
+
+BEGIN FND_NEW_MESSAGES "DKA" "DKA_IARPAFAC_E027"
+  OWNER = "USER"
+  LAST_UPDATE_DATE = "2005/07/06"
+  MESSAGE_TEXT =
+ "Erreur programme : &ERROR\n\
+\n\
+Une erreur est survenue lors de la mise à jour des informations projets\n\
+\n\
+Veuillez contacter le support technique"
+  TYPE = "OTHER"
+END FND_NEW_MESSAGES
+
+BEGIN FND_NEW_MESSAGES "DKA" "DKA_IARPAFAC_E028"
+  OWNER = "USER"
+  LAST_UPDATE_DATE = "2005/07/06"
+  MESSAGE_TEXT =
+ "ERREUR\n\
+&COMPANY\n\
+Aucune organisation trouvée pour le groupe de traitement &GROUPE_ID"
+  TYPE = "OTHER"
+END FND_NEW_MESSAGES
+
+BEGIN FND_NEW_MESSAGES "DKA" "DKA_IARPAFAC_E029"
+  OWNER = "USER"
+  LAST_UPDATE_DATE = "2005/07/06"
+  MESSAGE_TEXT =
+ "ERREUR sur N° &INV_NUM\n\
+origine : &ORIGINE\n\
+société : &COMPANY\n\
+La première ligne de la facture n'est pas l'entête"
+  TYPE = "OTHER"
+END FND_NEW_MESSAGES
+
+BEGIN FND_NEW_MESSAGES "DKA" "DKA_IARPAFAC_E030"
+  OWNER = "USER"
+  LAST_UPDATE_DATE = "2005/07/06"
+  MESSAGE_TEXT =
+ "ERREUR sur N° &INV_NUM\n\
+origine : &ORIGINE\n\
+société : &COMPANY\n\
+La facture ne possède aucune ligne de ventilation\n\
+"
+  TYPE = "OTHER"
+END FND_NEW_MESSAGES
+
+BEGIN FND_NEW_MESSAGES "DKA" "DKA_IARPAFAC_E031"
+  OWNER = "USER"
+  LAST_UPDATE_DATE = "2005/07/06"
+  MESSAGE_TEXT =
+ "ERREUR sur N° &INV_NUM\n\
+origine : &ORIGINE\n\
+société : &COMPANY\n\
+Le montant TTC de la facture ne correspond pas au montant des lignes HT + TVA"
+  TYPE = "OTHER"
+END FND_NEW_MESSAGES
+
+BEGIN FND_NEW_MESSAGES "DKA" "DKA_IARPAFAC_E032"
+  OWNER = "USER"
+  LAST_UPDATE_DATE = "2005/07/06"
+  MESSAGE_TEXT =
+ "Erreur programme : &ERROR\n\
+\n\
+Une erreur fatale est survenue lors du traitement des factures clients\n\
+\n\
+Veuillez contacter le support technique"
+  TYPE = "OTHER"
+END FND_NEW_MESSAGES
+
+BEGIN FND_NEW_MESSAGES "DKA" "DKA_IARPAFAC_E033"
+  OWNER = "USER"
+  LAST_UPDATE_DATE = "2005/07/06"
+  MESSAGE_TEXT =
+ "Erreur programme : &ERROR\n\
+\n\
+Une erreur est survenue lors du lancement du traitement standard de l'open interface clients\n\
+\n\
+Veuillez contacter le support technique"
+  TYPE = "OTHER"
+END FND_NEW_MESSAGES
+
+BEGIN FND_NEW_MESSAGES "DKA" "DKA_IARPAFAC_E034"
+  OWNER = "USER"
+  LAST_UPDATE_DATE = "2005/07/06"
+  MESSAGE_TEXT =
+ "Erreur programme : &ERROR\n\
+\n\
+Une erreur est survenue lors de la mise à jour du parametre BATCH_SOURCE_NAME ou BATCH_SOURCE_ID\n\
+\n\
+Veuillez contacter le support technique"
+  TYPE = "OTHER"
+END FND_NEW_MESSAGES
+
+BEGIN FND_NEW_MESSAGES "DKA" "DKA_IARPAFAC_E035"
+  OWNER = "USER"
+  LAST_UPDATE_DATE = "2005/07/06"
+  MESSAGE_TEXT =
+ "La période comptable de la pièce est postérieure à la période comptable AR ouverte"
+  TYPE = "OTHER"
+END FND_NEW_MESSAGES

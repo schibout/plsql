@@ -1,0 +1,192 @@
+<?xml version = '1.0' encoding = 'UTF-8'?>
+<!--
+  ================================================================================
+  $Header:$
+  Projet         : HELIOS
+  Nom du fichier : DKAR_AR_FACNLETRREES.xml
+  Version        : 1.0
+  Cree le        : 19/06/2019
+  Auteur         : 
+  Description    :  DKAR_AR_FACNLETRREES
+									
+
+  ================================================================================
+  Historique
+  Date        Auteur           Description
+  ==========  ===============  ===================================================
+  05/04/2022  Anas RAOUF       EDB336
+28/11/2024   SARA HOUSSAINI    EDB 381
+  ================================================================================
+-->
+
+<dataTemplate name="DKAR_AR_FACNLETRREES" version="1.0">
+
+  <parameters>
+    <parameter name="P_DATE"                        dataType="DATE"      /> 
+    <parameter name="P_REGION"                      dataType="VARCHAR2"  />
+    <parameter name="P_SOCIETE"                     dataType="VARCHAR2"  />  
+	<parameter name="P_RECOUVR_DE"                  dataType="VARCHAR2"  />  
+	<parameter name="P_RECOUVR_A"                   dataType="VARCHAR2"  />  
+  </parameters>
+  <dataQuery>
+    <sqlStatement name="Q_PARAM">
+	<![CDATA[
+	select TO_CHAR(:P_DATE,'DD/MM/YYYY') PP_DATE from DUAL
+	 ]]> 
+	</sqlStatement>
+	<sqlStatement name="Q_REPORT">
+	<![CDATA[
+select hca.ACCOUNT_NUMBER,
+       hp.PARTY_NAME,
+       hcsua.LOCATION lieu,
+       rcta.trx_number num_facture,
+	   TO_CHAR(rcta.CREATION_DATE, 'DD/MM/YYYY HH24:MI:SS')CREATION_DATE, --EDB381 SHO
+	   rcta.PURCHASE_ORDER bon_commande, --EDB336 ARA
+       SUM(rctl.EXTENDED_AMOUNT) mnt_facture,
+       TO_CHAR(rcta.TRX_DATE, 'DD/MM/YYYY') TRX_DATE,
+       hou.name organisation,
+       TO_CHAR(ps.GL_DATE, 'DD/MM/YYYY') GL_DATE,
+       ps.amount_due_remaining mnt_prelever,
+       TO_CHAR(ps.DUE_DATE, 'DD/MM/YYYY') DUE_DATE,
+       ppa.segment1 projet_name,
+       ARM.name mode_reg,
+       rcta.ATTRIBUTE5 code_blocage,
+       arc.name agent_recouvrement,
+       bank_infos.BANK_ACCOUNT_NAME baque_principale_UO,
+       instr_infos.iban compte_bancaire,
+       instr_infos.bank_account_num compte_bancaire_num,
+       instr_infos.authorization_reference_number,
+       NVL(rcta.ATTRIBUTE5, 'OUI') reg_automatic,
+       xep.name societe
+  from hz_cust_accounts           hca,
+       ra_customer_trx_all        rcta,
+       RA_CUSTOMER_TRX_LINES_ALL  rctl,
+       ar_payment_schedules_all   ps,
+       hr_operating_units         hou,
+       AR_RECEIPT_METHODS         ARM,
+       HZ_PARTIES                 hp,
+       PA_PROJECTS_ALL            ppa,
+       ar.hz_customer_profiles    hcp,
+       ar.hz_cust_profile_classes hcpc,
+       ar.ar_collectors           arc,
+       HZ_CUST_SITE_USES_ALL      hcsua,
+       ----------------
+       (SELECT arma.org_id, CEA.BANK_ACCOUNT_NAME
+          FROM AR_RECEIPT_METHODS             arm1,
+               ar_receipt_method_accounts_all arma,
+               CE_BANK_ACCT_USES_ALL          cbaua,
+               CE_BANK_ACCOUNTS               CEA
+         WHERE ARM1.NAME = 'PRELEVT'
+           AND ARM1.receipt_method_id = ARMA.receipt_method_id
+           AND arma.primary_flag = 'Y'
+           AND arma.REMIT_BANK_ACCT_USE_ID(+) = cbaua.BANK_ACCT_USE_ID
+           AND cbaua.BANK_ACCOUNT_ID = CEA.bank_account_id) bank_infos,
+       ----------------
+       (SELECT ieba.iban,
+               ieba.bank_account_num,
+               ida.authorization_reference_number,
+               extn.TRXN_EXTENSION_ID
+          FROM iby_ext_bank_accounts    ieba,
+               iby_pmt_instr_uses_all   u,
+               iby_fndcpt_tx_extensions extn,
+               IBY_DEBIT_AUTHORIZATIONS ida
+         WHERE ieba.ext_bank_account_id = u.instrument_id
+           AND extn.instr_assignment_id = u.instrument_payment_use_id
+           AND u.payment_function = 'CUSTOMER_PAYMENT'
+           AND extn.trxn_ref_number1 = 'TRANSACTION'
+           AND extn.payment_channel_code = 'BANK_ACCT_XFER'
+           AND extn.DEBIT_AUTHORIZATION_ID = ida.debit_authorization_id(+)) instr_infos,
+       ---------------------------
+       XLE_ENTITY_PROFILES xep
+ 
+where 1 = 1
+   AND hca.cust_account_id = rcta.BILL_TO_CUSTOMER_ID
+   AND hp.PARTY_ID = hca.PARTY_ID
+   AND rcta.CUSTOMER_TRX_ID = rctl.CUSTOMER_TRX_ID
+   AND rcta.ORG_ID = hou.organization_id
+   AND ps.CUSTOMER_TRX_ID = rcta.CUSTOMER_TRX_ID
+   AND NVL(ps.amount_due_remaining, 0) <> 0
+   AND ARM.RECEIPT_METHOD_ID = rcta.RECEIPT_METHOD_ID
+   AND ARM.NAME = 'PRELEVT'
+   AND rcta.ATTRIBUTE11 = ppa.PROJECT_ID(+)
+   AND ps.selected_for_receipt_batch_id IS NULL
+      ---------------------------
+   AND hcp.party_id = hp.party_id
+   AND hca.cust_account_id = hcp.cust_account_id
+   AND hcp.site_use_id IS NULL
+   AND hcpc.profile_class_id = hcp.profile_class_id
+   AND arc.collector_id = hcpc.collector_id
+   AND hcsua.site_use_id = rcta.bill_to_site_use_id
+      ------------------BANQUE UO---------
+   AND hou.organization_id = bank_infos.org_id(+)
+      ----------------------IBAN CUSTOMER ----------------
+   AND rcta.payment_trxn_extension_id = instr_infos.TRXN_EXTENSION_ID(+)
+      --------------------------------------------------------
+   AND xep.legal_entity_id = hou.default_legal_context_id
+      ----------------------Parameters-------------------------
+    AND trunc(ps.DUE_DATE) <= trunc(:P_DATE)  
+    AND substr(hou.name, 1, 3) = :P_REGION --Region
+    AND NVL(:P_SOCIETE,substr(hou.name, -4) ) = substr(hou.name, -4)  --Societe 
+    AND NVL(:P_RECOUVR_DE,arc.name) <= arc.name
+    AND NVL(:P_RECOUVR_A,arc.name)  >= arc.name
+ 
+group by hca.ACCOUNT_NUMBER,
+          hp.PARTY_NAME,
+          hcsua.LOCATION,
+          rcta.trx_number,
+		  rcta.CREATION_DATE, --EDB381 SHO
+		  rcta.PURCHASE_ORDER,
+          TO_CHAR(rcta.TRX_DATE, 'DD/MM/YYYY'),
+          hou.name,
+          TO_CHAR(ps.GL_DATE, 'DD/MM/YYYY'),
+          ps.amount_due_remaining,
+          TO_CHAR(ps.DUE_DATE, 'DD/MM/YYYY'),
+          ps.amount_due_original,
+          ppa.segment1,
+          ARM.name,
+          rcta.ATTRIBUTE5,
+          arc.name,
+          bank_infos.BANK_ACCOUNT_NAME,
+          instr_infos.iban,
+          instr_infos.bank_account_num,
+          instr_infos.authorization_reference_number,
+          xep.name
+order by hou.name,
+          hca.ACCOUNT_NUMBER,
+          TO_CHAR(ps.DUE_DATE, 'DD/MM/YYYY'),
+          rcta.trx_number
+
+  ]]> 
+  </sqlStatement>
+  </dataQuery>
+ <dataStructure>
+   <group   name="G_PARAM"               source="Q_PARAM">   
+        <element name="PP_DATE"                                           dataType="VARCHAR2"  value="PP_DATE" />
+   </group>   
+   <group   name="G_REPORT"               source="Q_REPORT">
+        <element name="R_ACCOUNT_NUMBER"                                  dataType="VARCHAR2"  value="ACCOUNT_NUMBER" /> 
+        <element name="R_PARTY_NAME"                                      dataType="VARCHAR2"  value="PARTY_NAME" /> 
+		 <element name="R_LIEU"                                      	    dataType="VARCHAR2"  value="lieu" />	
+        <element name="R_num_facture"                                     dataType="VARCHAR2"  value="num_facture" /> 
+		<element name="R_CREATION_DATE"                                     dataType="VARCHAR2"  value="CREATION_DATE" /> 
+		<element name="R_BON_COMMANDE"                                     dataType="VARCHAR2"  value="bon_commande" />
+        <element name="R_mnt_facture"                                     dataType="VARCHAR2"  value="mnt_facture" />
+        <element name="R_mnt_prelever"                                     dataType="VARCHAR2" value="mnt_prelever" />        
+        <element name="R_TRX_DATE"                                        dataType="VARCHAR2"  value="TRX_DATE" /> 
+        <element name="R_organisation"                                    dataType="VARCHAR2"  value="organisation" />  
+        <element name="R_DUE_DATE"                                        dataType="VARCHAR2"  value="DUE_DATE" /> 
+        <element name="R_projet_name"                                     dataType="VARCHAR2"  value="projet_name" /> 
+        <element name="R_mode_reg"                                        dataType="VARCHAR2"  value="mode_reg" /> 
+        <element name="R_code_blocage"                                    dataType="VARCHAR2"  value="code_blocage" />   
+        <element name="R_agent_recouvrement"                              dataType="VARCHAR2"  value="agent_recouvrement" />    
+        <element name="R_baque_principale_UO"                             dataType="VARCHAR2"  value="baque_principale_UO" />   
+        <element name="R_compte_bancaire"                                 dataType="VARCHAR2"  value="compte_bancaire" /> 	
+        <element name="R_compte_bancaire_num"                             dataType="VARCHAR2"  value="compte_bancaire_num" />			
+        <element name="R_authorization_reference_number"                  dataType="NUMBER"    value="authorization_reference_number" />
+        <element name="R_reg_automatic"                                   dataType="NUMBER"    value="reg_automatic" />
+		<element name="R_societe"                                         dataType="NUMBER"    value="societe" />
+  	 
+
+  </group>
+  </dataStructure>
+  </dataTemplate>

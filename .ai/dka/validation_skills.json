@@ -1,0 +1,32 @@
+{
+  "date": "2026-10-18",
+  "skill_name": "dka-ebs",
+  "skills": [
+    ".agents/skills/dka-ebs/SKILL.md",
+    ".claude/skills/dka-ebs/SKILL.md",
+    ".gemini/skills/dka-ebs/SKILL.md"
+  ],
+  "three_copies_identical": true,
+  "bundled_quick_validate": "passed for all three skills (isolated uv environment with pyyaml)",
+  "local_links_checked": 40,
+  "broken_links": [],
+  "imports": [
+    {
+      "file": "CLAUDE.md",
+      "target": ".ai/dka/CONTEXTE.md",
+      "exists": true
+    },
+    {
+      "file": "GEMINI.md",
+      "target": "./.ai/dka/CONTEXTE.md",
+      "exists": true
+    }
+  ],
+  "behavioral_test": {
+    "baseline": "Could not establish Ivalua direction or freshness verifier within small read budget",
+    "with_skill": "Located export direction, AP/CSP limitation and freshness command with two domain notes",
+    "oracle_code_executed": false
+  },
+  "runtime_test": "Instruction/navigation test only; no live new-session test in Codex, Claude Code or Gemini CLI",
+  "structural_validation_passed": true
+}

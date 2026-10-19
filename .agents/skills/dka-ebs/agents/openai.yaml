@@ -1,0 +1,6 @@
+interface:
+  display_name: "DKA — Oracle EBS"
+  short_description: "Contexte DKA, intégrations et workflows Oracle"
+  default_prompt: "Utilise $dka-ebs pour analyser ce traitement DKA avec les sources et le dossier existant."
+policy:
+  allow_implicit_invocation: true

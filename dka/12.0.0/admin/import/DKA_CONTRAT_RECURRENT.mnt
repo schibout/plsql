@@ -1,0 +1,790 @@
+# $Header$
+
+# dbdrv: exec fnd bin FNDLOAD bin &phase=daa+51 checkfile:~PROD:~PATH:~FILE &ui_apps 0 Y UPLOAD @FND:patch/115/import/afsload.lct @~PROD:~PATH/~FILE
+LANGUAGE = "F"
+LDRCONFIG = "afsload.lct 115.56"
+
+#Source Database DT1OAP
+
+# -- Begin Entity Definitions -- 
+
+DEFINE MENU
+  KEY   MENU_NAME                       VARCHAR2(4000)
+  BASE  TYPE                            VARCHAR2(30)
+  BASE  LAST_UPDATE_DATE                VARCHAR2(10)
+  TRANS USER_MENU_NAME                  VARCHAR2(80)
+  TRANS DESCRIPTION                     VARCHAR2(240)
+  CTX   OWNER                           VARCHAR2(4000)
+
+  DEFINE ENTRY
+    TRANS PROMPT                          VARCHAR2(60)
+    TRANS DESCRIPTION                     VARCHAR2(240)
+    BASE  GRANT_FLAG                      VARCHAR2(1)
+    BASE  LAST_UPDATE_DATE                VARCHAR2(10)
+    CTX   SUBMENU                         REFERENCES MENU
+    CTX   FUNCTION                        REFERENCES FUNCTION
+    CTX   OWNER                           VARCHAR2(4000)
+  END ENTRY
+END MENU
+
+DEFINE FUNCTION
+  KEY   FUNCTION_NAME                   VARCHAR2(4000)
+  BASE  FORM                            REFERENCES FORM
+  BASE  TYPE                            VARCHAR2(30)
+  BASE  PARAMETERS                      VARCHAR2(4000)
+  BASE  WEB_HOST_NAME                   VARCHAR2(4000)
+  BASE  WEB_AGENT_NAME                  VARCHAR2(4000)
+  BASE  WEB_HTML_CALL                   VARCHAR2(4000)
+  BASE  WEB_ENCRYPT_PARAMETERS          VARCHAR2(4000)
+  BASE  WEB_SECURED                     VARCHAR2(4000)
+  BASE  WEB_ICON                        VARCHAR2(4000)
+  BASE  FUNC_OBJECT                     REFERENCES OBJECT
+  BASE  OBJECT_NAME                     REFERENCES OBJECT
+  BASE  REGION_APPLICATION_SHORT_NAME   VARCHAR2(50)
+  BASE  REGION_APPLICATION_NAME         VARCHAR2(50)
+  BASE  REGION_CODE                     VARCHAR2(4000)
+  BASE  LAST_UPDATE_DATE                VARCHAR2(10)
+  BASE  MAINTENANCE_MODE_SUPPORT        VARCHAR2(8)
+  BASE  CONTEXT_DEPENDENCE              VARCHAR2(8)
+  BASE  JRAD_REF_PATH                   VARCHAR2(4000)
+  TRANS USER_FUNCTION_NAME              VARCHAR2(80)
+  TRANS DESCRIPTION                     VARCHAR2(240)
+  CTX   OWNER                           VARCHAR2(4000)
+END FUNCTION
+
+DEFINE OBJECT
+  KEY   OBJ_NAME                        VARCHAR2(4000)
+  BASE  APPLICATION_SHORT_NAME          VARCHAR2(50)
+  BASE  DATABASE_OBJECT_NAME            VARCHAR2(30)
+  BASE  PK1_COLUMN_NAME                 VARCHAR2(30)
+  BASE  PK2_COLUMN_NAME                 VARCHAR2(30)
+  BASE  PK3_COLUMN_NAME                 VARCHAR2(30)
+  BASE  PK4_COLUMN_NAME                 VARCHAR2(30)
+  BASE  PK5_COLUMN_NAME                 VARCHAR2(30)
+  BASE  PK1_COLUMN_TYPE                 VARCHAR2(8)
+  BASE  PK2_COLUMN_TYPE                 VARCHAR2(8)
+  BASE  PK3_COLUMN_TYPE                 VARCHAR2(8)
+  BASE  PK4_COLUMN_TYPE                 VARCHAR2(8)
+  BASE  PK5_COLUMN_TYPE                 VARCHAR2(8)
+  BASE  LAST_UPDATE_DATE                VARCHAR2(10)
+  TRANS DISPLAY_NAME                    VARCHAR2(240)
+  TRANS DESCRIPTION                     VARCHAR2(2000)
+  CTX   OWNER                           VARCHAR2(4000)
+END OBJECT
+
+DEFINE FORM
+  KEY   APPLICATION_SHORT_NAME          VARCHAR2(4000)
+  KEY   FORM_NAME                       VARCHAR2(4000)
+  BASE  AUDIT_ENABLED_FLAG              VARCHAR2(1)
+  BASE  LAST_UPDATE_DATE                VARCHAR2(10)
+  TRANS USER_FORM_NAME                  VARCHAR2(80)
+  TRANS DESCRIPTION                     VARCHAR2(240)
+  CTX   OWNER                           VARCHAR2(4000)
+END FORM
+
+# -- End Entity Definitions -- 
+
+
+BEGIN MENU "*NULL*"
+  LAST_UPDATE_DATE = "2004/08/25"
+  USER_MENU_NAME = "*NULL*"
+  OWNER = "ORACLE"
+
+END MENU
+
+BEGIN FUNCTION "DKA_CONTRAT_SOUS_TRAITANCE"
+  FORM = "" "*NULL*"
+  TYPE = "JSP"
+  PARAMETERS = "*NULL*"
+  WEB_HOST_NAME = "*NULL*"
+  WEB_AGENT_NAME = "*NULL*"
+  WEB_HTML_CALL =
+ "OA.jsp?page=/dalkia/oracle/apps/dka/contratrecc/webui/DkaContratRecherchePG&OAHP=DKA_CONTRAT_RECURRENT&OASF=DKA_CONTRAT_SOUS_TRAITANCE&OAFunc=DKA_CONTRAT_SOUS_TRAITANCE"
+  WEB_ENCRYPT_PARAMETERS = "N"
+  WEB_SECURED = "N"
+  WEB_ICON = "*NULL*"
+  FUNC_OBJECT = "*NULL*"
+  OBJECT_NAME = "*NULL*"
+  REGION_CODE = "*NULL*"
+  LAST_UPDATE_DATE = "2007/08/31"
+  MAINTENANCE_MODE_SUPPORT = "NONE"
+  CONTEXT_DEPENDENCE = "RESP"
+  JRAD_REF_PATH = "*NULL*"
+  USER_FUNCTION_NAME = "DKA : Gestion des contrats de sous-traitance"
+  OWNER = "VKNAB"
+END FUNCTION
+
+BEGIN FUNCTION "DKA_CONTRAT_CONSULT"
+  FORM = "" "*NULL*"
+  TYPE = "JSP"
+  PARAMETERS = "*NULL*"
+  WEB_HOST_NAME = "*NULL*"
+  WEB_AGENT_NAME = "*NULL*"
+  WEB_HTML_CALL =
+ "OA.jsp?page=/dalkia/oracle/apps/dka/contratrecc/webui/DkaContratConsultPG&OAHP=DKA_CONTRAT_RECURRENT&OASF=DKA_CONTRAT_CONSULT&OAFunc=DKA_CONTRAT_CONSULT"
+  WEB_ENCRYPT_PARAMETERS = "N"
+  WEB_SECURED = "N"
+  WEB_ICON = "*NULL*"
+  FUNC_OBJECT = "*NULL*"
+  OBJECT_NAME = "*NULL*"
+  REGION_CODE = "*NULL*"
+  LAST_UPDATE_DATE = "2007/08/31"
+  MAINTENANCE_MODE_SUPPORT = "NONE"
+  CONTEXT_DEPENDENCE = "RESP"
+  JRAD_REF_PATH = "*NULL*"
+  USER_FUNCTION_NAME = "DKA : Consultation de contrats"
+  OWNER = "VKNAB"
+END FUNCTION
+
+
+BEGIN FUNCTION "DKA_CONTRAT_SOUS_TRAITANT_MOD"
+  FORM = "" "*NULL*"
+  TYPE = "JSP"
+  PARAMETERS = "*NULL*"
+  WEB_HOST_NAME = "*NULL*"
+  WEB_AGENT_NAME = "*NULL*"
+  WEB_HTML_CALL =
+ "OA.jsp?page=/dalkia/oracle/apps/dka/contratrecc/webui/DkaContratDependantPG&OAHP=DKA_CONTRAT_RECURRENT&OASF=DKA_CONTRAT_SOUS_TRAITANCE&OAFunc=DKA_CONTRAT_SOUS_TRAITANT_MOD"
+  WEB_ENCRYPT_PARAMETERS = "N"
+  WEB_SECURED = "N"
+  WEB_ICON = "*NULL*"
+  FUNC_OBJECT = "*NULL*"
+  OBJECT_NAME = "*NULL*"
+  REGION_CODE = "*NULL*"
+  LAST_UPDATE_DATE = "2007/08/31"
+  MAINTENANCE_MODE_SUPPORT = "NONE"
+  CONTEXT_DEPENDENCE = "RESP"
+  JRAD_REF_PATH = "*NULL*"
+  USER_FUNCTION_NAME = "DKA : modification de contrats de sous traitance"
+  DESCRIPTION =
+ "fonction non accessible directement => sans invite dans le menu"
+  OWNER = "VKNAB"
+END FUNCTION
+
+BEGIN FUNCTION "DKA_CONTRAT_SOUS_TRAITANT_VISU"
+  FORM = "" "*NULL*"
+  TYPE = "JSP"
+  PARAMETERS = "*NULL*"
+  WEB_HOST_NAME = "*NULL*"
+  WEB_AGENT_NAME = "*NULL*"
+  WEB_HTML_CALL =
+ "OA.jsp?page=/dalkia/oracle/apps/dka/contratrecc/webui/DkaContratDependantPG&OAHP=DKA_CONTRAT_RECURRENT&OASF=DKA_CONTRAT_SOUS_TRAITANCE&OAFunc=DKA_CONTRAT_SOUS_TRAITANT_VISU"
+  WEB_ENCRYPT_PARAMETERS = "N"
+  WEB_SECURED = "N"
+  WEB_ICON = "*NULL*"
+  FUNC_OBJECT = "*NULL*"
+  OBJECT_NAME = "*NULL*"
+  REGION_CODE = "*NULL*"
+  LAST_UPDATE_DATE = "2007/08/31"
+  MAINTENANCE_MODE_SUPPORT = "NONE"
+  CONTEXT_DEPENDENCE = "RESP"
+  JRAD_REF_PATH = "*NULL*"
+  USER_FUNCTION_NAME = "DKA : visualisation de contrats de sous traitance"
+  DESCRIPTION =
+ "fonction non accessible directement => sans invite dans le menu"
+  OWNER = "VKNAB"
+END FUNCTION
+
+
+BEGIN FUNCTION "DKA_CONTRAT_DEPENDANT_VISU"
+  FORM = "" "*NULL*"
+  TYPE = "JSP"
+  PARAMETERS = "*NULL*"
+  WEB_HOST_NAME = "*NULL*"
+  WEB_AGENT_NAME = "*NULL*"
+  WEB_HTML_CALL =
+ "OA.jsp?page=/dalkia/oracle/apps/dka/contratrecc/webui/DkaContratDependantPG&OAHP=DKA_CONTRAT_RECURRENT&OASF=DKA_CONTRAT_DEPENDANT&OAFunc=DKA_CONTRAT_DEPENDANT_VISU"
+  WEB_ENCRYPT_PARAMETERS = "N"
+  WEB_SECURED = "N"
+  WEB_ICON = "*NULL*"
+  FUNC_OBJECT = "*NULL*"
+  OBJECT_NAME = "*NULL*"
+  REGION_CODE = "*NULL*"
+  LAST_UPDATE_DATE = "2007/09/04"
+  MAINTENANCE_MODE_SUPPORT = "NONE"
+  CONTEXT_DEPENDENCE = "RESP"
+  JRAD_REF_PATH = "*NULL*"
+  USER_FUNCTION_NAME = "DKA : visualisation de contrats dépendants"
+  DESCRIPTION =
+ "fonction non accessible directement => sans invite dans le menu"
+  OWNER = "VKNAB"
+END FUNCTION
+
+BEGIN FUNCTION "DKA_CONTRAT_DEPENDANT_MOD"
+  FORM = "" "*NULL*"
+  TYPE = "JSP"
+  PARAMETERS = "*NULL*"
+  WEB_HOST_NAME = "*NULL*"
+  WEB_AGENT_NAME = "*NULL*"
+  WEB_HTML_CALL =
+ "OA.jsp?page=/dalkia/oracle/apps/dka/contratrecc/webui/DkaContratDependantPG&OAHP=DKA_CONTRAT_RECURRENT&OASF=DKA_CONTRAT_DEPENDANT&OAFunc=DKA_CONTRAT_DEPENDANT_MOD"
+  WEB_ENCRYPT_PARAMETERS = "N"
+  WEB_SECURED = "N"
+  WEB_ICON = "*NULL*"
+  FUNC_OBJECT = "*NULL*"
+  OBJECT_NAME = "*NULL*"
+  REGION_CODE = "*NULL*"
+  LAST_UPDATE_DATE = "2007/09/04"
+  MAINTENANCE_MODE_SUPPORT = "NONE"
+  CONTEXT_DEPENDENCE = "RESP"
+  JRAD_REF_PATH = "*NULL*"
+  USER_FUNCTION_NAME = "DKA : modification de contrats dépendants"
+  DESCRIPTION =
+ "fonction non accessible directement => sans invite dans le menu"
+  OWNER = "VKNAB"
+END FUNCTION
+
+BEGIN FUNCTION "DKA_CONTRAT_SOUS_TRAITANT_CRE"
+  FORM = "" "*NULL*"
+  TYPE = "JSP"
+  PARAMETERS = "*NULL*"
+  WEB_HOST_NAME = "*NULL*"
+  WEB_AGENT_NAME = "*NULL*"
+  WEB_HTML_CALL =
+ "OA.jsp?page=/dalkia/oracle/apps/dka/contratrecc/webui/DkaContratDependantPG&OAHP=DKA_CONTRAT_RECURRENT&OASF=DKA_CONTRAT_SOUS_TRAITANCE&OAFunc=DKA_CONTRAT_SOUS_TRAITANT_CRE"
+  WEB_ENCRYPT_PARAMETERS = "N"
+  WEB_SECURED = "N"
+  WEB_ICON = "*NULL*"
+  FUNC_OBJECT = "*NULL*"
+  OBJECT_NAME = "*NULL*"
+  REGION_CODE = "*NULL*"
+  LAST_UPDATE_DATE = "2007/09/07"
+  MAINTENANCE_MODE_SUPPORT = "NONE"
+  CONTEXT_DEPENDENCE = "RESP"
+  JRAD_REF_PATH = "*NULL*"
+  USER_FUNCTION_NAME = "DKA : création de contrats de sous traitance"
+  DESCRIPTION =
+ "fonction non accessible directement => sans invite dans le menu"
+  OWNER = "VKNAB"
+END FUNCTION
+
+BEGIN FUNCTION "DKA_CONTRAT_DEPENDANT_CRE"
+  FORM = "" "*NULL*"
+  TYPE = "JSP"
+  PARAMETERS = "*NULL*"
+  WEB_HOST_NAME = "*NULL*"
+  WEB_AGENT_NAME = "*NULL*"
+  WEB_HTML_CALL =
+ "OA.jsp?page=/dalkia/oracle/apps/dka/contratrecc/webui/DkaContratDependantPG&OAHP=DKA_CONTRAT_RECURRENT&OASF=DKA_CONTRAT_DEPENDANT&OAFunc=DKA_CONTRAT_DEPENDANT_CRE"
+  WEB_ENCRYPT_PARAMETERS = "N"
+  WEB_SECURED = "N"
+  WEB_ICON = "*NULL*"
+  FUNC_OBJECT = "*NULL*"
+  OBJECT_NAME = "*NULL*"
+  REGION_CODE = "*NULL*"
+  LAST_UPDATE_DATE = "2007/09/07"
+  MAINTENANCE_MODE_SUPPORT = "NONE"
+  CONTEXT_DEPENDENCE = "RESP"
+  JRAD_REF_PATH = "*NULL*"
+  USER_FUNCTION_NAME = "DKA : création de contrats dépendants"
+  DESCRIPTION =
+ "fonction non accessible directement => sans invite dans le menu"
+  OWNER = "VKNAB"
+END FUNCTION
+
+BEGIN FUNCTION "DKA_CONTRAT_SOUS_TRAITANT_CPL"
+  FORM = "" "*NULL*"
+  TYPE = "JSP"
+  PARAMETERS = "*NULL*"
+  WEB_HOST_NAME = "*NULL*"
+  WEB_AGENT_NAME = "*NULL*"
+  WEB_HTML_CALL =
+ "OA.jsp?page=/dalkia/oracle/apps/dka/contratrecc/webui/DkaContratDependantPG&OAHP=DKA_CONTRAT_RECURRENT&OASF=DKA_CONTRAT_SOUS_TRAITANCE&OAFunc=DKA_CONTRAT_SOUS_TRAITANT_CPL"
+  WEB_ENCRYPT_PARAMETERS = "N"
+  WEB_SECURED = "N"
+  WEB_ICON = "*NULL*"
+  FUNC_OBJECT = "*NULL*"
+  OBJECT_NAME = "*NULL*"
+  REGION_CODE = "*NULL*"
+  LAST_UPDATE_DATE = "2010/01/18"
+  MAINTENANCE_MODE_SUPPORT = "NONE"
+  CONTEXT_DEPENDENCE = "RESP"
+  JRAD_REF_PATH = "*NULL*"
+  USER_FUNCTION_NAME = "DKA : completer des contrats de sous traitance"
+  DESCRIPTION =
+ "fonction non accessible directement => sans invite dans le menu"
+  OWNER = "CDELCASS"
+END FUNCTION
+
+BEGIN FUNCTION "DKA_CONTRAT_SOUS_TRAITANT_RNV"
+  FORM = "" "*NULL*"
+  TYPE = "JSP"
+  PARAMETERS = "*NULL*"
+  WEB_HOST_NAME = "*NULL*"
+  WEB_AGENT_NAME = "*NULL*"
+  WEB_HTML_CALL =
+ "OA.jsp?page=/dalkia/oracle/apps/dka/contratrecc/webui/DkaContratDependantPG&OAHP=DKA_CONTRAT_RECURRENT&OASF=DKA_CONTRAT_SOUS_TRAITANCE&OAFunc=DKA_CONTRAT_SOUS_TRAITANT_RNV"
+  WEB_ENCRYPT_PARAMETERS = "N"
+  WEB_SECURED = "N"
+  WEB_ICON = "*NULL*"
+  FUNC_OBJECT = "*NULL*"
+  OBJECT_NAME = "*NULL*"
+  REGION_CODE = "*NULL*"
+  LAST_UPDATE_DATE = "2010/01/18"
+  MAINTENANCE_MODE_SUPPORT = "NONE"
+  CONTEXT_DEPENDENCE = "RESP"
+  JRAD_REF_PATH = "*NULL*"
+  USER_FUNCTION_NAME = "DKA : renouveler des contrats de sous traitance"
+  DESCRIPTION =
+ "fonction non accessible directement => sans invite dans le menu"
+  OWNER = "CDELCASS"
+END FUNCTION
+
+BEGIN FUNCTION "DKA_CONTRAT_DEPENDANT_CPL"
+  FORM = "" "*NULL*"
+  TYPE = "JSP"
+  PARAMETERS = "*NULL*"
+  WEB_HOST_NAME = "*NULL*"
+  WEB_AGENT_NAME = "*NULL*"
+  WEB_HTML_CALL =
+ "OA.jsp?page=/dalkia/oracle/apps/dka/contratrecc/webui/DkaContratDependantPG&OAHP=DKA_CONTRAT_RECURRENT&OASF=DKA_CONTRAT_DEPENDANT&OAFunc=DKA_CONTRAT_DEPENDANT_CPL"
+  WEB_ENCRYPT_PARAMETERS = "N"
+  WEB_SECURED = "N"
+  WEB_ICON = "*NULL*"
+  FUNC_OBJECT = "*NULL*"
+  OBJECT_NAME = "*NULL*"
+  REGION_CODE = "*NULL*"
+  LAST_UPDATE_DATE = "2010/01/18"
+  MAINTENANCE_MODE_SUPPORT = "NONE"
+  CONTEXT_DEPENDENCE = "RESP"
+  JRAD_REF_PATH = "*NULL*"
+  USER_FUNCTION_NAME = "DKA : completer des contrats dépendants"
+  DESCRIPTION =
+ "fonction non accessible directement => sans invite dans le menu"
+  OWNER = "CDELCASS"
+END FUNCTION
+
+BEGIN FUNCTION "DKA_CONTRAT_DEPENDANT_RNV"
+  FORM = "" "*NULL*"
+  TYPE = "JSP"
+  PARAMETERS = "*NULL*"
+  WEB_HOST_NAME = "*NULL*"
+  WEB_AGENT_NAME = "*NULL*"
+  WEB_HTML_CALL =
+ "OA.jsp?page=/dalkia/oracle/apps/dka/contratrecc/webui/DkaContratDependantPG&OAHP=DKA_CONTRAT_RECURRENT&OASF=DKA_CONTRAT_DEPENDANT&OAFunc=DKA_CONTRAT_DEPENDANT_RNV"
+  WEB_ENCRYPT_PARAMETERS = "N"
+  WEB_SECURED = "N"
+  WEB_ICON = "*NULL*"
+  FUNC_OBJECT = "*NULL*"
+  OBJECT_NAME = "*NULL*"
+  REGION_CODE = "*NULL*"
+  LAST_UPDATE_DATE = "2010/01/18"
+  MAINTENANCE_MODE_SUPPORT = "NONE"
+  CONTEXT_DEPENDENCE = "RESP"
+  JRAD_REF_PATH = "*NULL*"
+  USER_FUNCTION_NAME = "DKA : renouveler des contrats dépendants"
+  DESCRIPTION =
+ "fonction non accessible directement => sans invite dans le menu"
+  OWNER = "CDELCASS"
+END FUNCTION
+
+BEGIN FUNCTION "ICX_CLOSE"
+  FORM = "" "*NULL*"
+  TYPE = "WWW"
+  PARAMETERS = "*NULL*"
+  WEB_HOST_NAME = "*NULL*"
+  WEB_AGENT_NAME = "*NULL*"
+  WEB_HTML_CALL = "OALogout.jsp"
+  WEB_ENCRYPT_PARAMETERS = "N"
+  WEB_SECURED = "N"
+  WEB_ICON = "global_closewind_greyscale.gif"
+  FUNC_OBJECT = "*NULL*"
+  OBJECT_NAME = "*NULL*"
+  REGION_CODE = "*NULL*"
+  LAST_UPDATE_DATE = "2004/08/25"
+  MAINTENANCE_MODE_SUPPORT = "NONE"
+  CONTEXT_DEPENDENCE = "RESP"
+  JRAD_REF_PATH = "*NULL*"
+  USER_FUNCTION_NAME = "Fermer"
+  DESCRIPTION = "Fonction standard permettant de fermer la fenêtre"
+  OWNER = "ORACLE"
+END FUNCTION
+
+BEGIN FUNCTION "ICX_RETURN_TO_PORTAL"
+  FORM = "" "*NULL*"
+  TYPE = "WWW"
+  PARAMETERS = "*NULL*"
+  WEB_HOST_NAME = "*NULL*"
+  WEB_AGENT_NAME = "*NULL*"
+  WEB_HTML_CALL = "OracleNavigate.Responsibility"
+  WEB_ENCRYPT_PARAMETERS = "N"
+  WEB_SECURED = "N"
+  WEB_ICON = "returntoportal_greyscale.gif"
+  FUNC_OBJECT = "*NULL*"
+  OBJECT_NAME = "*NULL*"
+  REGION_CODE = "*NULL*"
+  LAST_UPDATE_DATE = "2004/08/25"
+  MAINTENANCE_MODE_SUPPORT = "NONE"
+  CONTEXT_DEPENDENCE = "RESP"
+  JRAD_REF_PATH = "*NULL*"
+  USER_FUNCTION_NAME = "Retour au portail"
+  DESCRIPTION =
+ "Fonction de retour à la page d'accueil de l'application en libre-service"
+  OWNER = "ORACLE"
+END FUNCTION
+
+BEGIN FUNCTION "ICX_LOGOUT"
+  FORM = "" "*NULL*"
+  TYPE = "WWW"
+  PARAMETERS = "*NULL*"
+  WEB_HOST_NAME = "*NULL*"
+  WEB_AGENT_NAME = "*NULL*"
+  WEB_HTML_CALL = "OALogout.jsp"
+  WEB_ENCRYPT_PARAMETERS = "N"
+  WEB_SECURED = "N"
+  WEB_ICON = "logout_greyscale.gif"
+  FUNC_OBJECT = "*NULL*"
+  OBJECT_NAME = "*NULL*"
+  REGION_CODE = "*NULL*"
+  LAST_UPDATE_DATE = "2004/08/25"
+  MAINTENANCE_MODE_SUPPORT = "NONE"
+  CONTEXT_DEPENDENCE = "RESP"
+  JRAD_REF_PATH = "*NULL*"
+  USER_FUNCTION_NAME = "Déconnexion"
+  DESCRIPTION =
+ "Fonction standard permettant de se déconnecter du système et de revenir à l'écran de connexion principal"
+  OWNER = "ORACLE"
+END FUNCTION
+
+BEGIN FUNCTION "ICX_USER_PREFERENCES"
+  FORM = "" "*NULL*"
+  TYPE = "WWW"
+  PARAMETERS = "*NULL*"
+  WEB_HOST_NAME = "*NULL*"
+  WEB_AGENT_NAME = "*NULL*"
+  WEB_HTML_CALL = "OracleApps.DU"
+  WEB_ENCRYPT_PARAMETERS = "Y"
+  WEB_SECURED = "N"
+  WEB_ICON = "FNDPREFS.gif"
+  FUNC_OBJECT = "*NULL*"
+  OBJECT_NAME = "*NULL*"
+  REGION_APPLICATION_SHORT_NAME = "FND"
+  REGION_APPLICATION_NAME = "FND"
+  REGION_CODE = "*NULL*"
+  LAST_UPDATE_DATE = "2004/08/25"
+  MAINTENANCE_MODE_SUPPORT = "NONE"
+  CONTEXT_DEPENDENCE = "RESP"
+  JRAD_REF_PATH = "*NULL*"
+  USER_FUNCTION_NAME = "Préférences générales"
+  DESCRIPTION =
+ "Définit des informations personnelles, notamment le mot de passe et la langue de travail."
+  OWNER = "ORACLE"
+END FUNCTION
+
+BEGIN FUNCTION "ICX_HELP"
+  FORM = "" "*NULL*"
+  TYPE = "WWW"
+  PARAMETERS = "*NULL*"
+  WEB_HOST_NAME = "*NULL*"
+  WEB_AGENT_NAME = "*NULL*"
+  WEB_HTML_CALL = "fndgfm/fnd_help.get/US/FND/@ICXPHP"
+  WEB_ENCRYPT_PARAMETERS = "N"
+  WEB_SECURED = "N"
+  WEB_ICON = "help_greyscale.gif"
+  FUNC_OBJECT = "*NULL*"
+  OBJECT_NAME = "*NULL*"
+  REGION_CODE = "*NULL*"
+  LAST_UPDATE_DATE = "2004/08/25"
+  MAINTENANCE_MODE_SUPPORT = "NONE"
+  CONTEXT_DEPENDENCE = "RESP"
+  JRAD_REF_PATH = "*NULL*"
+  USER_FUNCTION_NAME = "Aide de l'application en libre-service"
+  DESCRIPTION = "Fonction permettant d'afficher la page d'aide"
+  OWNER = "ORACLE"
+END FUNCTION
+
+BEGIN FUNCTION "ICX_SSWA_USER_PREFERENCES"
+  FORM = "" "*NULL*"
+  TYPE = "JSP"
+  PARAMETERS = "*NULL*"
+  WEB_HOST_NAME = "*NULL*"
+  WEB_AGENT_NAME = "*NULL*"
+  WEB_HTML_CALL =
+ "OA.jsp?page=/oracle/apps/fnd/preferences/webui/PreferencesPG&retainAM=Y"
+  WEB_ENCRYPT_PARAMETERS = "N"
+  WEB_SECURED = "N"
+  WEB_ICON = "FNDPREFS.gif"
+  FUNC_OBJECT = "*NULL*"
+  OBJECT_NAME = "*NULL*"
+  REGION_CODE = "*NULL*"
+  LAST_UPDATE_DATE = "2004/08/25"
+  MAINTENANCE_MODE_SUPPORT = "NONE"
+  CONTEXT_DEPENDENCE = "RESP"
+  JRAD_REF_PATH = "*NULL*"
+  USER_FUNCTION_NAME = "Nouvelles préférences générales"
+  DESCRIPTION =
+ "Cette fonction de préférence pointe sur une nouvelle fonction de préférence SSWA (OAF5.7C ci-dessus)"
+  OWNER = "ORACLE"
+END FUNCTION
+
+BEGIN FUNCTION "UMX_MY_APP_ACCESS"
+  FORM = "" "*NULL*"
+  TYPE = "JSP"
+  PARAMETERS = "*NULL*"
+  WEB_HOST_NAME = "*NULL*"
+  WEB_AGENT_NAME = "*NULL*"
+  WEB_HTML_CALL =
+ "OA.jsp?page=/oracle/apps/fnd/umx/accessRequest/webui/MyAppAccessPG&akRegionApplicationId=0"
+  WEB_ENCRYPT_PARAMETERS = "N"
+  WEB_SECURED = "N"
+  WEB_ICON = "*NULL*"
+  FUNC_OBJECT = "*NULL*"
+  OBJECT_NAME = "*NULL*"
+  REGION_CODE = "*NULL*"
+  LAST_UPDATE_DATE = "2004/08/25"
+  MAINTENANCE_MODE_SUPPORT = "NONE"
+  CONTEXT_DEPENDENCE = "RESP"
+  JRAD_REF_PATH = "*NULL*"
+  USER_FUNCTION_NAME = "User Management - Mon accès à l'application"
+  DESCRIPTION = "Fonction pour Mon accès à l'application (ART)"
+  OWNER = "ORACLE"
+END FUNCTION
+
+BEGIN MENU "FND_GEN_PREF_MENU"
+  LAST_UPDATE_DATE = "2004/08/25"
+  USER_MENU_NAME = "Menu Préférences générales"
+  DESCRIPTION =
+ "Menu Préférences générales applications basé sur les commandes"
+  OWNER = "ORACLE"
+
+  BEGIN ENTRY
+    PROMPT = "Préférences d'affichage"
+    GRANT_FLAG = "Y"
+    LAST_UPDATE_DATE = "2004/08/25"
+    SUBMENU = "*NULL*"
+    FUNCTION = "ICX_SSWA_USER_PREFERENCES"
+    OWNER = "ORACLE"
+  END ENTRY
+  
+  BEGIN ENTRY
+    PROMPT = "Demandes d'accès"
+    DESCRIPTION = "Demandes Self Service d'accès supplémentaire"
+    GRANT_FLAG = "Y"
+    LAST_UPDATE_DATE = "2006/04/13"
+    SUBMENU = "*NULL*"
+    FUNCTION = "UMX_MY_APP_ACCESS"
+    OWNER = "ORACLE"
+  END ENTRY
+  
+END MENU
+
+BEGIN MENU "FND_PREF_MENU_SIDEBAR"
+  TYPE = "SIDEBAR"
+  LAST_UPDATE_DATE = "2004/08/25"
+  USER_MENU_NAME = "Barre latérale du menu Préférences"
+  DESCRIPTION = "Barre latérale du Menu Préférences basé sur la commande"
+  OWNER = "ORACLE"
+
+  BEGIN ENTRY
+    PROMPT = "Général"
+    GRANT_FLAG = "Y"
+    LAST_UPDATE_DATE = "2004/08/25"
+    SUBMENU = "FND_GEN_PREF_MENU"
+    FUNCTION = "*NULL*"
+    OWNER = "ORACLE"
+  END ENTRY
+  
+END MENU
+
+BEGIN MENU "ICX_STANDARD_GLOBAL_MENU"
+  TYPE = "GLOBAL"
+  LAST_UPDATE_DATE = "2004/08/25"
+  USER_MENU_NAME = "ICX_STANDARD_GLOBAL_MENU"
+  DESCRIPTION = "Menu standard"
+  OWNER = "ORACLE"
+
+  BEGIN ENTRY
+    PROMPT = "Fermer la fenêtre"
+    GRANT_FLAG = "Y"
+    LAST_UPDATE_DATE = "2004/08/25"
+    SUBMENU = "*NULL*"
+    FUNCTION = "ICX_CLOSE"
+    OWNER = "ORACLE"
+  END ENTRY
+  
+  BEGIN ENTRY
+    PROMPT = "Accueil"
+    GRANT_FLAG = "Y"
+    LAST_UPDATE_DATE = "2004/08/25"
+    SUBMENU = "*NULL*"
+    FUNCTION = "ICX_RETURN_TO_PORTAL"
+    OWNER = "ORACLE"
+  END ENTRY
+  
+  BEGIN ENTRY
+    PROMPT = "Déconnexion"
+    GRANT_FLAG = "Y"
+    LAST_UPDATE_DATE = "2004/08/25"
+    SUBMENU = "*NULL*"
+    FUNCTION = "ICX_LOGOUT"
+    OWNER = "ORACLE"
+  END ENTRY
+  
+  BEGIN ENTRY
+    PROMPT = "Préférences"
+    GRANT_FLAG = "Y"
+    LAST_UPDATE_DATE = "2004/08/25"
+    SUBMENU = "*NULL*"
+    FUNCTION = "ICX_USER_PREFERENCES"
+    OWNER = "ORACLE"
+  END ENTRY
+  
+  BEGIN ENTRY
+    PROMPT = "Aide"
+    GRANT_FLAG = "Y"
+    LAST_UPDATE_DATE = "2004/08/25"
+    SUBMENU = "*NULL*"
+    FUNCTION = "ICX_HELP"
+    OWNER = "ORACLE"
+  END ENTRY
+  
+  BEGIN ENTRY
+    PROMPT = "*NULL*"
+    DESCRIPTION = "Nouvelle fonction de préférence (5.7C ci-dessus)"
+    GRANT_FLAG = "Y"
+    LAST_UPDATE_DATE = "2006/04/13"
+    SUBMENU = "*NULL*"
+    FUNCTION = "ICX_SSWA_USER_PREFERENCES"
+    OWNER = "ORACLE"
+  END ENTRY
+  
+  BEGIN ENTRY
+    PROMPT = "*NULL*"
+    DESCRIPTION = "Menu Préférence (5.10C ci-dessus)"
+    GRANT_FLAG = "Y"
+    LAST_UPDATE_DATE = "2004/08/25"
+    SUBMENU = "FND_PREF_MENU_SIDEBAR"
+    FUNCTION = "*NULL*"
+    OWNER = "ORACLE"
+  END ENTRY
+  
+END MENU
+
+BEGIN MENU "DKA_CONTRAT_RECURRENT"
+  TYPE = "HOMEPAGE"
+  LAST_UPDATE_DATE = "2007/08/27"
+  USER_MENU_NAME = "DKA : Contrat Recurrent"
+  OWNER = "VKNAB"
+  
+  BEGIN ENTRY
+    PROMPT = "contrats indépendants"
+    DESCRIPTION = "contrats indépendants"
+    GRANT_FLAG = "Y"
+    LAST_UPDATE_DATE = "2007/08/29"
+    SUBMENU = "*NULL*"
+    FUNCTION = "DKA_CONTRAT_SOUS_TRAITANCE"
+    OWNER = "VKNAB"
+  END ENTRY
+
+  BEGIN ENTRY
+    PROMPT = "consultation de contrats"
+    DESCRIPTION = "consultation de contrats"
+    GRANT_FLAG = "Y"
+    LAST_UPDATE_DATE = "2007/08/29"
+    SUBMENU = "*NULL*"
+    FUNCTION = "DKA_CONTRAT_CONSULT"
+    OWNER = "VKNAB"
+  END ENTRY
+  
+  BEGIN ENTRY
+    PROMPT = "*NULL*"
+    GRANT_FLAG = "Y"
+    LAST_UPDATE_DATE = "2007/08/31"
+    SUBMENU = "*NULL*"
+    FUNCTION = "DKA_CONTRAT_SOUS_TRAITANT_MOD"
+    OWNER = "VKNAB"
+  END ENTRY
+  
+  BEGIN ENTRY
+    PROMPT = "*NULL*"
+    GRANT_FLAG = "Y"
+    LAST_UPDATE_DATE = "2007/08/31"
+    SUBMENU = "*NULL*"
+    FUNCTION = "DKA_CONTRAT_SOUS_TRAITANT_VISU"
+    OWNER = "VKNAB"
+  END ENTRY
+  
+  BEGIN ENTRY
+    PROMPT = "*NULL*"
+    GRANT_FLAG = "Y"
+    LAST_UPDATE_DATE = "2007/09/04"
+    SUBMENU = "*NULL*"
+    FUNCTION = "DKA_CONTRAT_DEPENDANT_VISU"
+    OWNER = "VKNAB"
+  END ENTRY
+  
+  BEGIN ENTRY
+    PROMPT = "*NULL*"
+    GRANT_FLAG = "Y"
+    LAST_UPDATE_DATE = "2007/09/04"
+    SUBMENU = "*NULL*"
+    FUNCTION = "DKA_CONTRAT_DEPENDANT_MOD"
+    OWNER = "VKNAB"
+  END ENTRY
+  
+  BEGIN ENTRY
+    PROMPT = "*NULL*"
+    GRANT_FLAG = "Y"
+    LAST_UPDATE_DATE = "2007/09/07"
+    SUBMENU = "*NULL*"
+    FUNCTION = "DKA_CONTRAT_SOUS_TRAITANT_CRE"
+    OWNER = "VKNAB"
+  END ENTRY
+  
+  BEGIN ENTRY
+    PROMPT = "*NULL*"
+    GRANT_FLAG = "Y"
+    LAST_UPDATE_DATE = "2007/09/07"
+    SUBMENU = "*NULL*"
+    FUNCTION = "DKA_CONTRAT_DEPENDANT_CRE"
+    OWNER = "VKNAB"
+  END ENTRY
+
+  BEGIN ENTRY
+    PROMPT = "*NULL*"
+    GRANT_FLAG = "Y"
+    LAST_UPDATE_DATE = "2010/01/18"
+    SUBMENU = "*NULL*"
+    FUNCTION = "DKA_CONTRAT_SOUS_TRAITANT_CPL"
+    OWNER = "CDELCASS"
+  END ENTRY
+  
+  BEGIN ENTRY
+    PROMPT = "*NULL*"
+    GRANT_FLAG = "Y"
+    LAST_UPDATE_DATE = "2010/01/18"
+    SUBMENU = "*NULL*"
+    FUNCTION = "DKA_CONTRAT_DEPENDANT_CPL"
+    OWNER = "CDELCASS"
+  END ENTRY
+
+  BEGIN ENTRY
+    PROMPT = "*NULL*"
+    GRANT_FLAG = "Y"
+    LAST_UPDATE_DATE = "2010/01/18"
+    SUBMENU = "*NULL*"
+    FUNCTION = "DKA_CONTRAT_SOUS_TRAITANT_RNV"
+    OWNER = "CDELCASS"
+  END ENTRY
+  
+  BEGIN ENTRY
+    PROMPT = "*NULL*"
+    GRANT_FLAG = "Y"
+    LAST_UPDATE_DATE = "2010/01/18"
+    SUBMENU = "*NULL*"
+    FUNCTION = "DKA_CONTRAT_DEPENDANT_RNV"
+    OWNER = "CDELCASS"
+  END ENTRY
+  
+  BEGIN ENTRY
+    PROMPT = "*NULL*"
+    DESCRIPTION = "menu a mettre pour avoir les links standards (accueil ....)"
+    GRANT_FLAG = "Y"
+    LAST_UPDATE_DATE = "2007/09/18"
+    SUBMENU = "ICX_STANDARD_GLOBAL_MENU"
+    FUNCTION = "*NULL*"
+    OWNER = "VKNAB"
+  END ENTRY
+  
+END MENU
+

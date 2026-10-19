@@ -1,0 +1,30 @@
+-------------------------------------------------------------------------------
+-- Capgemini
+-- Projet            : HELIOS R12
+-- Auteur            : Julien Jardez
+-- Date Création     : 11/04/2018
+-- Version livrables : V01
+--------------------------------------------------------------------------------
+-- NOM         : DKA_HZ_CUST_ACCT_SITES_ALL_N2.ind
+-- DESCRIPTION : Script de création de l'index DKA_HZ_CUST_ACCT_SITES_ALL_N2 sur 
+--               la table HZ_CUST_ACCT_SITES_ALL
+-- COMMENTAIRE : 
+--
+--------------------------------------------------------------------------------------------
+-- HISTORIQUE DES MODIFICATIONS
+-- Date       Qui Description
+-- ---------- --- -------------------------------------------------------------------------
+-- 
+--------------------------------------------------------------------------------------------
+ 
+PROMPT ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+PROMPT DROP DE LINDEX DKA_HZ_CUST_ACCT_SITES_ALL_N2
+PROMPT ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+DROP INDEX AR.DKA_HZ_CUST_ACCT_SITES_ALL_N2;
+
+PROMPT ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+PROMPT CREATION DE LINDEX DKA_HZ_CUST_ACCT_SITES_ALL_N2
+PROMPT ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+CREATE INDEX AR.DKA_HZ_CUST_ACCT_SITES_ALL_N2 ON AR.HZ_CUST_ACCT_SITES_ALL (ATTRIBUTE8);
+
+EXIT

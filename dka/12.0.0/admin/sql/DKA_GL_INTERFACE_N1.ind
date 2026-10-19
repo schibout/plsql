@@ -1,0 +1,46 @@
+--------------------------------------------------------------------------------------------
+-- $$
+-- CAPGEMINI
+-- PROJET            : DALKIA Oracle Applications
+-- NOM               : DKA_GL_INTERFACE_N1.ind
+-- DESCRIPTION	     : Création index sur table std GL_INTERFACE
+--
+-- AUTEUR            : JJA
+-- DATE DE CREATION  : 15/03/2016
+-- DOC. ASSOCIEE     :
+-- COMMENTAIRE       : A exécuter sous SQLPLUS avec le user GL
+--------------------------------------------------------------------------------------------
+--- HISTORIQUE DES MODIFICATIONS
+--- Date       Qui Description
+--- ---------- --- -------------------------------------------------------------------------
+--- 20/06/2017 NBO artf2179288 - Ajout d'un index d'optimisation GL_INTERFACE
+--------------------------------------------------------------------------------------------
+
+PROMPT ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+PROMPT CONNEXION AU MODULE GL
+PROMPT ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+Connect GL/GL
+
+PROMPT ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+PROMPT SUPPRESSION DE INDEX DKA_INTERFACE_N1
+PROMPT ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+DROP INDEX DKA_INTERFACE_N1;
+
+PROMPT ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+PROMPT CREATION DE INDEX DKA_INTERFACE_N1
+PROMPT ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+create index DKA_INTERFACE_N1 on GL_INTERFACE (GROUP_ID);
+
+
+PROMPT ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+PROMPT SUPPRESSION DE INDEX GL_INTERFACE_CAT
+PROMPT ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+DROP INDEX GL_INTERFACE_CAT;
+
+PROMPT ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+PROMPT CREATION DE INDEX GL_INTERFACE_CAT
+PROMPT ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+create index GL_INTERFACE_CAT on GL_INTERFACE (SEGMENT8, SEGMENT7, SEGMENT3, SEGMENT4, SEGMENT6, SEGMENT5, SEGMENT1);
+
+exit 0  

@@ -1,0 +1,52 @@
+--------------------------------------------------
+-- $Id$
+--
+-- CREATION --------------------------------------
+-- 
+-- Auteur : Vincent Knab
+-- 
+-- Date: 16/01/2008
+-- Description du specifique : Création de la sequence DKA_WF_DEBUG_SEQ
+-- 	Version: 1.0.0.0
+--	Entree :
+--              - Parametres   &1 : Username pour la creation de la sequence
+--                             &2 : Password pour la creation de la sequence
+--                             &3 : Username pour affectation des droits et creation des synonymes
+--                             &4 : Password pour creation des synonymes
+--		- Fichiers
+--		- Tables
+--      Sortie :
+--	 	- Parametres
+--		- Fichiers
+--		- Tables
+--------------------------------------------------
+-- Objet modification ----------------------------
+-- Auteur:
+-- Date:
+-- Version:
+-- Description:
+--
+--------------------------------------------------
+WHENEVER SQLERROR CONTINUE
+CONNECT &&1/&&2
+
+CREATE SEQUENCE DKA_WF_DEBUG_SEQ;
+
+PROMPT ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++             
+PROMPT CREATION DES GRANTS                                                                                
+PROMPT ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+GRANT ALL ON DKA_WF_DEBUG_SEQ TO &&3;
+
+PROMPT ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++             
+PROMPT DROP DES SYNONYMES                                                                                
+PROMPT ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+CONNECT &&3/&&4                                                                                          
+
+PROMPT ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++             
+PROMPT CREATE DES SYNONYMES                                                                                
+PROMPT ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+CREATE SYNONYM DKA_WF_DEBUG_SEQ FOR &&1..DKA_WF_DEBUG_SEQ;
+
+EXIT;

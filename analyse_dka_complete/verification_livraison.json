@@ -1,0 +1,22 @@
+{
+  "date": "2026-10-17",
+  "fichiers_inventories": 2702,
+  "fichiers_non_inventories": [],
+  "fichiers_disparus": [],
+  "sources_modifiees_depuis_inventaire": [],
+  "fiches": 1225,
+  "liens_locaux_verifies": 7510,
+  "liens_casses": [],
+  "json_invalides": [],
+  "workflow": {
+    "exports": 12,
+    "activites": 1383,
+    "processus": 244,
+    "instances": 3077,
+    "transitions": 3651
+  },
+  "transitions_cibles_absentes": [],
+  "corps_non_nommes_dans_notes_domaine": [],
+  "execution_traitements_metier": false,
+  "validation_reussie": true
+}

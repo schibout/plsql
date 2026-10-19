@@ -1,0 +1,48 @@
+---------------------------------------------------------------------------------------------- 
+-- $$
+-- CAP GEMINI ERNST AND YOUNG
+-- PROJET           : DALKIA Oracle Applications
+-- NOM              : DKA_SARREFAC_S.seq
+-- DESCRIPTION	    : Création de la séquence DKA_SARREFAC_S
+--
+-- AUTEUR           : Xavier Descamps (CGEY)
+-- DATE DE CREATION : 06/12/2001
+-- DOC. ASSOCIEE    : 
+-- COMMENTAIRE      : A exécuter sous SQLPLUS avec le user DKA
+--                    en lui passant 3 paramètres :
+--                           1) Password APPS
+--------------------------------------------------------------------------------------------
+-- HISTORIQUE DES MODIFICATIONS
+-- Date       Qui Description
+-- ---------- --- -------------------------------------------------------------------------
+-- 
+--------------------------------------------------------------------------------------------
+
+PROMPT ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+PROMPT DROP DE LA SEQUENCE dka_sarsurtaxe_s
+PROMPT ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+DROP SEQUENCE dka_sarsurtaxe_s;
+
+PROMPT ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+PROMPT CREATION DE LA SEQUENCE dka_sarsurtaxe_s
+PROMPT ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+CREATE SEQUENCE dka_sarsurtaxe_s
+INCREMENT BY 1
+START WITH 1 ;
+
+PROMPT ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+PROMPT CREATION DES GRANTS
+PROMPT ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+GRANT ALL ON dka_sarsurtaxe_s TO APPS WITH GRANT OPTION;
+
+
+PROMPT ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+PROMPT CREATION DU SYNONYME
+PROMPT ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+CONNECT APPS/&1
+
+DROP SYNONYM dka_sarsurtaxe_s;
+CREATE SYNONYM dka_sarsurtaxe_s FOR dka.dka_sarsurtaxe_s;
+
+
+EXIT;

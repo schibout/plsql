@@ -1,0 +1,34 @@
+# $Header: H:/developpement/CVSROOT/SPE022\040-\040Refacturation\040automatique/Sources/SARREFAC/load/DKA_SARREFAC.dpt,v 1.2 2004/09/10 13:36:14 sferry Exp $
+
+# -- Begin Entity Definitions --
+
+# 
+LANGUAGE = "US"
+LDRCONFIG = "DKA_XX_PARAM.lct"
+
+DEFINE DKA_PARAMETER
+  KEY   PROGRAM_CODE                    VARCHAR2(50)
+  KEY   PARAMETER_NAME                  VARCHAR2(50)
+  BASE  DESCRIPTION                     VARCHAR2(255)
+  BASE  TABLE_NAME                      VARCHAR2(100)
+  BASE  COLUMN_NAME                     VARCHAR2(100)
+  BASE  DATA_TYPE                       VARCHAR2(100)
+  BASE  VARCHAR2_VALUE                  VARCHAR2(50)
+  BASE  NUMBER_VALUE                    VARCHAR2(30)
+  BASE  DATE_VALUE                      VARCHAR2(19)
+  BASE  BOOLEAN_VALUE                   VARCHAR2(1)
+END DKA_PARAMETER
+
+# -- End Entity Definitions --
+
+
+BEGIN DKA_PARAMETER "SCTLFLUX_EAI" "NOM_FICHIER"
+  DESCRIPTION = "Nom du fichier"
+  TABLE_NAME = ""
+  COLUMN_NAME = ""
+  DATA_TYPE = "VARCHAR2"
+  VARCHAR2_VALUE = "FIN01_CTL_ECRITURES"
+END DKA_PARAMETER
+
+
+

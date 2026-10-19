@@ -1,0 +1,57 @@
+# $Header$
+
+# 
+LANGUAGE = "US"
+LDRCONFIG = "DKA_XX_TRANSCO.lct"
+
+#Source Database HELMAS
+
+#RELEASE_NAME 12.2.4
+
+# -- Begin Entity Definitions -- 
+
+DEFINE DKA_STRANSCO_HEADERS
+  KEY   SET_NAME                        VARCHAR2(50)
+  BASE  DESCRIPTION                     VARCHAR2(240)
+  BASE  PARAM1_NAME                     VARCHAR2(30)
+  BASE  PARAM1_LOV                      VARCHAR2(250)
+  BASE  PARAM1_FLAG                     VARCHAR2(1)
+  BASE  PARAM2_NAME                     VARCHAR2(30)
+  BASE  PARAM2_LOV                      VARCHAR2(250)
+  BASE  PARAM2_FLAG                     VARCHAR2(1)
+  BASE  PARAM3_NAME                     VARCHAR2(30)
+  BASE  PARAM3_LOV                      VARCHAR2(250)
+  BASE  PARAM3_FLAG                     VARCHAR2(1)
+  BASE  RETURN_VALUE_NAME               VARCHAR2(30)
+  BASE  RETURN_VALUE_LOV                VARCHAR2(250)
+  BASE  INACTIVE_DATE                   VARCHAR2(19)
+
+  DEFINE DKA_STRANSCO_LINES
+    KEY   SET_NAME                        VARCHAR2(50)
+    KEY   PARAMS_VALUE                    VARCHAR2(90)
+    BASE  PARAM1_VALUE                    VARCHAR2(30)
+    BASE  PARAM2_VALUE                    VARCHAR2(30)
+    BASE  PARAM3_VALUE                    VARCHAR2(30)
+    BASE  RETURN_VALUE                    VARCHAR2(30)
+    BASE  ENABLE                          VARCHAR2(1)
+    BASE  INACTIVE_DATE                   VARCHAR2(19)
+    BASE  START_DATE                      VARCHAR2(19)
+    BASE  END_DATE                        VARCHAR2(19)
+  END DKA_STRANSCO_LINES
+END DKA_STRANSCO_HEADERS
+
+# -- End Entity Definitions -- 
+
+
+BEGIN DKA_STRANSCO_HEADERS "DKA_CO_MIGR_IVALUA"
+  DESCRIPTION = "Liste des Centres Opérationnels ayant migrés vers IVALUA"
+  PARAM1_NAME = "Centre Finance"
+  PARAM1_FLAG = "Y"
+  PARAM2_FLAG = "N"
+  PARAM3_FLAG = "N"
+  RETURN_VALUE_NAME = "Centre Opérationnel"
+
+ 
+  
+END DKA_STRANSCO_HEADERS
+

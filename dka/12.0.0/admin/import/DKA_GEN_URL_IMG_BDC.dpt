@@ -1,0 +1,55 @@
+# $Header$
+
+# 
+LANGUAGE = "US"
+LDRCONFIG = "DKA_XX_PARAM.lct"
+
+#Source Database HELMAS
+
+#RELEASE_NAME 12.2.4
+
+# -- Begin Entity Definitions -- 
+
+DEFINE DKA_PARAMETER
+  KEY   PROGRAM_CODE                    VARCHAR2(50)
+  KEY   PARAMETER_NAME                  VARCHAR2(50)
+  BASE  DESCRIPTION                     VARCHAR2(255)
+  BASE  TABLE_NAME                      VARCHAR2(100)
+  BASE  COLUMN_NAME                     VARCHAR2(100)
+  BASE  DATA_TYPE                       VARCHAR2(100)
+  BASE  VARCHAR2_VALUE                  VARCHAR2(100)
+  BASE  NUMBER_VALUE                    VARCHAR2(30)
+  BASE  DATE_VALUE                      VARCHAR2(19)
+  BASE  BOOLEAN_VALUE                   VARCHAR2(1)
+END DKA_PARAMETER
+
+# -- End Entity Definitions -- 
+
+
+BEGIN DKA_PARAMETER "DKA_GEN_URL_IMG_BDC" "PARAM1"
+  DESCRIPTION = "Url du serveur PRODUCTION"
+  DATA_TYPE = "VARCHAR2"
+  VARCHAR2_VALUE =
+ "http://oracler12.dalkia.net:8001/OA_HTML/fndgfm.jsp?mode=download_blob"
+END DKA_PARAMETER
+
+BEGIN DKA_PARAMETER "DKA_GEN_URL_IMG_BDC" "PARAM2"
+  DESCRIPTION = "Url du serveur Dacshop EN"
+  DATA_TYPE = "VARCHAR2"
+  VARCHAR2_VALUE =
+ "https://dacshop.dalkia.fr/bare.aspx/en/ord/purchase_order_send/"
+END DKA_PARAMETER
+
+BEGIN DKA_PARAMETER "DKA_GEN_URL_IMG_BDC" "PARAM3"
+  DESCRIPTION = "Url du serveur Dacshop FR"
+  DATA_TYPE = "VARCHAR2"
+  VARCHAR2_VALUE =
+ "https://dacshop.dalkia.fr/bare.aspx/fr/ord/purchase_order_send/"
+END DKA_PARAMETER
+
+BEGIN DKA_PARAMETER "DKA_GEN_URL_IMG_BDC" "PARAM4"
+  DESCRIPTION = "Url du serveur Dacshop Order manage"
+  DATA_TYPE = "VARCHAR2"
+  VARCHAR2_VALUE = "https://dacshop.dalkia.fr/page.aspx/fr/ord/order_manage/"
+END DKA_PARAMETER
+

@@ -1,0 +1,204 @@
+<?xml version = '1.0' encoding = 'UTF-8'?>
+<!--
+  ================================================================================
+  $Header:$
+  Projet         : HELIOS
+  Nom du fichier : DKA_RARPREL_PDF.xml
+  Version        : 1.0
+  Auteur         : Anas RAOUF
+  Description    :  DKA_RARPREL_PDF
+									
+
+  ================================================================================
+  Historique
+  Date        Auteur           Description
+  ==========  ===============  ===================================================
+  29/09/2021  Anas RAOUF	   artf07483481 INC0589333 - SPE140 - SARAVIPRELEV - Modification du format décimal
+  27/12/2021  Anas RAOUF       TASK0162985 : Affichage des montants négatifs dans les avis de prélèvements sur AR(le cas de l’avoir)
+  06/01/2022  Anas RAOUF       INC0617936 : Automatisation des prélèvements clients - Date prélèvements
+  06/04/2022  Anas RAOUF       EDB336
+  06/10/2024  Sara HOUSSAINI    EDB381 
+  ================================================================================
+-->
+
+<dataTemplate name="DKA_RARPREL_PDF" version="1.0">
+
+  <parameters>
+    <parameter name="P_CASH_RECEIPT_ID"                        dataType="NUMBER"      /> 
+    
+  </parameters>
+  <dataQuery>
+    <sqlStatement name="Q_PARAM">
+	<![CDATA[
+	SELECT haou.attribute20 LOGO,
+               hla.Description NOM_SOCIETE,
+               hla.Address_Line_1 ADDRESSE1,
+               hla.Address_Line_2 ADDRESSE2,
+               hla.Address_Line_3 ADDRESSE3,
+               hla.Postal_Code || ' ' || hla.Town_Or_City CP_VILLE,
+               dst.Customer_Name NOM_CLIENT,
+               dst.Counterpartyaddress1 ADDRESSECLI1,
+               dst.Counterpartyaddress2 ADDRESSECLI2,
+               dst.Counterpartyaddress3 ADDRESSECLI3,
+               dst.Counterpartyaddress4 ADDRESSECLI4,
+               dst.Counterpartyzip || ' ' || dst.Counterpartycity CP_CITY,
+               to_char(SYSDATE, 'DD/MM/YYYY') DATEJ,
+               dst.cptysecondaryaccountnumber IBAN_CLIENT,
+               to_char(dst.TRANSACTIONDATE, 'DD/MM/YYYY') DATE_ECHEANCE,
+               fvl.DESCRIPTION  INFO_COMPLEMENTAIRES, --EDB381
+             dst.Sepacreditorschemeid ICS,
+               dst.Sepamandateid RUM 
+          from dka_sarautoprelev_tmp     dst,
+               hr_all_organization_units haou,
+               hr_locations_all          hla,
+                FND_FLEX_VALUES_VL fvl  --EDB381
+         where 1 = 1
+           and fvl.flex_value = dst.region --EDB381
+          and fvl.DESCRIPTION like '%@%'   --EDB381
+           and (('' IS NULL) OR (structured_hierarchy_level IN
+                         (SELECT hierarchy_id
+                          FROM fnd_flex_hierarchies_vl h
+                          WHERE h.flex_value_set_id = fvl.FLEX_VALUE_SET_ID 
+                            AND h.hierarchy_name LIKE '')))  --EDB381
+           and dst.org_id = haou.organization_id
+           and haou.location_id = hla.location_id
+           and fvl.flex_value = dst.region
+           and dst.cashreceiptid = :P_CASH_RECEIPT_ID
+	 ]]> 
+	</sqlStatement>
+	<sqlStatement name="Q_REPORT">
+	<![CDATA[
+		SELECT DISTINCT 
+      SUBSTR(hou.name, 1, 3) region,
+      arca.cash_receipt_id,
+    
+      SUBSTR(hou.name, 4, 4) societe,
+   
+      DECODE(
+        NVL(rctta.type, 'NA'), 
+        'INV', 'Facture',
+        'CM', 'Avoir',
+        al.meaning --EBB 381 SHO
+      ) AS type_piece, 
+    
+  DECODE(
+        NVL(rctta.type, 'NA'), 
+        'INV', rcta.trx_number,
+        'CM', rcta.trx_number,
+       arca2.receipt_number --EBB 381 SHO
+      ) AS  num_piece,--EBB 381 SHO
+      rcta.PURCHASE_ORDER bon_commande,
+      
+      DECODE(
+        NVL(rctta.type, 'NA'), 
+        'INV',TO_CHAR(rcta.TRX_DATE, 'DD/MM/YYYY'),
+        'CM', TO_CHAR(rcta.TRX_DATE, 'DD/MM/YYYY'),
+       TO_CHAR(arca2.RECEIPT_DATE, 'DD/MM/YYYY') --EBB 381 SHO
+      ) AS  date_piece,--EBB 381 SHO
+      TO_CHAR(ps.DUE_DATE, 'DD/MM/YYYY') echeance,
+       case 
+          when ps.amount_due_original < 0 then TO_CHAR (ps.amount_due_original,'fm999G999G999G990D00','NLS_NUMERIC_CHARACTERS='', ''')
+            when ps.amount_due_original BETWEEN 0 AND 1 then '0' || TO_CHAR(ps.amount_due_original,'fm999G999G999D00','NLS_NUMERIC_CHARACTERS = '', ''')
+            else
+            TO_CHAR(ps.amount_due_original,'fm999G999G999D00','NLS_NUMERIC_CHARACTERS = '', ''')
+            end  montant_piece,--replace (ps.amount_due_original,'.',',') ARA
+             case
+          
+        when araa.amount_applied < 0 then TO_CHAR (araa.amount_applied,'fm999G999G999G990D00','NLS_NUMERIC_CHARACTERS='', ''')
+            when araa.amount_applied BETWEEN 0 AND 1 then '0' || TO_CHAR(araa.amount_applied,'fm999G999G999D00','NLS_NUMERIC_CHARACTERS = '', ''')
+            else
+            TO_CHAR(araa.amount_applied,'fm999G999G999D00','NLS_NUMERIC_CHARACTERS = '', ''')
+            end  montant_preleve,--replace (araa.amount_applied,'.',',')  ARA
+             case
+          when arca.amount < 0 then TO_CHAR (arca.amount,'fm999G999G999G990D00','NLS_NUMERIC_CHARACTERS='', ''')
+            when arca.amount BETWEEN 0 AND 1 then '0' || TO_CHAR(arca.amount,'fm999G999G999D00','NLS_NUMERIC_CHARACTERS = '', ''')
+            else
+            TO_CHAR(arca.amount,'fm999G999G999D00','NLS_NUMERIC_CHARACTERS = '', ''')
+            end  montant_total_preleve, --ARA
+             DECODE(arca.currency_code, 'EUR', CHR(164) , arca.currency_code) devise,
+             to_char(arca.receipt_date, 'DD/MM/YYYY') DATE_PRELEVEMNT
+    FROM 
+    
+  
+
+      ar_cash_receipts_all arca 
+    JOIN 
+      ar_receivable_applications_all araa ON araa.cash_receipt_id = arca.cash_receipt_id 
+    
+      
+    LEFT JOIN 
+      ra_customer_trx_all rcta ON araa.APPLIED_CUSTOMER_TRX_ID = rcta.customer_trx_id
+    LEFT JOIN 
+      ar_payment_schedules_all ps ON ps.PAYMENT_SCHEDULE_ID = araa.APPLIED_PAYMENT_SCHEDULE_ID --
+      left join ar_cash_receipts_all arca2 on ps.cash_receipt_id = arca2.cash_receipt_id  -- BNZ
+    JOIN 
+      hr_operating_units hou ON arca.org_id = hou.organization_id --
+    JOIN 
+      ar_receipt_methods arm ON arca.receipt_method_id = arm.receipt_method_id --
+    LEFT JOIN  
+      ra_cust_trx_types_all rctta ON rcta.cust_trx_type_id = rctta.cust_trx_type_id
+    JOIN 
+   
+    AR_LOOKUPS al on al.LOOKUP_CODE = ps.CLASS  -- BNZ
+  
+    Join dka_sarautoprelev_tmp      dst ON dst.cashreceiptid = arca.cash_receipt_id
+    WHERE  arca.status = 'APP'
+      AND arca.type = 'CASH'
+   
+     and al.lookup_TYPE='INV/CM'  --EBB 381 SHO
+      AND arca.confirmed_flag = 'Y'
+      AND EXISTS (
+         SELECT 1 
+         FROM ar_cash_receipt_history_all acrha 
+         WHERE acrha.cash_receipt_id = arca.cash_receipt_id 
+         AND acrha.status = 'REMITTED'
+      )
+       --AND araa.status = 'APP'
+      AND arm.name = 'PRELEVT'
+      AND araa.display='Y'
+			----------
+					  -- Parametres
+				   AND arca.cash_receipt_id = :P_CASH_RECEIPT_ID
+						
+]]>
+</sqlStatement>
+  </dataQuery>
+ <dataStructure>
+   <group   name="G_PARAM"               source="Q_PARAM">   
+        <element name="P_LOGO"                                           dataType="VARCHAR2"  value="LOGO" />
+		<element name="P_NOM_SOCIETE"                                    dataType="VARCHAR2"  value="NOM_SOCIETE" />
+		<element name="P_ADDRESSE1"                                      dataType="VARCHAR2"  value="ADDRESSE1" />
+		<element name="P_ADDRESSE2"                                      dataType="VARCHAR2"  value="ADDRESSE2" />
+		<element name="P_ADDRESSE3"                                      dataType="VARCHAR2"  value="ADDRESSE3" />
+		<element name="P_CP_VILLE"                                       dataType="VARCHAR2"  value="CP_VILLE" />
+		<element name="P_NOM_CLIENT"                                     dataType="VARCHAR2"  value="NOM_CLIENT" />
+		<element name="P_ADDRESSECLI1"                                   dataType="VARCHAR2"  value="ADDRESSECLI1" />
+		<element name="P_ADDRESSECLI2"                                   dataType="VARCHAR2"  value="ADDRESSECLI2" />
+		<element name="P_ADDRESSECLI3"                                   dataType="VARCHAR2"  value="ADDRESSECLI3" />
+		<element name="P_ADDRESSECLI4"                                   dataType="VARCHAR2"  value="ADDRESSECLI4" />
+		<element name="P_CP_CITY"                                        dataType="VARCHAR2"  value="CP_CITY" />
+		<element name="P_DATEJ"                                          dataType="DATE"      value="DATEJ" />
+		<element name="P_IBAN_CLIENT"                                    dataType="VARCHAR2"  value="IBAN_CLIENT" />
+		<element name="P_DATE_ECHEANCE"                                  dataType="DATE"      value="DATE_ECHEANCE" />
+		<element name="P_INFO_COMPLEMENTAIRES "                          dataType="VARCHAR2"      value="INFO_COMPLEMENTAIRES" />
+		<element name="P_ICS"                                            dataType="VARCHAR2"  value="ICS" />
+		<element name="P_RUM"                                            dataType="VARCHAR2"  value="RUM" />
+   </group>   
+   <group   name="G_REPORT"               source="Q_REPORT">
+        <element name="R_type_piece"                                	 dataType="VARCHAR2"  value="type_piece" />
+        <element name="R_num_piece"                                 	 dataType="VARCHAR2"  value="num_piece" /> 
+		<element name="R_BON_COMMANDE"                                 	 dataType="VARCHAR2"  value="bon_commande" /> 
+        <element name="R_date_piece"                                	 dataType="DATE"      value="date_piece" /> 
+        <element name="R_echeance"                                  	 dataType="DATE"      value="echeance" /> 
+        <element name="R_montant_piece"                             	 dataType="VARCHAR2"  value="montant_piece" /> 
+        <element name="R_montant_preleve"                           	 dataType="VARCHAR2"  value="montant_preleve" /> 
+		<element name="R_montant_total_preleve"                     	 dataType="VARCHAR2"  value="montant_total_preleve" />		
+        <element name="R_devise"                                      	 dataType="VARCHAR2"  value="devise" />  
+		<element name="R_DATE_PRELEVEMNT"                          	  	 dataType="DATE"      value="DATE_PRELEVEMNT" />
+  </group>
+  <group name="FFBL2"  source="Q2">
+	<element name="Entete" 					        	value="Entete"/>
+	<element name="Pied" 					        	value="Pied"/>
+  </group>
+  </dataStructure>
+  </dataTemplate>

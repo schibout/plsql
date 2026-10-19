@@ -1,0 +1,40 @@
+------------------------------------------------------------------------------------
+-- $Id: DKA_RCV_HEADERS_TMP.ind $
+-- Capgemini
+-- PROJET            : DALKIA
+-- NOM               : DKA_RCV_HEADERS_TMP.ind
+-- DESCRIPTION       : Création des index de la table specifique DKA_RCV_HEADERS_TMP
+---
+--- AUTEUR           : R.BELAYACHI (Capgemini)
+--- DATE DE CREATION : 05/12/2016
+--- DOC. ASSOCIEE    : 
+--- COMMENTAIRE      : A exécuter sous SQLPLUS avec le user schema
+--                     en lui passant en paramètre :
+-- Commentaires     : À exécuter sous SQLPLUS avec l'utilisateur DKA en 
+--                    passant en paramètres
+--                    1- Password APPS
+--                    2- Tablespace des index pour le schéma APPLSYSX
+------------------------------------------------------------------------------------
+--- HISTORIQUE DES MODIFICATIONS
+--- Date       Qui Description
+--- ---------- --- -----------------------------------------------------------------
+---
+------------------------------------------------------------------------------------
+
+CONNECT APPS/&1
+PROMPT +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+PROMPT CREATION DE INDEX DKA_RCV_HEADERS_TMP_N1
+PROMPT +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+DROP INDEX DKA.DKA_RCV_HEADERS_TMP_N1;
+
+
+
+PROMPT +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+PROMPT CREATION DE INDEX DKA_RCV_HEADERS_TMP_N1
+PROMPT +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+CREATE INDEX DKA.DKA_RCV_HEADERS_TMP_N1        ON DKA.DKA_RCV_HEADERS_TMP ( Receipt_Num )  TABLESPACE &2; 
+
+
+
+
+EXIT

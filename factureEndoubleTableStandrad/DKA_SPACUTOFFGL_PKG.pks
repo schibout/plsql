@@ -1,0 +1,35 @@
+--------------------------------------------------------------------------------
+-- $$
+-- Capgemini
+-- Projet           : Automatisation extraction des SQLs du matin
+-- Nom              : DKA_SAPFRS_MAJ_SITES_S.seq
+-- Description      : Script de création de la sequence de la table
+--                    DKA_SAPFRS_SITES
+-- Auteur           : Saloua HAHIOUI (Capgemini)
+-- Date de création : 23/12/2021
+-- Doc. associée    :
+-- Commentaires     : À exécuter sous SQLPLUS avec l'utilisateur DKA en 
+--                    passant en paramètres
+--                    1- Password APPS
+--                    2- Password DKA
+--                    3- Tablespace des données pour le schéma DKA
+--------------------------------------------------------------------------------
+-- Historique
+-- Date       Qui Description
+-- ---------- --- --------------------------------------------------------------             
+--------------------------------------------------------------------------------------------              
+
+CONNECT &&1/&&2
+
+--PROMPT +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+--PROMPT DROP DE LA SEQUENCE DKA_SAPFRS_MAJ_SITES_S
+--PROMPT +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+DROP SEQUENCE DKA_SAPFRS_MAJ_SITES_S;
+
+
+CREATE SEQUENCE DKA_SAPFRS_MAJ_SITES_S INCREMENT BY 1
+START WITH 1;       
+GRANT ALL ON dka.DKA_SAPFRS_MAJ_SITES_S  TO apps WITH GRANT OPTION;
+
+
+EXIT;

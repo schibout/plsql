@@ -1,0 +1,198 @@
+<?xml version = '1.0' encoding = 'UTF-8'?>
+<!--
+  ================================================================================
+  $Header:$
+  Projet         : HELIOS
+  Nom du fichier : DKA_RAR_PRELEVCLINET.xml
+  Version        : 1.0
+  Cree le        : 22/10/2019
+  Auteur         : 
+  Description    :  DKA_RAR_PRELEVCLINET
+									
+
+  ================================================================================
+  Historique
+  Date        Auteur           Description
+  ==========  ===============  ===================================================
+  05/04/2022  Anas RAOUF       EDB336
+
+  ================================================================================
+-->
+
+<dataTemplate name="DKA_RAR_PRELEVCLINET" version="1.0">
+
+  <parameters>
+    <parameter name="P_DATE"                        dataType="DATE"      /> 
+    <parameter name="P_REGION"                      dataType="VARCHAR2"  />
+ 
+  </parameters>
+  <dataQuery>
+    <sqlStatement name="Q_PARAM">
+	<![CDATA[
+	select TO_CHAR(:P_DATE,'DD/MM/YYYY') PP_DATE from DUAL
+	 ]]> 
+	</sqlStatement>
+	<sqlStatement name="Q_REPORT">
+	<![CDATA[
+SELECT substr(hou.name, 1, 3) region,
+       substr(hou.name, 4, 4) societe,
+       aba.name,
+       detail_fact.num_client,
+       detail_fact.nom_client,
+       detail_fact.lieu,
+       detail_fact.type_piece,
+       detail_fact.num_facture,
+	   detail_fact.bon_commande bon_commande, --EDB336 ARA
+       detail_fact.trx_date,
+       detail_fact.due_date,
+       detail_fact.montant_piece,
+       detail_fact.montant_preleve,
+       detail_fact.mt_total,
+       aba.batch_date,
+       detail_fact.compte_bancaire,
+       detail_fact.code_rum,
+       detail_fact.bank_name,
+       detail_fact.compte_bancaire_remise,
+       TO_CHAR(:P_DATE,'DD/MM/YYYY') date_prelevement
+  FROM (SELECT aba.batch_id,
+               hca.ACCOUNT_NUMBER num_client,
+               hp.PARTY_NAME nom_client,
+               hcsua.LOCATION lieu,
+               DECODE(rctta.type, 'INV', 'Facture', 'CM', 'Avoir', rctta.name) type_piece,
+               rcta.trx_number num_facture,
+			   rcta.PURCHASE_ORDER bon_commande, --EDB336 ARA
+               TO_CHAR(rcta.TRX_DATE, 'DD/MM/YYYY') TRX_DATE,
+               TO_CHAR(ps.DUE_DATE, 'DD/MM/YYYY') DUE_DATE,
+               ps.amount_due_original montant_piece,
+               ps.amount_due_remaining montant_preleve,
+               lot.mt_total,
+               instr_infos.iban compte_bancaire,
+               instr_infos.authorization_reference_number code_rum,
+               bank_infos.bank_name,
+               bank_infos.BANK_ACCOUNT_NAME compte_bancaire_remise
+          from hz_cust_accounts         hca,
+               hz_cust_site_uses_all    hcsua,
+               ra_customer_trx_all      rcta,
+               ar_payment_schedules_all ps,
+               hr_operating_units       hou,
+               AR_RECEIPT_METHODS       ARM,
+               HZ_PARTIES               hp,
+               ar.hz_customer_profiles  hcp,
+               ar_batches_all           aba,
+               ra_cust_trx_types_all    rctta,
+               ----------------
+               (SELECT arma.org_id, CEA.BANK_ACCOUNT_NAME, CBB.bank_name
+                  FROM AR_RECEIPT_METHODS             arm1,
+                       ar_receipt_method_accounts_all arma,
+                       CE_BANK_ACCT_USES_ALL          cbaua,
+                       CE_BANK_ACCOUNTS               CEA,
+                       ce_bank_branches_v             CBB
+                 WHERE ARM1.NAME = 'PRELEVT'
+                   AND ARM1.receipt_method_id = ARMA.receipt_method_id
+                   AND arma.primary_flag = 'Y'
+                   AND arma.REMIT_BANK_ACCT_USE_ID(+) =
+                       cbaua.BANK_ACCT_USE_ID
+                   AND cbaua.BANK_ACCOUNT_ID = CEA.bank_account_id
+                   AND cbb.bank_party_id = cea.bank_id
+                   AND cbb.branch_party_id = cea.bank_branch_id) bank_infos,
+               ----------------
+               (SELECT ieba.bank_id,
+                       ieba.branch_id,
+                       ieba.iban,
+                       ieba.bank_account_num,
+                       ida.authorization_reference_number,
+                       extn.TRXN_EXTENSION_ID
+                  FROM iby_ext_bank_accounts    ieba,
+                       iby_pmt_instr_uses_all   u,
+                       iby_fndcpt_tx_extensions extn,
+                       IBY_DEBIT_AUTHORIZATIONS ida
+                 WHERE ieba.ext_bank_account_id = u.instrument_id
+                   AND extn.instr_assignment_id = u.instrument_payment_use_id
+                   AND u.payment_function = 'CUSTOMER_PAYMENT'
+                   AND extn.trxn_ref_number1 = 'TRANSACTION'
+                   AND extn.payment_channel_code = 'BANK_ACCT_XFER'
+                   AND extn.DEBIT_AUTHORIZATION_ID =
+                       ida.debit_authorization_id(+)) instr_infos,
+               ----------------
+               (SELECT batch_id, sum(apsa.amount_due_remaining) mt_total
+                  FROM ar_batches_all aba2, ar_payment_schedules_all apsa
+                 WHERE aba2.batch_id = apsa.selected_for_receipt_batch_id
+                 GROUP BY batch_id) lot,
+               ---------------------------
+               XLE_ENTITY_PROFILES xep
+         where 1 = 1
+           AND hca.cust_account_id = rcta.BILL_TO_CUSTOMER_ID
+           AND hp.PARTY_ID = hca.PARTY_ID
+           AND rcta.ORG_ID = hou.organization_id
+           AND ps.CUSTOMER_TRX_ID = rcta.CUSTOMER_TRX_ID
+           AND NVL(ps.amount_due_remaining, 0) <> 0
+           AND ARM.RECEIPT_METHOD_ID = rcta.RECEIPT_METHOD_ID
+           AND ARM.NAME = 'PRELEVT'
+              ---------------------------
+           AND hcp.party_id = hp.party_id
+           AND hca.cust_account_id = hcp.cust_account_id
+           AND hcp.site_use_id IS NULL
+           AND hcsua.site_use_id = rcta.bill_to_site_use_id
+              ------------------BANQUE UO---------
+           AND hou.organization_id = bank_infos.org_id(+)
+              ----------------------IBAN CUSTOMER ----------------
+           AND rcta.payment_trxn_extension_id =
+               instr_infos.TRXN_EXTENSION_ID(+)
+              --------------------------------------------------------
+           AND xep.legal_entity_id = hou.default_legal_context_id
+              --------------------------------------------------------
+           AND aba.batch_id = ps.selected_for_receipt_batch_id
+           AND rcta.cust_trx_type_id = rctta.cust_trx_type_id
+           AND aba.batch_id = lot.batch_id
+              ----------------------Parameters-------------------------
+           AND trunc(aba.batch_date) <= trunc(:P_DATE) -- Date echeance
+           AND substr(hou.name, 1, 3) = :P_REGION --Region
+        ) detail_fact,
+       ar_batches_all aba,
+       hr_operating_units hou,
+       ar_receipt_methods arm
+WHERE aba.batch_id = detail_fact.batch_id(+)
+   AND aba.org_id = hou.organization_id
+   AND trunc(aba.batch_date) <= trunc(:P_DATE)
+   AND substr(hou.name, 1, 3) = :P_REGION
+   AND aba.BATCH_APPLIED_STATUS IN
+       ('COMPLETED_CREATION', 'COMPLETED_FORMAT')
+   AND aba.type = 'CREATION'
+   AND aba.receipt_method_id = arm.receipt_method_id
+   AND arm.name = 'PRELEVT'
+order by substr(hou.name, 1, 3), substr(hou.name, 4, 4), aba.name
+
+
+  ]]> 
+  </sqlStatement>
+  </dataQuery>
+ <dataStructure>
+   <group   name="G_PARAM"               source="Q_PARAM">   
+        <element name="PP_DATE"                                           dataType="VARCHAR2"  value="PP_DATE" />
+   </group>   
+   <group   name="G_REPORT"               source="Q_REPORT">
+        <element name="R_date_prelevement"                                dataType="VARCHAR2"  value="date_prelevement" />
+        <element name="R_REGION"                                          dataType="VARCHAR2"  value="region" /> 
+        <element name="R_SOCIETE"                                         dataType="VARCHAR2"  value="societe" /> 
+        <element name="R_NAME"                                            dataType="VARCHAR2"  value="name" /> 
+        <element name="R_num_client"                                      dataType="VARCHAR2"  value="num_client" /> 
+        <element name="R_nom_client"                                      dataType="VARCHAR2"  value="nom_client" /> 
+		<element name="R_LIEU"                                      	  dataType="VARCHAR2"  value="lieu" />		
+        <element name="R_type_piece"                                      dataType="VARCHAR2"  value="type_piece" />  
+        <element name="R_num_facture"                                     dataType="VARCHAR2"  value="num_facture" /> 
+		<element name="R_BON_COMMANDE"                                    dataType="VARCHAR2"  value="bon_commande" />
+        <element name="R_TRX_DATE"                                        dataType="VARCHAR2"  value="TRX_DATE" /> 
+        <element name="R_DUE_DATE"                                        dataType="VARCHAR2"  value="DUE_DATE" /> 
+        <element name="R_montant_piece"                                   dataType="VARCHAR2"  value="montant_piece" />   
+        <element name="R_montant_preleve"                                 dataType="VARCHAR2"  value="montant_preleve" />    
+        <element name="R_mt_total"                                        dataType="VARCHAR2"  value="mt_total" />   
+        <element name="R_batch_date"                                      dataType="VARCHAR2"  value="batch_date" /> 	
+        <element name="R_compte_bancaire"                                 dataType="VARCHAR2"  value="compte_bancaire" />			
+        <element name="R_code_rum"                                        dataType="VARCHAR2"  value="code_rum" />
+        <element name="R_bank_name"                                       dataType="VARCHAR2"  value="bank_name" />
+		<element name="compte_bancaire_remise"                            dataType="VARCHAR2"  value="compte_bancaire_remise" />
+  	 
+
+  </group>
+  </dataStructure>
+  </dataTemplate>

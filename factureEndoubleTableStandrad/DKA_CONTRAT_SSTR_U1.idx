@@ -1,0 +1,49 @@
+----------------------------------------------------------------------------------------------      
+-- $Id$                                                                                            
+-- Capgemini                                                                     
+-- PROJET           : DALKIA Oracle Applications                                                    
+-- NOM              : DKA_CONTRAT_SSTR_IMPUTATION_S.seq                                                            
+-- DESCRIPTION      : Création de la séquence  DKA_CONTRAT_SSTR_IMPUTATION_S                                                                                                              
+-- AUTEUR           : V. KNAB                                                              
+-- DATE DE CREATION : 10/09/2007                                                                       
+-- DOC. ASSOCIEE    :                                                                               
+-- COMMENTAIRE      : A exécuter sous SQLPLUS avec le user DKA                                      
+--                    en lui passant 4 paramètres :                                                 
+--                           1) login DKA                                                        
+--                           2) Password DKA           
+--                           3) login APPS         
+--                           4) Password APPS                                                            
+--                                                       
+--------------------------------------------------------------------------------------------        
+-- HISTORIQUE DES MODIFICATIONS                                                                     
+-- Date       Qui Description                                                                       
+-- ---------- --- -------------------------------------------------------------------------         
+-- 24/03/2016 RBE Migration R12
+--------------------------------------------------------------------------------------------   
+WHENEVER SQLERROR CONTINUE
+CONNECT &&1/&&2
+
+drop sequence DKA_CONTRAT_SSTR_IMPUTATION_S;
+
+create sequence DKA_CONTRAT_SSTR_IMPUTATION_S;
+
+PROMPT ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++             
+PROMPT CREATION DES GRANTS                                                                                
+PROMPT ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+GRANT ALL ON DKA_CONTRAT_SSTR_IMPUTATION_S TO &&3;
+
+PROMPT ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++             
+PROMPT DROP DES SYNONYMES                                                                                
+PROMPT ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+CONNECT &&3/&&4                                                                                          
+
+PROMPT ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++             
+PROMPT CREATE DES SYNONYMES                                                                                
+PROMPT ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+drop SYNONYM DKA_CONTRAT_SSTR_IMPUTATION_S;
+
+CREATE SYNONYM DKA_CONTRAT_SSTR_IMPUTATION_S FOR &&1..DKA_CONTRAT_SSTR_IMPUTATION_S;
+
+EXIT;

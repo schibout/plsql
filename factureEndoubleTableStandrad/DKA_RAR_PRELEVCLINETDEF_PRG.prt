@@ -1,0 +1,96 @@
+# $Header$
+
+# 
+LANGUAGE = "US"
+LDRCONFIG = "DKA_XX_TRANSCO.lct"
+
+#Source Database HELINT
+
+#RELEASE_NAME 12.2.4
+
+# -- Begin Entity Definitions -- 
+
+DEFINE DKA_STRANSCO_HEADERS
+  KEY   SET_NAME                        VARCHAR2(50)
+  BASE  DESCRIPTION                     VARCHAR2(240)
+  BASE  PARAM1_NAME                     VARCHAR2(30)
+  BASE  PARAM1_LOV                      VARCHAR2(250)
+  BASE  PARAM1_FLAG                     VARCHAR2(1)
+  BASE  PARAM2_NAME                     VARCHAR2(30)
+  BASE  PARAM2_LOV                      VARCHAR2(250)
+  BASE  PARAM2_FLAG                     VARCHAR2(1)
+  BASE  PARAM3_NAME                     VARCHAR2(30)
+  BASE  PARAM3_LOV                      VARCHAR2(250)
+  BASE  PARAM3_FLAG                     VARCHAR2(1)
+  BASE  RETURN_VALUE_NAME               VARCHAR2(30)
+  BASE  RETURN_VALUE_LOV                VARCHAR2(250)
+  BASE  INACTIVE_DATE                   VARCHAR2(19)
+
+  DEFINE DKA_STRANSCO_LINES
+    KEY   SET_NAME                        VARCHAR2(50)
+    KEY   PARAMS_VALUE                    VARCHAR2(90)
+    BASE  PARAM1_VALUE                    VARCHAR2(30)
+    BASE  PARAM2_VALUE                    VARCHAR2(30)
+    BASE  PARAM3_VALUE                    VARCHAR2(30)
+    BASE  RETURN_VALUE                    VARCHAR2(30)
+    BASE  ENABLE                          VARCHAR2(1)
+    BASE  INACTIVE_DATE                   VARCHAR2(19)
+    BASE  START_DATE                      VARCHAR2(19)
+    BASE  END_DATE                        VARCHAR2(19)
+  END DKA_STRANSCO_LINES
+END DKA_STRANSCO_HEADERS
+
+# -- End Entity Definitions -- 
+
+
+BEGIN DKA_STRANSCO_HEADERS "FUSION_COMPTES_GEN"
+  DESCRIPTION = "Comptes génériques transco"
+  PARAM1_NAME = "Module"
+  PARAM1_FLAG = "Y"
+  PARAM2_NAME = "Segment"
+  PARAM2_FLAG = "Y"
+  PARAM3_FLAG = "N"
+  RETURN_VALUE_NAME = "Compte générique"
+
+  BEGIN DKA_STRANSCO_LINES "FUSION_COMPTES_GEN" "APCompte groupe"
+    PARAM1_VALUE = "AP"
+    PARAM2_VALUE = "Compte groupe"
+    RETURN_VALUE = "25020"
+    ENABLE = "Y"
+    START_DATE = "31/12/2016 00:00:00"
+  END DKA_STRANSCO_LINES
+  
+  BEGIN DKA_STRANSCO_LINES "FUSION_COMPTES_GEN" "APCompte local"
+    PARAM1_VALUE = "AP"
+    PARAM2_VALUE = "Compte local"
+    RETURN_VALUE = "40110F"
+    ENABLE = "Y"
+    START_DATE = "31/12/2016 00:00:00"
+  END DKA_STRANSCO_LINES
+  
+  BEGIN DKA_STRANSCO_LINES "FUSION_COMPTES_GEN" "ARCompte groupe"
+    PARAM1_VALUE = "AR"
+    PARAM2_VALUE = "Compte groupe"
+    RETURN_VALUE = "14100"
+    ENABLE = "Y"
+    START_DATE = "01/08/2019 00:00:00"
+  END DKA_STRANSCO_LINES
+  
+  BEGIN DKA_STRANSCO_LINES "FUSION_COMPTES_GEN" "ARCompte local client"
+    PARAM1_VALUE = "AR"
+    PARAM2_VALUE = "Compte local client"
+    RETURN_VALUE = "41110F"
+    ENABLE = "Y"
+    START_DATE = "01/08/2019 00:00:00"
+  END DKA_STRANSCO_LINES
+  
+  BEGIN DKA_STRANSCO_LINES "FUSION_COMPTES_GEN" "ARCompte local douteux"
+    PARAM1_VALUE = "AR"
+    PARAM2_VALUE = "Compte local douteux"
+    RETURN_VALUE = "41600F"
+    ENABLE = "Y"
+    START_DATE = "01/08/2019 00:00:00"
+  END DKA_STRANSCO_LINES
+  
+END DKA_STRANSCO_HEADERS
+

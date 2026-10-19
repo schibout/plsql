@@ -1,0 +1,10 @@
+{
+  "date": "2026-10-17",
+  "source_files": 193,
+  "sql_files": 159,
+  "readme_files": 34,
+  "sources_modified": [],
+  "broken_document_links": [],
+  "sql_executed": false,
+  "scope": "Static inventory and targeted semantic review; no database validation"
+}

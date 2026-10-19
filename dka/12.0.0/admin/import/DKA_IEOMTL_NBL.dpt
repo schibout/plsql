@@ -1,0 +1,39 @@
+# $Header$
+
+# 
+LANGUAGE = "F"
+LDRCONFIG = "DKA_XX_PARAM.lct"
+
+#Source Database HELDEV
+
+#RELEASE_NAME 12.2.4
+
+# -- Begin Entity Definitions -- 
+
+DEFINE DKA_PARAMETER
+  KEY   PROGRAM_CODE                    VARCHAR2(50)
+  KEY   PARAMETER_NAME                  VARCHAR2(50)
+  BASE  DESCRIPTION                     VARCHAR2(255)
+  BASE  TABLE_NAME                      VARCHAR2(100)
+  BASE  COLUMN_NAME                     VARCHAR2(100)
+  BASE  DATA_TYPE                       VARCHAR2(100)
+  BASE  VARCHAR2_VALUE                  VARCHAR2(100)
+  BASE  NUMBER_VALUE                    VARCHAR2(30)
+  BASE  DATE_VALUE                      VARCHAR2(19)
+  BASE  BOOLEAN_VALUE                   VARCHAR2(1)
+END DKA_PARAMETER
+
+# -- End Entity Definitions -- 
+
+
+BEGIN DKA_PARAMETER "DKA_IEOMTL_NBL" "NBRE_LIGNES_LOT"
+  DESCRIPTION = "Nombre de lignes à insérer par lot"
+  DATA_TYPE = "NUMBER"
+  NUMBER_VALUE = "2000"
+END DKA_PARAMETER
+
+BEGIN DKA_PARAMETER "DKA_IEOMTL_NBL" "CALCUL_STATS"
+  DESCRIPTION = "Activation/désactivation stats (1 = Activé; 2 = Désactivé)"
+  DATA_TYPE = "NUMBER"
+  NUMBER_VALUE = "2"
+END DKA_PARAMETER

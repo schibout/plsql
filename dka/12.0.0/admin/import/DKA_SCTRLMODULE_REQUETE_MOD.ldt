@@ -1,0 +1,1702 @@
+# $Header$
+
+# dbdrv: exec fnd bin FNDLOAD bin &phase=daa+56 checkfile:~PROD:~PATH:~FILE &ui_apps 0 Y UPLOAD @FND:patch/115/import/afffload.lct @~PROD:~PATH/~FILE
+LANGUAGE = "F"
+LDRCONFIG = "afffload.lct 120.19.12020000.6"
+
+#Source Database HELMAS
+
+#RELEASE_NAME 12.2.4
+
+# -- Begin Entity Definitions -- 
+
+DEFINE VALUE_SET
+  KEY   FLEX_VALUE_SET_NAME             VARCHAR2(60)
+  CTX   OWNER                           VARCHAR2(4000)
+  CTX   LAST_UPDATE_DATE                VARCHAR2(50)
+  BASE  VALIDATION_TYPE                 VARCHAR2(1)
+  BASE  PROTECTED_FLAG                  VARCHAR2(1)
+  BASE  SECURITY_ENABLED_FLAG           VARCHAR2(1)
+  BASE  LONGLIST_FLAG                   VARCHAR2(1)
+  BASE  FORMAT_TYPE                     VARCHAR2(1)
+  BASE  MAXIMUM_SIZE                    VARCHAR2(50)
+  BASE  NUMBER_PRECISION                VARCHAR2(50)
+  BASE  ALPHANUMERIC_ALLOWED_FLAG       VARCHAR2(1)
+  BASE  UPPERCASE_ONLY_FLAG             VARCHAR2(1)
+  BASE  NUMERIC_MODE_ENABLED_FLAG       VARCHAR2(1)
+  BASE  MINIMUM_VALUE                   VARCHAR2(150)
+  BASE  MAXIMUM_VALUE                   VARCHAR2(150)
+  BASE  PARENT_FLEX_VALUE_SET_NAME      VARCHAR2(60)
+  BASE  DEPENDANT_DEFAULT_VALUE         VARCHAR2(60)
+  BASE  DEPENDANT_DEFAULT_MEANING       VARCHAR2(240)
+  TRANS DESCRIPTION                     VARCHAR2(240)
+
+  DEFINE VSET_VALUE
+    KEY   PARENT_FLEX_VALUE_LOW           VARCHAR2(60)
+    KEY   FLEX_VALUE                      VARCHAR2(150)
+    CTX   OWNER                           VARCHAR2(4000)
+    CTX   LAST_UPDATE_DATE                VARCHAR2(50)
+    BASE  ENABLED_FLAG                    VARCHAR2(1)
+    BASE  SUMMARY_FLAG                    VARCHAR2(1)
+    BASE  START_DATE_ACTIVE               VARCHAR2(50)
+    BASE  END_DATE_ACTIVE                 VARCHAR2(50)
+    BASE  PARENT_FLEX_VALUE_HIGH          VARCHAR2(60)
+    BASE  ROLLUP_HIERARCHY_CODE           VARCHAR2(30)
+    BASE  HIERARCHY_LEVEL                 VARCHAR2(50)
+    BASE  COMPILED_VALUE_ATTRIBUTES       VARCHAR2(2000)
+    BASE  VALUE_CATEGORY                  VARCHAR2(30)
+    BASE  ATTRIBUTE1                      VARCHAR2(240)
+    BASE  ATTRIBUTE2                      VARCHAR2(240)
+    BASE  ATTRIBUTE3                      VARCHAR2(240)
+    BASE  ATTRIBUTE4                      VARCHAR2(240)
+    BASE  ATTRIBUTE5                      VARCHAR2(240)
+    BASE  ATTRIBUTE6                      VARCHAR2(240)
+    BASE  ATTRIBUTE7                      VARCHAR2(240)
+    BASE  ATTRIBUTE8                      VARCHAR2(240)
+    BASE  ATTRIBUTE9                      VARCHAR2(240)
+    BASE  ATTRIBUTE10                     VARCHAR2(240)
+    BASE  ATTRIBUTE11                     VARCHAR2(240)
+    BASE  ATTRIBUTE12                     VARCHAR2(240)
+    BASE  ATTRIBUTE13                     VARCHAR2(240)
+    BASE  ATTRIBUTE14                     VARCHAR2(240)
+    BASE  ATTRIBUTE15                     VARCHAR2(240)
+    BASE  ATTRIBUTE16                     VARCHAR2(240)
+    BASE  ATTRIBUTE17                     VARCHAR2(240)
+    BASE  ATTRIBUTE18                     VARCHAR2(240)
+    BASE  ATTRIBUTE19                     VARCHAR2(240)
+    BASE  ATTRIBUTE20                     VARCHAR2(240)
+    BASE  ATTRIBUTE21                     VARCHAR2(240)
+    BASE  ATTRIBUTE22                     VARCHAR2(240)
+    BASE  ATTRIBUTE23                     VARCHAR2(240)
+    BASE  ATTRIBUTE24                     VARCHAR2(240)
+    BASE  ATTRIBUTE25                     VARCHAR2(240)
+    BASE  ATTRIBUTE26                     VARCHAR2(240)
+    BASE  ATTRIBUTE27                     VARCHAR2(240)
+    BASE  ATTRIBUTE28                     VARCHAR2(240)
+    BASE  ATTRIBUTE29                     VARCHAR2(240)
+    BASE  ATTRIBUTE30                     VARCHAR2(240)
+    BASE  ATTRIBUTE31                     VARCHAR2(240)
+    BASE  ATTRIBUTE32                     VARCHAR2(240)
+    BASE  ATTRIBUTE33                     VARCHAR2(240)
+    BASE  ATTRIBUTE34                     VARCHAR2(240)
+    BASE  ATTRIBUTE35                     VARCHAR2(240)
+    BASE  ATTRIBUTE36                     VARCHAR2(240)
+    BASE  ATTRIBUTE37                     VARCHAR2(240)
+    BASE  ATTRIBUTE38                     VARCHAR2(240)
+    BASE  ATTRIBUTE39                     VARCHAR2(240)
+    BASE  ATTRIBUTE40                     VARCHAR2(240)
+    BASE  ATTRIBUTE41                     VARCHAR2(240)
+    BASE  ATTRIBUTE42                     VARCHAR2(240)
+    BASE  ATTRIBUTE43                     VARCHAR2(240)
+    BASE  ATTRIBUTE44                     VARCHAR2(240)
+    BASE  ATTRIBUTE45                     VARCHAR2(240)
+    BASE  ATTRIBUTE46                     VARCHAR2(240)
+    BASE  ATTRIBUTE47                     VARCHAR2(240)
+    BASE  ATTRIBUTE48                     VARCHAR2(240)
+    BASE  ATTRIBUTE49                     VARCHAR2(240)
+    BASE  ATTRIBUTE50                     VARCHAR2(240)
+    BASE  ATTRIBUTE_SORT_ORDER            VARCHAR2(50)
+    TRANS FLEX_VALUE_MEANING              VARCHAR2(150)
+    TRANS DESCRIPTION                     VARCHAR2(240)
+
+    DEFINE VSET_VALUE_QUAL_VALUE
+      KEY   ID_FLEX_APPLICATION_SHORT_NAME  VARCHAR2(50)
+      KEY   ID_FLEX_CODE                    VARCHAR2(4)
+      KEY   SEGMENT_ATTRIBUTE_TYPE          VARCHAR2(30)
+      KEY   VALUE_ATTRIBUTE_TYPE            VARCHAR2(30)
+      CTX   OWNER                           VARCHAR2(4000)
+      CTX   LAST_UPDATE_DATE                VARCHAR2(50)
+      BASE  COMPILED_VALUE_ATTRIBUTE_VALUE  VARCHAR2(2000)
+    END VSET_VALUE_QUAL_VALUE
+
+      DEFINE VSET_VALUE_HIERARCHY
+        KEY   RANGE_ATTRIBUTE                 VARCHAR2(1)
+        KEY   CHILD_FLEX_VALUE_LOW            VARCHAR2(60)
+        KEY   CHILD_FLEX_VALUE_HIGH           VARCHAR2(60)
+        CTX   OWNER                           VARCHAR2(4000)
+        CTX   LAST_UPDATE_DATE                VARCHAR2(50)
+        BASE  START_DATE_ACTIVE               VARCHAR2(50)
+        BASE  END_DATE_ACTIVE                 VARCHAR2(50)
+      END VSET_VALUE_HIERARCHY
+  END VSET_VALUE
+
+    DEFINE VSET_QUALIFIER
+      KEY   ID_FLEX_APPLICATION_SHORT_NAME  VARCHAR2(50)
+      KEY   ID_FLEX_CODE                    VARCHAR2(4)
+      KEY   SEGMENT_ATTRIBUTE_TYPE          VARCHAR2(30)
+      KEY   VALUE_ATTRIBUTE_TYPE            VARCHAR2(30)
+      CTX   OWNER                           VARCHAR2(4000)
+      CTX   LAST_UPDATE_DATE                VARCHAR2(50)
+      BASE  ASSIGNMENT_ORDER                VARCHAR2(50)
+      BASE  ASSIGNMENT_DATE                 VARCHAR2(50)
+    END VSET_QUALIFIER
+
+      DEFINE VSET_ROLLUP_GROUP
+        KEY   HIERARCHY_CODE                  VARCHAR2(30)
+        CTX   OWNER                           VARCHAR2(4000)
+        CTX   LAST_UPDATE_DATE                VARCHAR2(50)
+        TRANS HIERARCHY_NAME                  VARCHAR2(30)
+        TRANS DESCRIPTION                     VARCHAR2(240)
+      END VSET_ROLLUP_GROUP
+
+        DEFINE VSET_SECURITY_RULE
+          KEY   FLEX_VALUE_RULE_NAME            VARCHAR2(30)
+          KEY   PARENT_FLEX_VALUE_LOW           VARCHAR2(60)
+          CTX   OWNER                           VARCHAR2(4000)
+          CTX   LAST_UPDATE_DATE                VARCHAR2(50)
+          BASE  PARENT_FLEX_VALUE_HIGH          VARCHAR2(60)
+          TRANS ERROR_MESSAGE                   VARCHAR2(240)
+          TRANS DESCRIPTION                     VARCHAR2(240)
+
+          DEFINE VSET_SECURITY_USAGE
+            KEY   APPLICATION_SHORT_NAME          VARCHAR2(50)
+            KEY   RESPONSIBILITY_KEY              VARCHAR2(30)
+            CTX   OWNER                           VARCHAR2(4000)
+            CTX   LAST_UPDATE_DATE                VARCHAR2(50)
+            BASE  PARENT_FLEX_VALUE_HIGH          VARCHAR2(60)
+          END VSET_SECURITY_USAGE
+
+            DEFINE VSET_SECURITY_LINE
+              KEY   INCLUDE_EXCLUDE_INDICATOR       VARCHAR2(1)
+              KEY   FLEX_VALUE_LOW                  VARCHAR2(60)
+              KEY   FLEX_VALUE_HIGH                 VARCHAR2(60)
+              CTX   OWNER                           VARCHAR2(4000)
+              CTX   LAST_UPDATE_DATE                VARCHAR2(50)
+              BASE  PARENT_FLEX_VALUE_HIGH          VARCHAR2(60)
+            END VSET_SECURITY_LINE
+        END VSET_SECURITY_RULE
+
+          DEFINE VSET_EVENT
+            KEY   EVENT_CODE                      VARCHAR2(1)
+            CTX   OWNER                           VARCHAR2(4000)
+            CTX   LAST_UPDATE_DATE                VARCHAR2(50)
+            BASE  USER_EXIT                       VARCHAR2(32000)
+          END VSET_EVENT
+
+            DEFINE VSET_TABLE
+              CTX   OWNER                           VARCHAR2(4000)
+              CTX   LAST_UPDATE_DATE                VARCHAR2(50)
+              BASE  TABLE_APPLICATION_SHORT_NAME    VARCHAR2(50)
+              BASE  APPLICATION_TABLE_NAME          VARCHAR2(240)
+              BASE  SUMMARY_ALLOWED_FLAG            VARCHAR2(1)
+              BASE  VALUE_COLUMN_NAME               VARCHAR2(240)
+              BASE  VALUE_COLUMN_TYPE               VARCHAR2(1)
+              BASE  VALUE_COLUMN_SIZE               VARCHAR2(50)
+              BASE  ID_COLUMN_NAME                  VARCHAR2(240)
+              BASE  ID_COLUMN_TYPE                  VARCHAR2(1)
+              BASE  ID_COLUMN_SIZE                  VARCHAR2(50)
+              BASE  MEANING_COLUMN_NAME             VARCHAR2(240)
+              BASE  MEANING_COLUMN_TYPE             VARCHAR2(1)
+              BASE  MEANING_COLUMN_SIZE             VARCHAR2(50)
+              BASE  ENABLED_COLUMN_NAME             VARCHAR2(240)
+              BASE  COMPILED_ATTRIBUTE_COLUMN_NAME  VARCHAR2(240)
+              BASE  HIERARCHY_LEVEL_COLUMN_NAME     VARCHAR2(240)
+              BASE  START_DATE_COLUMN_NAME          VARCHAR2(240)
+              BASE  END_DATE_COLUMN_NAME            VARCHAR2(240)
+              BASE  SUMMARY_COLUMN_NAME             VARCHAR2(240)
+              BASE  ADDITIONAL_WHERE_CLAUSE         VARCHAR2(32000)
+              BASE  ADDITIONAL_QUICKPICK_COLUMNS    VARCHAR2(240)
+            END VSET_TABLE
+
+              DEFINE VSET_DEPENDS_ON
+                KEY   IND_FLEX_VALUE_SET_NAME         VARCHAR2(60)
+                CTX   OWNER                           VARCHAR2(4000)
+                CTX   LAST_UPDATE_DATE                VARCHAR2(50)
+                BASE  IND_VALIDATION_TYPE             VARCHAR2(1)
+                BASE  DEP_VALIDATION_TYPE             VARCHAR2(1)
+              END VSET_DEPENDS_ON
+END VALUE_SET
+
+# -- End Entity Definitions -- 
+
+
+BEGIN VALUE_SET "DKA_SCTRLMODULE_MODULE"
+  OWNER = "ANONYMOUS"
+  LAST_UPDATE_DATE = "2013/06/17 00:00:00"
+  VALIDATION_TYPE = "I"
+  PROTECTED_FLAG = "N"
+  SECURITY_ENABLED_FLAG = "N"
+  LONGLIST_FLAG = "N"
+  FORMAT_TYPE = "C"
+  MAXIMUM_SIZE = "100"
+  ALPHANUMERIC_ALLOWED_FLAG = "Y"
+  UPPERCASE_ONLY_FLAG = "N"
+  NUMERIC_MODE_ENABLED_FLAG = "N"
+  DESCRIPTION = "Liste des modules à contrôler"
+
+
+
+
+
+
+
+  BEGIN VSET_VALUE "" "AMONTS"
+    OWNER = "ANONYMOUS"
+    LAST_UPDATE_DATE = "2013/06/20 00:00:00"
+    ENABLED_FLAG = "Y"
+    SUMMARY_FLAG = "N"
+    DESCRIPTION = "Amonts"
+  
+  
+  END VSET_VALUE
+  
+  BEGIN VSET_VALUE "" "AP"
+    OWNER = "ANONYMOUS"
+    LAST_UPDATE_DATE = "2013/06/17 00:00:00"
+    ENABLED_FLAG = "Y"
+    SUMMARY_FLAG = "N"
+    DESCRIPTION = "Oracle Payables"
+  
+  
+  END VSET_VALUE
+  
+  BEGIN VSET_VALUE "" "AR"
+    OWNER = "ANONYMOUS"
+    LAST_UPDATE_DATE = "2013/06/20 00:00:00"
+    ENABLED_FLAG = "Y"
+    SUMMARY_FLAG = "N"
+    DESCRIPTION = "Oracle Receivables"
+  
+  
+  END VSET_VALUE
+  
+  BEGIN VSET_VALUE "" "DIVERS"
+    OWNER = "ANONYMOUS"
+    LAST_UPDATE_DATE = "2013/06/20 00:00:00"
+    ENABLED_FLAG = "Y"
+    SUMMARY_FLAG = "N"
+    DESCRIPTION = "Divers"
+  
+  
+  END VSET_VALUE
+  
+  BEGIN VSET_VALUE "" "FA"
+    OWNER = "ANONYMOUS"
+    LAST_UPDATE_DATE = "2013/06/20 00:00:00"
+    ENABLED_FLAG = "Y"
+    SUMMARY_FLAG = "N"
+    DESCRIPTION = "Oracle Assets"
+  
+  
+  END VSET_VALUE
+  
+  BEGIN VSET_VALUE "" "GL"
+    OWNER = "ANONYMOUS"
+    LAST_UPDATE_DATE = "2013/06/20 00:00:00"
+    ENABLED_FLAG = "Y"
+    SUMMARY_FLAG = "N"
+    DESCRIPTION = "Oracle General Ledge"
+  
+  
+  END VSET_VALUE
+  
+  BEGIN VSET_VALUE "" "PA"
+    OWNER = "ANONYMOUS"
+    LAST_UPDATE_DATE = "2013/06/20 00:00:00"
+    ENABLED_FLAG = "Y"
+    SUMMARY_FLAG = "N"
+    DESCRIPTION = "Oracle Projects"
+  
+  
+  END VSET_VALUE
+  
+  BEGIN VSET_VALUE "" "PO"
+    OWNER = "ANONYMOUS"
+    LAST_UPDATE_DATE = "2013/06/20 00:00:00"
+    ENABLED_FLAG = "Y"
+    SUMMARY_FLAG = "N"
+    DESCRIPTION = "Oracle Purchasing"
+  
+  
+  END VSET_VALUE
+  
+  BEGIN VSET_VALUE "" "REFAC"
+    OWNER = "ANONYMOUS"
+    LAST_UPDATE_DATE = "2013/06/20 00:00:00"
+    ENABLED_FLAG = "Y"
+    SUMMARY_FLAG = "N"
+    DESCRIPTION = "Refac"
+  
+  
+  END VSET_VALUE
+  
+  BEGIN VSET_VALUE "" "SLA"
+    OWNER = "JJARDEZ"
+    LAST_UPDATE_DATE = "2017/11/02 15:09:28"
+    ENABLED_FLAG = "Y"
+    SUMMARY_FLAG = "N"
+    DESCRIPTION = "Subledger Accounting"
+  
+  
+  END VSET_VALUE
+  
+END VALUE_SET
+
+BEGIN VALUE_SET "DKA_SCTRLMODULE_REQUETE_MOD"
+  OWNER = "ANONYMOUS"
+  LAST_UPDATE_DATE = "2013/06/21 00:00:00"
+  VALIDATION_TYPE = "D"
+  PROTECTED_FLAG = "N"
+  SECURITY_ENABLED_FLAG = "N"
+  LONGLIST_FLAG = "N"
+  FORMAT_TYPE = "C"
+  MAXIMUM_SIZE = "500"
+  ALPHANUMERIC_ALLOWED_FLAG = "Y"
+  UPPERCASE_ONLY_FLAG = "N"
+  NUMERIC_MODE_ENABLED_FLAG = "N"
+  PARENT_FLEX_VALUE_SET_NAME = "DKA_SCTRLMODULE_MODULE"
+  DESCRIPTION = "Liste des modules à contrôler"
+
+  BEGIN VSET_DEPENDS_ON "DKA_SCTRLMODULE_MODULE"
+    OWNER = "ANONYMOUS"
+    LAST_UPDATE_DATE = "2013/06/21 00:00:00"
+    IND_VALIDATION_TYPE = "I"
+    DEP_VALIDATION_TYPE = "D"
+  END VSET_DEPENDS_ON
+  
+
+
+
+
+
+
+  BEGIN VSET_VALUE "AMONTS" "01"
+    OWNER = "ANONYMOUS"
+    LAST_UPDATE_DATE = "2013/06/20 00:00:00"
+    ENABLED_FLAG = "Y"
+    SUMMARY_FLAG = "N"
+    VALUE_CATEGORY = "DKA_SCTRLMODULE_REQUETE_MOD"
+    ATTRIBUTE1 = "DKA"
+    DESCRIPTION = " DALKIA - Périodes ouvertes"
+  
+  
+  END VSET_VALUE
+  
+  BEGIN VSET_VALUE "AMONTS" "06"
+    OWNER = "ANONYMOUS"
+    LAST_UPDATE_DATE = "2013/06/20 00:00:00"
+    ENABLED_FLAG = "Y"
+    SUMMARY_FLAG = "N"
+    VALUE_CATEGORY = "DKA_SCTRLMODULE_REQUETE_MOD"
+    ATTRIBUTE1 = "DKA"
+    DESCRIPTION = "GL INTERFACE  - Résumé des anomalies"
+  
+  
+  END VSET_VALUE
+  
+  BEGIN VSET_VALUE "AMONTS" "07"
+    OWNER = "ANONYMOUS"
+    LAST_UPDATE_DATE = "2013/06/20 00:00:00"
+    ENABLED_FLAG = "Y"
+    SUMMARY_FLAG = "N"
+    VALUE_CATEGORY = "DKA_SCTRLMODULE_REQUETE_MOD"
+    ATTRIBUTE1 = "DKA"
+    DESCRIPTION = "GL INTERFACE  - Détail des anomalies"
+  
+  
+  END VSET_VALUE
+  
+  BEGIN VSET_VALUE "AMONTS" "10"
+    OWNER = "ANONYMOUS"
+    LAST_UPDATE_DATE = "2013/06/20 00:00:00"
+    ENABLED_FLAG = "Y"
+    SUMMARY_FLAG = "N"
+    VALUE_CATEGORY = "DKA_SCTRLMODULE_REQUETE_MOD"
+    ATTRIBUTE1 = "DKA"
+    DESCRIPTION = "ECART DE TVA - "
+  
+  
+  END VSET_VALUE
+  
+  BEGIN VSET_VALUE "AMONTS" "11"
+    OWNER = "ANONYMOUS"
+    LAST_UPDATE_DATE = "2013/06/20 00:00:00"
+    ENABLED_FLAG = "Y"
+    SUMMARY_FLAG = "N"
+    VALUE_CATEGORY = "DKA_SCTRLMODULE_REQUETE_MOD"
+    ATTRIBUTE1 = "DKA"
+    DESCRIPTION = "OPEN INTERFACE AP - Résumé des anomalies"
+  
+  
+  END VSET_VALUE
+  
+  BEGIN VSET_VALUE "AMONTS" "12"
+    OWNER = "ANONYMOUS"
+    LAST_UPDATE_DATE = "2013/06/20 00:00:00"
+    ENABLED_FLAG = "Y"
+    SUMMARY_FLAG = "N"
+    VALUE_CATEGORY = "DKA_SCTRLMODULE_REQUETE_MOD"
+    ATTRIBUTE1 = "DKA"
+    DESCRIPTION = "OPEN INTERFACE AP - Détail des anomalies"
+  
+  
+  END VSET_VALUE
+  
+  BEGIN VSET_VALUE "AMONTS" "13"
+    OWNER = "ANONYMOUS"
+    LAST_UPDATE_DATE = "2013/06/20 00:00:00"
+    ENABLED_FLAG = "Y"
+    SUMMARY_FLAG = "N"
+    VALUE_CATEGORY = "DKA_SCTRLMODULE_REQUETE_MOD"
+    ATTRIBUTE1 = "DKA"
+    DESCRIPTION = "AR - Résumé des anomalies"
+  
+  
+  END VSET_VALUE
+  
+  BEGIN VSET_VALUE "AMONTS" "14"
+    OWNER = "ANONYMOUS"
+    LAST_UPDATE_DATE = "2013/06/20 00:00:00"
+    ENABLED_FLAG = "Y"
+    SUMMARY_FLAG = "N"
+    VALUE_CATEGORY = "DKA_SCTRLMODULE_REQUETE_MOD"
+    ATTRIBUTE1 = "DKA"
+    DESCRIPTION = "AR - Détail des anomalies"
+  
+  
+  END VSET_VALUE
+  
+  BEGIN VSET_VALUE "AMONTS" "15"
+    OWNER = "ANONYMOUS"
+    LAST_UPDATE_DATE = "2013/06/20 00:00:00"
+    ENABLED_FLAG = "Y"
+    SUMMARY_FLAG = "N"
+    VALUE_CATEGORY = "DKA_SCTRLMODULE_REQUETE_MOD"
+    ATTRIBUTE1 = "DKA"
+    DESCRIPTION = "OPEN INTERFACE AR - Résumé des anomalies"
+  
+  
+  END VSET_VALUE
+  
+  BEGIN VSET_VALUE "AMONTS" "16"
+    OWNER = "ANONYMOUS"
+    LAST_UPDATE_DATE = "2013/06/20 00:00:00"
+    ENABLED_FLAG = "Y"
+    SUMMARY_FLAG = "N"
+    VALUE_CATEGORY = "DKA_SCTRLMODULE_REQUETE_MOD"
+    ATTRIBUTE1 = "DKA"
+    DESCRIPTION = "OPEN INTERFACE AR - Détail des anomalies"
+  
+  
+  END VSET_VALUE
+  
+  BEGIN VSET_VALUE "AP" "01"
+    OWNER = "ANONYMOUS"
+    LAST_UPDATE_DATE = "2013/06/20 00:00:00"
+    ENABLED_FLAG = "Y"
+    SUMMARY_FLAG = "N"
+    VALUE_CATEGORY = "DKA_SCTRLMODULE_REQUETE_MOD"
+    ATTRIBUTE1 = "DKA"
+    DESCRIPTION =
+ "AP - Liste des sites fournisseurs avec compte principal en doublon"
+  
+  
+  END VSET_VALUE
+  
+  BEGIN VSET_VALUE "AP" "02"
+    OWNER = "ANONYMOUS"
+    LAST_UPDATE_DATE = "2013/06/20 00:00:00"
+    ENABLED_FLAG = "Y"
+    SUMMARY_FLAG = "N"
+    VALUE_CATEGORY = "DKA_SCTRLMODULE_REQUETE_MOD"
+    ATTRIBUTE1 = "DKA"
+    DESCRIPTION =
+ "AP - Liste des codes partenaires présents sur plusieurs fournisseurs"
+  
+  
+  END VSET_VALUE
+  
+  BEGIN VSET_VALUE "AP" "03"
+    OWNER = "ANONYMOUS"
+    LAST_UPDATE_DATE = "2013/06/20 00:00:00"
+    ENABLED_FLAG = "Y"
+    SUMMARY_FLAG = "N"
+    VALUE_CATEGORY = "DKA_SCTRLMODULE_REQUETE_MOD"
+    ATTRIBUTE1 = "DKA"
+    DESCRIPTION = "AP - liste des factures non centralisables"
+  
+  
+  END VSET_VALUE
+  
+  BEGIN VSET_VALUE "AP" "04"
+    OWNER = "ANONYMOUS"
+    LAST_UPDATE_DATE = "2013/06/20 00:00:00"
+    ENABLED_FLAG = "Y"
+    SUMMARY_FLAG = "N"
+    VALUE_CATEGORY = "DKA_SCTRLMODULE_REQUETE_MOD"
+    ATTRIBUTE1 = "DKA"
+    DESCRIPTION =
+ "AP - liste des factures centralisees avec clés comptables douteuses"
+  
+  
+  END VSET_VALUE
+  
+  BEGIN VSET_VALUE "AP" "05"
+    OWNER = "ANONYMOUS"
+    LAST_UPDATE_DATE = "2013/06/20 00:00:00"
+    ENABLED_FLAG = "Y"
+    SUMMARY_FLAG = "N"
+    VALUE_CATEGORY = "DKA_SCTRLMODULE_REQUETE_MOD"
+    ATTRIBUTE1 = "DKA"
+    DESCRIPTION =
+ "AP - Contrôle avant clôture AP pour transfert des mouvements non comptabilisés. Liste complète des lignes de factures qui vont poser problème lors du transfert des mouvements non comptabilisés sur la période suivante"
+  
+  
+  END VSET_VALUE
+  
+  BEGIN VSET_VALUE "AP" "06"
+    OWNER = "ANONYMOUS"
+    LAST_UPDATE_DATE = "2013/06/20 00:00:00"
+    ENABLED_FLAG = "Y"
+    SUMMARY_FLAG = "N"
+    VALUE_CATEGORY = "DKA_SCTRLMODULE_REQUETE_MOD"
+    ATTRIBUTE1 = "DKA"
+    DESCRIPTION =
+ "AP - Contrôle avant clôture AP pour transfert des mouvements non comptabilisés. Liste des lignes en statut 'non comptabilisées' dans AP, avec un évènement AX et des lignes AX"
+  
+  
+  END VSET_VALUE
+  
+  BEGIN VSET_VALUE "AP" "07"
+    OWNER = "ANONYMOUS"
+    LAST_UPDATE_DATE = "2013/06/20 00:00:00"
+    ENABLED_FLAG = "Y"
+    SUMMARY_FLAG = "N"
+    VALUE_CATEGORY = "DKA_SCTRLMODULE_REQUETE_MOD"
+    ATTRIBUTE1 = "DKA"
+    DESCRIPTION =
+ "AP - Contrôle avant clôture AP pour transfert des mouvements non comptabilisés. Liste des lignes en statut ''non comptabilisées'' dans AP, avec un évènement AX sans lignes de distribution AX"
+  
+  
+  END VSET_VALUE
+  
+  BEGIN VSET_VALUE "AP" "08"
+    OWNER = "ANONYMOUS"
+    LAST_UPDATE_DATE = "2013/06/20 00:00:00"
+    ENABLED_FLAG = "Y"
+    SUMMARY_FLAG = "N"
+    VALUE_CATEGORY = "DKA_SCTRLMODULE_REQUETE_MOD"
+    ATTRIBUTE1 = "DKA"
+    DESCRIPTION =
+ "AP - Contrôle avant clôture AP pour transfert des mouvements non comptabilisés. Liste des factures pour lesquelles on a 2 évènements AX de type NON_CASH non comptabilisés à la même date"
+  
+  
+  END VSET_VALUE
+  
+  BEGIN VSET_VALUE "AP" "09"
+    OWNER = "ANONYMOUS"
+    LAST_UPDATE_DATE = "2013/06/20 00:00:00"
+    ENABLED_FLAG = "Y"
+    SUMMARY_FLAG = "N"
+    VALUE_CATEGORY = "DKA_SCTRLMODULE_REQUETE_MOD"
+    ATTRIBUTE1 = "DKA"
+    DESCRIPTION = "AP - Contrôle du transfert vers GL"
+  
+  
+  END VSET_VALUE
+  
+  BEGIN VSET_VALUE "AP" "10"
+    OWNER = "ANONYMOUS"
+    LAST_UPDATE_DATE = "2013/06/20 00:00:00"
+    ENABLED_FLAG = "Y"
+    SUMMARY_FLAG = "N"
+    VALUE_CATEGORY = "DKA_SCTRLMODULE_REQUETE_MOD"
+    ATTRIBUTE1 = "DKA"
+    DESCRIPTION = "AP - Contrôle des lots de règlements non confirmés"
+  
+  
+  END VSET_VALUE
+  
+  BEGIN VSET_VALUE "AP" "11"
+    OWNER = "ANONYMOUS"
+    LAST_UPDATE_DATE = "2013/06/20 00:00:00"
+    ENABLED_FLAG = "Y"
+    SUMMARY_FLAG = "N"
+    VALUE_CATEGORY = "DKA_SCTRLMODULE_REQUETE_MOD"
+    ATTRIBUTE1 = "DKA"
+    DESCRIPTION = "AP - Contrôle des factures"
+  
+  
+  END VSET_VALUE
+  
+  BEGIN VSET_VALUE "AP" "12"
+    OWNER = "ANONYMOUS"
+    LAST_UPDATE_DATE = "2013/06/20 00:00:00"
+    ENABLED_FLAG = "Y"
+    SUMMARY_FLAG = "N"
+    VALUE_CATEGORY = "DKA_SCTRLMODULE_REQUETE_MOD"
+    ATTRIBUTE1 = "DKA"
+    DESCRIPTION = "AP - Contrôle des règlements"
+  
+  
+  END VSET_VALUE
+  
+  BEGIN VSET_VALUE "AP" "13"
+    OWNER = "ANONYMOUS"
+    LAST_UPDATE_DATE = "2013/06/20 00:00:00"
+    ENABLED_FLAG = "Y"
+    SUMMARY_FLAG = "N"
+    VALUE_CATEGORY = "DKA_SCTRLMODULE_REQUETE_MOD"
+    ATTRIBUTE1 = "DKA"
+    DESCRIPTION =
+ "AP - Contrôle des règlements. Clearing or Maturity records not yet accounted"
+  
+  
+  END VSET_VALUE
+  
+  BEGIN VSET_VALUE "AP" "14"
+    OWNER = "ANONYMOUS"
+    LAST_UPDATE_DATE = "2013/06/20 00:00:00"
+    ENABLED_FLAG = "Y"
+    SUMMARY_FLAG = "N"
+    VALUE_CATEGORY = "DKA_SCTRLMODULE_REQUETE_MOD"
+    ATTRIBUTE1 = "DKA"
+    DESCRIPTION = "AP - Liste de factures mal annulées"
+  
+  
+  END VSET_VALUE
+  
+  BEGIN VSET_VALUE "AR" "01"
+    OWNER = "ANONYMOUS"
+    LAST_UPDATE_DATE = "2013/06/20 00:00:00"
+    ENABLED_FLAG = "Y"
+    SUMMARY_FLAG = "N"
+    VALUE_CATEGORY = "DKA_SCTRLMODULE_REQUETE_MOD"
+    ATTRIBUTE1 = "DKA"
+    DESCRIPTION = "AR - Les factures sont postées"
+  
+  
+  END VSET_VALUE
+  
+  BEGIN VSET_VALUE "AR" "02"
+    OWNER = "ANONYMOUS"
+    LAST_UPDATE_DATE = "2013/06/20 00:00:00"
+    ENABLED_FLAG = "Y"
+    SUMMARY_FLAG = "N"
+    VALUE_CATEGORY = "DKA_SCTRLMODULE_REQUETE_MOD"
+    ATTRIBUTE1 = "DKA"
+    DESCRIPTION = "AR - Les ajustements factures sont postés"
+  
+  
+  END VSET_VALUE
+  
+  BEGIN VSET_VALUE "AR" "03"
+    OWNER = "ANONYMOUS"
+    LAST_UPDATE_DATE = "2013/06/20 00:00:00"
+    ENABLED_FLAG = "Y"
+    SUMMARY_FLAG = "N"
+    VALUE_CATEGORY = "DKA_SCTRLMODULE_REQUETE_MOD"
+    ATTRIBUTE1 = "DKA"
+    DESCRIPTION = "AR - Les réglements divers sont postés"
+  
+  
+  END VSET_VALUE
+  
+  BEGIN VSET_VALUE "AR" "04"
+    OWNER = "ANONYMOUS"
+    LAST_UPDATE_DATE = "2013/06/20 00:00:00"
+    ENABLED_FLAG = "Y"
+    SUMMARY_FLAG = "N"
+    VALUE_CATEGORY = "DKA_SCTRLMODULE_REQUETE_MOD"
+    ATTRIBUTE1 = "DKA"
+    DESCRIPTION = "AR - Les revenus sont postés"
+  
+  
+  END VSET_VALUE
+  
+  BEGIN VSET_VALUE "AR" "05"
+    OWNER = "ANONYMOUS"
+    LAST_UPDATE_DATE = "2013/06/20 00:00:00"
+    ENABLED_FLAG = "Y"
+    SUMMARY_FLAG = "N"
+    VALUE_CATEGORY = "DKA_SCTRLMODULE_REQUETE_MOD"
+    ATTRIBUTE1 = "DKA"
+    DESCRIPTION = "AR - Les avoirs sont postés"
+  
+  
+  END VSET_VALUE
+  
+  BEGIN VSET_VALUE "AR" "06"
+    OWNER = "ANONYMOUS"
+    LAST_UPDATE_DATE = "2013/06/20 00:00:00"
+    ENABLED_FLAG = "Y"
+    SUMMARY_FLAG = "N"
+    VALUE_CATEGORY = "DKA_SCTRLMODULE_REQUETE_MOD"
+    ATTRIBUTE1 = "DKA"
+    DESCRIPTION = "AR - Le cycle des réceptions"
+  
+  
+  END VSET_VALUE
+  
+  BEGIN VSET_VALUE "AR" "07"
+    OWNER = "ANONYMOUS"
+    LAST_UPDATE_DATE = "2013/06/20 00:00:00"
+    ENABLED_FLAG = "Y"
+    SUMMARY_FLAG = "N"
+    VALUE_CATEGORY = "DKA_SCTRLMODULE_REQUETE_MOD"
+    ATTRIBUTE1 = "DKA"
+    DESCRIPTION = "AR - QuickCash"
+  
+  
+  END VSET_VALUE
+  
+  BEGIN VSET_VALUE "AR" "08"
+    OWNER = "ANONYMOUS"
+    LAST_UPDATE_DATE = "2013/06/20 00:00:00"
+    ENABLED_FLAG = "Y"
+    SUMMARY_FLAG = "N"
+    VALUE_CATEGORY = "DKA_SCTRLMODULE_REQUETE_MOD"
+    ATTRIBUTE1 = "DKA"
+    DESCRIPTION = "AR - Détails de facturation"
+  
+  
+  END VSET_VALUE
+  
+  BEGIN VSET_VALUE "AR" "09"
+    OWNER = "ANONYMOUS"
+    LAST_UPDATE_DATE = "2013/06/20 00:00:00"
+    ENABLED_FLAG = "Y"
+    SUMMARY_FLAG = "N"
+    VALUE_CATEGORY = "DKA_SCTRLMODULE_REQUETE_MOD"
+    ATTRIBUTE1 = "DKA"
+    DESCRIPTION =
+ "AR - Liste des evenements cash_customer_update susceptibles de ralentir le posting AR"
+  
+  
+  END VSET_VALUE
+  
+  BEGIN VSET_VALUE "DIVERS" "01"
+    OWNER = "ANONYMOUS"
+    LAST_UPDATE_DATE = "2013/06/20 00:00:00"
+    ENABLED_FLAG = "Y"
+    SUMMARY_FLAG = "N"
+    VALUE_CATEGORY = "DKA_SCTRLMODULE_REQUETE_MOD"
+    ATTRIBUTE1 = "DKA"
+    DESCRIPTION =
+ "Contrepassation - Contrôles avant le passage de contrepassation"
+  
+  
+  END VSET_VALUE
+  
+  BEGIN VSET_VALUE "DIVERS" "02"
+    OWNER = "JJARDEZ"
+    LAST_UPDATE_DATE = "2017/11/02 15:44:35"
+    ENABLED_FLAG = "Y"
+    SUMMARY_FLAG = "N"
+    VALUE_CATEGORY = "DKA_SCTRLMODULE_REQUETE_MOD"
+    ATTRIBUTE1 = "DKA"
+    DESCRIPTION =
+ "Contrepassation - Contrôles avant le passage de contrepassation_2"
+  
+  
+  END VSET_VALUE
+  
+  BEGIN VSET_VALUE "FA" "01"
+    OWNER = "ANONYMOUS"
+    LAST_UPDATE_DATE = "2013/06/20 00:00:00"
+    ENABLED_FLAG = "Y"
+    SUMMARY_FLAG = "N"
+    VALUE_CATEGORY = "DKA_SCTRLMODULE_REQUETE_MOD"
+    ATTRIBUTE1 = "DKA"
+    DESCRIPTION = "FA - Cohérence Projet / Type de dépense (Bloquant)"
+  
+  
+  END VSET_VALUE
+  
+  BEGIN VSET_VALUE "FA" "02"
+    OWNER = "ANONYMOUS"
+    LAST_UPDATE_DATE = "2013/06/20 00:00:00"
+    ENABLED_FLAG = "Y"
+    SUMMARY_FLAG = "N"
+    VALUE_CATEGORY = "DKA_SCTRLMODULE_REQUETE_MOD"
+    ATTRIBUTE1 = "DKA"
+    DESCRIPTION = "FA - Immobilisation sans projet dans le CUF (Bloquant)"
+  
+  
+  END VSET_VALUE
+  
+  BEGIN VSET_VALUE "FA" "03"
+    OWNER = "ANONYMOUS"
+    LAST_UPDATE_DATE = "2013/06/20 00:00:00"
+    ENABLED_FLAG = "Y"
+    SUMMARY_FLAG = "N"
+    VALUE_CATEGORY = "DKA_SCTRLMODULE_REQUETE_MOD"
+    ATTRIBUTE1 = "DKA"
+    DESCRIPTION = "FA - Immobilisations sur projet clôturé (Non Bloquant)"
+  
+  
+  END VSET_VALUE
+  
+  BEGIN VSET_VALUE "FA" "04"
+    OWNER = "ANONYMOUS"
+    LAST_UPDATE_DATE = "2013/06/20 00:00:00"
+    ENABLED_FLAG = "Y"
+    SUMMARY_FLAG = "N"
+    VALUE_CATEGORY = "DKA_SCTRLMODULE_REQUETE_MOD"
+    ATTRIBUTE1 = "DKA"
+    DESCRIPTION =
+ "FA - Immobilisations sur projet fermé (Bloquant). Immobilisations non totalement cédées, non amorties"
+  
+  
+  END VSET_VALUE
+  
+  BEGIN VSET_VALUE "FA" "05"
+    OWNER = "ANONYMOUS"
+    LAST_UPDATE_DATE = "2013/06/20 00:00:00"
+    ENABLED_FLAG = "Y"
+    SUMMARY_FLAG = "N"
+    VALUE_CATEGORY = "DKA_SCTRLMODULE_REQUETE_MOD"
+    ATTRIBUTE1 = "DKA"
+    DESCRIPTION =
+ "FA - Immobilisations sur projet fermé (Bloquant). Immobilisations totalement amorties pour lesquelles il y a eu des transactions sur la période indiquée."
+  
+  
+  END VSET_VALUE
+  
+  BEGIN VSET_VALUE "FA" "06"
+    OWNER = "ANONYMOUS"
+    LAST_UPDATE_DATE = "2013/06/20 00:00:00"
+    ENABLED_FLAG = "Y"
+    SUMMARY_FLAG = "N"
+    VALUE_CATEGORY = "DKA_SCTRLMODULE_REQUETE_MOD"
+    ATTRIBUTE1 = "DKA"
+    DESCRIPTION =
+ "FA - Immobilisations sur projet fermé (Bloquant). Immobilisations totalement amorties pour lesquelles il y a eu des cessions sur la période indiquée."
+  
+  
+  END VSET_VALUE
+  
+  BEGIN VSET_VALUE "FA" "07"
+    OWNER = "ANONYMOUS"
+    LAST_UPDATE_DATE = "2013/06/20 00:00:00"
+    ENABLED_FLAG = "Y"
+    SUMMARY_FLAG = "N"
+    VALUE_CATEGORY = "DKA_SCTRLMODULE_REQUETE_MOD"
+    ATTRIBUTE1 = "DKA"
+    DESCRIPTION =
+ "FA - Immobilisations sur projet fermé (Bloquant). Immobilisations totalement cédées, non amorties pour lesquelles il y a eu des transactions sur la période indiquée."
+  
+  
+  END VSET_VALUE
+  
+  BEGIN VSET_VALUE "FA" "08"
+    OWNER = "ANONYMOUS"
+    LAST_UPDATE_DATE = "2013/06/20 00:00:00"
+    ENABLED_FLAG = "Y"
+    SUMMARY_FLAG = "N"
+    VALUE_CATEGORY = "DKA_SCTRLMODULE_REQUETE_MOD"
+    ATTRIBUTE1 = "DKA"
+    DESCRIPTION =
+ "FA - Immobilisations sur projet fermé (Bloquant). Immobilisations non totalement cédées (ou cédées sur la période en cours) Non bloquant pour la clôture => donne a titre indicatif pour Dalkia."
+  
+  
+  END VSET_VALUE
+  
+  BEGIN VSET_VALUE "FA" "09"
+    OWNER = "ANONYMOUS"
+    LAST_UPDATE_DATE = "2013/06/20 00:00:00"
+    ENABLED_FLAG = "Y"
+    SUMMARY_FLAG = "N"
+    VALUE_CATEGORY = "DKA_SCTRLMODULE_REQUETE_MOD"
+    ATTRIBUTE1 = "DKA"
+    DESCRIPTION = "FA - Pièces FA non transférées dans GL"
+  
+  
+  END VSET_VALUE
+  
+  BEGIN VSET_VALUE "FA" "10"
+    OWNER = "ANONYMOUS"
+    LAST_UPDATE_DATE = "2013/06/20 00:00:00"
+    ENABLED_FLAG = "Y"
+    SUMMARY_FLAG = "N"
+    VALUE_CATEGORY = "DKA_SCTRLMODULE_REQUETE_MOD"
+    ATTRIBUTE1 = "DKA"
+    DESCRIPTION = "FA - Reconstitution avec un mauvais CCID"
+  
+  
+  END VSET_VALUE
+  
+  BEGIN VSET_VALUE "FA" "11"
+    OWNER = "ANONYMOUS"
+    LAST_UPDATE_DATE = "2013/06/20 00:00:00"
+    ENABLED_FLAG = "Y"
+    SUMMARY_FLAG = "N"
+    VALUE_CATEGORY = "DKA_SCTRLMODULE_REQUETE_MOD"
+    ATTRIBUTE1 = "DKA"
+    DESCRIPTION =
+ "FA - Immos ayant une clé d'affectation incohérente avec le livre"
+  
+  
+  END VSET_VALUE
+  
+  BEGIN VSET_VALUE "FA" "12"
+    OWNER = "ANONYMOUS"
+    LAST_UPDATE_DATE = "2013/06/20 00:00:00"
+    ENABLED_FLAG = "Y"
+    SUMMARY_FLAG = "N"
+    VALUE_CATEGORY = "DKA_SCTRLMODULE_REQUETE_MOD"
+    ATTRIBUTE1 = "DKA"
+    DESCRIPTION = "FA - Vérification des livres désactivés"
+  
+  
+  END VSET_VALUE
+  
+  BEGIN VSET_VALUE "FA" "13"
+    OWNER = "ANONYMOUS"
+    LAST_UPDATE_DATE = "2013/06/20 00:00:00"
+    ENABLED_FLAG = "Y"
+    SUMMARY_FLAG = "N"
+    VALUE_CATEGORY = "DKA_SCTRLMODULE_REQUETE_MOD"
+    ATTRIBUTE1 = "DKA"
+    DESCRIPTION = "FA - Vérification du nombre de clés à recalculer"
+  
+  
+  END VSET_VALUE
+  
+  BEGIN VSET_VALUE "FA" "14"
+    OWNER = "ANONYMOUS"
+    LAST_UPDATE_DATE = "2013/06/20 00:00:00"
+    ENABLED_FLAG = "Y"
+    SUMMARY_FLAG = "N"
+    VALUE_CATEGORY = "DKA_SCTRLMODULE_REQUETE_MOD"
+    ATTRIBUTE1 = "DKA"
+    DESCRIPTION = "FA - Vérification des périodes de clôture FA"
+  
+  
+  END VSET_VALUE
+  
+  BEGIN VSET_VALUE "FA" "15"
+    OWNER = "ANONYMOUS"
+    LAST_UPDATE_DATE = "2013/06/20 00:00:00"
+    ENABLED_FLAG = "Y"
+    SUMMARY_FLAG = "N"
+    VALUE_CATEGORY = "DKA_SCTRLMODULE_REQUETE_MOD"
+    ATTRIBUTE1 = "DKA"
+    DESCRIPTION = "FA - Livres de sociétés n'acceptant pas la refac"
+  
+  
+  END VSET_VALUE
+  
+  BEGIN VSET_VALUE "FA" "16"
+    OWNER = "ANONYMOUS"
+    LAST_UPDATE_DATE = "2013/06/20 00:00:00"
+    ENABLED_FLAG = "Y"
+    SUMMARY_FLAG = "N"
+    VALUE_CATEGORY = "DKA_SCTRLMODULE_REQUETE_MOD"
+    ATTRIBUTE1 = "DKA"
+    DESCRIPTION =
+ "FA - Livres pour lesquels le segment flux de la clé par défaut est différent de 0"
+  
+  
+  END VSET_VALUE
+  
+  BEGIN VSET_VALUE "FA" "17"
+    OWNER = "ANONYMOUS"
+    LAST_UPDATE_DATE = "2013/06/20 00:00:00"
+    ENABLED_FLAG = "Y"
+    SUMMARY_FLAG = "N"
+    VALUE_CATEGORY = "DKA_SCTRLMODULE_REQUETE_MOD"
+    ATTRIBUTE1 = "DKA"
+    DESCRIPTION =
+ "FA - Verification dans la table qui permet de tracer les suppressions de comptes"
+  
+  
+  END VSET_VALUE
+  
+  BEGIN VSET_VALUE "GL" "01"
+    OWNER = "ANONYMOUS"
+    LAST_UPDATE_DATE = "2013/06/20 00:00:00"
+    ENABLED_FLAG = "Y"
+    SUMMARY_FLAG = "N"
+    VALUE_CATEGORY = "DKA_SCTRLMODULE_REQUETE_MOD"
+    ATTRIBUTE1 = "DKA"
+    DESCRIPTION = "GL - Contrôle des lots non imputés"
+  
+  
+  END VSET_VALUE
+  
+  BEGIN VSET_VALUE "GL" "02"
+    OWNER = "ANONYMOUS"
+    LAST_UPDATE_DATE = "2013/06/20 00:00:00"
+    ENABLED_FLAG = "Y"
+    SUMMARY_FLAG = "N"
+    VALUE_CATEGORY = "DKA_SCTRLMODULE_REQUETE_MOD"
+    ATTRIBUTE1 = "DKA"
+    DESCRIPTION = "GL - Ecritures imputés sur segment 3 non comptable"
+  
+  
+  END VSET_VALUE
+  
+  BEGIN VSET_VALUE "GL" "03"
+    OWNER = "ANONYMOUS"
+    LAST_UPDATE_DATE = "2013/06/20 00:00:00"
+    ENABLED_FLAG = "Y"
+    SUMMARY_FLAG = "N"
+    VALUE_CATEGORY = "DKA_SCTRLMODULE_REQUETE_MOD"
+    ATTRIBUTE1 = "DKA"
+    DESCRIPTION =
+ "GL - Liste des segments 1 désactivés avec solde de mouvements 6 ou 7"
+  
+  
+  END VSET_VALUE
+  
+  BEGIN VSET_VALUE "GL" "05"
+    OWNER = "ANONYMOUS"
+    LAST_UPDATE_DATE = "2013/06/20 00:00:00"
+    ENABLED_FLAG = "Y"
+    SUMMARY_FLAG = "N"
+    VALUE_CATEGORY = "DKA_SCTRLMODULE_REQUETE_MOD"
+    ATTRIBUTE1 = "DKA"
+    DESCRIPTION =
+ "GL - Pièces a extourne automatique sur hiérarchie incomplète"
+  
+  
+  END VSET_VALUE
+  
+  BEGIN VSET_VALUE "GL" "06"
+    OWNER = "ANONYMOUS"
+    LAST_UPDATE_DATE = "2013/06/20 00:00:00"
+    ENABLED_FLAG = "Y"
+    SUMMARY_FLAG = "N"
+    VALUE_CATEGORY = "DKA_SCTRLMODULE_REQUETE_MOD"
+    ATTRIBUTE1 = "DKA"
+    DESCRIPTION =
+ "GL - Pièces a extourne automatique sur hiérarchie incomplète"
+  
+  
+  END VSET_VALUE
+  
+  BEGIN VSET_VALUE "GL" "07"
+    OWNER = "ANONYMOUS"
+    LAST_UPDATE_DATE = "2013/06/20 00:00:00"
+    ENABLED_FLAG = "Y"
+    SUMMARY_FLAG = "N"
+    VALUE_CATEGORY = "DKA_SCTRLMODULE_REQUETE_MOD"
+    ATTRIBUTE1 = "DKA"
+    DESCRIPTION = "GL - Pièces à extourne automatique non contrepassées"
+  
+  
+  END VSET_VALUE
+  
+  BEGIN VSET_VALUE "GL" "08"
+    OWNER = "ANONYMOUS"
+    LAST_UPDATE_DATE = "2013/06/20 00:00:00"
+    ENABLED_FLAG = "Y"
+    SUMMARY_FLAG = "N"
+    VALUE_CATEGORY = "DKA_SCTRLMODULE_REQUETE_MOD"
+    ATTRIBUTE1 = "DKA"
+    DESCRIPTION =
+ "GL - Pièces à extourne automatique non contrepassées sur compte non comptable"
+  
+  
+  END VSET_VALUE
+  
+  BEGIN VSET_VALUE "GL" "09"
+    OWNER = "ANONYMOUS"
+    LAST_UPDATE_DATE = "2013/06/20 00:00:00"
+    ENABLED_FLAG = "Y"
+    SUMMARY_FLAG = "N"
+    VALUE_CATEGORY = "DKA_SCTRLMODULE_REQUETE_MOD"
+    ATTRIBUTE1 = "DKA"
+    DESCRIPTION = "GL - Extourne des charges abonnés RH (partie 1)"
+  
+  
+  END VSET_VALUE
+  
+  BEGIN VSET_VALUE "GL" "10"
+    OWNER = "ANONYMOUS"
+    LAST_UPDATE_DATE = "2013/06/20 00:00:00"
+    ENABLED_FLAG = "Y"
+    SUMMARY_FLAG = "N"
+    VALUE_CATEGORY = "DKA_SCTRLMODULE_REQUETE_MOD"
+    ATTRIBUTE1 = "DKA"
+    DESCRIPTION = "GL - Extourne des charges abonnés RH (partie 2)"
+  
+  
+  END VSET_VALUE
+  
+  BEGIN VSET_VALUE "GL" "27"
+    OWNER = "JJARDEZ"
+    LAST_UPDATE_DATE = "2017/11/02 15:48:06"
+    ENABLED_FLAG = "Y"
+    SUMMARY_FLAG = "N"
+    VALUE_CATEGORY = "DKA_SCTRLMODULE_REQUETE_MOD"
+    ATTRIBUTE1 = "DKA"
+    DESCRIPTION = "GL - Ecritures imputées sur segment 4 non comptable"
+  
+  
+  END VSET_VALUE
+  
+  BEGIN VSET_VALUE "PA" "01"
+    OWNER = "ANONYMOUS"
+    LAST_UPDATE_DATE = "2013/06/20 00:00:00"
+    ENABLED_FLAG = "Y"
+    SUMMARY_FLAG = "N"
+    VALUE_CATEGORY = "DKA_SCTRLMODULE_REQUETE_MOD"
+    ATTRIBUTE1 = "DKA"
+    DESCRIPTION = "PA - LIGNES DE VENTILATION AP SANS TASK_ID"
+  
+  
+  END VSET_VALUE
+  
+  BEGIN VSET_VALUE "PA" "02"
+    OWNER = "ANONYMOUS"
+    LAST_UPDATE_DATE = "2013/06/20 00:00:00"
+    ENABLED_FLAG = "Y"
+    SUMMARY_FLAG = "N"
+    VALUE_CATEGORY = "DKA_SCTRLMODULE_REQUETE_MOD"
+    ATTRIBUTE1 = "DKA"
+    DESCRIPTION = "PA - LIGNES DE VENTILATION AP SANS MONTANT"
+  
+  
+  END VSET_VALUE
+  
+  BEGIN VSET_VALUE "PA" "03"
+    OWNER = "ANONYMOUS"
+    LAST_UPDATE_DATE = "2013/06/20 00:00:00"
+    ENABLED_FLAG = "Y"
+    SUMMARY_FLAG = "N"
+    VALUE_CATEGORY = "DKA_SCTRLMODULE_REQUETE_MOD"
+    ATTRIBUTE1 = "DKA"
+    DESCRIPTION =
+ "PA - lignes de ventilation AP sur projet fermes. Provoque le rejet 'Le statut du projet n'autorise pas l'imputation de nouveaux mouvements' dans le transfert AP-PA"
+  
+  
+  END VSET_VALUE
+  
+  BEGIN VSET_VALUE "PA" "04"
+    OWNER = "ANONYMOUS"
+    LAST_UPDATE_DATE = "2013/06/20 00:00:00"
+    ENABLED_FLAG = "Y"
+    SUMMARY_FLAG = "N"
+    VALUE_CATEGORY = "DKA_SCTRLMODULE_REQUETE_MOD"
+    ATTRIBUTE1 = "DKA"
+    DESCRIPTION =
+ "PA - Flux AP PA - lignes AP de notes de frais issues reprise phenix"
+  
+  
+  END VSET_VALUE
+  
+  BEGIN VSET_VALUE "PA" "05"
+    OWNER = "ANONYMOUS"
+    LAST_UPDATE_DATE = "2013/06/20 00:00:00"
+    ENABLED_FLAG = "Y"
+    SUMMARY_FLAG = "N"
+    VALUE_CATEGORY = "DKA_SCTRLMODULE_REQUETE_MOD"
+    ATTRIBUTE1 = "DKA"
+    DESCRIPTION = "PA - Flux AP PA - Détail des rejets du flux AP vers PA"
+  
+  
+  END VSET_VALUE
+  
+  BEGIN VSET_VALUE "PA" "06"
+    OWNER = "ANONYMOUS"
+    LAST_UPDATE_DATE = "2013/06/20 00:00:00"
+    ENABLED_FLAG = "Y"
+    SUMMARY_FLAG = "N"
+    VALUE_CATEGORY = "DKA_SCTRLMODULE_REQUETE_MOD"
+    ATTRIBUTE1 = "DKA"
+    DESCRIPTION =
+ "PA - Lignes de ventilation AP avec montant égal a zéro. Provoque le rejet 'Le montant du coût direct exprimé en devise comptable est manquant' dans le transfert AP-PA"
+  
+  
+  END VSET_VALUE
+  
+  BEGIN VSET_VALUE "PA" "07"
+    OWNER = "ANONYMOUS"
+    LAST_UPDATE_DATE = "2013/06/20 00:00:00"
+    ENABLED_FLAG = "Y"
+    SUMMARY_FLAG = "N"
+    VALUE_CATEGORY = "DKA_SCTRLMODULE_REQUETE_MOD"
+    ATTRIBUTE1 = "DKA"
+    DESCRIPTION =
+ "PA - TYPES DE DEPENSE AVEC LIEN SYSTEME MANQUANT. Le lien système doit être VI pour les factures fournisseurs. Le lien système doit être ER pour les notes de frais. Provoque le rejet Type de dépens/Lien système inactif dans le transfert AP-"
+  
+  
+  END VSET_VALUE
+  
+  BEGIN VSET_VALUE "PA" "08"
+    OWNER = "ANONYMOUS"
+    LAST_UPDATE_DATE = "2013/06/20 00:00:00"
+    ENABLED_FLAG = "Y"
+    SUMMARY_FLAG = "N"
+    VALUE_CATEGORY = "DKA_SCTRLMODULE_REQUETE_MOD"
+    ATTRIBUTE1 = "DKA"
+    DESCRIPTION =
+ "PA - LISTE DES AFFECTATIONS SANS FONCTION. Liste des employés ayant au moins une affectation sans fonction. Provoque le rejet 'Pas d'affectation' lors du tranfert de AP vers PA"
+  
+  
+  END VSET_VALUE
+  
+  BEGIN VSET_VALUE "PA" "09"
+    OWNER = "ANONYMOUS"
+    LAST_UPDATE_DATE = "2013/06/20 00:00:00"
+    ENABLED_FLAG = "Y"
+    SUMMARY_FLAG = "N"
+    VALUE_CATEGORY = "DKA_SCTRLMODULE_REQUETE_MOD"
+    ATTRIBUTE1 = "DKA"
+    DESCRIPTION =
+ "PA - LISTE DES AFFECTATIONS SANS FONCTION. Détail des affectations de l'employé posant problème"
+  
+  
+  END VSET_VALUE
+  
+  BEGIN VSET_VALUE "PA" "10"
+    OWNER = "ANONYMOUS"
+    LAST_UPDATE_DATE = "2013/06/20 00:00:00"
+    ENABLED_FLAG = "Y"
+    SUMMARY_FLAG = "N"
+    VALUE_CATEGORY = "DKA_SCTRLMODULE_REQUETE_MOD"
+    ATTRIBUTE1 = "DKA"
+    DESCRIPTION =
+ "PA - Employés qui ne sont pas dans la vue hr_employees_current_v. Le traitement de transfert AP-PA s'arrête (normal) avec le message GET_EMPLOYEE_NUMBER dans le journal. Ce sont la plupart du temps des employés désactivés"
+  
+  
+  END VSET_VALUE
+  
+  BEGIN VSET_VALUE "PA" "11"
+    OWNER = "ANONYMOUS"
+    LAST_UPDATE_DATE = "2013/06/20 00:00:00"
+    ENABLED_FLAG = "Y"
+    SUMMARY_FLAG = "N"
+    VALUE_CATEGORY = "DKA_SCTRLMODULE_REQUETE_MOD"
+    ATTRIBUTE1 = "DKA"
+    DESCRIPTION = "PA - Lignes en rejets dans le transfert AR vers PA"
+  
+  
+  END VSET_VALUE
+  
+  BEGIN VSET_VALUE "PA" "12"
+    OWNER = "ANONYMOUS"
+    LAST_UPDATE_DATE = "2013/06/20 00:00:00"
+    ENABLED_FLAG = "Y"
+    SUMMARY_FLAG = "N"
+    VALUE_CATEGORY = "DKA_SCTRLMODULE_REQUETE_MOD"
+    ATTRIBUTE1 = "DKA"
+    DESCRIPTION =
+ "PA - Lignes GL non transférables vers PA. Il s'agit de saisies manuelles faîtes dans GL sur des comptes de résultats où les informations projets ne sont pas renseignées. Sources possibles : WebADI, utilisation de type de pièce GL sans CUF p"
+  
+  
+  END VSET_VALUE
+  
+  BEGIN VSET_VALUE "PA" "13"
+    OWNER = "ANONYMOUS"
+    LAST_UPDATE_DATE = "2013/06/20 00:00:00"
+    ENABLED_FLAG = "Y"
+    SUMMARY_FLAG = "N"
+    VALUE_CATEGORY = "DKA_SCTRLMODULE_REQUETE_MOD"
+    ATTRIBUTE1 = "DKA"
+    DESCRIPTION = "PA - Lignes GL non transférées vers PA"
+  
+  
+  END VSET_VALUE
+  
+  BEGIN VSET_VALUE "PA" "15"
+    OWNER = "ANONYMOUS"
+    LAST_UPDATE_DATE = "2013/06/20 00:00:00"
+    ENABLED_FLAG = "Y"
+    SUMMARY_FLAG = "N"
+    VALUE_CATEGORY = "DKA_SCTRLMODULE_REQUETE_MOD"
+    ATTRIBUTE1 = "DKA"
+    DESCRIPTION = "PA - FACTURES AR NON TRANSFERES VERS PA"
+  
+  
+  END VSET_VALUE
+  
+  BEGIN VSET_VALUE "PA" "16"
+    OWNER = "ANONYMOUS"
+    LAST_UPDATE_DATE = "2013/06/20 00:00:00"
+    ENABLED_FLAG = "Y"
+    SUMMARY_FLAG = "N"
+    VALUE_CATEGORY = "DKA_SCTRLMODULE_REQUETE_MOD"
+    ATTRIBUTE1 = "DKA"
+    DESCRIPTION = "PA - ajustements AR non transfères vers PA"
+  
+  
+  END VSET_VALUE
+  
+  BEGIN VSET_VALUE "PA" "17"
+    OWNER = "ANONYMOUS"
+    LAST_UPDATE_DATE = "2013/06/20 00:00:00"
+    ENABLED_FLAG = "Y"
+    SUMMARY_FLAG = "N"
+    VALUE_CATEGORY = "DKA_SCTRLMODULE_REQUETE_MOD"
+    ATTRIBUTE1 = "DKA"
+    DESCRIPTION =
+ "PA - Synthèse des lignes rejetées dans l'open interface PA+ détail des lignes"
+  
+  
+  END VSET_VALUE
+  
+  BEGIN VSET_VALUE "PA" "18"
+    OWNER = "ANONYMOUS"
+    LAST_UPDATE_DATE = "2013/06/20 00:00:00"
+    ENABLED_FLAG = "Y"
+    SUMMARY_FLAG = "N"
+    VALUE_CATEGORY = "DKA_SCTRLMODULE_REQUETE_MOD"
+    ATTRIBUTE1 = "DKA"
+    DESCRIPTION =
+ "PA - Synthèse des lignes rejetées dans l'open interface PA+ détail des lignes. Détail des lignes"
+  
+  
+  END VSET_VALUE
+  
+  BEGIN VSET_VALUE "PA" "19"
+    OWNER = "ANONYMOUS"
+    LAST_UPDATE_DATE = "2013/06/20 00:00:00"
+    ENABLED_FLAG = "Y"
+    SUMMARY_FLAG = "N"
+    VALUE_CATEGORY = "DKA_SCTRLMODULE_REQUETE_MOD"
+    ATTRIBUTE1 = "DKA"
+    DESCRIPTION = "PA - Clôture PA. Les factures sont transférées de AP"
+  
+  
+  END VSET_VALUE
+  
+  BEGIN VSET_VALUE "PA" "20"
+    OWNER = "ANONYMOUS"
+    LAST_UPDATE_DATE = "2013/06/20 00:00:00"
+    ENABLED_FLAG = "Y"
+    SUMMARY_FLAG = "N"
+    VALUE_CATEGORY = "DKA_SCTRLMODULE_REQUETE_MOD"
+    ATTRIBUTE1 = "DKA"
+    DESCRIPTION = "PA - Clôture PA. Toutes les charges sont dans GL"
+  
+  
+  END VSET_VALUE
+  
+  BEGIN VSET_VALUE "PA" "21"
+    OWNER = "ANONYMOUS"
+    LAST_UPDATE_DATE = "2013/06/20 00:00:00"
+    ENABLED_FLAG = "Y"
+    SUMMARY_FLAG = "N"
+    VALUE_CATEGORY = "DKA_SCTRLMODULE_REQUETE_MOD"
+    ATTRIBUTE1 = "DKA"
+    DESCRIPTION =
+ "PA - Clôture PA (partie 1). Tous les couts sont transférés dans AP"
+  
+  
+  END VSET_VALUE
+  
+  BEGIN VSET_VALUE "PA" "22"
+    OWNER = "ANONYMOUS"
+    LAST_UPDATE_DATE = "2013/06/20 00:00:00"
+    ENABLED_FLAG = "Y"
+    SUMMARY_FLAG = "N"
+    VALUE_CATEGORY = "DKA_SCTRLMODULE_REQUETE_MOD"
+    ATTRIBUTE1 = "DKA"
+    DESCRIPTION =
+ "PA - Clôture PA (partie 2). Tous les couts sont transférés dans AP"
+  
+  
+  END VSET_VALUE
+  
+  BEGIN VSET_VALUE "PA" "23"
+    OWNER = "ANONYMOUS"
+    LAST_UPDATE_DATE = "2013/06/20 00:00:00"
+    ENABLED_FLAG = "Y"
+    SUMMARY_FLAG = "N"
+    VALUE_CATEGORY = "DKA_SCTRLMODULE_REQUETE_MOD"
+    ATTRIBUTE1 = "DKA"
+    DESCRIPTION = "PA - Clôture PA. Tous draft revenue"
+  
+  
+  END VSET_VALUE
+  
+  BEGIN VSET_VALUE "PA" "67"
+    OWNER = "JJARDEZ"
+    LAST_UPDATE_DATE = "2017/11/02 16:05:26"
+    ENABLED_FLAG = "Y"
+    SUMMARY_FLAG = "N"
+    VALUE_CATEGORY = "DKA_SCTRLMODULE_REQUETE_MOD"
+    ATTRIBUTE1 = "DKA"
+    DESCRIPTION =
+ "PA - Lignes AP HT avec Projet et TD non remontées dans PA - Flag à Z"
+  
+  
+  END VSET_VALUE
+  
+  BEGIN VSET_VALUE "PA" "70"
+    OWNER = "JJARDEZ"
+    LAST_UPDATE_DATE = "2017/11/02 16:05:26"
+    ENABLED_FLAG = "Y"
+    SUMMARY_FLAG = "N"
+    VALUE_CATEGORY = "DKA_SCTRLMODULE_REQUETE_MOD"
+    ATTRIBUTE1 = "DKA"
+    DESCRIPTION =
+ "PA - Liste des codes projets erronés pour le calcul des TEC et PCA"
+  
+  
+  END VSET_VALUE
+  
+  BEGIN VSET_VALUE "PO" "01"
+    OWNER = "ANONYMOUS"
+    LAST_UPDATE_DATE = "2013/06/20 00:00:00"
+    ENABLED_FLAG = "Y"
+    SUMMARY_FLAG = "N"
+    VALUE_CATEGORY = "DKA_SCTRLMODULE_REQUETE_MOD"
+    ATTRIBUTE1 = "DKA"
+    DESCRIPTION =
+ "PO - Liste les lignes de commande générant un blocage dans gl_interface dû à un projet manquant"
+  
+  
+  END VSET_VALUE
+  
+  BEGIN VSET_VALUE "PO" "02"
+    OWNER = "ANONYMOUS"
+    LAST_UPDATE_DATE = "2013/06/20 00:00:00"
+    ENABLED_FLAG = "Y"
+    SUMMARY_FLAG = "N"
+    VALUE_CATEGORY = "DKA_SCTRLMODULE_REQUETE_MOD"
+    ATTRIBUTE1 = "DKA"
+    DESCRIPTION =
+ "PO - Liste les commandes n'ayant pas de clé comptable et pouvant dons générer un déséquilibre du calcul des provisions sur réception"
+  
+  
+  END VSET_VALUE
+  
+  BEGIN VSET_VALUE "PO" "03"
+    OWNER = "ANONYMOUS"
+    LAST_UPDATE_DATE = "2013/06/20 00:00:00"
+    ENABLED_FLAG = "Y"
+    SUMMARY_FLAG = "N"
+    VALUE_CATEGORY = "DKA_SCTRLMODULE_REQUETE_MOD"
+    ATTRIBUTE1 = "DKA"
+    DESCRIPTION =
+ "PO - Commandes avec compte local CCF à 0. Lignes de commande générant un blocage dans GL_INTERFACE dû à un CCID pointant sur un compte local à 0."
+  
+  
+  END VSET_VALUE
+  
+  BEGIN VSET_VALUE "PO" "04"
+    OWNER = "ANONYMOUS"
+    LAST_UPDATE_DATE = "2013/06/20 00:00:00"
+    ENABLED_FLAG = "Y"
+    SUMMARY_FLAG = "N"
+    VALUE_CATEGORY = "DKA_SCTRLMODULE_REQUETE_MOD"
+    ATTRIBUTE1 = "DKA"
+    DESCRIPTION =
+ "PO - Commandes avec quantité facturée nulle. Détecte les commandes ayant une quantité facturée nulle et ayant un montant de facture = 0. Ces commandes sont susceptibles de générer des provisions avec une quantité nulle"
+  
+  
+  END VSET_VALUE
+  
+  BEGIN VSET_VALUE "PO" "05"
+    OWNER = "ANONYMOUS"
+    LAST_UPDATE_DATE = "2013/06/20 00:00:00"
+    ENABLED_FLAG = "Y"
+    SUMMARY_FLAG = "N"
+    VALUE_CATEGORY = "DKA_SCTRLMODULE_REQUETE_MOD"
+    ATTRIBUTE1 = "DKA"
+    DESCRIPTION =
+ "PO - Liste les lignes de commande générant un blocage dans gl_interface dû à un projet manquant"
+  
+  
+  END VSET_VALUE
+  
+  BEGIN VSET_VALUE "PO" "06"
+    OWNER = "ANONYMOUS"
+    LAST_UPDATE_DATE = "2013/06/20 00:00:00"
+    ENABLED_FLAG = "Y"
+    SUMMARY_FLAG = "N"
+    VALUE_CATEGORY = "DKA_SCTRLMODULE_REQUETE_MOD"
+    ATTRIBUTE1 = "DKA"
+    DESCRIPTION =
+ "PO - Commandes avec société CCF disjointe du projet. Liste les lignes de commande générant un blocage dans GL_INTERFACE dû à un CCID pointant sur une société différente de celle du projet."
+  
+  
+  END VSET_VALUE
+  
+  BEGIN VSET_VALUE "PO" "07"
+    OWNER = "ANONYMOUS"
+    LAST_UPDATE_DATE = "2013/06/20 00:00:00"
+    ENABLED_FLAG = "Y"
+    SUMMARY_FLAG = "N"
+    VALUE_CATEGORY = "DKA_SCTRLMODULE_REQUETE_MOD"
+    ATTRIBUTE1 = "DKA"
+    DESCRIPTION =
+ "PO - Commandes générant des provisions à zéro. Lignes de commande générant un calcul de provisions à 0 et générant un rejet lors de la remontée GL vers PA"
+  
+  
+  END VSET_VALUE
+  
+  BEGIN VSET_VALUE "PO" "08"
+    OWNER = "ANONYMOUS"
+    LAST_UPDATE_DATE = "2013/06/20 00:00:00"
+    ENABLED_FLAG = "Y"
+    SUMMARY_FLAG = "N"
+    VALUE_CATEGORY = "DKA_SCTRLMODULE_REQUETE_MOD"
+    ATTRIBUTE1 = "DKA"
+    DESCRIPTION =
+ "PO - Commandes générant des provisions à zéro. Lignes de commande où une action corrective est possible"
+  
+  
+  END VSET_VALUE
+  
+  BEGIN VSET_VALUE "PO" "09"
+    OWNER = "ANONYMOUS"
+    LAST_UPDATE_DATE = "2013/06/20 00:00:00"
+    ENABLED_FLAG = "Y"
+    SUMMARY_FLAG = "N"
+    VALUE_CATEGORY = "DKA_SCTRLMODULE_REQUETE_MOD"
+    ATTRIBUTE1 = "DKA"
+    DESCRIPTION =
+ "PO - Commandes générant des provisions à plus de 5 décimales. Liste des commandes susceptibles de générer des quantités à plus de 5 décimales dans le calcul des provisions et qui vont être rejetées lors du transfert GL-PA"
+  
+  
+  END VSET_VALUE
+  
+  BEGIN VSET_VALUE "PO" "10"
+    OWNER = "ANONYMOUS"
+    LAST_UPDATE_DATE = "2013/06/20 00:00:00"
+    ENABLED_FLAG = "Y"
+    SUMMARY_FLAG = "N"
+    VALUE_CATEGORY = "DKA_SCTRLMODULE_REQUETE_MOD"
+    ATTRIBUTE1 = "DKA"
+    DESCRIPTION =
+ "PO - Liste les lignes de commande générant un blocage dans gl_interface dû à un projet manquant"
+  
+  
+  END VSET_VALUE
+  
+  BEGIN VSET_VALUE "REFAC" "01"
+    OWNER = "ANONYMOUS"
+    LAST_UPDATE_DATE = "2013/06/20 00:00:00"
+    ENABLED_FLAG = "Y"
+    SUMMARY_FLAG = "N"
+    VALUE_CATEGORY = "DKA_SCTRLMODULE_REQUETE_MOD"
+    ATTRIBUTE1 = "DKA"
+    DESCRIPTION = "REFAC - Centre de cout désactivé"
+  
+  
+  END VSET_VALUE
+  
+  BEGIN VSET_VALUE "REFAC" "02"
+    OWNER = "ANONYMOUS"
+    LAST_UPDATE_DATE = "2013/06/20 00:00:00"
+    ENABLED_FLAG = "Y"
+    SUMMARY_FLAG = "N"
+    VALUE_CATEGORY = "DKA_SCTRLMODULE_REQUETE_MOD"
+    ATTRIBUTE1 = "DKA"
+    DESCRIPTION = "REFAC - Contrôle sur absence de refac à soi-même"
+  
+  
+  END VSET_VALUE
+  
+  BEGIN VSET_VALUE "REFAC" "03"
+    OWNER = "ANONYMOUS"
+    LAST_UPDATE_DATE = "2013/06/20 00:00:00"
+    ENABLED_FLAG = "Y"
+    SUMMARY_FLAG = "N"
+    VALUE_CATEGORY = "DKA_SCTRLMODULE_REQUETE_MOD"
+    ATTRIBUTE1 = "DKA"
+    DESCRIPTION =
+ "REFAC - Détermination société - Centre de gestion manquants (1/3)"
+  
+  
+  END VSET_VALUE
+  
+  BEGIN VSET_VALUE "REFAC" "04"
+    OWNER = "ANONYMOUS"
+    LAST_UPDATE_DATE = "2013/06/20 00:00:00"
+    ENABLED_FLAG = "Y"
+    SUMMARY_FLAG = "N"
+    VALUE_CATEGORY = "DKA_SCTRLMODULE_REQUETE_MOD"
+    ATTRIBUTE1 = "DKA"
+    DESCRIPTION =
+ "REFAC - Détermination société - Centre de gestion manquants (2/3)"
+  
+  
+  END VSET_VALUE
+  
+  BEGIN VSET_VALUE "REFAC" "05"
+    OWNER = "ANONYMOUS"
+    LAST_UPDATE_DATE = "2013/06/20 00:00:00"
+    ENABLED_FLAG = "Y"
+    SUMMARY_FLAG = "N"
+    VALUE_CATEGORY = "DKA_SCTRLMODULE_REQUETE_MOD"
+    ATTRIBUTE1 = "DKA"
+    DESCRIPTION =
+ "REFAC - Détermination société - Centre de gestion manquants (3/3)"
+  
+  
+  END VSET_VALUE
+  
+  BEGIN VSET_VALUE "REFAC" "06"
+    OWNER = "ANONYMOUS"
+    LAST_UPDATE_DATE = "2013/06/20 00:00:00"
+    ENABLED_FLAG = "Y"
+    SUMMARY_FLAG = "N"
+    VALUE_CATEGORY = "DKA_SCTRLMODULE_REQUETE_MOD"
+    ATTRIBUTE1 = "DKA"
+    DESCRIPTION =
+ "REFAC - Liste des Sociétés/Régions sans code TVA de type REFAC"
+  
+  
+  END VSET_VALUE
+  
+  BEGIN VSET_VALUE "SLA" "01"
+    OWNER = "JJARDEZ"
+    LAST_UPDATE_DATE = "2017/11/02 15:21:09"
+    ENABLED_FLAG = "Y"
+    SUMMARY_FLAG = "N"
+    VALUE_CATEGORY = "DKA_SCTRLMODULE_REQUETE_MOD"
+    ATTRIBUTE1 = "DKA"
+    DESCRIPTION =
+ "SLA - Identification des factures client terminées, non annulées dont la ligne de type 'REC' (compte collectif clt) est à '0'"
+  
+  
+  END VSET_VALUE
+  
+  BEGIN VSET_VALUE "SLA" "02"
+    OWNER = "JJARDEZ"
+    LAST_UPDATE_DATE = "2017/11/02 15:21:09"
+    ENABLED_FLAG = "Y"
+    SUMMARY_FLAG = "N"
+    VALUE_CATEGORY = "DKA_SCTRLMODULE_REQUETE_MOD"
+    ATTRIBUTE1 = "DKA"
+    DESCRIPTION =
+ "SLA - Identification des règlements client provoquant de l''inter-société AX AR segment1 du cpte bancaire différent du segment1 des factures payées par le dit reglt"
+  
+  
+  END VSET_VALUE
+  
+  BEGIN VSET_VALUE "SLA" "03"
+    OWNER = "JJARDEZ"
+    LAST_UPDATE_DATE = "2017/11/02 15:21:09"
+    ENABLED_FLAG = "Y"
+    SUMMARY_FLAG = "N"
+    VALUE_CATEGORY = "DKA_SCTRLMODULE_REQUETE_MOD"
+    ATTRIBUTE1 = "DKA"
+    DESCRIPTION = "SLA  - Liste des factures intersocietes"
+  
+  
+  END VSET_VALUE
+  
+  BEGIN VSET_VALUE "SLA" "04"
+    OWNER = "JJARDEZ"
+    LAST_UPDATE_DATE = "2017/11/02 15:21:09"
+    ENABLED_FLAG = "Y"
+    SUMMARY_FLAG = "N"
+    VALUE_CATEGORY = "DKA_SCTRLMODULE_REQUETE_MOD"
+    ATTRIBUTE1 = "DKA"
+    DESCRIPTION =
+ "SLA  - Liste des règlements AP intersociétés qui ne sont pas à Y ou Z"
+  
+  
+  END VSET_VALUE
+  
+  BEGIN VSET_VALUE "SLA" "05"
+    OWNER = "JJARDEZ"
+    LAST_UPDATE_DATE = "2017/11/02 15:21:09"
+    ENABLED_FLAG = "Y"
+    SUMMARY_FLAG = "N"
+    VALUE_CATEGORY = "DKA_SCTRLMODULE_REQUETE_MOD"
+    ATTRIBUTE1 = "DKA"
+    DESCRIPTION = "SLA  - Evenement SLA en erreur"
+  
+  
+  END VSET_VALUE
+  
+END VALUE_SET
+

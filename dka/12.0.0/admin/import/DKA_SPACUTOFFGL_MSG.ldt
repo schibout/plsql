@@ -1,0 +1,214 @@
+# $Header$
+
+# dbdrv: exec fnd bin FNDLOAD bin &phase=daa+52 checkfile:~PROD:~PATH:~FILE &ui_apps 0 Y UPLOAD @FND:patch/115/import/afmdmsg.lct @~PROD:~PATH/~FILE
+LANGUAGE = "F"
+LDRCONFIG = "afmdmsg.lct 115.26"
+
+#Source Database REF1HEL
+
+# -- Begin Entity Definitions -- 
+
+DEFINE FND_NEW_MESSAGES
+  KEY   APPLICATION_SHORT_NAME          VARCHAR2(50)
+  KEY   MESSAGE_NAME                    VARCHAR2(30)
+  CTX   OWNER                           VARCHAR2(4000)
+  BASE  LAST_UPDATE_DATE                VARCHAR2(10)
+  CTX   MESSAGE_NUMBER                  VARCHAR2(50)
+  TRANS MESSAGE_TEXT                    VARCHAR2(2000)
+  CTX   DESCRIPTION                     VARCHAR2(240)
+  CTX   TYPE                            VARCHAR2(30)
+  CTX   MAX_LENGTH                      NUMBER(22)
+  CTX   CATEGORY                        VARCHAR2(10)
+  CTX   SEVERITY                        VARCHAR2(10)
+  CTX   FND_LOG_SEVERITY                NUMBER(22)
+END FND_NEW_MESSAGES
+
+# -- End Entity Definitions -- 
+
+
+BEGIN FND_NEW_MESSAGES "DKA" "DKA_SAPCUTOFFGL_E001"
+  OWNER = "USER"
+  LAST_UPDATE_DATE = "2005/07/06"
+  MESSAGE_TEXT =
+ "Le code projet doit être renseigné dans le CUF pour les imputations de charges et produits"
+  TYPE = "OTHER"
+END FND_NEW_MESSAGES
+
+BEGIN FND_NEW_MESSAGES "DKA" "DKA_SAPCUTOFFGL_E002"
+  OWNER = "USER"
+  LAST_UPDATE_DATE = "2005/07/06"
+  MESSAGE_TEXT =
+ "Le type de dépense doit être renseigné dans le CUF pour les imputations de charges"
+  TYPE = "OTHER"
+END FND_NEW_MESSAGES
+
+BEGIN FND_NEW_MESSAGES "DKA" "DKA_SAPCUTOFFGL_E003"
+  OWNER = "USER"
+  LAST_UPDATE_DATE = "2005/07/06"
+  MESSAGE_TEXT =
+ "L'événement produit doit être renseigné dans le CUF pour les imputations de produits"
+  TYPE = "OTHER"
+END FND_NEW_MESSAGES
+
+BEGIN FND_NEW_MESSAGES "DKA" "DKA_SAPCUTOFFGL_E004"
+  OWNER = "USER"
+  LAST_UPDATE_DATE = "2005/07/06"
+  MESSAGE_TEXT =
+ "Le projet &PROJET n'est pas défini ou il est fermé à la date de l'écriture GL"
+  TYPE = "OTHER"
+END FND_NEW_MESSAGES
+
+BEGIN FND_NEW_MESSAGES "DKA" "DKA_SAPCUTOFFGL_E005"
+  OWNER = "USER"
+  LAST_UPDATE_DATE = "2005/07/06"
+  MESSAGE_TEXT =
+ "Le type de dépense &TYPE_DEPENSE n'existe pas ou n'est pas actif à la date de l'écriture GL"
+  TYPE = "OTHER"
+END FND_NEW_MESSAGES
+
+BEGIN FND_NEW_MESSAGES "DKA" "DKA_SAPCUTOFFGL_E006"
+  OWNER = "USER"
+  LAST_UPDATE_DATE = "2005/07/06"
+  MESSAGE_TEXT =
+ "La quantité doit être renseignée pour le type de dépense &TYPE_DEPENSE"
+  TYPE = "OTHER"
+END FND_NEW_MESSAGES
+
+BEGIN FND_NEW_MESSAGES "DKA" "DKA_SAPCUTOFFGL_E007"
+  OWNER = "USER"
+  LAST_UPDATE_DATE = "2005/07/06"
+  MESSAGE_TEXT =
+ "L'évenement de produit &EVENT_PRODUIT n'existe pas ou n'est pas actif à la date de l'écriture GL"
+  TYPE = "OTHER"
+END FND_NEW_MESSAGES
+
+BEGIN FND_NEW_MESSAGES "DKA" "DKA_SAPCUTOFFGL_E008"
+  OWNER = "USER"
+  LAST_UPDATE_DATE = "2005/07/06"
+  MESSAGE_TEXT = "Le compte local &COMPTE_LOCAL n'existe pas "
+  TYPE = "OTHER"
+END FND_NEW_MESSAGES
+
+BEGIN FND_NEW_MESSAGES "DKA" "DKA_SAPCUTOFFGL_E009"
+  OWNER = "USER"
+  LAST_UPDATE_DATE = "2005/07/06"
+  MESSAGE_TEXT =
+ "L'appel à la fonction d'autoaccounting PA à echoué avec le message suivant : &MESSAGE_ERREUR"
+  TYPE = "OTHER"
+END FND_NEW_MESSAGES
+
+BEGIN FND_NEW_MESSAGES "DKA" "DKA_SAPCUTOFFGL_E010"
+  OWNER = "USER"
+  LAST_UPDATE_DATE = "2005/07/06"
+  MESSAGE_TEXT =
+ "Le projet 'Z-REFAC' de la société &SOCIETE n'a pu être trouvé (&MESSAGE_ERREUR)"
+  TYPE = "OTHER"
+END FND_NEW_MESSAGES
+
+BEGIN FND_NEW_MESSAGES "DKA" "DKA_SAPCUTOFFGL_E011"
+  OWNER = "USER"
+  LAST_UPDATE_DATE = "2005/07/06"
+  MESSAGE_TEXT =
+ "Impossible de crée la clé GL &CONCATENED_SEGS (&MESSAGE_ERREUR)"
+  TYPE = "OTHER"
+END FND_NEW_MESSAGES
+
+BEGIN FND_NEW_MESSAGES "DKA" "DKA_SAPCUTOFFGL_E012"
+  OWNER = "USER"
+  LAST_UPDATE_DATE = "2005/07/06"
+  MESSAGE_TEXT = "Erreur dans la procedure &NOM_PROC (&MESSAGE_ERREUR)"
+  TYPE = "OTHER"
+END FND_NEW_MESSAGES
+
+BEGIN FND_NEW_MESSAGES "DKA" "DKA_SAPCUTOFFGL_I001"
+  OWNER = "USER"
+  LAST_UPDATE_DATE = "2005/07/06"
+  MESSAGE_TEXT =
+ "Un cas de refacturation a été identifié. \n\
+La valeur du code projet va être mise à jour à &CODE_PROJET pour traitement de la refacturation"
+  TYPE = "OTHER"
+END FND_NEW_MESSAGES
+
+BEGIN FND_NEW_MESSAGES "DKA" "DKA_SAPCUTOFFGL_I002"
+  OWNER = "USER"
+  LAST_UPDATE_DATE = "2005/07/06"
+  MESSAGE_TEXT =
+ "Le centre de gestion de l'imputation à été changé de &OLD_CENTRE à &NEW_CENTRE"
+  TYPE = "OTHER"
+END FND_NEW_MESSAGES
+
+BEGIN FND_NEW_MESSAGES "DKA" "DKA_SAPCUTOFFGL_E100"
+  OWNER = "USER"
+  LAST_UPDATE_DATE = "2005/07/06"
+  MESSAGE_TEXT =
+ "Ce code projet n'est pas autorisé en saisie directe. Choisissez un autre code projet"
+  TYPE = "OTHER"
+END FND_NEW_MESSAGES
+
+BEGIN FND_NEW_MESSAGES "DKA" "DKA_SAPCUTOFFGL_E101"
+  OWNER = "USER"
+  LAST_UPDATE_DATE = "2005/07/06"
+  MESSAGE_TEXT =
+ "Refacturation automatique interdite pour les journaux à contre passation automatique. \n\
+Choisissez un autre code projet ou un autre type de pièce"
+  TYPE = "OTHER"
+END FND_NEW_MESSAGES
+
+BEGIN FND_NEW_MESSAGES "DKA" "DKA_SAPCUTOFFGL_E102"
+  OWNER = "USER"
+  LAST_UPDATE_DATE = "2005/07/06"
+  MESSAGE_TEXT =
+ "Un cas de refacturation a été identifié, mais le type &TYPE est non refacturable. \n\
+Choisissez un autre type &TYPE  "
+  TYPE = "OTHER"
+END FND_NEW_MESSAGES
+
+BEGIN FND_NEW_MESSAGES "DKA" "DKA_SAPCUTOFFGL_E103"
+  OWNER = "USER"
+  LAST_UPDATE_DATE = "2005/07/06"
+  MESSAGE_TEXT =
+ "Le type de dépense &TYPE_DEPENSE n'est pas cohérent avec le compte local &COMPTE_LOCAL. \n\
+Modifier l'une des 2 valeurs "
+  TYPE = "OTHER"
+END FND_NEW_MESSAGES
+
+BEGIN FND_NEW_MESSAGES "DKA" "DKA_SAPCUTOFFGL_E104"
+  OWNER = "USER"
+  LAST_UPDATE_DATE = "2005/07/06"
+  MESSAGE_TEXT =
+ "Le type d'événement &EVENT_PRODUIT n'est pas cohérent avec le compte local &COMPTE_LOCAL. \n\
+Modifier l'une des 2 valeurs "
+  TYPE = "OTHER"
+END FND_NEW_MESSAGES
+
+BEGIN FND_NEW_MESSAGES "DKA" "DKA_SAPCUTOFFGL_E105"
+  OWNER = "USER"
+  LAST_UPDATE_DATE = "2005/07/06"
+  MESSAGE_TEXT =
+ "Impossible de déterminer une valeur pour le segment n° &NUM_SEGMENT"
+  TYPE = "OTHER"
+END FND_NEW_MESSAGES
+
+BEGIN FND_NEW_MESSAGES "DKA" "DKA_SAPCUTOFFGL_E020"
+  OWNER = "USER"
+  LAST_UPDATE_DATE = "2005/07/06"
+  MESSAGE_TEXT =
+ "Ni le type d'évenement ni le type de dépense ne sont renseignés dans le CUF de la ligne GL"
+  TYPE = "OTHER"
+END FND_NEW_MESSAGES
+
+BEGIN FND_NEW_MESSAGES "DKA" "DKA_SAPCUTOFFGL_E106"
+  OWNER = "USER"
+  LAST_UPDATE_DATE = "2006/11/02"
+  MESSAGE_TEXT =
+ "Les informations du CUF pour le calcul des marges amont (Quantité, Code D/N, Famille Energie) ne sont pas toutes renseignées."
+  TYPE = "OTHER"
+END FND_NEW_MESSAGES
+
+BEGIN FND_NEW_MESSAGES "DKA" "DKA_SAPCUTOFFGL_E107"
+  OWNER = "USER"
+  LAST_UPDATE_DATE = "2017/01/12"
+  MESSAGE_TEXT =
+ "Refacturation automatique interdite pour les projets d'investissement."
+  TYPE = "OTHER"
+END FND_NEW_MESSAGES

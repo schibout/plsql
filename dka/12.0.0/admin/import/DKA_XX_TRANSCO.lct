@@ -1,0 +1,254 @@
+## **************************************************************************
+# FILE NAME :  DKA_XX_TRANSCO.lct
+# PURPOSE   :  Config file for dka STRANSCO
+#
+# ARGUMENTS :
+#
+# NOTES     :
+#
+# HISTORY :
+# ver        date        author           description
+# ---------  ----------  ---------------  ------------------------------------
+# 1.0        04/02/2002  K.Helali         Created
+# 1.1        13/03/2002  S.Bertheas       Suppression des lignes dans DKA_STRANSCO_LINES avant insertion
+# 1.2        27/02/2017  M.EGOT           Modification du orderby dans DKA_STRANSCO_LINES
+##*************************************************************************/
+# Format des Dates = DD/MM/YYYY HH24:MI:SS
+
+DEFINE DKA_STRANSCO_HEADERS
+        KEY   SET_NAME          VARCHAR2(50)
+        BASE  DESCRIPTION        VARCHAR2(240)
+        BASE  PARAM1_NAME        VARCHAR2(100)
+        BASE  PARAM1_LOV         VARCHAR2(250)
+        BASE  PARAM1_FLAG        VARCHAR2(1)
+        BASE  PARAM2_NAME        VARCHAR2(100)
+        BASE  PARAM2_LOV         VARCHAR2(250)
+        BASE  PARAM2_FLAG        VARCHAR2(1)
+        BASE  PARAM3_NAME        VARCHAR2(100)
+        BASE  PARAM3_LOV         VARCHAR2(250)
+        BASE  PARAM3_FLAG        VARCHAR2(1)
+        BASE  RETURN_VALUE_NAME  VARCHAR2(30)
+        BASE  RETURN_VALUE_LOV   VARCHAR2(250)
+        BASE  INACTIVE_DATE      VARCHAR2(19)
+
+    DEFINE DKA_STRANSCO_LINES
+        KEY   SET_NAME          VARCHAR2(50)
+        KEY   PARAMS_VALUE      VARCHAR2(300)
+        BASE  PARAM1_VALUE      VARCHAR2(100)
+        BASE  PARAM2_VALUE      VARCHAR2(100)
+        BASE  PARAM3_VALUE      VARCHAR2(100)
+        BASE  RETURN_VALUE      VARCHAR2(100)
+        BASE  ENABLE            VARCHAR2(1)
+        BASE  INACTIVE_DATE     VARCHAR2(19)
+        BASE  START_DATE        VARCHAR2(19)
+        BASE  END_DATE          VARCHAR2(19)
+    END DKA_STRANSCO_LINES
+
+END DKA_STRANSCO_HEADERS
+
+###############################################################################
+DOWNLOAD DKA_STRANSCO_HEADERS
+"
+    SELECT   dsh.set_name
+            ,dsh.description
+            ,dsh.param1_name
+            ,dsh.param1_lov
+            ,dsh.param1_flag
+            ,dsh.param2_name
+            ,dsh.param2_lov
+            ,dsh.param2_flag
+            ,dsh.param3_name
+            ,dsh.param3_lov
+            ,dsh.param3_flag
+            ,dsh.return_value_name
+            ,dsh.return_value_lov
+            ,TO_CHAR(dsh.inactive_date    ,'DD/MM/YYYY HH24:MI:SS') inactive_date
+    FROM    dka_stransco_headers dsh
+    WHERE   dsh.set_name = upper(:SET_NAME)"
+
+DOWNLOAD DKA_STRANSCO_LINES
+"
+    SELECT   dsh.set_name
+            ,dsl.params_value
+            ,dsl.param1_value
+            ,dsl.param2_value
+            ,dsl.param3_value
+            ,dsl.return_value
+            ,dsl.enable
+            ,TO_CHAR(dsl.inactive_date ,'DD/MM/YYYY HH24:MI:SS') inactive_date
+            ,TO_CHAR(dsl.start_date    ,'DD/MM/YYYY HH24:MI:SS') start_date
+            ,TO_CHAR(dsl.end_date      ,'DD/MM/YYYY HH24:MI:SS') end_date
+    FROM    dka_stransco_headers dsh
+            ,dka_stransco_lines dsl
+    WHERE   dsh.set_name = upper(:SET_NAME)
+      AND   dsl.set_id   = dsh.set_id
+    ORDER BY 1,2,7,(sysdate - nvl(dsl.end_date, sysdate)) DESC
+"
+
+UPLOAD DKA_STRANSCO_HEADERS
+BEGIN
+"
+DECLARE
+    l_set_id    DKA_STRANSCO_HEADERS.set_id%TYPE;
+BEGIN
+    BEGIN
+        SELECT  dsh.set_id
+        INTO    l_set_id
+        FROM    DKA_STRANSCO_HEADERS dsh
+        WHERE   dsh.set_name = :SET_NAME;
+    EXCEPTION
+        WHEN NO_DATA_FOUND THEN
+            l_set_id := NULL;
+        WHEN OTHERS THEN
+           RAISE;
+    END ;
+
+    IF l_set_id IS NOT NULL THEN
+        UPDATE  DKA_STRANSCO_HEADERS dsh
+        SET      dsh.description         = :DESCRIPTION
+                ,dsh.param1_name         = :PARAM1_NAME
+                ,dsh.param1_lov          = :PARAM1_LOV
+                ,dsh.param1_flag         = :PARAM1_FLAG
+                ,dsh.param2_name         = :PARAM2_NAME
+                ,dsh.param2_lov          = :PARAM2_LOV
+                ,dsh.param2_flag         = :PARAM2_FLAG
+                ,dsh.param3_name         = :PARAM3_NAME
+                ,dsh.param3_lov          = :PARAM3_LOV
+                ,dsh.param3_flag         = :PARAM3_FLAG
+                ,dsh.return_value_name   = :RETURN_VALUE_NAME
+                ,dsh.return_value_lov    = :RETURN_VALUE_LOV
+                ,dsh.inactive_date       = TO_DATE(:INACTIVE_DATE    ,'DD/MM/YYYY HH24:MI:SS')
+                ,last_update_date        = SYSDATE
+                ,last_updated_by         = FND_GLOBAL.user_id
+        WHERE   dsh.set_id = l_set_id  ;
+
+        DELETE FROM DKA_STRANSCO_LINES dsl
+        WHERE dsl.set_id = l_set_id;
+
+    ELSE
+        SELECT dka_stransco_headers_s.nextval INTO l_set_id FROM DUAL;
+
+        INSERT INTO DKA_STRANSCO_HEADERS (
+            set_id
+            ,set_name
+            ,description
+            ,param1_name
+            ,param1_lov
+            ,param1_flag
+            ,param2_name
+            ,param2_lov
+            ,param2_flag
+            ,param3_name
+            ,param3_lov
+            ,param3_flag
+            ,return_value_name
+            ,return_value_lov
+            ,inactive_date
+            ,creation_date
+            ,created_by
+            ,last_update_date
+            ,last_updated_by
+        ) VALUES (
+             l_set_id
+            ,:SET_NAME
+            ,:DESCRIPTION
+            ,:PARAM1_NAME
+            ,:PARAM1_LOV
+            ,:PARAM1_FLAG
+            ,:PARAM2_NAME
+            ,:PARAM2_LOV
+            ,:PARAM2_FLAG
+            ,:PARAM3_NAME
+            ,:PARAM3_LOV
+            ,:PARAM3_FLAG
+            ,:RETURN_VALUE_NAME
+            ,:RETURN_VALUE_LOV
+            ,TO_DATE(:INACTIVE_DATE    ,'DD/MM/YYYY HH24:MI:SS')
+            ,SYSDATE
+            ,FND_GLOBAL.user_id
+            ,SYSDATE
+            ,FND_GLOBAL.user_id
+        );
+    END IF;
+END;
+"
+END
+"
+begin
+     NULL;
+end;
+"
+
+UPLOAD DKA_STRANSCO_LINES
+"
+DECLARE
+    l_line_id   DKA_STRANSCO_LINES.line_id%TYPE;
+    l_set_id    DKA_STRANSCO_LINES.set_id%TYPE;
+BEGIN
+    BEGIN
+        SELECT  dsh.set_id
+                ,dsl.line_id
+        INTO    l_set_id
+                , l_line_id
+        FROM    DKA_STRANSCO_HEADERS dsh
+                ,DKA_STRANSCO_LINES  dsl
+        WHERE   dsh.set_name         = :SET_NAME
+          AND   dsl.params_value  (+)= :PARAMS_VALUE
+          AND   dsl.set_id        (+)= dsh.set_id;
+    EXCEPTION
+        WHEN OTHERS THEN
+           RAISE;
+    END ;
+
+    IF l_line_id IS NOT NULL THEN
+        UPDATE  DKA_STRANSCO_LINES dsl
+        SET      dsl.param1_value   = :PARAM1_VALUE
+                ,dsl.param2_value   = :PARAM2_VALUE
+                ,dsl.param3_value   = :PARAM3_VALUE
+                ,dsl.return_value   = :RETURN_VALUE
+                ,dsl.enable         = :ENABLE
+                ,dsl.inactive_date  = TO_DATE(:INACTIVE_DATE ,'DD/MM/YYYY HH24:MI:SS')
+                ,dsl.start_date     = TO_DATE(:START_DATE    ,'DD/MM/YYYY HH24:MI:SS')
+                ,dsl.end_date       = TO_DATE(:END_DATE      ,'DD/MM/YYYY HH24:MI:SS')
+                ,last_update_date   = SYSDATE
+                ,last_updated_by    = FND_GLOBAL.user_id
+        WHERE   dsl.line_id = l_line_id  ;
+    ELSE
+        SELECT dka_stransco_lines_s.nextval INTO l_line_id FROM DUAL;
+
+        INSERT INTO DKA_STRANSCO_LINES (
+             set_id
+            ,line_id
+            ,params_value
+            ,param1_value
+            ,param2_value
+            ,param3_value
+            ,return_value
+            ,enable
+            ,inactive_date
+            ,start_date
+            ,end_date
+            ,creation_date
+            ,created_by
+            ,last_update_date
+            ,last_updated_by
+        ) VALUES (
+             l_set_id
+            ,l_line_id
+            ,:PARAMS_VALUE
+            ,:PARAM1_VALUE
+            ,:PARAM2_VALUE
+            ,:PARAM3_VALUE
+            ,:RETURN_VALUE
+            ,:ENABLE
+            ,TO_DATE(:INACTIVE_DATE ,'DD/MM/YYYY HH24:MI:SS')
+            ,TO_DATE(:START_DATE    ,'DD/MM/YYYY HH24:MI:SS')
+            ,TO_DATE(:END_DATE      ,'DD/MM/YYYY HH24:MI:SS')
+            ,SYSDATE
+            ,FND_GLOBAL.user_id
+            ,SYSDATE
+            ,FND_GLOBAL.user_id
+        );
+    END IF;
+END;
+"

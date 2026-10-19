@@ -1,0 +1,200 @@
+#
+# $Header: xlaemseed.lct 120.22 2011/03/22 12:12:53 sgullape ship $
+#
+# xlaemseed.lct - XLA-related Seed Data Configuration
+# +=======================================================================+
+# |  Copyright (c) 2001-2002 Oracle Corporation, Redwood Shores, CA, USA  |
+# |                         All rights reserved.                          |
+# +=======================================================================+
+# | FILENAME                                                              |
+# |    xlaemseed.lct                                                      |
+# |                                                                       |
+# | DESCRIPTION                                                           |
+# |    XLA_SUBLEDGERS                                                     | 
+# |                                                                       |
+# | HISTORY                                                               |
+# |    11-Sep-03  Wynne Chan   Created                                    |
+# |    18-Aug-05  Wynne Chan   Update JE_CATEGORY_NAME to JE_CATEGORY_KEY |
+# |                                                                       |
+# +=======================================================================+
+#
+# Entities -
+#
+#    XLA_SOURCES
+COMMENT = "dbdrv: exec fnd bin FNDLOAD bin &phase=dat+1 checkfile:~PROD:~PATH:~FILE &ui_apps 0 Y UPLOAD @DKA:admin/import/dka_xlasrc.lct @~PROD:~PATH/~FILE"
+#
+# -- DEFINE SECTION --
+#   To download XLA CUSTOM SOURCE 
+#   specify the parameter APPLICATION_SHORT_NAME and/or SOURCE_CODE
+#
+#
+   
+ DEFINE XLA_SOURCES
+  KEY   APPLICATION_SHORT_NAME                VARCHAR2(50) 
+  KEY   SOURCE_CODE                           VARCHAR2(30)
+  KEY   SOURCE_TYPE_CODE                      VARCHAR2(1)
+  BASE  DATATYPE_CODE                         VARCHAR2(1)
+  BASE  PLSQL_FUNCTION_NAME                   VARCHAR2(80)
+  BASE  FLEX_VALUE_SET_NAME                   VARCHAR2(60)
+  BASE  SUM_FLAG                              VARCHAR2(1)
+  BASE  VISIBLE_FLAG                          VARCHAR2(1)
+  BASE  ENABLED_FLAG                          VARCHAR2(1)
+  BASE  TRANSLATED_FLAG                       VARCHAR2(1)
+  BASE  LOOKUP_TYPE                           VARCHAR2(30)
+  BASE  VIEW_APP_SHORT_NAME                   VARCHAR2(50)
+  BASE  KEY_FLEXFIELD_FLAG                    VARCHAR2(1)
+  BASE  FLEX_APPL_SHORT_NAME                  VARCHAR2(50)
+  BASE  SEGMENT_CODE                          VARCHAR2(30)
+  BASE  ID_FLEX_CODE                          VARCHAR2(30)  
+  BASE  OWNER                                 VARCHAR2(4000)
+  BASE  LAST_UPDATE_DATE                      VARCHAR2(10)
+  TRANS NAME                                  VARCHAR2(80)
+  TRANS DESCRIPTION                           VARCHAR2(240)
+
+  DEFINE XLA_SOURCE_PARAMS
+   KEY   USER_SEQUENCE                        VARCHAR2(50)
+   BASE  PARAMETER_TYPE_CODE                  VARCHAR2(1)
+   BASE  CONSTANT_VALUE                       VARCHAR2(240)
+   BASE  REF_SOURCE_APP_SHORT_NAME            VARCHAR2(50)
+   BASE  REF_SOURCE_TYPE_CODE                 VARCHAR2(1)
+   BASE  REF_SOURCE_CODE                      VARCHAR2(30)
+   BASE  OWNER                                VARCHAR2(4000)
+   BASE  LAST_UPDATE_DATE                     VARCHAR2(10)
+  END XLA_SOURCE_PARAMS
+
+ END XLA_SOURCES
+
+################################################ 
+# DOWNLOAD section
+#
+
+DOWNLOAD XLA_SOURCES
+"select FS.APPLICATION_SHORT_NAME, 
+       S.SOURCE_CODE,            
+       S.SOURCE_TYPE_CODE,      
+       S.DATATYPE_CODE,      
+       S.PLSQL_FUNCTION_NAME,      
+       X.FLEX_VALUE_SET_NAME,      
+       S.SUM_FLAG,      
+       S.VISIBLE_FLAG,      
+       S.ENABLED_FLAG,    
+       S.TRANSLATED_FLAG,      
+       S.LOOKUP_TYPE,    
+       FS1.APPLICATION_SHORT_NAME  VIEW_APP_SHORT_NAME,    
+       S.KEY_FLEXFIELD_FLAG,
+       FS2.APPLICATION_SHORT_NAME  FLEX_APPL_SHORT_NAME,    
+       S.SEGMENT_CODE,
+       S.ID_FLEX_CODE,
+       rtrim(fnd_load_util.owner_name(S.LAST_UPDATED_BY)) OWNER,
+       to_char(S.LAST_UPDATE_DATE, 'YYYY/MM/DD') LAST_UPDATE_DATE,
+       S.NAME,            
+       S.DESCRIPTION          
+ from   XLA_SOURCES_VL S, FND_APPLICATION_VL FS, 
+        FND_APPLICATION_VL FS1, FND_APPLICATION_VL FS2, FND_FLEX_VALUE_SETS X 
+ where  S.APPLICATION_ID      = FS.APPLICATION_ID 
+   and  S.VIEW_APPLICATION_ID = FS1.APPLICATION_ID(+) 
+   and  S.FLEXFIELD_APPLICATION_ID = FS2.APPLICATION_ID(+) 
+   and  S.FLEX_VALUE_SET_ID   = X.FLEX_VALUE_SET_ID(+) 
+   and  S.DATATYPE_CODE       = 'C'
+   and  (:SOURCE_CODE is null 
+    or  (:SOURCE_CODE is not null 
+    and S.SOURCE_CODE like :SOURCE_CODE))
+   and  (:APPLICATION_SHORT_NAME is null 
+    or  (:APPLICATION_SHORT_NAME is not null 
+    and FS.APPLICATION_SHORT_NAME like :APPLICATION_SHORT_NAME))
+order by FS.APPLICATION_SHORT_NAME, S.SOURCE_CODE "
+
+DOWNLOAD XLA_SOURCE_PARAMS
+"SELECT 
+ XSP.USER_SEQUENCE
+,XSP.PARAMETER_TYPE_CODE
+,XSP.CONSTANT_VALUE
+,APP.APPLICATION_SHORT_NAME REF_SOURCE_APP_SHORT_NAME
+,XSP.REF_SOURCE_TYPE_CODE
+,XSP.REF_SOURCE_CODE
+,rtrim(fnd_load_util.owner_name(XSP.LAST_UPDATED_BY)) OWNER
+,to_char(XSP.LAST_UPDATE_DATE, 'YYYY/MM/DD') LAST_UPDATE_DATE
+FROM XLA_SOURCE_PARAMS      XSP
+    ,FND_APPLICATION        APP
+    ,FND_APPLICATION        APP1
+WHERE XSP.APPLICATION_ID = APP1.APPLICATION_ID
+AND   APP.APPLICATION_ID(+) = XSP.REF_SOURCE_APPLICATION_ID
+AND   APP1.APPLICATION_SHORT_NAME = :APPLICATION_SHORT_NAME
+AND   XSP.SOURCE_TYPE_CODE        = :SOURCE_TYPE_CODE
+AND   XSP.SOURCE_CODE             = :SOURCE_CODE
+ORDER BY XSP.USER_SEQUENCE"
+
+################################################ 
+# UPLOAD section
+#
+
+UPLOAD XLA_SOURCES
+BEGIN
+" BEGIN
+    IF (:UPLOAD_MODE = 'NLS') THEN
+      xla_sources_f_pkg.TRANSLATE_ROW (
+          p_appl_short_name  => :APPLICATION_SHORT_NAME, 
+          p_source_code      => :SOURCE_CODE,  
+          p_source_type_code => :SOURCE_TYPE_CODE,
+          p_name             => :NAME,
+          p_description      => :DESCRIPTION,
+          p_owner            => :OWNER,
+          p_last_update_date => :LAST_UPDATE_DATE,
+          p_custom_mode      => :CUSTOM_MODE);
+     
+    ELSE  
+      xla_sources_f_pkg.LOAD_ROW (
+          p_appl_short_name      => :APPLICATION_SHORT_NAME,
+          p_source_code          => :SOURCE_CODE,
+          p_source_type_code     => :SOURCE_TYPE_CODE,
+          p_datatype_code        => :DATATYPE_CODE,
+          p_plsql_function_name  => :PLSQL_FUNCTION_NAME,
+          p_flex_value_set_name  => :FLEX_VALUE_SET_NAME,
+          p_sum_flag             => :SUM_FLAG,
+          p_visible_flag         => :VISIBLE_FLAG,
+          p_translated_flag      => :TRANSLATED_FLAG,  
+          p_enabled_flag         => :ENABLED_FLAG,
+          p_view_appl_short_name => :VIEW_APP_SHORT_NAME,  
+          p_lookup_type          => :LOOKUP_TYPE, 
+          p_key_flexfield_flag   => :KEY_FLEXFIELD_FLAG,  
+          p_segment_code         => :SEGMENT_CODE,  
+          p_flex_appl_short_name => :FLEX_APPL_SHORT_NAME,  
+          p_id_flex_code         => :ID_FLEX_CODE,   
+          p_name                 => :NAME,
+          p_description          => :DESCRIPTION,
+          p_owner                => :OWNER,
+          p_last_update_date     => :LAST_UPDATE_DATE,
+          p_source_column_name   => Nvl(:SOURCE_COLUMN_NAME,NULL),
+          p_source_table_name    => Nvl(:SOURCE_TABLE_NAME,NULL),
+          p_custom_mode          => :CUSTOM_MODE);
+    END IF;  
+  END;
+"     
+    
+UPLOAD XLA_SOURCE_PARAMS
+" BEGIN 
+    xla_source_params_f_pkg.LOAD_ROW
+        (p_application_short_name    => :APPLICATION_SHORT_NAME
+        ,p_source_type_code          => :SOURCE_TYPE_CODE
+        ,p_source_code               => :SOURCE_CODE
+        ,p_user_sequence             => :USER_SEQUENCE
+        ,p_parameter_type_code       => :PARAMETER_TYPE_CODE
+        ,p_constant_value            => :CONSTANT_VALUE
+        ,p_ref_source_app_short_name => :REF_SOURCE_APP_SHORT_NAME
+        ,p_ref_source_type_code      => :REF_SOURCE_TYPE_CODE
+        ,p_ref_source_code           => :REF_SOURCE_CODE
+        ,p_owner                     => :OWNER
+        ,p_last_update_date          => :LAST_UPDATE_DATE);
+  END;
+"    
+
+###
+### Added for Online Patching
+###
+
+PREPARE XLA_SOURCES
+	TABLE XLA_SOURCES_TL
+	TABLE XLA_SOURCES_B
+
+PREPARE XLA_SOURCE_PARAMS
+	TABLE XLA_SOURCE_PARAMS

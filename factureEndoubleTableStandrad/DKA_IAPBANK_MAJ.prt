@@ -1,0 +1,95 @@
+# $Header$
+#  21/07/2009  SL  Adaptation des différentes fonctions/procédures pour prendre en compte l'éclatement du lot
+#                  d'equilibre par centre de gestion en plusieurs lots (un par société segmentée)
+
+# 
+LANGUAGE = "US"
+LDRCONFIG = "DKA_XX_PARAM.lct"
+
+#Source Database INTGSPE2
+
+# -- Begin Entity Definitions -- 
+
+DEFINE DKA_PARAMETER
+  KEY   PROGRAM_CODE                    VARCHAR2(50)
+  KEY   PARAMETER_NAME                  VARCHAR2(50)
+  BASE  DESCRIPTION                     VARCHAR2(255)
+  BASE  TABLE_NAME                      VARCHAR2(100)
+  BASE  COLUMN_NAME                     VARCHAR2(100)
+  BASE  DATA_TYPE                       VARCHAR2(100)
+  BASE  VARCHAR2_VALUE                  VARCHAR2(50)
+  BASE  NUMBER_VALUE                    VARCHAR2(30)
+  BASE  DATE_VALUE                      VARCHAR2(19)
+  BASE  BOOLEAN_VALUE                   VARCHAR2(1)
+END DKA_PARAMETER
+
+# -- End Entity Definitions -- 
+
+
+BEGIN DKA_PARAMETER "DKA_SGLEQUILIB" "GL_AUTOPOST_SET_NAME"
+  DESCRIPTION = "Nom du jeu de lot auto imputation dans GL"
+  TABLE_NAME = "GL_AUTOMATIC_POSTING_SETS"
+  COLUMN_NAME = "AUTOPOST_SET_NAME"
+  DATA_TYPE = "VARCHAR2"
+  VARCHAR2_VALUE = "DKA_JEU_TOTAL"
+END DKA_PARAMETER
+
+BEGIN DKA_PARAMETER "DKA_SGLEQUILIB" "GL_RESPONSIBILITY_KEY"
+  DESCRIPTION = "Responsabilité de lancement des traitements GL"
+  DATA_TYPE = "VARCHAR2"
+  VARCHAR2_VALUE = "TOUT_GL_OPE_ADMINISTRATEUR"
+END DKA_PARAMETER
+
+BEGIN DKA_PARAMETER "DKA_SGLEQUILIB" "GL_CLE_SYNTHESE"
+  DESCRIPTION = "Clé de synthèse servant à l'équilibre"
+  DATA_TYPE = "VARCHAR2"
+  VARCHAR2_VALUE = "XSSSS.D.CLASSE.T.T.T.T.T.T.T.T.T"
+END DKA_PARAMETER
+
+BEGIN DKA_PARAMETER "DKA_SGLEQUILIB" "CPTE_LOC_EQUIL_1_7"
+  DESCRIPTION = "Compte Local servant à l'équilibre pour les classes 1 a 7"
+  DATA_TYPE = "VARCHAR2"
+  VARCHAR2_VALUE = "519999"
+END DKA_PARAMETER
+
+BEGIN DKA_PARAMETER "DKA_SGLEQUILIB" "CPTE_LOC_EQUIL_8"
+  DESCRIPTION = "Compte Local servant à l'équilibre pour la classe 8"
+  DATA_TYPE = "VARCHAR2"
+  VARCHAR2_VALUE = "851999"
+END DKA_PARAMETER
+
+BEGIN DKA_PARAMETER "DKA_SGLEQUILIB" "CPTE_LOC_EQUIL_9"
+  DESCRIPTION = "Compte Local servant à l'équilibre pour la classe 9"
+  DATA_TYPE = "VARCHAR2"
+  VARCHAR2_VALUE = "951999"
+END DKA_PARAMETER
+
+BEGIN DKA_PARAMETER "DKA_SGLEQUILIB" "CPTE_GPE_EQUIL_1_7"
+  DESCRIPTION = "Compte Groupe servant à l'équilibre pour les classes 1 a 7"
+  DATA_TYPE = "VARCHAR2"
+  VARCHAR2_VALUE = "28000"
+END DKA_PARAMETER
+
+BEGIN DKA_PARAMETER "DKA_SGLEQUILIB" "CPTE_GPE_EQUIL_8"
+  DESCRIPTION = "Compte Groupe servant à l'équilibre pour la classe 8"
+  DATA_TYPE = "VARCHAR2"
+  VARCHAR2_VALUE = "80119"
+END DKA_PARAMETER
+
+BEGIN DKA_PARAMETER "DKA_SGLEQUILIB" "CPTE_GPE_EQUIL_9"
+  DESCRIPTION = "Compte Groupe servant à l'équilibre pour la classe 9"
+  DATA_TYPE = "VARCHAR2"
+  VARCHAR2_VALUE = "91707"
+END DKA_PARAMETER
+
+BEGIN DKA_PARAMETER "DKA_SGLEQUILIB" "TYPE_MONTANT"
+  DESCRIPTION = "Type de montant 2 valeurs possibles : YTD (Exercice) ou PTD (Periode)"
+  DATA_TYPE = "VARCHAR2"
+  VARCHAR2_VALUE = "PTD"
+END DKA_PARAMETER
+
+BEGIN DKA_PARAMETER "DKA_SGLEQUILIB" "TYPE_PIECE"
+  DESCRIPTION = "Type de pièces répétitives "
+  DATA_TYPE = "VARCHAR2"
+  VARCHAR2_VALUE = "EQUILIBRE CDG"
+END DKA_PARAMETER

@@ -1,0 +1,492 @@
+# $Header$
+
+# dbdrv: exec fnd bin FNDLOAD bin &phase=daa+51 checkfile:~PROD:~PATH:~FILE &ui_apps 0 Y UPLOAD @FND:patch/115/import/afsload.lct @~PROD:~PATH/~FILE
+LANGUAGE = "F"
+LDRCONFIG = "afsload.lct 120.5.12020000.3"
+
+#Source Database HELDEV
+
+#RELEASE_NAME 12.2.4
+
+# -- Begin Entity Definitions -- 
+
+DEFINE MENU
+  KEY   MENU_NAME                       VARCHAR2(4000)
+  BASE  TYPE                            VARCHAR2(30)
+  BASE  LAST_UPDATE_DATE                VARCHAR2(10)
+  TRANS USER_MENU_NAME                  VARCHAR2(80)
+  TRANS DESCRIPTION                     VARCHAR2(240)
+  CTX   OWNER                           VARCHAR2(4000)
+  BASE  WEB_ICON                        VARCHAR2(30)
+
+  DEFINE ENTRY
+    TRANS PROMPT                          VARCHAR2(60)
+    TRANS DESCRIPTION                     VARCHAR2(240)
+    BASE  GRANT_FLAG                      VARCHAR2(1)
+    BASE  LAST_UPDATE_DATE                VARCHAR2(10)
+    CTX   SUBMENU                         REFERENCES MENU
+    CTX   FUNCTION                        REFERENCES FUNCTION
+    CTX   OWNER                           VARCHAR2(4000)
+  END ENTRY
+END MENU
+
+DEFINE FUNCTION
+  KEY   FUNCTION_NAME                   VARCHAR2(4000)
+  BASE  FORM                            REFERENCES FORM
+  BASE  TYPE                            VARCHAR2(30)
+  BASE  PARAMETERS                      VARCHAR2(4000)
+  BASE  WEB_HOST_NAME                   VARCHAR2(4000)
+  BASE  WEB_AGENT_NAME                  VARCHAR2(4000)
+  BASE  WEB_HTML_CALL                   VARCHAR2(4000)
+  BASE  WEB_ENCRYPT_PARAMETERS          VARCHAR2(4000)
+  BASE  WEB_SECURED                     VARCHAR2(4000)
+  BASE  WEB_ICON                        VARCHAR2(4000)
+  BASE  FUNC_OBJECT                     REFERENCES OBJECT
+  BASE  OBJECT_NAME                     REFERENCES OBJECT
+  BASE  REGION_APPLICATION_SHORT_NAME   VARCHAR2(50)
+  BASE  REGION_APPLICATION_NAME         VARCHAR2(50)
+  BASE  REGION_CODE                     VARCHAR2(4000)
+  BASE  LAST_UPDATE_DATE                VARCHAR2(10)
+  BASE  MAINTENANCE_MODE_SUPPORT        VARCHAR2(8)
+  BASE  CONTEXT_DEPENDENCE              VARCHAR2(8)
+  BASE  JRAD_REF_PATH                   VARCHAR2(4000)
+  TRANS USER_FUNCTION_NAME              VARCHAR2(80)
+  TRANS DESCRIPTION                     VARCHAR2(240)
+  CTX   OWNER                           VARCHAR2(4000)
+END FUNCTION
+
+DEFINE OBJECT
+  KEY   OBJ_NAME                        VARCHAR2(4000)
+  BASE  APPLICATION_SHORT_NAME          VARCHAR2(50)
+  BASE  DATABASE_OBJECT_NAME            VARCHAR2(30)
+  BASE  PK1_COLUMN_NAME                 VARCHAR2(30)
+  BASE  PK2_COLUMN_NAME                 VARCHAR2(30)
+  BASE  PK3_COLUMN_NAME                 VARCHAR2(30)
+  BASE  PK4_COLUMN_NAME                 VARCHAR2(30)
+  BASE  PK5_COLUMN_NAME                 VARCHAR2(30)
+  BASE  PK1_COLUMN_TYPE                 VARCHAR2(8)
+  BASE  PK2_COLUMN_TYPE                 VARCHAR2(8)
+  BASE  PK3_COLUMN_TYPE                 VARCHAR2(8)
+  BASE  PK4_COLUMN_TYPE                 VARCHAR2(8)
+  BASE  PK5_COLUMN_TYPE                 VARCHAR2(8)
+  BASE  LAST_UPDATE_DATE                VARCHAR2(10)
+  TRANS DISPLAY_NAME                    VARCHAR2(240)
+  TRANS DESCRIPTION                     VARCHAR2(2000)
+  CTX   OWNER                           VARCHAR2(4000)
+END OBJECT
+
+DEFINE FORM
+  KEY   APPLICATION_SHORT_NAME          VARCHAR2(4000)
+  KEY   FORM_NAME                       VARCHAR2(4000)
+  BASE  AUDIT_ENABLED_FLAG              VARCHAR2(1)
+  BASE  LAST_UPDATE_DATE                VARCHAR2(10)
+  TRANS USER_FORM_NAME                  VARCHAR2(80)
+  TRANS DESCRIPTION                     VARCHAR2(240)
+  CTX   OWNER                           VARCHAR2(4000)
+END FORM
+
+# -- End Entity Definitions -- 
+
+
+BEGIN MENU "*NULL*"
+  LAST_UPDATE_DATE = "2009/06/09"
+  USER_MENU_NAME = "*NULL*"
+  OWNER = "ORACLE12.2.4"
+
+END MENU
+
+BEGIN FUNCTION "DKA_RECHERCHEUO"
+  FORM = "" "*NULL*"
+  TYPE = "JSP"
+  PARAMETERS = "*NULL*"
+  WEB_HOST_NAME = "*NULL*"
+  WEB_AGENT_NAME = "*NULL*"
+  WEB_HTML_CALL =
+ "OA.jsp?page=/dalkia/oracle/apps/dka/rechercheuo/webui/DkaRecherchePG"
+  WEB_ENCRYPT_PARAMETERS = "N"
+  WEB_SECURED = "N"
+  WEB_ICON = "*NULL*"
+  FUNC_OBJECT = "*NULL*"
+  OBJECT_NAME = "*NULL*"
+  REGION_CODE = "*NULL*"
+  LAST_UPDATE_DATE = "2016/10/10"
+  MAINTENANCE_MODE_SUPPORT = "NONE"
+  CONTEXT_DEPENDENCE = "RESP"
+  JRAD_REF_PATH = "*NULL*"
+  USER_FUNCTION_NAME = "DKA : Recherche Projet/UO"
+  DESCRIPTION = "DKA : Recherche Projet/UO"
+  OWNER = "CAPTECH"
+END FUNCTION
+
+BEGIN FUNCTION "ICX_CLOSE"
+  FORM = "" "*NULL*"
+  TYPE = "WWW"
+  PARAMETERS = "*NULL*"
+  WEB_HOST_NAME = "*NULL*"
+  WEB_AGENT_NAME = "*NULL*"
+  WEB_HTML_CALL = "OALogout.jsp"
+  WEB_ENCRYPT_PARAMETERS = "N"
+  WEB_SECURED = "N"
+  WEB_ICON = "Close.png"
+  FUNC_OBJECT = "*NULL*"
+  OBJECT_NAME = "*NULL*"
+  REGION_CODE = "*NULL*"
+  LAST_UPDATE_DATE = "2015/07/09"
+  MAINTENANCE_MODE_SUPPORT = "NONE"
+  CONTEXT_DEPENDENCE = "RESP"
+  JRAD_REF_PATH = "*NULL*"
+  USER_FUNCTION_NAME = "Fermer"
+  DESCRIPTION = "Fonction standard permettant de fermer la fenêtre"
+  OWNER = "ORACLE12.2.4"
+END FUNCTION
+
+BEGIN FUNCTION "ICX_RETURN_TO_PORTAL"
+  FORM = "" "*NULL*"
+  TYPE = "WWW"
+  PARAMETERS = "*NULL*"
+  WEB_HOST_NAME = "*NULL*"
+  WEB_AGENT_NAME = "*NULL*"
+  WEB_HTML_CALL = "OracleNavigate.Responsibility"
+  WEB_ENCRYPT_PARAMETERS = "N"
+  WEB_SECURED = "N"
+  WEB_ICON = "home.png"
+  FUNC_OBJECT = "*NULL*"
+  OBJECT_NAME = "*NULL*"
+  REGION_CODE = "*NULL*"
+  LAST_UPDATE_DATE = "2015/07/09"
+  MAINTENANCE_MODE_SUPPORT = "NONE"
+  CONTEXT_DEPENDENCE = "RESP"
+  JRAD_REF_PATH = "*NULL*"
+  USER_FUNCTION_NAME = "Retour au portail"
+  DESCRIPTION =
+ "Fonction permettant de revenir à la page d'accueil de l'application en libre-service"
+  OWNER = "ORACLE12.2.4"
+END FUNCTION
+
+BEGIN FUNCTION "ICX_LOGOUT"
+  FORM = "" "*NULL*"
+  TYPE = "WWW"
+  PARAMETERS = "*NULL*"
+  WEB_HOST_NAME = "*NULL*"
+  WEB_AGENT_NAME = "*NULL*"
+  WEB_HTML_CALL = "OALogout.jsp"
+  WEB_ENCRYPT_PARAMETERS = "N"
+  WEB_SECURED = "N"
+  WEB_ICON = "signout.png"
+  FUNC_OBJECT = "*NULL*"
+  OBJECT_NAME = "*NULL*"
+  REGION_CODE = "*NULL*"
+  LAST_UPDATE_DATE = "2015/07/09"
+  MAINTENANCE_MODE_SUPPORT = "NONE"
+  CONTEXT_DEPENDENCE = "RESP"
+  JRAD_REF_PATH = "*NULL*"
+  USER_FUNCTION_NAME = "Déconnexion"
+  DESCRIPTION =
+ "Fonction standard permettant de se déconnecter du système et de revenir à l'écran de connexion principal"
+  OWNER = "ORACLE12.2.4"
+END FUNCTION
+
+BEGIN FUNCTION "ICX_USER_PREFERENCES"
+  FORM = "" "*NULL*"
+  TYPE = "WWW"
+  PARAMETERS = "*NULL*"
+  WEB_HOST_NAME = "*NULL*"
+  WEB_AGENT_NAME = "*NULL*"
+  WEB_HTML_CALL = "OracleApps.DU"
+  WEB_ENCRYPT_PARAMETERS = "Y"
+  WEB_SECURED = "N"
+  WEB_ICON = "FNDPREFS.gif"
+  FUNC_OBJECT = "*NULL*"
+  OBJECT_NAME = "*NULL*"
+  REGION_APPLICATION_SHORT_NAME = "FND"
+  REGION_APPLICATION_NAME = "FND"
+  REGION_CODE = "*NULL*"
+  LAST_UPDATE_DATE = "2015/06/12"
+  MAINTENANCE_MODE_SUPPORT = "NONE"
+  CONTEXT_DEPENDENCE = "RESP"
+  JRAD_REF_PATH = "*NULL*"
+  USER_FUNCTION_NAME = "Préférences générales"
+  DESCRIPTION =
+ "Permet de définir des informations personnelles, notamment le mot de passe et la langue de travail."
+  OWNER = "ORACLE12.2.4"
+END FUNCTION
+
+BEGIN FUNCTION "ICX_HELP"
+  FORM = "" "*NULL*"
+  TYPE = "WWW"
+  PARAMETERS = "*NULL*"
+  WEB_HOST_NAME = "*NULL*"
+  WEB_AGENT_NAME = "*NULL*"
+  WEB_HTML_CALL = "fndgfm/fnd_help.get/US/FND/@ICXPHP"
+  WEB_ENCRYPT_PARAMETERS = "N"
+  WEB_SECURED = "N"
+  WEB_ICON = "help_greyscale.gif"
+  FUNC_OBJECT = "*NULL*"
+  OBJECT_NAME = "*NULL*"
+  REGION_CODE = "*NULL*"
+  LAST_UPDATE_DATE = "2015/06/12"
+  MAINTENANCE_MODE_SUPPORT = "NONE"
+  CONTEXT_DEPENDENCE = "RESP"
+  JRAD_REF_PATH = "*NULL*"
+  USER_FUNCTION_NAME = "Aide de l'application en libre-service"
+  DESCRIPTION = "Fonction permettant d'afficher la page d'aide"
+  OWNER = "ORACLE12.2.4"
+END FUNCTION
+
+BEGIN FUNCTION "ICX_SSWA_USER_PREFERENCES"
+  FORM = "" "*NULL*"
+  TYPE = "JSP"
+  PARAMETERS = "*NULL*"
+  WEB_HOST_NAME = "*NULL*"
+  WEB_AGENT_NAME = "*NULL*"
+  WEB_HTML_CALL =
+ "OA.jsp?page=/oracle/apps/fnd/preferences/webui/PreferencesPG&retainAM=Y"
+  WEB_ENCRYPT_PARAMETERS = "N"
+  WEB_SECURED = "N"
+  WEB_ICON = "FNDPREFS.gif"
+  FUNC_OBJECT = "*NULL*"
+  OBJECT_NAME = "*NULL*"
+  REGION_CODE = "*NULL*"
+  LAST_UPDATE_DATE = "2015/06/12"
+  MAINTENANCE_MODE_SUPPORT = "NONE"
+  CONTEXT_DEPENDENCE = "NONE"
+  JRAD_REF_PATH = "*NULL*"
+  USER_FUNCTION_NAME = "Nouvelles préférences générales"
+  DESCRIPTION =
+ "Cette fonction de préférences pointe sur une nouvelle fonction de préférence SSWA (versions OAF5.7C et supérieures)"
+  OWNER = "ORACLE12.2.4"
+END FUNCTION
+
+BEGIN FUNCTION "OAM_UALERT_PAGE"
+  FORM = "" "*NULL*"
+  TYPE = "JSP"
+  PARAMETERS = "*NULL*"
+  WEB_HOST_NAME = "*NULL*"
+  WEB_AGENT_NAME = "*NULL*"
+  WEB_HTML_CALL =
+ "OA.jsp?region=/oracle/apps/fnd/oam/diag/alerts/ReportProblemPage"
+  WEB_ENCRYPT_PARAMETERS = "N"
+  WEB_SECURED = "N"
+  WEB_ICON = "*NULL*"
+  FUNC_OBJECT = "*NULL*"
+  OBJECT_NAME = "*NULL*"
+  REGION_CODE = "*NULL*"
+  LAST_UPDATE_DATE = "2015/06/12"
+  MAINTENANCE_MODE_SUPPORT = "NONE"
+  CONTEXT_DEPENDENCE = "RESP"
+  JRAD_REF_PATH = "*NULL*"
+  USER_FUNCTION_NAME = "OAM - Page Alerte utilisateur"
+  OWNER = "ORACLE12.2.4"
+END FUNCTION
+
+BEGIN FUNCTION "UMX_MY_APP_ACCESS"
+  FORM = "" "*NULL*"
+  TYPE = "JSP"
+  PARAMETERS = "*NULL*"
+  WEB_HOST_NAME = "*NULL*"
+  WEB_AGENT_NAME = "*NULL*"
+  WEB_HTML_CALL =
+ "OA.jsp?page=/oracle/apps/fnd/umx/accessRequest/webui/MyAppAccessPG&akRegionApplicationId=0"
+  WEB_ENCRYPT_PARAMETERS = "N"
+  WEB_SECURED = "N"
+  WEB_ICON = "*NULL*"
+  FUNC_OBJECT = "*NULL*"
+  OBJECT_NAME = "*NULL*"
+  REGION_CODE = "*NULL*"
+  LAST_UPDATE_DATE = "2015/06/12"
+  MAINTENANCE_MODE_SUPPORT = "NONE"
+  CONTEXT_DEPENDENCE = "RESP"
+  JRAD_REF_PATH = "*NULL*"
+  USER_FUNCTION_NAME = "Gestion des utilisateurs - Mon accès à l'application"
+  DESCRIPTION = "Fonction pour Mon accès à l'application (ART)"
+  OWNER = "ORACLE12.2.4"
+END FUNCTION
+
+BEGIN FUNCTION "FND_MANAGE_PROXIES"
+  FORM = "" "*NULL*"
+  TYPE = "WWW"
+  PARAMETERS = "*NULL*"
+  WEB_HOST_NAME = "*NULL*"
+  WEB_AGENT_NAME = "*NULL*"
+  WEB_HTML_CALL =
+ "OA.jsp?page=/oracle/apps/fnd/umx/proxy/webui/ManageProxiesPG&akRegionApplicationId=0"
+  WEB_ENCRYPT_PARAMETERS = "N"
+  WEB_SECURED = "N"
+  WEB_ICON = "*NULL*"
+  FUNC_OBJECT = "*NULL*"
+  OBJECT_NAME = "*NULL*"
+  REGION_CODE = "*NULL*"
+  LAST_UPDATE_DATE = "2015/06/12"
+  MAINTENANCE_MODE_SUPPORT = "NONE"
+  CONTEXT_DEPENDENCE = "NONE"
+  JRAD_REF_PATH = "*NULL*"
+  USER_FUNCTION_NAME = "Page Gérer les mandataires"
+  DESCRIPTION = "Fonction pour l'interface utilisateur Gérer les mandataires"
+  OWNER = "ORACLE12.2.4"
+END FUNCTION
+
+BEGIN MENU "FND_GEN_PREF_MENU"
+  TYPE = "STANDARD"
+  LAST_UPDATE_DATE = "2015/07/08"
+  USER_MENU_NAME = "Menu Préférences générales"
+  DESCRIPTION = "Menu Préférences générales d'applications basé sur OA"
+  OWNER = "ORACLE12.2.4"
+
+  BEGIN ENTRY
+    PROMPT = "Préférences d'affichage"
+    GRANT_FLAG = "N"
+    LAST_UPDATE_DATE = "2015/06/12"
+    SUBMENU = "*NULL*"
+    FUNCTION = "ICX_SSWA_USER_PREFERENCES"
+    OWNER = "ORACLE12.2.4"
+  END ENTRY
+  
+  BEGIN ENTRY
+    PROMPT = "Demandes d'accès"
+    DESCRIPTION = "Demandes en libre service d'accès supplémentaire"
+    GRANT_FLAG = "N"
+    LAST_UPDATE_DATE = "2015/07/08"
+    SUBMENU = "*NULL*"
+    FUNCTION = "UMX_MY_APP_ACCESS"
+    OWNER = "ORACLE12.2.4"
+  END ENTRY
+  
+  BEGIN ENTRY
+    PROMPT = "Gérer les mandataires"
+    GRANT_FLAG = "N"
+    LAST_UPDATE_DATE = "2015/07/08"
+    SUBMENU = "*NULL*"
+    FUNCTION = "FND_MANAGE_PROXIES"
+    OWNER = "ORACLE12.2.4"
+  END ENTRY
+  
+END MENU
+
+BEGIN MENU "FND_PREF_MENU_SIDEBAR"
+  TYPE = "SIDEBAR"
+  LAST_UPDATE_DATE = "2015/06/12"
+  USER_MENU_NAME = "Barre latérale du menu Préférences"
+  DESCRIPTION = "Barre latérale du menu Préférences basé sur OA"
+  OWNER = "ORACLE12.2.4"
+
+  BEGIN ENTRY
+    PROMPT = "Préférences générales"
+    GRANT_FLAG = "N"
+    LAST_UPDATE_DATE = "2015/06/12"
+    SUBMENU = "FND_GEN_PREF_MENU"
+    FUNCTION = "*NULL*"
+    OWNER = "ORACLE12.2.4"
+  END ENTRY
+  
+END MENU
+
+BEGIN MENU "ICX_STANDARD_GLOBAL_MENU"
+  TYPE = "GLOBAL"
+  LAST_UPDATE_DATE = "2015/06/12"
+  USER_MENU_NAME = "ICX_STANDARD_GLOBAL_MENU"
+  DESCRIPTION = "Menu standard"
+  OWNER = "ORACLE12.2.4"
+
+  BEGIN ENTRY
+    PROMPT = "Fermer la fenêtre"
+    GRANT_FLAG = "N"
+    LAST_UPDATE_DATE = "2015/06/12"
+    SUBMENU = "*NULL*"
+    FUNCTION = "ICX_CLOSE"
+    OWNER = "ORACLE12.2.4"
+  END ENTRY
+  
+  BEGIN ENTRY
+    PROMPT = "Accueil"
+    GRANT_FLAG = "N"
+    LAST_UPDATE_DATE = "2015/06/12"
+    SUBMENU = "*NULL*"
+    FUNCTION = "ICX_RETURN_TO_PORTAL"
+    OWNER = "ORACLE12.2.4"
+  END ENTRY
+  
+  BEGIN ENTRY
+    PROMPT = "Déconnexion"
+    GRANT_FLAG = "N"
+    LAST_UPDATE_DATE = "2015/06/12"
+    SUBMENU = "*NULL*"
+    FUNCTION = "ICX_LOGOUT"
+    OWNER = "ORACLE12.2.4"
+  END ENTRY
+  
+  BEGIN ENTRY
+    PROMPT = "Préférences"
+    GRANT_FLAG = "N"
+    LAST_UPDATE_DATE = "2015/06/12"
+    SUBMENU = "*NULL*"
+    FUNCTION = "ICX_USER_PREFERENCES"
+    OWNER = "ORACLE12.2.4"
+  END ENTRY
+  
+  BEGIN ENTRY
+    PROMPT = "Aide"
+    GRANT_FLAG = "N"
+    LAST_UPDATE_DATE = "2015/06/12"
+    SUBMENU = "*NULL*"
+    FUNCTION = "ICX_HELP"
+    OWNER = "ORACLE12.2.4"
+  END ENTRY
+  
+  BEGIN ENTRY
+    PROMPT = "*NULL*"
+    DESCRIPTION =
+ "Cette fonction de préférences pointe sur une nouvelle fonction de préférence SSWA (versions OAF5.7C et supérieures)"
+    GRANT_FLAG = "N"
+    LAST_UPDATE_DATE = "2015/06/12"
+    SUBMENU = "*NULL*"
+    FUNCTION = "ICX_SSWA_USER_PREFERENCES"
+    OWNER = "ORACLE12.2.4"
+  END ENTRY
+  
+  BEGIN ENTRY
+    PROMPT = "Administration des contacts"
+    GRANT_FLAG = "N"
+    LAST_UPDATE_DATE = "2015/06/12"
+    SUBMENU = "*NULL*"
+    FUNCTION = "OAM_UALERT_PAGE"
+    OWNER = "ORACLE12.2.4"
+  END ENTRY
+  
+  BEGIN ENTRY
+    PROMPT = "*NULL*"
+    DESCRIPTION = "Menu Préférences (versions 5.10C et supérieures)"
+    GRANT_FLAG = "N"
+    LAST_UPDATE_DATE = "2015/06/12"
+    SUBMENU = "FND_PREF_MENU_SIDEBAR"
+    FUNCTION = "*NULL*"
+    OWNER = "ORACLE12.2.4"
+  END ENTRY
+  
+END MENU
+
+BEGIN MENU "DKA_RECHERCHE_UO"
+  TYPE = "HOMEPAGE"
+  LAST_UPDATE_DATE = "2016/10/10"
+  USER_MENU_NAME = "Dka : Recherche UO"
+  OWNER = "CAPTECH"
+
+  BEGIN ENTRY
+    PROMPT = "Recherche d'UO"
+    GRANT_FLAG = "Y"
+    LAST_UPDATE_DATE = "2016/10/10"
+    SUBMENU = "*NULL*"
+    FUNCTION = "DKA_RECHERCHEUO"
+    OWNER = "CAPTECH"
+  END ENTRY
+  
+  BEGIN ENTRY
+    PROMPT = "*NULL*"
+    GRANT_FLAG = "Y"
+    LAST_UPDATE_DATE = "2016/10/10"
+    SUBMENU = "ICX_STANDARD_GLOBAL_MENU"
+    FUNCTION = "*NULL*"
+    OWNER = "CAPTECH"
+  END ENTRY
+  
+END MENU
+

@@ -1,0 +1,43 @@
+# $Header$
+
+# 
+LANGUAGE = "US"
+LDRCONFIG = "DKA_XX_PARAM.lct"
+
+#Source Database HELDEV
+
+#RELEASE_NAME 12.2.4
+
+# -- Begin Entity Definitions -- 
+
+DEFINE DKA_PARAMETER
+  KEY   PROGRAM_CODE                    VARCHAR2(50)
+  KEY   PARAMETER_NAME                  VARCHAR2(50)
+  BASE  DESCRIPTION                     VARCHAR2(255)
+  BASE  TABLE_NAME                      VARCHAR2(100)
+  BASE  COLUMN_NAME                     VARCHAR2(100)
+  BASE  DATA_TYPE                       VARCHAR2(100)
+  BASE  VARCHAR2_VALUE                  VARCHAR2(50)
+  BASE  NUMBER_VALUE                    VARCHAR2(30)
+  BASE  DATE_VALUE                      VARCHAR2(19)
+  BASE  BOOLEAN_VALUE                   VARCHAR2(1)
+END DKA_PARAMETER
+
+# -- End Entity Definitions -- 
+
+
+BEGIN DKA_PARAMETER "DKA_GLYRLBGE" "GL_RESPONSIBILITY_KEY"
+  DESCRIPTION = "Responsabilité de lancement des traitements GL dans l'entité opérationnelle"
+  TABLE_NAME = ""
+  COLUMN_NAME = ""
+  DATA_TYPE = "VARCHAR2"
+  VARCHAR2_VALUE = "TOUT_GL_OPE_ADMINISTRATEUR"
+END DKA_PARAMETER
+
+BEGIN DKA_PARAMETER "DKA_GLYRLBGE" "GL_LEGAL_RESPONSIBILITY_KEY"
+  DESCRIPTION = "Responsabilité de lancement des traitements GL dans l'entité légale"
+  TABLE_NAME = ""
+  COLUMN_NAME = ""
+  DATA_TYPE = "VARCHAR2"
+  VARCHAR2_VALUE = "TOUT_GL_LEG_ADMINISTRATEUR"
+END DKA_PARAMETER

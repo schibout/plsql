@@ -1,0 +1,75 @@
+# $Header$
+
+# dbdrv: exec fnd bin FNDLOAD bin &phase=daa+52 checkfile:~PROD:~PATH:~FILE &ui_apps 0 Y UPLOAD @FND:patch/115/import/afmdmsg.lct @~PROD:~PATH/~FILE
+LANGUAGE = "US"
+LDRCONFIG = "afmdmsg.lct 120.2.12020000.1"
+
+#Source Database HELDEV
+
+#RELEASE_NAME 12.2.4
+
+# -- Begin Entity Definitions -- 
+
+DEFINE FND_NEW_MESSAGES
+  KEY   APPLICATION_SHORT_NAME          VARCHAR2(50)
+  KEY   MESSAGE_NAME                    VARCHAR2(30)
+  CTX   OWNER                           VARCHAR2(4000)
+  BASE  LAST_UPDATE_DATE                VARCHAR2(10)
+  CTX   MESSAGE_NUMBER                  VARCHAR2(50)
+  TRANS MESSAGE_TEXT                    VARCHAR2(2000)
+  CTX   DESCRIPTION                     VARCHAR2(240)
+  CTX   TYPE                            VARCHAR2(30)
+  CTX   MAX_LENGTH                      VARCHAR2(50)
+  CTX   CATEGORY                        VARCHAR2(10)
+  CTX   SEVERITY                        VARCHAR2(10)
+  CTX   FND_LOG_SEVERITY                VARCHAR2(50)
+END FND_NEW_MESSAGES
+
+# -- End Entity Definitions -- 
+
+
+BEGIN FND_NEW_MESSAGES "DKA" "DKA_SPOBON_XML_MAIL_CORPS"
+  OWNER = "CAPTECH"
+  LAST_UPDATE_DATE = "2016/05/02"
+  MESSAGE_NUMBER = "*NULL*"
+  MESSAGE_TEXT =
+ "<HTML>\n\
+<BODY>\n\
+Bonjour,<br>\n\
+<br>\n\
+Vous trouverez ci-jointe la commande &ORDER_NUMBER<br>\n\
+Date de commande : &ORDER_DATE<br>\n\
+<br>\n\
+Societe : &SOC_NAME<br>\n\
+Numero de la societe : &SOC_NUM<br>\n\
+<br>\n\
+Contact Demandeur : &DEMANDEUR<br>\n\
+Email du demandeur :  &DDE_MAIL<br>\n\
+Telephone du demandeur : &DDE_TEL<br>\n\
+<br>\n\
+Adresse de facturation : &BILL_TO<br>\n\
+No SIRET : &SIRET<br>\n\
+&ADRESSE<br>\n\
+<br>\n\
+<br>\n\
+Montant total HT : &MONTANT<br>\n\
+Devise : &DEVISE<br>\n\
+<br>\n\
+Nous vous  rappelons qu'il est obligatoire de voir apparaitre clairement sur votre facture :<br>\n\
+Le numero de commande : &ORDER_NUMBER<br>\n\
+Le numero de TVA intracommunautaire de la societe facturee : &INTRACOMM<br>\n\
+Et votre numero de SIRET<br>\n\
+<br>\n\
+Cordialement.<br>\n\
+Merci de ne pas repondre a ce mail, veuillez vous adresser directement a votre interlocuteur.  <br>\n\
+</BODY>\n\
+</HTML>\n\
+"
+  DESCRIPTION = "*NULL*"
+  TYPE = "30_PCT_EXPANSION_PROMPT"
+  MAX_LENGTH = "*NULL*"
+  CATEGORY = "*NULL*"
+  SEVERITY = "*NULL*"
+  FND_LOG_SEVERITY = "*NULL*"
+END FND_NEW_MESSAGES
+

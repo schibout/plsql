@@ -1,0 +1,52 @@
+--------------------------------------------------
+-- $Id: DKA_SPOWFMASTER_S.seq 263 2007-09-18 08:29:01Z NORDEST\nboussek $
+--
+-- CREATION --------------------------------------
+-- 
+-- Auteur : Nicolas Boussekeyt
+-- 
+-- Date: 06/09/2007
+-- Description du specifique : Création de la sequence dka_spowfmaster_s
+-- 	Version: 1.0.0.0
+--	Entree :
+--              - Parametres   &1 : Username pour la creation de la sequence
+--                             &2 : Password pour la creation de la sequence
+--                             &3 : Username pour affectation des droits et creation des synonymes
+--                             &4 : Password pour creation des synonymes
+--		- Fichiers
+--		- Tables
+--      Sortie :
+--	 	- Parametres
+--		- Fichiers
+--		- Tables
+--------------------------------------------------
+-- Objet modification ----------------------------
+-- Auteur:
+-- Date:
+-- Version:
+-- Description:
+--
+--------------------------------------------------
+WHENEVER SQLERROR CONTINUE
+CONNECT &&1/&&2
+
+create sequence dka_spowfmaster_s;
+
+PROMPT ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++             
+PROMPT CREATION DES GRANTS                                                                                
+PROMPT ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+GRANT ALL ON dka_spowfmaster_s TO &&3;
+
+PROMPT ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++             
+PROMPT DROP DES SYNONYMES                                                                                
+PROMPT ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+CONNECT &&3/&&4                                                                                          
+
+PROMPT ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++             
+PROMPT CREATE DES SYNONYMES                                                                                
+PROMPT ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+CREATE SYNONYM dka_spowfmaster_s FOR &&1..dka_spowfmaster_s;
+
+EXIT;

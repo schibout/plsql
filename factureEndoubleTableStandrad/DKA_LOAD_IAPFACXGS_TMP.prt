@@ -1,0 +1,172 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- $Header: DKA_KPI_SUIVI_CODART.xml -->
+<!--                                                       -->
+ <!-- CAP GEMINI
+ 
+ PROJET           : DALKIA Oracle Applications
+ NOM              : DKA_KPI_SUIVI_CODART.xml
+ DESCRIPTION      : Data template pour le lancement de l'état DKA : KPI Suivi utilisation code article
+
+ AUTEUR           : F.siham
+ DATE DE CREATION : 11/04/2019
+ DOC. ASSOCIEE    :
+ NOTES            : 
+
+ HISTORIQUE DES MODIFICATIONS
+ Date          Qui Description 
+ 04/07/2019    SFA EDB088c - Retour recette sur l'état ETA120
+
+ -->
+
+<dataTemplate name="DKA_KPI_SUIVI_CODART" description="DKA_KPI_SUIVI_CODART"   version="1.0">
+<parameters>
+<parameter name="P_REDACTEUR_DA" datatype="characters"/>
+<parameter name="P_PERIMETRE" datatype="characters"/>
+<parameter name="P_DEBUT_PERIOD_RECH" datatype="characters"/>
+<parameter name="P_FIN_PERIOD_RECH" datatype="characters"/>
+</parameters>
+<dataQuery>
+<sqlStatement name="Q1">
+<![CDATA[
+SELECT
+
+     UO,
+     NAME,
+     REGION,
+     P_REDACTEUR_DA2,
+     MOIS,
+     round(((NB_RECHER_ARTICLE *100)/NB_TOTAL_RECHER),2)NB_RECHER_ARTICLE,
+     round(((NB_RECHER_FOUR_FAB *100)/NB_TOTAL_RECHER),2)NB_RECHER_FOUR_FAB,
+     NB_TOTAL_RECHER,
+	
+	 :P_DEBUT_PERIOD_RECH,
+	 :P_FIN_PERIOD_RECH
+ FROM
+     (
+         SELECT DISTINCT
+             DSH.UO      UO,
+             HROU.NAME   NAME,
+             SUBSTR(HROU.NAME,1,3) REGION,
+             USER_ID,
+             (
+                 SELECT DISTINCT
+                     FULL_NAME
+                 FROM
+                     HR_EMPLOYEES
+                 WHERE
+                     EMPLOYEE_ID IN (
+                         SELECT
+                             EMPLOYEE_ID
+                         FROM
+                             FND_USER
+                         WHERE
+                             USER_ID = NVL(:P_REDACTEUR_DA,DSH.USER_ID)
+                     )
+             ) P_REDACTEUR_DA2,
+             ( SELECT  period_name  FROM  GL_PERIODS WHERE DSH.CREATION_DATE between start_date and end_date AND PERIOD_SET_NAME = 'GROUPE') MOIS,
+             (
+                 SELECT
+                     COUNT(DSH1.ID_RECHERCHE)
+                 FROM
+                     DKA.DKA_SICXRECHCAT_HIST DSH1
+                 WHERE
+                     DSH1.USER_ID = DSH.USER_ID
+                     AND DSH1.UO = DSH.UO
+                     AND DSH1.RECH_CODE_ARTICLE_INTERNE IS NOT NULL
+                    AND DSH1.CREATION_DATE BETWEEN (SELECT  Start_DATE  FROM  GL_PERIODS WHERE PERIOD_NAME = :P_debut_PERIOD_RECH AND PERIOD_SET_NAME = 'GROUPE')
+												AND (SELECT  END_DATE  FROM  GL_PERIODS WHERE PERIOD_NAME = :P_FIN_PERIOD_RECH AND PERIOD_SET_NAME = 'GROUPE')
+                     AND SUBSTR(DSH1.CREATION_DATE,4,2) = SUBSTR(DSH.CREATION_DATE,4,2)
+             ) NB_RECHER_ARTICLE,
+             (
+                 SELECT
+                     COUNT(DSH1.ID_RECHERCHE)
+                 FROM
+                     DKA.DKA_SICXRECHCAT_HIST DSH1
+                 WHERE
+                     DSH1.USER_ID = DSH.USER_ID
+                     AND DSH1.UO = DSH.UO
+                     AND (DSH1.RECH_REF_FRS_FAB IS NOT NULL)
+					AND DSH1.CREATION_DATE BETWEEN (SELECT  Start_DATE  FROM  GL_PERIODS WHERE PERIOD_NAME = :P_debut_PERIOD_RECH AND PERIOD_SET_NAME = 'GROUPE')
+											   AND (SELECT  END_DATE  FROM  GL_PERIODS WHERE PERIOD_NAME = :P_FIN_PERIOD_RECH AND PERIOD_SET_NAME = 'GROUPE')
+                     AND SUBSTR(DSH1.CREATION_DATE,4,2) = SUBSTR(DSH.CREATION_DATE,4,2)
+             ) NB_RECHER_FOUR_FAB,
+             (
+                 SELECT
+                     COUNT(DSH1.ID_RECHERCHE)
+                 FROM
+                     DKA.DKA_SICXRECHCAT_HIST DSH1
+                 WHERE
+                     DSH1.USER_ID = DSH.USER_ID
+                     AND DSH1.UO = DSH.UO
+					AND DSH1.CREATION_DATE BETWEEN (SELECT  Start_DATE  FROM  GL_PERIODS WHERE PERIOD_NAME = :P_debut_PERIOD_RECH AND PERIOD_SET_NAME = 'GROUPE')
+												AND (SELECT  END_DATE  FROM  GL_PERIODS WHERE PERIOD_NAME = :P_FIN_PERIOD_RECH AND PERIOD_SET_NAME = 'GROUPE')	
+                     AND SUBSTR(DSH1.CREATION_DATE,4,2) = SUBSTR(DSH.CREATION_DATE,4,2)
+             ) NB_TOTAL_RECHER
+         FROM
+             DKA.DKA_SICXRECHCAT_HIST DSH,
+             HR_OPERATING_UNITS HROU
+         WHERE
+             HROU.ORGANIZATION_ID = DSH.UO
+             AND (DSH.UO IN (
+                 SELECT
+                     ORGANIZATION_ID
+                 FROM
+                     HR_OPERATING_UNITS
+                 WHERE
+                     NAME LIKE DECODE(:P_PERIMETRE,'TOUT',NAME,:P_PERIMETRE || '%')
+             )
+                   OR DSH.UO = DECODE(:P_PERIMETRE,NULL,FND_PROFILE.VALUE('ORG_ID')))
+             AND DSH.USER_ID = NVL(:P_REDACTEUR_DA,DSH.USER_ID)
+			 AND DSH.CREATION_DATE BETWEEN (SELECT  Start_DATE  FROM  GL_PERIODS WHERE PERIOD_NAME = :P_debut_PERIOD_RECH AND PERIOD_SET_NAME = 'GROUPE')
+			                           AND (SELECT  END_DATE  FROM  GL_PERIODS WHERE PERIOD_NAME = :P_FIN_PERIOD_RECH AND PERIOD_SET_NAME = 'GROUPE')	
+         ORDER BY
+             MOIS,
+             HROU.NAME,
+             P_REDACTEUR_DA2
+     )
+  ]]>
+</sqlStatement>
+<sqlStatement name="Q2">
+<![CDATA[
+         SELECT DISTINCT
+             NVL (:P_DEBUT_PERIOD_RECH,'') P_DEBUT_PERIOD_RECH,
+             NVL(:P_FIN_PERIOD_RECH,'') P_FIN_PERIOD_RECH,
+			 :PERIMETRE PERIMETRE,
+               (
+                 SELECT DISTINCT
+                     NVL(FULL_NAME,'')
+                 FROM
+                     HR_EMPLOYEES
+                 WHERE
+                     EMPLOYEE_ID IN (
+                         SELECT
+                             EMPLOYEE_ID
+                         FROM
+                             FND_USER
+                         WHERE
+                             USER_ID =:P_REDACTEUR_DA
+                     )
+             ) P_REDACTEUR_DA1
+			 
+			 FROM DUAL      
+  ]]>
+  </sqlStatement>
+</dataQuery>
+<dataStructure>
+<group name="G_Q1" source="Q1">
+<element name="XDOFIELD_L1" value="MOIS"/>
+<element name="XDOFIELD_L2" value="NAME"/>
+<element name="XDOFIELD_L3" value="REGION"/>
+<element name="XDOFIELD_L4" value="P_REDACTEUR_DA2"/>
+<element name="XDOFIELD_L5" value="NB_TOTAL_RECHER"/>
+<element name="XDOFIELD_L6" value="NB_RECHER_ARTICLE"/>
+<element name="XDOFIELD_L7" value="NB_RECHER_FOUR_FAB"/>
+</group>
+<group name="G_Q2" source="Q2">
+<element name="XDOFIELD1" value="P_REDACTEUR_DA1"/>
+<element name="XDOFIELD2" value="P_PERIMETRE"/>
+<element name="XDOFIELD3" value="P_DEBUT_PERIOD_RECH"/>
+<element name="XDOFIELD4" value="P_FIN_PERIOD_RECH"/>
+</group>
+</dataStructure>
+</dataTemplate>

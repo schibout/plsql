@@ -1,0 +1,98 @@
+# $Header$
+
+# dbdrv: exec fnd bin FNDLOAD bin &phase=daa+52 checkfile:~PROD:~PATH:~FILE &ui_apps 0 Y UPLOAD @FND:patch/115/import/afmdmsg.lct @~PROD:~PATH/~FILE
+LANGUAGE = "US"
+LDRCONFIG = "afmdmsg.lct 120.2.12020000.1"
+
+#Source Database HELMAS
+
+#RELEASE_NAME 12.2.4
+
+# -- Begin Entity Definitions -- 
+
+DEFINE FND_NEW_MESSAGES
+  KEY   APPLICATION_SHORT_NAME          VARCHAR2(50)
+  KEY   MESSAGE_NAME                    VARCHAR2(30)
+  CTX   OWNER                           VARCHAR2(4000)
+  BASE  LAST_UPDATE_DATE                VARCHAR2(10)
+  CTX   MESSAGE_NUMBER                  VARCHAR2(50)
+  TRANS MESSAGE_TEXT                    VARCHAR2(2000)
+  CTX   DESCRIPTION                     VARCHAR2(240)
+  CTX   TYPE                            VARCHAR2(30)
+  CTX   MAX_LENGTH                      VARCHAR2(50)
+  CTX   CATEGORY                        VARCHAR2(10)
+  CTX   SEVERITY                        VARCHAR2(10)
+  CTX   FND_LOG_SEVERITY                VARCHAR2(50)
+END FND_NEW_MESSAGES
+
+# -- End Entity Definitions -- 
+
+
+BEGIN FND_NEW_MESSAGES "DKA" "DKA_SPOBON_I001"
+  OWNER = "MAEGOT"
+  LAST_UPDATE_DATE = "2018/03/07"
+  MESSAGE_NUMBER = "*NULL*"
+  MESSAGE_TEXT = "BON DE COMMANDE ou ORDRE DE SERVICE"
+  DESCRIPTION = "*NULL*"
+  TYPE = "30_PCT_EXPANSION_PROMPT"
+  MAX_LENGTH = "*NULL*"
+  CATEGORY = "*NULL*"
+  SEVERITY = "*NULL*"
+  FND_LOG_SEVERITY = "*NULL*"
+END FND_NEW_MESSAGES
+
+BEGIN FND_NEW_MESSAGES "DKA" "DKA_SPOBON_I002"
+  OWNER = "MAEGOT"
+  LAST_UPDATE_DATE = "2018/03/07"
+  MESSAGE_NUMBER = "*NULL*"
+  MESSAGE_TEXT = "BON DE COMMANDE ANNUEL DE CONTRAT DE SOUS-TRAITANCE"
+  DESCRIPTION = "*NULL*"
+  TYPE = "30_PCT_EXPANSION_PROMPT"
+  MAX_LENGTH = "*NULL*"
+  CATEGORY = "*NULL*"
+  SEVERITY = "*NULL*"
+  FND_LOG_SEVERITY = "*NULL*"
+END FND_NEW_MESSAGES
+
+BEGIN FND_NEW_MESSAGES "DKA" "DKA_SPOBON_I003"
+  OWNER = "MAEGOT"
+  LAST_UPDATE_DATE = "2018/03/07"
+  MESSAGE_NUMBER = "*NULL*"
+  MESSAGE_TEXT =
+ "Ce Bon de Commande est emis dans le cadre du contrat de sous-traitance dont le numero figure en reference. Il est integralement soumis aux clauses du dit contrat et ne s'y substitue en aucun cas."
+  DESCRIPTION = "*NULL*"
+  TYPE = "30_PCT_EXPANSION_PROMPT"
+  MAX_LENGTH = "*NULL*"
+  CATEGORY = "*NULL*"
+  SEVERITY = "*NULL*"
+  FND_LOG_SEVERITY = "*NULL*"
+END FND_NEW_MESSAGES
+
+BEGIN FND_NEW_MESSAGES "DKA" "DKA_SPOBON_I004"
+  OWNER = "MAEGOT"
+  LAST_UPDATE_DATE = "2018/03/07"
+  MESSAGE_NUMBER = "*NULL*"
+  MESSAGE_TEXT =
+ "si le montant du contrat a ete modifie, alors le montant de la precedente commande, sur sa periode, a ete recalcule en tenant compte de sa date d'effet"
+  DESCRIPTION = "*NULL*"
+  TYPE = "30_PCT_EXPANSION_PROMPT"
+  MAX_LENGTH = "*NULL*"
+  CATEGORY = "*NULL*"
+  SEVERITY = "*NULL*"
+  FND_LOG_SEVERITY = "*NULL*"
+END FND_NEW_MESSAGES
+
+BEGIN FND_NEW_MESSAGES "DKA" "DKA_SPOBON_I005"
+  OWNER = "MAEGOT"
+  LAST_UPDATE_DATE = "2018/03/07"
+  MESSAGE_NUMBER = "*NULL*"
+  MESSAGE_TEXT =
+ "BON DE COMMANDE ANNUEL DE CONTRAT DE SOUS-TRAITANCE ANNULE EN DATE"
+  DESCRIPTION = "*NULL*"
+  TYPE = "30_PCT_EXPANSION_PROMPT"
+  MAX_LENGTH = "*NULL*"
+  CATEGORY = "*NULL*"
+  SEVERITY = "*NULL*"
+  FND_LOG_SEVERITY = "*NULL*"
+END FND_NEW_MESSAGES
+

@@ -1,0 +1,33 @@
+REM Copyright (c) 2013 Oracle Corporation, All Rights Reserved 
+REM $Header$ 
+REM UPDATE_PRENBFAC.sql 
+REM   Update PRENBFAC and Enable trigger CrossEdition
+
+SET VERIFY OFF; 
+WHENEVER SQLERROR EXIT FAILURE ROLLBACK; 
+WHENEVER OSERROR EXIT FAILURE ROLLBACK; 
+
+
+update DKA.DKA_IAPFACXGS_REPORTING_ALL
+set PRENBFAC#1 = PRENBFAC;
+
+update DKA.DKA_IAPFACXGS_INTERFACE
+set PRENBFAC#1 = PRENBFAC;
+
+update DKA.DKA_IAPFACXGS_INT_HIST_LINES
+set PRENBFAC#1 = PRENBFAC;
+
+commit; 
+
+alter trigger DKA_IAPFACXGS_INTERFACE_F1 enable;
+alter trigger DKA_IAPFACXGS_INTERFACE_R1 enable;
+
+alter trigger DKA_IAPFACXGS_REPORTING_ALL_F1 enable;
+alter trigger DKA_IAPFACXGS_REPORTING_ALL_R1 enable;
+
+alter trigger DKA_IAPFACXGS_INT_HST_LINES_F1 enable;
+alter trigger DKA_IAPFACXGS_INT_HST_LINES_R1 enable;
+
+
+commit; 
+exit; 

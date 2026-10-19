@@ -1,0 +1,104 @@
+# $Header$
+
+# 
+LANGUAGE = "F"
+LDRCONFIG = "DKA_XX_TRANSCO.lct"
+
+#Source Database HELMAS
+
+#RELEASE_NAME 12.2.4
+
+# -- Begin Entity Definitions -- 
+
+DEFINE DKA_STRANSCO_HEADERS
+  KEY   SET_NAME                        VARCHAR2(50)
+  BASE  DESCRIPTION                     VARCHAR2(240)
+  BASE  PARAM1_NAME                     VARCHAR2(30)
+  BASE  PARAM1_LOV                      VARCHAR2(250)
+  BASE  PARAM1_FLAG                     VARCHAR2(1)
+  BASE  PARAM2_NAME                     VARCHAR2(30)
+  BASE  PARAM2_LOV                      VARCHAR2(250)
+  BASE  PARAM2_FLAG                     VARCHAR2(1)
+  BASE  PARAM3_NAME                     VARCHAR2(30)
+  BASE  PARAM3_LOV                      VARCHAR2(250)
+  BASE  PARAM3_FLAG                     VARCHAR2(1)
+  BASE  RETURN_VALUE_NAME               VARCHAR2(30)
+  BASE  RETURN_VALUE_LOV                VARCHAR2(250)
+  BASE  INACTIVE_DATE                   VARCHAR2(19)
+
+  DEFINE DKA_STRANSCO_LINES
+    KEY   SET_NAME                        VARCHAR2(50)
+    KEY   PARAMS_VALUE                    VARCHAR2(90)
+    BASE  PARAM1_VALUE                    VARCHAR2(30)
+    BASE  PARAM2_VALUE                    VARCHAR2(30)
+    BASE  PARAM3_VALUE                    VARCHAR2(30)
+    BASE  RETURN_VALUE                    VARCHAR2(30)
+    BASE  ENABLE                          VARCHAR2(1)
+    BASE  INACTIVE_DATE                   VARCHAR2(19)
+    BASE  START_DATE                      VARCHAR2(19)
+    BASE  END_DATE                        VARCHAR2(19)
+  END DKA_STRANSCO_LINES
+END DKA_STRANSCO_HEADERS
+
+# -- End Entity Definitions -- 
+
+
+BEGIN DKA_STRANSCO_HEADERS "DK_CLE_POUR_COMPTE"
+  DESCRIPTION = "Transcodification des clés comptable"
+  PARAM1_NAME = "Compte local"
+  PARAM1_FLAG = "Y"
+  PARAM2_NAME = "Compte analytique"
+  PARAM2_FLAG = "Y"
+  PARAM3_FLAG = "N"
+  RETURN_VALUE_NAME = "Clé comptable"
+
+  BEGIN DKA_STRANSCO_LINES "DK_CLE_POUR_COMPTE" "41110014100"
+    PARAM1_VALUE = "411100"
+    PARAM2_VALUE = "14100"
+    RETURN_VALUE = "Enc/Rglt non lettrés"
+    ENABLE = "Y"
+    START_DATE = "23/10/2019 00:00:00"
+  END DKA_STRANSCO_LINES
+  
+  BEGIN DKA_STRANSCO_LINES "DK_CLE_POUR_COMPTE" "41910025020"
+    PARAM1_VALUE = "419100"
+    PARAM2_VALUE = "25020"
+    RETURN_VALUE = "Enc/Rglt en compte"
+    ENABLE = "Y"
+    START_DATE = "23/10/2019 00:00:00"
+  END DKA_STRANSCO_LINES
+  
+  BEGIN DKA_STRANSCO_LINES "DK_CLE_POUR_COMPTE" "45200025080"
+    PARAM1_VALUE = "452000"
+    PARAM2_VALUE = "25080"
+    RETURN_VALUE = "Trésorerie"
+    ENABLE = "Y"
+    START_DATE = "23/10/2019 00:00:00"
+  END DKA_STRANSCO_LINES
+  
+  BEGIN DKA_STRANSCO_LINES "DK_CLE_POUR_COMPTE" "47100814300"
+    PARAM1_VALUE = "471008"
+    PARAM2_VALUE = "14300"
+    RETURN_VALUE = "Enc/Rglt non identifiés"
+    ENABLE = "Y"
+    START_DATE = "23/10/2019 00:00:00"
+  END DKA_STRANSCO_LINES
+  
+  BEGIN DKA_STRANSCO_LINES "DK_CLE_POUR_COMPTE" "66610072421"
+    PARAM1_VALUE = "666100"
+    PARAM2_VALUE = "72421"
+    RETURN_VALUE = "Pertes de change réalisées"
+    ENABLE = "Y"
+    START_DATE = "23/10/2019 00:00:00"
+  END DKA_STRANSCO_LINES
+  
+  BEGIN DKA_STRANSCO_LINES "DK_CLE_POUR_COMPTE" "76600172411"
+    PARAM1_VALUE = "766001"
+    PARAM2_VALUE = "72411"
+    RETURN_VALUE = "Gains de change réalisés"
+    ENABLE = "Y"
+    START_DATE = "23/10/2019 00:00:00"
+  END DKA_STRANSCO_LINES
+  
+END DKA_STRANSCO_HEADERS
+

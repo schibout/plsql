@@ -1,0 +1,159 @@
+<?xml version = '1.0' encoding = 'UTF-8'?>
+<!--
+  ================================================================================
+  $Header:$
+  Projet         : HELIOS
+  Nom du fichier : DKA_RAR_PRELEVBQUE.xml
+  Version        : 1.0
+  Cree le        : 12/11/2019
+  Auteur         : SEL
+  Description    : DKA_RAR_PRELEVBQUE
+									
+
+  ================================================================================
+  Historique
+  Date        Auteur           Description
+  ==========  ===============  ===================================================
+
+
+  ================================================================================
+-->
+
+<dataTemplate name="DKA_RAR_PRELEVBQUE" version="1.0">
+
+  <parameters>
+    <parameter name="P_DATE"                        dataType="DATE"      /> 
+    <parameter name="P_REGION"                      dataType="VARCHAR2"  />
+  </parameters>
+  <dataQuery>
+    <sqlStatement name="Q_PARAM">
+	<![CDATA[
+	select TO_CHAR(:P_DATE,'DD/MM/YYYY') PP_DATE , to_char(sysdate, 'DD/MM/YYYY') date_jour  from DUAL
+	
+	 ]]> 
+	</sqlStatement>
+	<sqlStatement name="Q_REPORT">
+	<![CDATA[
+SELECT substr(hou.name, 1, 3) region,
+       substr(hou.name, 4, 4) societe,
+       arca.receipt_number,
+       hca.ACCOUNT_NUMBER num_client,
+       hp.PARTY_NAME nom_client,
+       hcsua.location lieu,
+       arca.amount montant_preleve,
+       TO_CHAR(ps.DUE_DATE, 'DD/MM/YYYY') DUE_DATE,
+       to_char(TMP.transactiondate, 'DD/MM/YYYY') receipt_date,
+       instr_infos.iban compte_bancaire,
+       instr_infos.authorization_reference_number code_rum,
+       bank_infos.bank_name,
+       bank_infos.BANK_ACCOUNT_NAME compte_bancaire_remise
+  FROM ar_cash_receipts_all     arca,
+       ar_payment_schedules_all ps,
+       hr_operating_units       hou,
+       ar_receipt_methods       arm,
+       hz_cust_accounts         hca,
+       HZ_PARTIES               hp,
+       ar.hz_customer_profiles  hcp,
+       hz_cust_site_uses_all    hcsua,
+       hz_cust_acct_sites_all   hcasa,
+       dka_sarautoprelev_tmp    tmp,
+       ----------------
+       (SELECT arma.org_id, CEA.BANK_ACCOUNT_NAME, CBB.bank_name
+          FROM AR_RECEIPT_METHODS             arm1,
+               ar_receipt_method_accounts_all arma,
+               CE_BANK_ACCT_USES_ALL          cbaua,
+               CE_BANK_ACCOUNTS               CEA,
+               ce_bank_branches_v             CBB
+         WHERE ARM1.NAME = 'PRELEVT'
+           AND ARM1.receipt_method_id = ARMA.receipt_method_id
+           AND arma.primary_flag = 'Y'
+           AND arma.REMIT_BANK_ACCT_USE_ID(+) = cbaua.BANK_ACCT_USE_ID
+           AND cbaua.BANK_ACCOUNT_ID = CEA.bank_account_id
+           AND cbb.bank_party_id = cea.bank_id
+           AND cbb.branch_party_id = cea.bank_branch_id) bank_infos,
+       ----------------
+       (SELECT ieba.bank_id,
+               ieba.branch_id,
+               ieba.iban,
+               ieba.bank_account_num,
+               ida.authorization_reference_number,
+               extn.TRXN_EXTENSION_ID
+          FROM iby_ext_bank_accounts    ieba,
+               iby_pmt_instr_uses_all   u,
+               iby_fndcpt_tx_extensions extn,
+               IBY_DEBIT_AUTHORIZATIONS ida
+         WHERE ieba.ext_bank_account_id = u.instrument_id
+           AND extn.instr_assignment_id = u.instrument_payment_use_id
+           AND u.payment_function = 'CUSTOMER_PAYMENT'
+           AND extn.trxn_ref_number1 = 'RECEIPT'
+           AND extn.payment_channel_code = 'BANK_ACCT_XFER'
+           AND extn.DEBIT_AUTHORIZATION_ID = ida.debit_authorization_id(+)) instr_infos
+		  
+WHERE 1 = 1
+      -- Reglement    
+   AND arca.org_id = hou.organization_id
+      -- Table de travail
+   AND tmp.cashreceiptid = arca.cash_receipt_id     
+      -- Remise en banque
+   AND EXISTS
+(SELECT 1
+          FROM ar_cash_receipt_history_all acrha
+         WHERE acrha.cash_receipt_id = arca.cash_receipt_id
+           AND acrha.status = 'REMITTED')
+      -- Transaction   
+   AND ps.cash_receipt_id = arca.cash_receipt_id
+      -- Mode de reglement
+   AND arm.name = 'PRELEVT'
+   AND arca.receipt_method_id = arm.receipt_method_id
+      -- IBAN
+   AND arca.payment_trxn_extension_id = instr_infos.TRXN_EXTENSION_ID(+)
+      -- Banque UO
+   AND hou.organization_id = bank_infos.org_id(+)
+      -- client
+   AND arca.customer_site_use_id = hcsua.site_use_id
+   AND hcsua.cust_acct_site_id = hcasa.cust_acct_site_id
+   AND hcasa.cust_account_id = hca.cust_account_id
+      --  AND hca.cust_account_id = rcta.BILL_TO_CUSTOMER_ID
+   AND hp.PARTY_ID = hca.PARTY_ID
+   AND hcp.party_id = hp.party_id
+   AND hca.cust_account_id = hcp.cust_account_id
+   AND hcp.site_use_id IS NULL
+-- Parametres
+   AND trunc(arca.receipt_date) <= trunc(:P_DATE)
+   AND substr(hou.name, 1, 3) = :P_REGION
+order by substr(hou.name, 1, 3), substr(hou.name, 4, 4)
+
+
+
+
+
+  ]]> 
+  </sqlStatement>
+  </dataQuery>
+ <dataStructure>
+   <group   name="G_PARAM"               source="Q_PARAM">   
+        <element name="PP_DATE"                                           dataType="VARCHAR2"  value="PP_DATE" />
+		
+		<element name="R_SYSDATE"                                         dataType="VARCHAR2"  value="date_jour" />
+		
+   </group>   
+   <group   name="G_REPORT"               source="Q_REPORT">
+        <element name="R_REGION"                                          dataType="VARCHAR2"  value="region" /> 
+        <element name="R_SOCIETE"                                         dataType="VARCHAR2"  value="societe" /> 
+		<element name="R_REG"                                             dataType="VARCHAR2"  value="receipt_number" />
+        <element name="R_num_client"                                      dataType="VARCHAR2"  value="num_client" /> 
+        <element name="R_nom_client"                                      dataType="VARCHAR2"  value="nom_client" />
+        <element name="R_LIEU"                                      	  dataType="VARCHAR2"  value="lieu" />		
+		<element name="R_montant_preleve"                                 dataType="VARCHAR2"  value="montant_preleve" /> 
+        <element name="R_DEPOSIT_DATE"                                    dataType="VARCHAR2"  value="DUE_DATE" /> 
+        <element name="R_RECEIPT_DATE"                                    dataType="VARCHAR2"  value="receipt_date" /> 
+		<element name="R_compte_bancaire"                                 dataType="VARCHAR2"  value="compte_bancaire" />
+        <element name="R_code_rum"                                        dataType="VARCHAR2"  value="code_rum" />		
+        <element name="R_bank_name"                                       dataType="VARCHAR2"  value="bank_name" />
+		<element name="compte_bancaire_remise"                            dataType="VARCHAR2"  value="compte_bancaire_remise" />
+  	 
+  	 
+
+  </group>
+  </dataStructure>
+  </dataTemplate>

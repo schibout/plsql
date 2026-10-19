@@ -1,0 +1,41 @@
+-------------------------------------------------------------------------------
+-- Capgemini
+-- Projet            : HELIOS R12
+-- Auteur            : PIERRE BAUDOUR
+-- Date Création     : 07/11/2016
+-- Version livrables : V01
+--------------------------------------------------------------------------------
+-- NOM         : DKA_RA_INTERFACE_LINES_N1.ind
+-- DESCRIPTION : Script de création de l'index DKA_RA_INTERFACE_DIST_ALL_N1 sur 
+--               la table RA_INTERFACE_DISTRIBUTIONS_ALL
+-- COMMENTAIRE : 
+--
+--------------------------------------------------------------------------------------------
+-- HISTORIQUE DES MODIFICATIONS
+-- Date       Qui Description
+-- ---------- --- -------------------------------------------------------------------------
+-- 04/05/2017 MEG artf2148883 : INT006 : Defect # 641 - La valeur du segment5 n'est pas determine
+--------------------------------------------------------------------------------------------
+ 
+PROMPT ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+PROMPT DROP DE LINDEX DKA_RA_INTERFACE_DIST_ALL_N1
+PROMPT ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+DROP INDEX AR.DKA_RA_INTERFACE_DIST_ALL_N1;
+
+PROMPT ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+PROMPT CREATION DE LINDEX DKA_RA_INTERFACE_DIST_ALL_N1
+PROMPT ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+CREATE INDEX AR.DKA_RA_INTERFACE_DIST_ALL_N1
+ON AR.RA_INTERFACE_DISTRIBUTIONS_ALL (INTERFACE_LINE_CONTEXT, INTERFACE_LINE_ATTRIBUTE1, INTERFACE_LINE_ATTRIBUTE2, 
+                              INTERFACE_LINE_ATTRIBUTE3, INTERFACE_LINE_ATTRIBUTE4, INTERFACE_LINE_ATTRIBUTE5, REQUEST_ID)
+PCTFREE    10
+INITRANS   11
+MAXTRANS   255
+STORAGE
+  (INITIAL     8M
+   NEXT        8M
+   MINEXTENTS  1
+   MAXEXTENTS  UNLIMITED
+   PCTINCREASE 0);
+
+EXIT
